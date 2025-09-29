@@ -18,13 +18,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.core.localization.LocalizedContent
 import com.example.domain.model.SliderItem
 import kotlinx.coroutines.delay
 
 @Composable
 fun HomeSlider(
   slides: List<SliderItem>,
-  autoScrollMs: Long = 3000
+  autoScrollMs: Long = 3000,
+  isTurkish: Boolean = false
 ) {
   val index = remember { mutableIntStateOf(0) }
   LaunchedEffect(slides) {
@@ -39,7 +41,7 @@ fun HomeSlider(
         Box(modifier = Modifier.fillMaxWidth().height(180.dp).background(Color.Black)) {
           AsyncImage(
             model = item.imageUrl,
-            contentDescription = item.title
+            contentDescription = LocalizedContent.getLocalizedTitle(item, isTurkish)
           )
         }
       }
@@ -49,10 +51,11 @@ fun HomeSlider(
 
 @Composable
 fun HomeScreen(
-  slides: List<SliderItem>
+  slides: List<SliderItem>,
+  isTurkish: Boolean = false
 ) {
-  Text(text = "Home", style = MaterialTheme.typography.headlineSmall)
-  HomeSlider(slides = slides)
+  Text(text = LocalizedContent.getString(com.example.core.R.string.home_title), style = MaterialTheme.typography.headlineSmall)
+  HomeSlider(slides = slides, isTurkish = isTurkish)
 }
 
 @Preview

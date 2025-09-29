@@ -20,6 +20,7 @@ class HomeRepositoryImpl @Inject constructor(
             id = dto.id,
             imageUrl = dto.imageUrl,
             title = dto.title,
+            titleTr = dto.titleTr,
             link = dto.link,
             order = dto.order
           )

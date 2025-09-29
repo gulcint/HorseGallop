@@ -23,6 +23,7 @@ data class SliderItemDto(
   val id: String,
   val imageUrl: String,
   val title: String,
+  val titleTr: String? = null,
   val link: String? = null,
   val order: Int
 )

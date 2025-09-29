@@ -1,0 +1,30 @@
+<resources>
+	<string name="app_name">AdInCountry</string>
+	<string name="welcome_title">Hoş Geldiniz</string>
+	<string name="signin_google">Google ile Giriş Yap</string>
+	<string name="signin_apple">Apple ile Giriş Yap</string>
+	<string name="signin_email">E-posta ile Giriş Yap</string>
+	<string name="home_title">Ana Sayfa</string>
+	<string name="schedule_title">Program</string>
+	<string name="lesson_title">Ders</string>
+	<string name="instructor_name">Eğitmen</string>
+	<string name="date_time">Tarih ve Saat</string>
+	<string name="loading">Yükleniyor...</string>
+	<string name="error_unknown">Bilinmeyen hata oluştu</string>
+	<string name="error_network">Ağ hatası</string>
+	<string name="retry">Tekrar Dene</string>
+	<string name="cancel">İptal</string>
+	<string name="ok">Tamam</string>
+	<string name="save">Kaydet</string>
+	<string name="delete">Sil</string>
+	<string name="edit">Düzenle</string>
+	<string name="add">Ekle</string>
+	<string name="reserve">Rezervasyon Yap</string>
+	<string name="order">Sipariş</string>
+	<string name="review">Değerlendirme</string>
+	<string name="rating">Puanlama</string>
+	<string name="menu">Menü</string>
+	<string name="profile">Profil</string>
+	<string name="settings">Ayarlar</string>
+	<string name="logout">Çıkış Yap</string>
+</resources>
