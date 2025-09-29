@@ -15,15 +15,13 @@
     { 
       "id": "s1", 
       "imageUrl": "https://cdn.example.com/slide1.jpg", 
-      "title": "Summer Camp", 
-      "titleTr": "Yaz Kampı",
+      "title": "Yaz Kampı",
       "order": 1 
     },
     { 
       "id": "s2", 
       "imageUrl": "https://cdn.example.com/slide2.jpg", 
-      "title": "Horse Riding", 
-      "titleTr": "At Biniciliği",
+      "title": "At Biniciliği",
       "order": 2 
     }
   ]

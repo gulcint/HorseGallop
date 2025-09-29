@@ -25,8 +25,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun HomeSlider(
   slides: List<SliderItem>,
-  autoScrollMs: Long = 3000,
-  isTurkish: Boolean = false
+  autoScrollMs: Long = 3000
 ) {
   val index = remember { mutableIntStateOf(0) }
   LaunchedEffect(slides) {
@@ -41,7 +40,7 @@ fun HomeSlider(
         Box(modifier = Modifier.fillMaxWidth().height(180.dp).background(Color.Black)) {
           AsyncImage(
             model = item.imageUrl,
-            contentDescription = LocalizedContent.getLocalizedTitle(item, isTurkish)
+            contentDescription = item.title
           )
         }
       }
@@ -51,11 +50,10 @@ fun HomeSlider(
 
 @Composable
 fun HomeScreen(
-  slides: List<SliderItem>,
-  isTurkish: Boolean = false
+  slides: List<SliderItem>
 ) {
   Text(text = LocalizedContent.getString(com.example.core.R.string.home_title), style = MaterialTheme.typography.headlineSmall)
-  HomeSlider(slides = slides, isTurkish = isTurkish)
+  HomeSlider(slides = slides)
 }
 
 @Preview
