@@ -1,5 +1,5 @@
 <resources>
-	<string name="app_name">AdInCountry</string>
+	<string name="app_name">adincountry</string>
 	<string name="welcome_title">Hoş Geldiniz</string>
 	<string name="signin_google">Google ile Giriş Yap</string>
 	<string name="signin_apple">Apple ile Giriş Yap</string>

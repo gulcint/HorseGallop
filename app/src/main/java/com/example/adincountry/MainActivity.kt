@@ -6,13 +6,16 @@ import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 class MainActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
+		val splashScreen = installSplashScreen()
 		super.onCreate(savedInstanceState)
+		
 		setContent {
 			Surface(color = MaterialTheme.colorScheme.background) {
-				Text(text = "AdInCountry")
+				Text(text = "adincountry")
 			}
 		}
 	}

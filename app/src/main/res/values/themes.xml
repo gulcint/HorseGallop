@@ -1,0 +1,12 @@
+<resources>
+	<style name="Theme.adincountry" parent="android:Theme.Material.Light.NoActionBar">
+		<item name="android:statusBarColor">@android:color/transparent</item>
+	</style>
+	
+	<style name="Theme.adincountry.Splash" parent="Theme.SplashScreen">
+		<item name="windowSplashScreenBackground">@color/splash_background</item>
+		<item name="windowSplashScreenAnimatedIcon">@drawable/ic_horse_animated</item>
+		<item name="windowSplashScreenAnimationDuration">1000</item>
+		<item name="postSplashScreenTheme">@style/Theme.adincountry</item>
+	</style>
+</resources>

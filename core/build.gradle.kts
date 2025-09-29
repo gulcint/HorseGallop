@@ -14,6 +14,6 @@ android {
 
 dependencies {
 	implementation(platform(libs.compose.bom))
-	implementation(libs.bundles.compose_base)
+	implementation(libs.bundles.compose.base)
 	implementation(libs.coroutines)
 }

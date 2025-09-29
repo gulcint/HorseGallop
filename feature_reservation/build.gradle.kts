@@ -16,5 +16,5 @@ dependencies {
 	implementation(project(":core"))
 	implementation(project(":domain"))
 	implementation(platform(libs.compose.bom))
-	implementation(libs.bundles.compose_base)
+	implementation(libs.bundles.compose.base)
 }

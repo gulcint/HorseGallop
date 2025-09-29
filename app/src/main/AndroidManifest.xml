@@ -2,11 +2,12 @@
 	<application
 		android:name=".AdInCountryApp"
 		android:allowBackup="true"
-		android:label="AdInCountry"
-		android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+		android:label="adincountry"
+		android:theme="@style/Theme.adincountry.Splash">
 		<activity
 			android:name=".MainActivity"
-			android:exported="true">
+			android:exported="true"
+			android:theme="@style/Theme.adincountry.Splash">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
