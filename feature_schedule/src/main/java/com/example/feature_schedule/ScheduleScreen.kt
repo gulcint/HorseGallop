@@ -1,0 +1,43 @@
+package com.example.feature_schedule
+
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
+
+data class LessonUi(
+  val id: String,
+  val date: String,
+  val title: String,
+  val instructorName: String
+)
+
+@Composable
+fun ScheduleScreen(
+  lessons: List<LessonUi>,
+  onLessonClick: (String) -> Unit
+) {
+  LazyColumn {
+    items(lessons) { lesson ->
+      ListItem(
+        headlineContent = { Text(text = lesson.title) },
+        supportingContent = { Text(text = "${lesson.date} • ${lesson.instructorName}") },
+        overlineContent = { Text(text = lesson.id) }
+      )
+    }
+  }
+}
+
+@Preview
+@Composable
+private fun SchedulePreview() {
+  ScheduleScreen(
+    lessons = listOf(
+      LessonUi("l1", "2025-10-01 10:00", "Beginner Ride", "Alice"),
+      LessonUi("l2", "2025-10-02 14:00", "Trail Basics", "Bob")
+    ),
+    onLessonClick = {}
+  )
+}
