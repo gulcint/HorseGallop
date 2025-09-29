@@ -22,7 +22,7 @@ data class AuthResponseDto(
 data class SliderItemDto(
   val id: String,
   val imageUrl: String,
-  val title: String,
+  val title: String, // Backend returns localized title based on Accept-Language
   val link: String? = null,
   val order: Int
 )

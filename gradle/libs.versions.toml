@@ -40,4 +40,4 @@ google-auth = "com.google.android.gms:play-services-auth:21.2.0"
 serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 
 [bundles]
-compose-base = ["compose-ui", "compose-material3", "compose-tooling", "compose-navigation"]
+compose_base = ["compose-ui", "compose-material3", "compose-tooling", "compose-navigation"]

@@ -6,6 +6,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.core.localization.LocalizedContent
 
 data class LessonUi(
   val id: String,
@@ -23,7 +24,9 @@ fun ScheduleScreen(
     items(lessons) { lesson ->
       ListItem(
         headlineContent = { Text(text = lesson.title) },
-        supportingContent = { Text(text = "${lesson.date} • ${lesson.instructorName}") },
+        supportingContent = { 
+          Text(text = "${lesson.date} • ${LocalizedContent.getString(com.example.core.R.string.instructor_name)}: ${lesson.instructorName}") 
+        },
         overlineContent = { Text(text = lesson.id) }
       )
     }

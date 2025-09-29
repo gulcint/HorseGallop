@@ -1,5 +1,7 @@
 package com.example.data.di
 
+import android.content.Context
+import com.example.data.remote.LanguageInterceptor
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.squareup.okhttp3.OkHttpClient
@@ -9,6 +11,7 @@ import com.squareup.retrofit2.converter.moshi.MoshiConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import okhttp3.OkHttpClient as Ok3
@@ -26,9 +29,13 @@ object NetworkModule {
   }
 
   @Provides @Singleton
-  fun provideOkHttpClient(): Ok3 {
+  fun provideOkHttpClient(@ApplicationContext context: Context): Ok3 {
     val logger: Ok3Logger = Ok3Logger().apply { level = Ok3Logger.Level.BODY }
-    return Ok3.Builder().addInterceptor(logger).build()
+    val languageInterceptor = LanguageInterceptor(context)
+    return Ok3.Builder()
+      .addInterceptor(languageInterceptor)
+      .addInterceptor(logger)
+      .build()
   }
 
   @Provides @Singleton

@@ -8,7 +8,7 @@ import org.json.JSONObject
 class DynamicStringProvider(
   private val context: Context
 ) {
-  private var remote: Map<String, String> = emptyMap()
+  private var remoteByEntryName: Map<String, String> = emptyMap()
 
   suspend fun loadFromJson(json: String) {
     val map: MutableMap<String, String> = mutableMapOf()
@@ -20,12 +20,13 @@ class DynamicStringProvider(
         map[key] = root.getString(key)
       }
     }
-    remote = map
+    remoteByEntryName = map
   }
 
-  fun getString(key: String, fallbackResId: Int): String {
-    val value: String? = remote[key]
+  fun getString(@androidx.annotation.StringRes resId: Int): String {
+    val entryName: String = context.resources.getResourceEntryName(resId)
+    val value: String? = remoteByEntryName[entryName]
     if (value != null) return value
-    return context.getString(fallbackResId)
+    return context.getString(resId)
   }
 }

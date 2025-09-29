@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.core.localization.LocalizedContent
 import com.example.domain.model.SliderItem
 import kotlinx.coroutines.delay
 
@@ -51,7 +52,7 @@ fun HomeSlider(
 fun HomeScreen(
   slides: List<SliderItem>
 ) {
-  Text(text = "Home", style = MaterialTheme.typography.headlineSmall)
+  Text(text = LocalizedContent.getString(com.example.core.R.string.home_title), style = MaterialTheme.typography.headlineSmall)
   HomeSlider(slides = slides)
 }
 
