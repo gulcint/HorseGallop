@@ -23,7 +23,6 @@
                     android:strokeColor="#654321" />
                 <path
                     android:name="horse_tail"
-                    android:fillColor="none"
                     android:pathData="M60,100 Q45,95 50,110 Q55,120 45,125"
                     android:strokeWidth="4"
                     android:strokeColor="#654321" />

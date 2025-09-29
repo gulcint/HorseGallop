@@ -28,6 +28,13 @@ android {
 			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
 		}
 	}
+	compileOptions {
+		sourceCompatibility = JavaVersion.VERSION_17
+		targetCompatibility = JavaVersion.VERSION_17
+	}
+	kotlinOptions {
+		jvmTarget = "17"
+	}
 }
 
 dependencies {
@@ -38,6 +45,7 @@ dependencies {
 	implementation(libs.lifecycle.compose)
 	implementation(libs.coroutines)
 	implementation(libs.hilt.android)
+	implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 	kapt(libs.hilt.compiler)
 	implementation(platform(libs.firebase.bom))
 	implementation(libs.firebase.auth)
