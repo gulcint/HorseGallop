@@ -34,8 +34,8 @@ room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
-firebase-auth = "com.google.firebase:firebase-auth-ktx"
-firebase-messaging = "com.google.firebase:firebase-messaging-ktx"
+firebase-auth = { module = "com.google.firebase:firebase-auth-ktx" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging-ktx" }
 google-auth = "com.google.android.gms:play-services-auth:21.2.0"
 serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 
