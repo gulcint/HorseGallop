@@ -1,5 +1,6 @@
 package com.example.feature_home
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,6 +28,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import com.valentinilk.shimmer.shimmer
+import com.valentinilk.shimmer.defaultShimmerTheme
+import com.valentinilk.shimmer.rememberShimmer
 import kotlinx.coroutines.delay
 
 data class QuickAction(
@@ -562,10 +565,39 @@ fun HorseBarnCarousel() {
 
 @Composable
 fun SkeletonCarousel() {
+	// Custom shimmer with faster animation
+	val shimmerInstance = rememberShimmer(
+		shimmerBounds = com.valentinilk.shimmer.ShimmerBounds.Window,
+		theme = defaultShimmerTheme.copy(
+			animationSpec = infiniteRepeatable(
+				animation = tween(
+					durationMillis = 1200,
+					easing = LinearEasing
+				),
+				repeatMode = RepeatMode.Restart
+			),
+			shaderColors = listOf(
+				Color.White.copy(alpha = 0.0f),
+				Color.White.copy(alpha = 0.5f),
+				Color.White.copy(alpha = 1.0f),
+				Color.White.copy(alpha = 0.5f),
+				Color.White.copy(alpha = 0.0f)
+			),
+			shaderColorStops = listOf(
+				0.0f,
+				0.2f,
+				0.5f,
+				0.8f,
+				1.0f
+			),
+			shimmerWidth = 400.dp
+		)
+	)
+	
 	Box(
 		modifier = Modifier
 			.fillMaxSize()
-			.shimmer()
+			.shimmer(shimmerInstance)
 	) {
 		// Background gradient
 		Box(
@@ -574,9 +606,9 @@ fun SkeletonCarousel() {
 				.background(
 					Brush.verticalGradient(
 						colors = listOf(
-							Color(0xFFE8E8E8),
-							Color(0xFFF5F5F5),
-							Color(0xFFE8E8E8)
+							Color(0xFFE0E0E0),
+							Color(0xFFF0F0F0),
+							Color(0xFFE0E0E0)
 						)
 					)
 				)
