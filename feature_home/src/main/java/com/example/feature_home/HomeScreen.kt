@@ -20,6 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.airbnb.lottie.compose.*
@@ -245,33 +247,40 @@ fun QuickActionCard(action: QuickAction) {
 		),
 		shape = RoundedCornerShape(16.dp)
 	) {
-		Column(
+		Box(
 			modifier = Modifier
 				.fillMaxSize()
 				.padding(16.dp),
-			horizontalAlignment = Alignment.CenterHorizontally,
-			verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)
+			contentAlignment = Alignment.Center
 		) {
-			Box(
-				modifier = Modifier
-					.size(56.dp)
-					.clip(CircleShape)
-					.background(action.color.copy(alpha = 0.2f)),
-				contentAlignment = Alignment.Center
+			Column(
+				horizontalAlignment = Alignment.CenterHorizontally,
+				verticalArrangement = Arrangement.spacedBy(12.dp)
 			) {
-				Icon(
-					action.icon,
-					contentDescription = action.title,
-					tint = action.color,
-					modifier = Modifier.size(32.dp)
+				Box(
+					modifier = Modifier
+						.size(56.dp)
+						.clip(CircleShape)
+						.background(action.color.copy(alpha = 0.2f)),
+					contentAlignment = Alignment.Center
+				) {
+					Icon(
+						action.icon,
+						contentDescription = action.title,
+						tint = action.color,
+						modifier = Modifier.size(32.dp)
+					)
+				}
+				Text(
+					action.title,
+					style = MaterialTheme.typography.bodyMedium,
+					fontWeight = FontWeight.Medium,
+					color = action.color,
+					textAlign = TextAlign.Center,
+					maxLines = 2,
+					overflow = TextOverflow.Ellipsis
 				)
 			}
-			Text(
-				action.title,
-				style = MaterialTheme.typography.bodyMedium,
-				fontWeight = FontWeight.Medium,
-				color = action.color
-			)
 		}
 	}
 }
