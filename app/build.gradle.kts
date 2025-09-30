@@ -45,7 +45,7 @@ dependencies {
 	implementation(libs.lifecycle.compose)
 	implementation(libs.coroutines)
 	implementation(libs.hilt.android)
-	implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+	implementation(libs.hilt.navigation.compose)
 	kapt(libs.hilt.compiler)
 	implementation(platform(libs.firebase.bom))
 	implementation(libs.firebase.auth)
