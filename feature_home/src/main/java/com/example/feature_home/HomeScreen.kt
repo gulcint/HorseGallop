@@ -448,9 +448,19 @@ fun HorseBarnCarousel() {
 	
 	val pagerState = rememberPagerState(pageCount = { horseBarnImages.size })
 	var isLoading by remember { mutableStateOf(true) }
+	var imageLoaded by remember { mutableStateOf(false) }
+	
+	// Minimum loading time to show skeleton
+	LaunchedEffect(Unit) {
+		delay(800) // Minimum 800ms skeleton göster
+		if (imageLoaded) {
+			isLoading = false
+		}
+	}
 	
 	// Auto-scroll effect - daha yavaş (5 saniye)
-	LaunchedEffect(Unit) {
+	LaunchedEffect(imageLoaded) {
+		if (!imageLoaded) return@LaunchedEffect
 		while (true) {
 			delay(5000)
 			val nextPage = (pagerState.currentPage + 1) % horseBarnImages.size
@@ -493,10 +503,13 @@ fun HorseBarnCarousel() {
 							.diskCachePolicy(coil.request.CachePolicy.ENABLED)
 							.memoryCachePolicy(coil.request.CachePolicy.ENABLED)
 							.listener(
-								onSuccess = { _, _ -> isLoading = false }
+								onSuccess = { _, _ -> 
+									imageLoaded = true
+									isLoading = false
+								}
 							)
 							.build(),
-						contentDescription = "Çiftlik Görseli ${page + 1}",
+						contentDescription = "At Görseli ${page + 1}",
 						modifier = Modifier.fillMaxSize(),
 						contentScale = ContentScale.Crop
 					)
@@ -554,35 +567,54 @@ fun SkeletonCarousel() {
 			.fillMaxSize()
 			.shimmer()
 	) {
+		// Background gradient
+		Box(
+			modifier = Modifier
+				.fillMaxSize()
+				.background(
+					Brush.verticalGradient(
+						colors = listOf(
+							Color(0xFFE8E8E8),
+							Color(0xFFF5F5F5),
+							Color(0xFFE8E8E8)
+						)
+					)
+				)
+		)
+		
 		// Skeleton shapes
 		Column(
-			modifier = Modifier.fillMaxSize(),
-			verticalArrangement = Arrangement.SpaceBetween
+			modifier = Modifier
+				.fillMaxSize()
+				.padding(24.dp),
+			verticalArrangement = Arrangement.SpaceBetween,
+			horizontalAlignment = Alignment.CenterHorizontally
 		) {
 			// Top shimmer bar
 			Box(
 				modifier = Modifier
-					.fillMaxWidth()
-					.height(40.dp)
-					.padding(16.dp)
-					.background(Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
+					.fillMaxWidth(0.6f)
+					.height(24.dp)
+					.background(Color(0xFFD0D0D0), RoundedCornerShape(12.dp))
 			)
 			
-			Spacer(modifier = Modifier.weight(1f))
+			// Center icon placeholder
+			Box(
+				modifier = Modifier
+					.size(80.dp)
+					.background(Color(0xFFD0D0D0), CircleShape)
+			)
 			
 			// Bottom shimmer indicators
 			Row(
-				modifier = Modifier
-					.fillMaxWidth()
-					.padding(16.dp),
 				horizontalArrangement = Arrangement.Center
 			) {
 				repeat(6) {
 					Box(
 						modifier = Modifier
 							.padding(4.dp)
-							.size(8.dp)
-							.background(Color(0xFFE0E0E0), CircleShape)
+							.size(10.dp)
+							.background(Color(0xFFD0D0D0), CircleShape)
 					)
 				}
 			}
