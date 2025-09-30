@@ -14,6 +14,20 @@ android {
 
 dependencies {
 	implementation(platform(libs.compose.bom))
-	implementation(libs.bundles.compose_base)
+	implementation(libs.bundles.compose.base)
 	implementation(libs.coroutines)
+	implementation(libs.androidx.core.ktx)
+}
+
+android {
+	compileOptions {
+		sourceCompatibility = JavaVersion.VERSION_17
+		targetCompatibility = JavaVersion.VERSION_17
+	}
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+	kotlinOptions {
+		jvmTarget = "17"
+	}
 }

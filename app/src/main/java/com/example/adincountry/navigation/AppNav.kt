@@ -30,8 +30,8 @@ fun AppNavHost(
       )
     }
     composable(Dest.Home.route) {
-      val vm: HomeViewModel = hiltViewModel()
-      vm.loadSlider()
+      // val vm: HomeViewModel = hiltViewModel()
+      // vm.loadSlider()
       // Observe state in your actual screen composition
       HomeScreen(slides = emptyList())
     }

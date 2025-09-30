@@ -1,5 +1,5 @@
 <resources>
-	<string name="app_name">AdInCountry</string>
+	<string name="app_name">adincountry</string>
 	<string name="welcome_title">Welcome</string>
 	<string name="signin_google">Sign in with Google</string>
 	<string name="signin_apple">Sign in with Apple</string>
@@ -8,7 +8,7 @@
 	<string name="schedule_title">Schedule</string>
 	<string name="lesson_title">Lesson</string>
 	<string name="instructor_name">Instructor</string>
-	<string name="date_time">Date & Time</string>
+	<string name="date_time">Date &amp; Time</string>
 	<string name="loading">Loading...</string>
 	<string name="error_unknown">Unknown error occurred</string>
 	<string name="error_network">Network error</string>

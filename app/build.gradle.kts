@@ -28,21 +28,30 @@ android {
 			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
 		}
 	}
+	compileOptions {
+		sourceCompatibility = JavaVersion.VERSION_17
+		targetCompatibility = JavaVersion.VERSION_17
+	}
+	kotlinOptions {
+		jvmTarget = "17"
+	}
 }
 
 dependencies {
 	implementation(platform(libs.compose.bom))
-	implementation(libs.bundles.compose_base)
+	implementation(libs.bundles.compose.base)
 	implementation(libs.lifecycle.runtime)
 	implementation(libs.lifecycle.vm)
 	implementation(libs.lifecycle.compose)
 	implementation(libs.coroutines)
 	implementation(libs.hilt.android)
+	implementation(libs.hilt.navigation.compose)
 	kapt(libs.hilt.compiler)
 	implementation(platform(libs.firebase.bom))
 	implementation(libs.firebase.auth)
 	implementation(libs.firebase.messaging)
 	implementation(libs.google.auth)
+	implementation("androidx.core:core-splashscreen:1.0.1")
 	implementation(project(":core"))
 	implementation(project(":domain"))
 	implementation(project(":feature_auth"))
