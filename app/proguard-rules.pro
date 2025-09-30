@@ -2,8 +2,8 @@
 # You can control the set of applied configuration files using the
 # proguardFiles setting in build.gradle.
 
-# Keep AdinCountryApp class
--keep class com.example.adincountry.AdinCountryApp { *; }
+# Keep AdInCountryApp class
+-keep class com.example.adincountry.AdInCountryApp { *; }
 
 # Keep all Hilt generated classes
 -keep class dagger.hilt.** { *; }
