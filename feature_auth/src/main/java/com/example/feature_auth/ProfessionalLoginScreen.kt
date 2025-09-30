@@ -124,47 +124,49 @@ fun ProfessionalLoginScreen(
 
 @Composable
 fun GoogleSignInButton(onClick: () -> Unit) {
-    Button(
+    Surface(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.White,
-            contentColor = Color(0xFF1A1A1A)
-        ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 1.dp,
-            pressedElevation = 2.dp
-        )
+        shape = RoundedCornerShape(16.dp),
+        color = Color.White,
+        shadowElevation = 2.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0))
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
         ) {
-            // Google Icon (simplified)
+            // Google Icon Circle
             Box(
                 modifier = Modifier
-                    .size(24.dp)
-                    .background(Color.White),
+                    .size(32.dp)
+                    .background(
+                        color = Color(0xFFF3F4F6),
+                        shape = RoundedCornerShape(8.dp)
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "G",
-                    fontSize = 18.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF4285F4)
                 )
             }
             
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             
             Text(
                 text = "Google ile devam et",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF1F2937),
+                letterSpacing = 0.2.sp
             )
         }
     }
@@ -172,35 +174,47 @@ fun GoogleSignInButton(onClick: () -> Unit) {
 
 @Composable
 fun AppleSignInButton(onClick: () -> Unit) {
-    Button(
+    Surface(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF000000),
-            contentColor = Color.White
-        )
+        shape = RoundedCornerShape(16.dp),
+        color = Color(0xFF1F2937),
+        shadowElevation = 2.dp
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
         ) {
-            // Apple Icon (simplified)
-            Text(
-                text = "",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
+            // Apple Icon Circle
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(
+                        color = Color(0xFF374151),
+                        shape = RoundedCornerShape(8.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "",
+                    fontSize = 18.sp,
+                    color = Color.White
+                )
+            }
             
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             
             Text(
                 text = "Apple ile devam et",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White,
+                letterSpacing = 0.2.sp
             )
         }
     }
@@ -208,41 +222,52 @@ fun AppleSignInButton(onClick: () -> Unit) {
 
 @Composable
 fun EmailSignInButton(onClick: () -> Unit) {
-    OutlinedButton(
+    Surface(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = Color(0xFF1A1A1A)
-        ),
-        border = ButtonDefaults.outlinedButtonBorder.copy(
-            width = 1.5.dp,
-            brush = Brush.linearGradient(
-                colors = listOf(
-                    Color(0xFF6366F1),
-                    Color(0xFF8B5CF6)
-                )
-            )
-        )
+        shape = RoundedCornerShape(16.dp),
+        color = Color(0xFFF9FAFB),
+        shadowElevation = 2.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE5E7EB))
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
         ) {
-            Text(
-                text = "📧",
-                fontSize = 20.sp
-            )
+            // Email Icon Circle
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color(0xFF6366F1),
+                                Color(0xFF8B5CF6)
+                            )
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "✉️",
+                    fontSize = 16.sp
+                )
+            }
             
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             
             Text(
                 text = "E-posta ile devam et",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF1F2937),
+                letterSpacing = 0.2.sp
             )
         }
     }
