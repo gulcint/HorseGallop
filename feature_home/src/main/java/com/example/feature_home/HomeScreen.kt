@@ -51,7 +51,7 @@ fun HomeScreen(
 				title = {
 					Row(verticalAlignment = Alignment.CenterVertically) {
 						Text(
-							"adincountry",
+							"Adin Country",
 							style = MaterialTheme.typography.headlineMedium,
 							fontWeight = FontWeight.Bold
 						)
@@ -436,14 +436,14 @@ fun RestaurantQuickOrder() {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HorseBarnCarousel() {
-	// Çiftlik ve ahır görselleri - Unsplash'tan daha spesifik çiftlik temalı görseller
+	// At ahırı görselleri - Unsplash'tan horse barn temalı görseller
 	val horseBarnImages = listOf(
-		"https://images.unsplash.com/photo-1516192518150-0d8fee5425e3?w=1200&auto=format&fit=crop&q=80", // Farm with horses
-		"https://images.unsplash.com/photo-1588013273468-315fd88ea34c?w=1200&auto=format&fit=crop&q=80", // Horse stable interior
-		"https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=1200&auto=format&fit=crop&q=80", // Horse in barn
-		"https://images.unsplash.com/photo-1568572933382-74d440642117?w=1200&auto=format&fit=crop&q=80", // Beautiful stable
-		"https://images.unsplash.com/photo-1598632640487-6ea4a4e8b963?w=1200&auto=format&fit=crop&q=80", // Farm landscape
-		"https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?w=1200&auto=format&fit=crop&q=80"  // Horse paddock
+		"https://images.unsplash.com/photo-1588013273468-315fd88ea34c?w=1200&auto=format&fit=crop&q=80", // Horse barn interior
+		"https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=1200&auto=format&fit=crop&q=80", // Horse inside barn
+		"https://images.unsplash.com/photo-1568572933382-74d440642117?w=1200&auto=format&fit=crop&q=80", // Stable with horses
+		"https://images.unsplash.com/photo-1534330980a36-e0a5b4e0b7d5?w=1200&auto=format&fit=crop&q=80", // Barn aisle view
+		"https://images.unsplash.com/photo-1589729132389-8f0e0b55b91e?w=1200&auto=format&fit=crop&q=80", // Horse stable doors
+		"https://images.unsplash.com/photo-1601758125946-6ec2ef64daf8?w=1200&auto=format&fit=crop&q=80"  // Classic horse barn
 	)
 	
 	val pagerState = rememberPagerState(pageCount = { horseBarnImages.size })
