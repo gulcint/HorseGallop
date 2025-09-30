@@ -28,14 +28,14 @@ class MainActivity : ComponentActivity() {
 		
 		setContent {
 			MaterialTheme {
-				AdinCountryApp()
+				AppContent()
 			}
 		}
 	}
 }
 
 @Composable
-fun AdinCountryApp() {
+fun AppContent() {
 	var showSplash by remember { mutableStateOf(true) }
 	
 	// 2 saniye sonra ana ekrana geç

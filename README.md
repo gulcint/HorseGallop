@@ -1,4 +1,4 @@
-# AdinCountry
+# AdInCountry
 
 Modular Android app (Kotlin, Compose, Hilt, Coroutines, Retrofit, Room, Firebase).
 
