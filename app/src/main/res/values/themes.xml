@@ -5,8 +5,8 @@
 	
 	<style name="Theme.adincountry.Splash" parent="Theme.SplashScreen">
 		<item name="windowSplashScreenBackground">@color/splash_background</item>
-		<item name="windowSplashScreenAnimatedIcon">@drawable/ic_horse_animated</item>
-		<item name="windowSplashScreenAnimationDuration">1000</item>
+		<!-- Animasyonu kaldırdık - sadece beyaz ekran gösterecek -->
+		<item name="windowSplashScreenAnimationDuration">0</item>
 		<item name="postSplashScreenTheme">@style/Theme.adincountry</item>
 	</style>
 </resources>
