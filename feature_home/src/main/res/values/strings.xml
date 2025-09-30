@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Screen Titles -->
+    <string name="app_title">Adin Country</string>
+    
+    <!-- Welcome Banner -->
+    <string name="welcome_title">Hoş Geldiniz!</string>
+    <string name="welcome_subtitle">At binicilik maceranız burada başlıyor</string>
+    
+    <!-- Carousel -->
+    <string name="carousel_title">Atlarımız</string>
+    <string name="carousel_image_description">At Görseli %1$d</string>
+    
+    <!-- Quick Actions -->
+    <string name="quick_actions_title">Hızlı İşlemler</string>
+    <string name="action_lesson_reservation">Ders Rezervasyonu</string>
+    <string name="action_my_schedule">Programım</string>
+    <string name="action_restaurant">Restorant</string>
+    <string name="action_reviews">Yorumlar</string>
+    
+    <!-- Featured Slider -->
+    <string name="featured_title">Öne Çıkanlar</string>
+    
+    <!-- Upcoming Lessons -->
+    <string name="upcoming_lessons_title">Yaklaşan Dersler</string>
+    <string name="lesson_with_instructor">%1$s ile</string>
+    <string name="lesson_time">%1$s - %2$s</string>
+    <string name="view_all">Tümünü Gör</string>
+    
+    <!-- Restaurant Section -->
+    <string name="restaurant_title">Restoranımız</string>
+    <string name="restaurant_description">Lezzetli yemeklerimizi keşfedin</string>
+    <string name="restaurant_order_button">Restorandan Sipariş Ver</string>
+    
+    <!-- Content Descriptions -->
+    <string name="notifications_description">Bildirimler</string>
+    <string name="profile_description">Profil</string>
+</resources>

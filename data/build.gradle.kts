@@ -26,6 +26,7 @@ dependencies {
 	implementation(libs.retrofit.moshi)
 	implementation(libs.okhttp)
 	implementation(libs.okhttp.logging)
+	implementation(libs.moshi.kotlin)
 	implementation(libs.room.runtime)
 	implementation(libs.room.ktx)
 	implementation(libs.hilt.android)

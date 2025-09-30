@@ -20,6 +20,7 @@ dependencies {
 	implementation(project(":domain"))
 	implementation(platform(libs.compose.bom))
 	implementation(libs.bundles.compose.base)
+	implementation(libs.compose.icons.extended)
 	implementation(libs.coil.compose)
 	implementation(libs.lifecycle.compose)
 	implementation(libs.lottie.compose)

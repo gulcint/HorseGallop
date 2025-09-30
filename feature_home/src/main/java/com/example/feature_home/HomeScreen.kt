@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import coil.compose.AsyncImage
 import com.airbnb.lottie.compose.*
 import com.example.domain.model.SliderItem
@@ -73,21 +74,21 @@ fun HomeScreenContent(
 			.navigationBarsPadding(),
 		topBar = {
 			TopAppBar(
-				title = {
-					Row(verticalAlignment = Alignment.CenterVertically) {
-						Text(
-							"Adin Country",
-							style = MaterialTheme.typography.headlineMedium,
-							fontWeight = FontWeight.Bold
-						)
-					}
-				},
-				actions = {
-					IconButton(onClick = { }) {
-						Icon(Icons.Default.Notifications, contentDescription = "Bildirimler")
-					}
-					IconButton(onClick = { }) {
-						Icon(Icons.Default.Person, contentDescription = "Profil")
+			title = {
+				Row(verticalAlignment = Alignment.CenterVertically) {
+					Text(
+						stringResource(R.string.app_title),
+						style = MaterialTheme.typography.headlineMedium,
+						fontWeight = FontWeight.Bold
+					)
+				}
+			},
+			actions = {
+				IconButton(onClick = { }) {
+					Icon(Icons.Default.Notifications, contentDescription = stringResource(R.string.notifications_description))
+				}
+				IconButton(onClick = { }) {
+					Icon(Icons.Default.Person, contentDescription = stringResource(R.string.profile_description))
 					}
 				},
 				colors = TopAppBarDefaults.topAppBarColors(
@@ -171,19 +172,19 @@ fun WelcomeBanner() {
 					.padding(24.dp),
 				verticalAlignment = Alignment.CenterVertically
 			) {
-				Column(modifier = Modifier.weight(1f)) {
-					Text(
-						"Hoş Geldiniz!",
-						style = MaterialTheme.typography.headlineMedium,
-						fontWeight = FontWeight.Bold,
-						color = Color.White
-					)
-					Spacer(modifier = Modifier.height(8.dp))
-					Text(
-						"At binicilik maceranız burada başlıyor",
-						style = MaterialTheme.typography.bodyLarge,
-						color = Color.White.copy(alpha = 0.9f)
-					)
+			Column(modifier = Modifier.weight(1f)) {
+				Text(
+					stringResource(R.string.welcome_title),
+					style = MaterialTheme.typography.headlineMedium,
+					fontWeight = FontWeight.Bold,
+					color = Color.White
+				)
+				Spacer(modifier = Modifier.height(8.dp))
+				Text(
+					stringResource(R.string.welcome_subtitle),
+					style = MaterialTheme.typography.bodyLarge,
+					color = Color.White.copy(alpha = 0.9f)
+				)
 				}
 				
 				// Mini Lottie Animation
@@ -212,17 +213,17 @@ fun WelcomeBanner() {
 fun QuickActionsSection() {
 	Column {
 		Text(
-			"Hızlı İşlemler",
+			stringResource(R.string.quick_actions_title),
 			style = MaterialTheme.typography.titleLarge,
 			fontWeight = FontWeight.Bold
 		)
 		Spacer(modifier = Modifier.height(12.dp))
 		
 	val actions = listOf(
-		QuickAction("Ders Rezervasyonu", Icons.Default.DateRange, Color(0xFF4CAF50)),
-		QuickAction("Programım", Icons.Default.List, Color(0xFF2196F3)),
-		QuickAction("Restoran", Icons.Default.ShoppingCart, Color(0xFFFF9800)),
-		QuickAction("Yorumlar", Icons.Default.Star, Color(0xFFF44336))
+		QuickAction(stringResource(R.string.action_lesson_reservation), Icons.Default.DateRange, Color(0xFF4CAF50)),
+		QuickAction(stringResource(R.string.action_my_schedule), Icons.Default.List, Color(0xFF2196F3)),
+		QuickAction(stringResource(R.string.action_restaurant), Icons.Filled.Restaurant, Color(0xFFFF9800)),
+		QuickAction(stringResource(R.string.action_reviews), Icons.Default.Star, Color(0xFFF44336))
 	)
 		
 		LazyRow(
@@ -277,7 +278,8 @@ fun QuickActionCard(action: QuickAction) {
 					fontWeight = FontWeight.Medium,
 					color = action.color,
 					textAlign = TextAlign.Center,
-					maxLines = 2
+					maxLines = 2,
+					modifier = Modifier.height(40.dp)
 				)
 			}
 		}
@@ -288,7 +290,7 @@ fun QuickActionCard(action: QuickAction) {
 fun FeaturedSlider(slides: List<SliderItem>) {
 	Column {
 		Text(
-			"Öne Çıkanlar",
+			stringResource(R.string.featured_title),
 			style = MaterialTheme.typography.titleLarge,
 			fontWeight = FontWeight.Bold
 		)
@@ -354,12 +356,12 @@ fun UpcomingLessons() {
 				verticalAlignment = Alignment.CenterVertically
 			) {
 				Text(
-					"Yaklaşan Dersler",
+					stringResource(R.string.upcoming_lessons_title),
 					style = MaterialTheme.typography.titleMedium,
 					fontWeight = FontWeight.Bold
 				)
 				TextButton(onClick = { }) {
-					Text("Tümünü Gör")
+					Text(stringResource(R.string.view_all))
 				}
 			}
 			
@@ -434,23 +436,23 @@ fun RestaurantQuickOrder() {
 				.padding(16.dp),
 			verticalAlignment = Alignment.CenterVertically
 		) {
-			Icon(
-				Icons.Default.ShoppingCart,
-				contentDescription = "Restoran",
-				tint = Color(0xFFFF9800),
-				modifier = Modifier.size(48.dp)
-			)
+				Icon(
+					Icons.Filled.Restaurant,
+					contentDescription = stringResource(R.string.action_restaurant),
+					tint = Color(0xFFFF9800),
+					modifier = Modifier.size(48.dp)
+				)
 			
 			Spacer(modifier = Modifier.width(16.dp))
 			
 			Column(modifier = Modifier.weight(1f)) {
 				Text(
-					"Restorandan Sipariş Ver",
+					stringResource(R.string.restaurant_order_button),
 					style = MaterialTheme.typography.titleMedium,
 					fontWeight = FontWeight.Bold
 				)
 				Text(
-					"Taze lezzetler sizi bekliyor",
+					stringResource(R.string.restaurant_description),
 					style = MaterialTheme.typography.bodySmall,
 					color = MaterialTheme.colorScheme.onSurfaceVariant
 				)
@@ -462,7 +464,7 @@ fun RestaurantQuickOrder() {
 					containerColor = Color(0xFFFF9800)
 				)
 			) {
-				Text("Sipariş Ver")
+				Text(stringResource(R.string.restaurant_order_button))
 			}
 		}
 	}
@@ -505,7 +507,7 @@ fun HorseBarnCarousel() {
 	
 	Column {
 		Text(
-			"Atlarımız",
+			stringResource(R.string.carousel_title),
 			style = MaterialTheme.typography.titleLarge,
 			fontWeight = FontWeight.Bold,
 			modifier = Modifier.padding(bottom = 12.dp)
