@@ -5,11 +5,18 @@ plugins {
 }
 
 android {
-	namespace = "com.example.feature_admin"
+	namespace = "com.example.feature.admin"
 	compileSdk = 34
 	defaultConfig { minSdk = 24 }
 	buildFeatures { compose = true }
 	composeOptions { kotlinCompilerExtensionVersion = "1.5.15" }
+	compileOptions {
+		sourceCompatibility = JavaVersion.VERSION_17
+		targetCompatibility = JavaVersion.VERSION_17
+	}
+	kotlinOptions {
+		jvmTarget = "17"
+	}
 }
 
 dependencies {
@@ -19,17 +26,4 @@ dependencies {
 	implementation(project(":domain"))
 	implementation(platform(libs.compose.bom))
 	implementation(libs.bundles.compose.base)
-}
-
-android {
-	compileOptions {
-		sourceCompatibility = JavaVersion.VERSION_17
-		targetCompatibility = JavaVersion.VERSION_17
-	}
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-	kotlinOptions {
-		jvmTarget = "17"
-	}
 }
