@@ -51,7 +51,8 @@ dependencies {
 	implementation(libs.firebase.auth)
 	implementation(libs.firebase.messaging)
 	implementation(libs.google.auth)
-	implementation("androidx.core:core-splashscreen:1.0.1")
+	implementation(libs.core.splashscreen)
+	
 	implementation(project(":core"))
 	implementation(project(":domain"))
 	implementation(project(":feature_auth"))
@@ -61,8 +62,9 @@ dependencies {
 	implementation(project(":feature_orders"))
 	implementation(project(":feature_reviews"))
 	implementation(project(":feature_admin"))
+	
 	debugImplementation(libs.compose.tooling)
-	testImplementation("junit:junit:4.13.2")
-	androidTestImplementation("androidx.test.ext:junit:1.2.1")
-	androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+	testImplementation(libs.junit)
+	androidTestImplementation(libs.androidx.test.ext.junit)
+	androidTestImplementation(libs.espresso.core)
 }
