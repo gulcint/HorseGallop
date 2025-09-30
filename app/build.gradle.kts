@@ -55,6 +55,7 @@ dependencies {
 	implementation(libs.firebase.messaging)
 	implementation(libs.google.auth)
 	implementation("androidx.core:core-splashscreen:1.0.1")
+	implementation(libs.lottie.compose)
 	implementation(project(":core"))
 	implementation(project(":domain"))
 	implementation(project(":feature_auth"))
