@@ -44,6 +44,26 @@ data class QuickAction(
 fun HomeScreen(
 	slides: List<SliderItem> = emptyList()
 ) {
+	var isLoading by remember { mutableStateOf(true) }
+	
+	// Simulate initial loading
+	LaunchedEffect(Unit) {
+		delay(1500) // 1.5 seconds loading
+		isLoading = false
+	}
+	
+	if (isLoading) {
+		HomeScreenShimmer()
+	} else {
+		HomeScreenContent(slides)
+	}
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeScreenContent(
+	slides: List<SliderItem> = emptyList()
+) {
 	Scaffold(
 		modifier = Modifier
 			.fillMaxSize()
@@ -653,6 +673,199 @@ fun SkeletonCarousel() {
 							.size(10.dp)
 							.background(Color(0xFFD0D0D0), CircleShape)
 					)
+				}
+			}
+		}
+	}
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeScreenShimmer() {
+	Scaffold(
+		modifier = Modifier
+			.fillMaxSize()
+			.statusBarsPadding()
+			.navigationBarsPadding(),
+		topBar = {
+			TopAppBar(
+				title = {
+					Box(
+						modifier = Modifier
+							.width(150.dp)
+							.height(28.dp)
+							.shimmer()
+							.background(Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
+					)
+				},
+				actions = {
+					repeat(2) {
+						Box(
+							modifier = Modifier
+								.padding(8.dp)
+								.size(24.dp)
+								.shimmer()
+								.background(Color(0xFFE0E0E0), CircleShape)
+						)
+					}
+				},
+				colors = TopAppBarDefaults.topAppBarColors(
+					containerColor = Color(0xFFF5F5F5)
+				)
+			)
+		},
+		containerColor = Color(0xFFFAFAFA)
+	) { padding ->
+		LazyColumn(
+			modifier = Modifier
+				.fillMaxSize()
+				.padding(padding),
+			contentPadding = PaddingValues(
+				start = 16.dp,
+				end = 16.dp,
+				top = 16.dp,
+				bottom = 20.dp
+			),
+			verticalArrangement = Arrangement.spacedBy(24.dp)
+		) {
+			// Welcome Banner Shimmer
+			item {
+				Card(
+					modifier = Modifier
+						.fillMaxWidth()
+						.height(200.dp),
+					shape = RoundedCornerShape(16.dp)
+				) {
+					Box(
+						modifier = Modifier
+							.fillMaxSize()
+							.shimmer()
+							.background(
+								Brush.horizontalGradient(
+									colors = listOf(
+										Color(0xFFE0E0E0),
+										Color(0xFFF0F0F0)
+									)
+								)
+							)
+					)
+				}
+			}
+			
+			// Carousel Shimmer
+			item {
+				Column {
+					Box(
+						modifier = Modifier
+							.width(120.dp)
+							.height(28.dp)
+							.shimmer()
+							.background(Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
+					)
+					Spacer(modifier = Modifier.height(12.dp))
+					Card(
+						modifier = Modifier
+							.fillMaxWidth()
+							.height(220.dp),
+						shape = RoundedCornerShape(16.dp)
+					) {
+						Box(
+							modifier = Modifier
+								.fillMaxSize()
+								.shimmer()
+								.background(Color(0xFFE0E0E0))
+						)
+					}
+				}
+			}
+			
+			// Quick Actions Shimmer
+			item {
+				Column {
+					Box(
+						modifier = Modifier
+							.width(150.dp)
+							.height(28.dp)
+							.shimmer()
+							.background(Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
+					)
+					Spacer(modifier = Modifier.height(16.dp))
+					Row(
+						modifier = Modifier.fillMaxWidth(),
+						horizontalArrangement = Arrangement.spacedBy(12.dp)
+					) {
+						repeat(4) {
+							Card(
+								modifier = Modifier
+									.weight(1f)
+									.height(100.dp),
+								shape = RoundedCornerShape(12.dp)
+							) {
+								Box(
+									modifier = Modifier
+										.fillMaxSize()
+										.shimmer()
+										.background(Color(0xFFE0E0E0))
+								)
+							}
+						}
+					}
+				}
+			}
+			
+			// Upcoming Lessons Shimmer
+			item {
+				Column {
+					Box(
+						modifier = Modifier
+							.width(180.dp)
+							.height(28.dp)
+							.shimmer()
+							.background(Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
+					)
+					Spacer(modifier = Modifier.height(16.dp))
+					repeat(2) {
+						Card(
+							modifier = Modifier
+								.fillMaxWidth()
+								.padding(bottom = 12.dp),
+							shape = RoundedCornerShape(12.dp)
+						) {
+							Row(
+								modifier = Modifier
+									.fillMaxWidth()
+									.height(80.dp)
+									.padding(16.dp),
+								horizontalArrangement = Arrangement.spacedBy(16.dp)
+							) {
+								Box(
+									modifier = Modifier
+										.size(48.dp)
+										.shimmer()
+										.background(Color(0xFFE0E0E0), CircleShape)
+								)
+								Column(
+									modifier = Modifier.weight(1f),
+									verticalArrangement = Arrangement.spacedBy(8.dp)
+								) {
+									Box(
+										modifier = Modifier
+											.fillMaxWidth(0.7f)
+											.height(16.dp)
+											.shimmer()
+											.background(Color(0xFFE0E0E0), RoundedCornerShape(4.dp))
+									)
+									Box(
+										modifier = Modifier
+											.fillMaxWidth(0.5f)
+											.height(14.dp)
+											.shimmer()
+											.background(Color(0xFFE0E0E0), RoundedCornerShape(4.dp))
+									)
+								}
+							}
+						}
+					}
 				}
 			}
 		}
