@@ -61,7 +61,7 @@ fun ModernHomeScreen(
 					}
 				},
 				colors = TopAppBarDefaults.topAppBarColors(
-					containerColor = Color.White,
+					containerColor = Color(0xFFF5F5F5),
 					titleContentColor = Color(0xFF1A1A1A)
 				)
 			)
@@ -181,7 +181,7 @@ fun QuickActionsSection() {
 		val actions = listOf(
 			QuickAction("Ders Rezervasyonu", Icons.Default.Add, Color(0xFF4CAF50)),
 			QuickAction("Programım", Icons.Default.List, Color(0xFF2196F3)),
-			QuickAction("Restoran", Icons.Default.Fastfood, Color(0xFFFF9800)),
+			QuickAction("Restoran", Icons.Default.Home, Color(0xFFFF9800)),
 			QuickAction("Yorumlar", Icons.Default.Star, Color(0xFFF44336))
 		)
 		
