@@ -1,6 +1,9 @@
 package com.example.adincountry.navigation
 
+import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -43,6 +46,12 @@ fun AppNavHost(
       )
     }
     composable(Dest.Home.route) {
+      // Home ekranında geri tuşu uygulamayı kapatır
+      val activity = LocalContext.current as? Activity
+      BackHandler {
+        activity?.finish()
+      }
+      
       ModernHomeScreen(slides = emptyList())
     }
     composable(Dest.Admin.route) {

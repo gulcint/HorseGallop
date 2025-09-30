@@ -1,4 +1,4 @@
-# AdInCountry - Özellikler ve İyileştirmeler
+# AdinCountry - Özellikler ve İyileştirmeler
 
 ## 🚧 Yapılacaklar
 

@@ -2,6 +2,7 @@ package com.example.adincountry
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,42 +28,57 @@ class MainActivity : ComponentActivity() {
 		
 		setContent {
 			MaterialTheme {
-				var showLottie by remember { mutableStateOf(true) }
-				
-				// 2 saniye sonra ana ekrana geç
-				LaunchedEffect(Unit) {
-					delay(2000)
-					showLottie = false
-				}
-				
-				if (showLottie) {
-					Box(
-						modifier = Modifier.fillMaxSize(),
-						contentAlignment = Alignment.Center
-					) {
-						val composition by rememberLottieComposition(
-							LottieCompositionSpec.RawRes(R.raw.horse)
-						)
-						val progress by animateLottieCompositionAsState(
-							composition = composition,
-							iterations = LottieConstants.IterateForever
-						)
-						
-						LottieAnimation(
-							composition = composition,
-							progress = { progress },
-							modifier = Modifier.fillMaxSize(0.6f)
-						)
-					}
-				} else {
-					// Ana uygulama - Navigation
-					val navController = rememberNavController()
-					AppNavHost(
-						navController = navController,
-						role = null
-					)
-				}
+				AdinCountryApp()
 			}
 		}
+	}
+}
+
+@Composable
+fun AdinCountryApp() {
+	var showSplash by remember { mutableStateOf(true) }
+	
+	// 2 saniye sonra ana ekrana geç
+	LaunchedEffect(Unit) {
+		delay(2000)
+		showSplash = false
+	}
+	
+	if (showSplash) {
+		// Splash ekranında geri tuşu uygulamayı kapatır
+		BackHandler {
+			// Do nothing - splash ekranında geri tuşunu devre dışı bırak
+		}
+		
+		SplashScreen()
+	} else {
+		// Ana uygulama - Navigation
+		val navController = rememberNavController()
+		AppNavHost(
+			navController = navController,
+			role = null
+		)
+	}
+}
+
+@Composable
+fun SplashScreen() {
+	Box(
+		modifier = Modifier.fillMaxSize(),
+		contentAlignment = Alignment.Center
+	) {
+		val composition by rememberLottieComposition(
+			LottieCompositionSpec.RawRes(R.raw.horse)
+		)
+		val progress by animateLottieCompositionAsState(
+			composition = composition,
+			iterations = LottieConstants.IterateForever
+		)
+		
+		LottieAnimation(
+			composition = composition,
+			progress = { progress },
+			modifier = Modifier.fillMaxSize(0.6f)
+		)
 	}
 }
