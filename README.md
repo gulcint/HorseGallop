@@ -11,7 +11,7 @@ Modular Android app (Kotlin, Compose, Hilt, Coroutines, Retrofit, Room, Firebase
 ## Setup
 1. Copy `google-services.json` to `app/`.
 2. Set API base URL in `NetworkModule`.
-3. Run `./gradle :app:assembleDebug`.
+3. Run `./gradlew :app:assembleDebug`.
 
 ## Dev workflow
 - GitHub Flow: feature branches, PRs → CI runs.
@@ -20,8 +20,8 @@ Modular Android app (Kotlin, Compose, Hilt, Coroutines, Retrofit, Room, Firebase
 - Feature rule: each `:feature_*` depends only on `:core` and `:domain`.
 
 ## Testing
-- Unit tests: `./gradle testDebugUnitTest`
-- UI tests: `./gradle connectedDebugAndroidTest`
+- Unit tests: `./gradlew testDebugUnitTest`
+- UI tests: `./gradlew connectedDebugAndroidTest`
 
 ## Security
 - HTTPS only, tokens stored encrypted, short-lived access tokens, refresh rotation.

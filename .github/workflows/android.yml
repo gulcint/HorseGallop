@@ -16,7 +16,9 @@ jobs:
           java-version: 17
       - name: Gradle cache
         uses: gradle/actions/setup-gradle@v3
+      - name: Grant execute permission for Gradle Wrapper
+        run: chmod +x gradlew
       - name: Build
-        run: ./gradle clean assembleDebug
+        run: ./gradlew clean assembleDebug --no-daemon --stacktrace
       - name: Unit tests
-        run: ./gradle testDebugUnitTest
+        run: ./gradlew testDebugUnitTest --no-daemon --stacktrace
