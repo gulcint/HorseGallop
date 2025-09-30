@@ -84,7 +84,7 @@ fun HomeScreen(
 				start = 16.dp,
 				end = 16.dp,
 				top = 16.dp,
-				bottom = 0.dp
+				bottom = 20.dp
 			),
 			verticalArrangement = Arrangement.spacedBy(24.dp)
 		) {
@@ -128,7 +128,7 @@ fun WelcomeBanner() {
 	Card(
 		modifier = Modifier
 			.fillMaxWidth()
-			.height(180.dp),
+			.height(200.dp),
 		shape = RoundedCornerShape(16.dp)
 	) {
 		Box(
