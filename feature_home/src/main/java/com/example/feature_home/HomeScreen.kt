@@ -436,21 +436,23 @@ fun RestaurantQuickOrder() {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HorseBarnCarousel() {
+	// Çiftlik ve ahır görselleri - Unsplash'tan daha spesifik çiftlik temalı görseller
 	val horseBarnImages = listOf(
-		"https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=800&q=80", // Horse in barn
-		"https://images.unsplash.com/photo-1568572933382-74d440642117?w=800&q=80", // Horse stable
-		"https://images.unsplash.com/photo-1551191916-8d837be28e0f?w=800&q=80", // Horse riding
-		"https://images.unsplash.com/photo-1534330980a36-e0a5b4e0b7d5?w=800&q=80", // Barn interior
-		"https://images.unsplash.com/photo-1589729132389-8f0e0b55b91e?w=800&q=80"  // Horse farm
+		"https://images.unsplash.com/photo-1516192518150-0d8fee5425e3?w=1200&auto=format&fit=crop&q=80", // Farm with horses
+		"https://images.unsplash.com/photo-1588013273468-315fd88ea34c?w=1200&auto=format&fit=crop&q=80", // Horse stable interior
+		"https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=1200&auto=format&fit=crop&q=80", // Horse in barn
+		"https://images.unsplash.com/photo-1568572933382-74d440642117?w=1200&auto=format&fit=crop&q=80", // Beautiful stable
+		"https://images.unsplash.com/photo-1598632640487-6ea4a4e8b963?w=1200&auto=format&fit=crop&q=80", // Farm landscape
+		"https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?w=1200&auto=format&fit=crop&q=80"  // Horse paddock
 	)
 	
 	val pagerState = rememberPagerState(pageCount = { horseBarnImages.size })
 	val coroutineScope = rememberCoroutineScope()
 	
-	// Auto-scroll effect
+	// Auto-scroll effect - daha yavaş (5 saniye)
 	LaunchedEffect(Unit) {
 		while (true) {
-			delay(3000)
+			delay(5000)
 			val nextPage = (pagerState.currentPage + 1) % horseBarnImages.size
 			pagerState.animateScrollToPage(nextPage)
 		}
@@ -467,23 +469,49 @@ fun HorseBarnCarousel() {
 		Card(
 			modifier = Modifier
 				.fillMaxWidth()
-				.height(200.dp),
+				.height(220.dp),
 			shape = RoundedCornerShape(16.dp),
 			elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
 		) {
-			Box {
+			Box(
+				modifier = Modifier
+					.fillMaxSize()
+					.background(Color(0xFFE0E0E0))
+			) {
 				HorizontalPager(
 					state = pagerState,
 					modifier = Modifier.fillMaxSize()
 				) { page ->
 					AsyncImage(
-						model = horseBarnImages[page],
-						contentDescription = "Horse Barn ${page + 1}",
+						model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+							.data(horseBarnImages[page])
+							.crossfade(true)
+							.diskCachePolicy(coil.request.CachePolicy.ENABLED)
+							.memoryCachePolicy(coil.request.CachePolicy.ENABLED)
+							.build(),
+						contentDescription = "Çiftlik Görseli ${page + 1}",
 						modifier = Modifier.fillMaxSize(),
-						contentScale = ContentScale.Crop
+						contentScale = ContentScale.Crop,
+						placeholder = androidx.compose.ui.graphics.painter.ColorPainter(Color(0xFFE0E0E0))
 					)
 				}
 				
+				// Dark overlay for better text visibility
+				Box(
+					modifier = Modifier
+						.fillMaxWidth()
+						.height(100.dp)
+						.align(Alignment.BottomCenter)
+						.background(
+							Brush.verticalGradient(
+								colors = listOf(
+									Color.Transparent,
+									Color.Black.copy(alpha = 0.4f)
+								)
+							)
+						)
+				)
+
 				// Page indicator
 				Row(
 					Modifier
