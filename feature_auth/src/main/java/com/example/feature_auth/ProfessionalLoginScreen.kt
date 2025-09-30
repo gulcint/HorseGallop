@@ -141,23 +141,12 @@ fun GoogleSignInButton(onClick: () -> Unit) {
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
-            // Google Icon Circle
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .background(
-                        color = Color(0xFFF3F4F6),
-                        shape = RoundedCornerShape(8.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "G",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4285F4)
-                )
-            }
+            // Google Icon
+            Image(
+                painter = painterResource(id = R.drawable.ic_google_logo),
+                contentDescription = "Google Logo",
+                modifier = Modifier.size(24.dp)
+            )
             
             Spacer(modifier = Modifier.width(16.dp))
             
@@ -180,7 +169,7 @@ fun AppleSignInButton(onClick: () -> Unit) {
             .fillMaxWidth()
             .height(56.dp),
         shape = RoundedCornerShape(16.dp),
-        color = Color(0xFF1F2937),
+        color = Color(0xFF000000),
         shadowElevation = 2.dp
     ) {
         Row(
@@ -190,22 +179,12 @@ fun AppleSignInButton(onClick: () -> Unit) {
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
-            // Apple Icon Circle
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .background(
-                        color = Color(0xFF374151),
-                        shape = RoundedCornerShape(8.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "",
-                    fontSize = 18.sp,
-                    color = Color.White
-                )
-            }
+            // Apple Icon
+            Image(
+                painter = painterResource(id = R.drawable.ic_apple_logo),
+                contentDescription = "Apple Logo",
+                modifier = Modifier.size(24.dp)
+            )
             
             Spacer(modifier = Modifier.width(16.dp))
             
@@ -228,9 +207,8 @@ fun EmailSignInButton(onClick: () -> Unit) {
             .fillMaxWidth()
             .height(56.dp),
         shape = RoundedCornerShape(16.dp),
-        color = Color(0xFFF9FAFB),
-        shadowElevation = 2.dp,
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE5E7EB))
+        color = Color(0xFF6366F1),
+        shadowElevation = 2.dp
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -239,26 +217,12 @@ fun EmailSignInButton(onClick: () -> Unit) {
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
-            // Email Icon Circle
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(
-                                Color(0xFF6366F1),
-                                Color(0xFF8B5CF6)
-                            )
-                        ),
-                        shape = RoundedCornerShape(8.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "✉️",
-                    fontSize = 16.sp
-                )
-            }
+            // Email Icon
+            Image(
+                painter = painterResource(id = R.drawable.ic_email_icon),
+                contentDescription = "Email Icon",
+                modifier = Modifier.size(24.dp)
+            )
             
             Spacer(modifier = Modifier.width(16.dp))
             
@@ -266,7 +230,7 @@ fun EmailSignInButton(onClick: () -> Unit) {
                 text = "E-posta ile devam et",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF1F2937),
+                color = Color.White,
                 letterSpacing = 0.2.sp
             )
         }

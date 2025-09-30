@@ -22,9 +22,24 @@ fun AppNavHost(
   NavHost(navController = navController, startDestination = if (role == null) Dest.Login.route else Dest.Home.route) {
     composable(Dest.Login.route) {
       ProfessionalLoginScreen(
-        onGoogleClick = { /* trigger Google OAuth */ },
-        onAppleClick = { /* trigger Apple OAuth */ },
-        onEmailClick = { /* trigger Email login */ }
+        onGoogleClick = { 
+          // Mock OAuth - Navigate to Home
+          navController.navigate(Dest.Home.route) {
+            popUpTo(Dest.Login.route) { inclusive = true }
+          }
+        },
+        onAppleClick = { 
+          // Mock OAuth - Navigate to Home
+          navController.navigate(Dest.Home.route) {
+            popUpTo(Dest.Login.route) { inclusive = true }
+          }
+        },
+        onEmailClick = { 
+          // Mock Email Login - Navigate to Home
+          navController.navigate(Dest.Home.route) {
+            popUpTo(Dest.Login.route) { inclusive = true }
+          }
+        }
       )
     }
     composable(Dest.Home.route) {
