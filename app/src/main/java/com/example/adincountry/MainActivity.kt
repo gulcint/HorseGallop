@@ -36,7 +36,6 @@ class MainActivity : ComponentActivity() {
 				}
 				
 				if (showLottie) {
-					// Lottie at animasyonu
 					Box(
 						modifier = Modifier.fillMaxSize(),
 						contentAlignment = Alignment.Center

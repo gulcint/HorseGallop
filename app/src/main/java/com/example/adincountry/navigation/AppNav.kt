@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.domain.model.UserRole
 import com.example.feature_auth.LoginScreen
-import com.example.feature_home.HomeScreen
+import com.example.feature_home.ModernHomeScreen
 
 sealed class Dest(val route: String) {
   data object Login : Dest("login")
@@ -28,10 +28,7 @@ fun AppNavHost(
       )
     }
     composable(Dest.Home.route) {
-      // val vm: HomeViewModel = hiltViewModel()
-      // vm.loadSlider()
-      // Observe state in your actual screen composition
-      HomeScreen(slides = emptyList())
+      ModernHomeScreen(slides = emptyList())
     }
     composable(Dest.Admin.route) {
       // Admin panel root
