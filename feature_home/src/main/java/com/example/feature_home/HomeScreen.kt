@@ -250,7 +250,7 @@ fun QuickActionCard(action: QuickAction) {
 				.fillMaxSize()
 				.padding(16.dp),
 			horizontalAlignment = Alignment.CenterHorizontally,
-			verticalArrangement = Arrangement.Center
+			verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)
 		) {
 			Box(
 				modifier = Modifier
@@ -266,7 +266,6 @@ fun QuickActionCard(action: QuickAction) {
 					modifier = Modifier.size(32.dp)
 				)
 			}
-			Spacer(modifier = Modifier.height(12.dp))
 			Text(
 				action.title,
 				style = MaterialTheme.typography.bodyMedium,
