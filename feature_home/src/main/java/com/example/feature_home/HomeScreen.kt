@@ -436,14 +436,14 @@ fun RestaurantQuickOrder() {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HorseBarnCarousel() {
-	// At ahırı görselleri - Unsplash'tan horse barn temalı görseller
+	// At görselleri - Unsplash'tan yüksek kaliteli at fotoğrafları
 	val horseBarnImages = listOf(
-		"https://images.unsplash.com/photo-1588013273468-315fd88ea34c?w=1200&auto=format&fit=crop&q=80", // Horse barn interior
-		"https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=1200&auto=format&fit=crop&q=80", // Horse inside barn
-		"https://images.unsplash.com/photo-1568572933382-74d440642117?w=1200&auto=format&fit=crop&q=80", // Stable with horses
-		"https://images.unsplash.com/photo-1534330980a36-e0a5b4e0b7d5?w=1200&auto=format&fit=crop&q=80", // Barn aisle view
-		"https://images.unsplash.com/photo-1589729132389-8f0e0b55b91e?w=1200&auto=format&fit=crop&q=80", // Horse stable doors
-		"https://images.unsplash.com/photo-1601758125946-6ec2ef64daf8?w=1200&auto=format&fit=crop&q=80"  // Classic horse barn
+		"https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=1200&auto=format&fit=crop&q=80", // Beautiful brown horse
+		"https://images.unsplash.com/photo-1596464716127-f2a82984de30?w=1200&auto=format&fit=crop&q=80", // White horse portrait
+		"https://images.unsplash.com/photo-1598632640487-6ea4a4e8b963?w=1200&auto=format&fit=crop&q=80", // Horse in field
+		"https://images.unsplash.com/photo-1551191916-8d837be28e0f?w=1200&auto=format&fit=crop&q=80", // Horse riding scene
+		"https://images.unsplash.com/photo-1568572933382-74d440642117?w=1200&auto=format&fit=crop&q=80", // Horse in stable
+		"https://images.unsplash.com/photo-1449034446853-66c86144b0ad?w=1200&auto=format&fit=crop&q=80"  // Majestic horse
 	)
 	
 	val pagerState = rememberPagerState(pageCount = { horseBarnImages.size })
@@ -460,7 +460,7 @@ fun HorseBarnCarousel() {
 	
 	Column {
 		Text(
-			"At Çiftliğimiz",
+			"Atlarımız",
 			style = MaterialTheme.typography.titleLarge,
 			fontWeight = FontWeight.Bold,
 			modifier = Modifier.padding(bottom = 12.dp)
