@@ -1,6 +1,5 @@
 package com.example.feature_home
 
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,6 +26,7 @@ import com.example.domain.model.SliderItem
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.delay
 
 data class QuickAction(
@@ -188,12 +188,12 @@ fun QuickActionsSection() {
 		)
 		Spacer(modifier = Modifier.height(12.dp))
 		
-		val actions = listOf(
-			QuickAction("Ders Rezervasyonu", Icons.Default.Add, Color(0xFF4CAF50)),
-			QuickAction("Programım", Icons.Default.List, Color(0xFF2196F3)),
-			QuickAction("Restoran", Icons.Default.Home, Color(0xFFFF9800)),
-			QuickAction("Yorumlar", Icons.Default.Star, Color(0xFFF44336))
-		)
+	val actions = listOf(
+		QuickAction("Ders Rezervasyonu", Icons.Default.DateRange, Color(0xFF4CAF50)),
+		QuickAction("Programım", Icons.Default.List, Color(0xFF2196F3)),
+		QuickAction("Restoran", Icons.Default.ShoppingCart, Color(0xFFFF9800)),
+		QuickAction("Yorumlar", Icons.Default.Star, Color(0xFFF44336))
+	)
 		
 		LazyRow(
 			horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -549,20 +549,43 @@ fun HorseBarnCarousel() {
 
 @Composable
 fun SkeletonCarousel() {
-	val infiniteTransition = rememberInfiniteTransition(label = "skeleton")
-	val alpha by infiniteTransition.animateFloat(
-		initialValue = 0.3f,
-		targetValue = 0.7f,
-		animationSpec = infiniteRepeatable(
-			animation = tween(1000),
-			repeatMode = RepeatMode.Reverse
-		),
-		label = "alpha"
-	)
-	
 	Box(
 		modifier = Modifier
 			.fillMaxSize()
-			.background(Color(0xFFE0E0E0).copy(alpha = alpha))
-	)
+			.shimmer()
+	) {
+		// Skeleton shapes
+		Column(
+			modifier = Modifier.fillMaxSize(),
+			verticalArrangement = Arrangement.SpaceBetween
+		) {
+			// Top shimmer bar
+			Box(
+				modifier = Modifier
+					.fillMaxWidth()
+					.height(40.dp)
+					.padding(16.dp)
+					.background(Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
+			)
+			
+			Spacer(modifier = Modifier.weight(1f))
+			
+			// Bottom shimmer indicators
+			Row(
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(16.dp),
+				horizontalArrangement = Arrangement.Center
+			) {
+				repeat(6) {
+					Box(
+						modifier = Modifier
+							.padding(4.dp)
+							.size(8.dp)
+							.background(Color(0xFFE0E0E0), CircleShape)
+					)
+				}
+			}
+		}
+	}
 }

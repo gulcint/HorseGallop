@@ -23,6 +23,7 @@ dependencies {
 	implementation(libs.coil.compose)
 	implementation(libs.lifecycle.compose)
 	implementation(libs.lottie.compose)
+	implementation(libs.shimmer.compose)
 	
 	// Screenshot testing
 	testImplementation("app.cash.paparazzi:paparazzi:1.3.4")
