@@ -41,20 +41,21 @@
     <string name="onboarding_next">İleri</string>
     <string name="onboarding_start">Başla</string>
     <string name="onboarding_progress">%1$d / %2$d</string>
+    <string name="onboarding_lorem">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer at ligula nec metus aliquet dictum. Morbi non massa eu velit gravida hendrerit. Curabitur euismod, nunc in posuere viverra, mauris nibh semper mi, at luctus erat magna sit amet ligula.</string>
 
     <!-- Page 1: Ranch Intro -->
     <string name="onboarding_title_ranch">Adin Country Çiftliği</string>
-    <string name="onboarding_subtitle_ranch">Adresimizi keşfedin, tesislerimizi ve sunduğumuz hizmetleri hızla tanıyın.</string>
+    <string name="onboarding_subtitle_ranch">@string/onboarding_lorem</string>
 
     <!-- Page 2: Lesson Packages -->
     <string name="onboarding_title_packages">Paketler ve Dersler</string>
-    <string name="onboarding_subtitle_packages">Arazi paketi, ders paketi, manej turları ve engel atlama ile seviyene uygun eğitim.</string>
+    <string name="onboarding_subtitle_packages">@string/onboarding_lorem</string>
 
     <!-- Page 3: Boarding & Care -->
     <string name="onboarding_title_boarding">Pansiyon ve Bakım</string>
-    <string name="onboarding_subtitle_boarding">Atlarınıza güvenli pansiyon ve günlük bakım hizmeti sunuyoruz.</string>
+    <string name="onboarding_subtitle_boarding">@string/onboarding_lorem</string>
 
     <!-- Page 4: Cafe & Restaurant -->
     <string name="onboarding_title_cafe">Restorant &amp; Kafe</string>
-    <string name="onboarding_subtitle_cafe">Antrenman sonrası dinlenebileceğiniz kafe ve lezzetli menülerimizle yanınızdayız.</string>
+    <string name="onboarding_subtitle_cafe">@string/onboarding_lorem</string>
 </resources>

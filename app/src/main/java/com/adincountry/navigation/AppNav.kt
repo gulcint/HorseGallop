@@ -10,8 +10,10 @@ import androidx.navigation.compose.composable
 import com.example.domain.model.UserRole
 import com.example.feature_auth.ProfessionalLoginScreen
 import com.example.feature_home.HomeScreen
+import com.example.feature_home.OnboardingScreen
 
 sealed class Dest(val route: String) {
+  data object Onboarding : Dest("onboarding")
   data object Login : Dest("login")
   data object Home : Dest("home")
   data object Admin : Dest("admin")
@@ -22,7 +24,21 @@ fun AppNavHost(
   navController: NavHostController,
   role: UserRole?
 ) {
-  NavHost(navController = navController, startDestination = if (role == null) Dest.Login.route else Dest.Home.route) {
+  NavHost(navController = navController, startDestination = if (role == null) Dest.Onboarding.route else Dest.Home.route) {
+    composable(Dest.Onboarding.route) {
+      OnboardingScreen(
+        onStart = {
+          navController.navigate(Dest.Login.route) {
+            popUpTo(Dest.Onboarding.route) { inclusive = true }
+          }
+        },
+        onSkip = {
+          navController.navigate(Dest.Login.route) {
+            popUpTo(Dest.Onboarding.route) { inclusive = true }
+          }
+        }
+      )
+    }
     composable(Dest.Login.route) {
       ProfessionalLoginScreen(
         onGoogleClick = { 
