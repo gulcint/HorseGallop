@@ -1,5 +1,6 @@
 package com.example.feature_home
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,7 +28,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 data class QuickAction(
 	val title: String,
@@ -447,7 +447,7 @@ fun HorseBarnCarousel() {
 	)
 	
 	val pagerState = rememberPagerState(pageCount = { horseBarnImages.size })
-	val coroutineScope = rememberCoroutineScope()
+	var isLoading by remember { mutableStateOf(true) }
 	
 	// Auto-scroll effect - daha yavaş (5 saniye)
 	LaunchedEffect(Unit) {
@@ -478,6 +478,10 @@ fun HorseBarnCarousel() {
 					.fillMaxSize()
 					.background(Color(0xFFE0E0E0))
 			) {
+				if (isLoading) {
+					SkeletonCarousel()
+				}
+				
 				HorizontalPager(
 					state = pagerState,
 					modifier = Modifier.fillMaxSize()
@@ -488,53 +492,77 @@ fun HorseBarnCarousel() {
 							.crossfade(true)
 							.diskCachePolicy(coil.request.CachePolicy.ENABLED)
 							.memoryCachePolicy(coil.request.CachePolicy.ENABLED)
+							.listener(
+								onSuccess = { _, _ -> isLoading = false }
+							)
 							.build(),
 						contentDescription = "Çiftlik Görseli ${page + 1}",
 						modifier = Modifier.fillMaxSize(),
-						contentScale = ContentScale.Crop,
-						placeholder = androidx.compose.ui.graphics.painter.ColorPainter(Color(0xFFE0E0E0))
+						contentScale = ContentScale.Crop
 					)
 				}
 				
 				// Dark overlay for better text visibility
-				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.height(100.dp)
-						.align(Alignment.BottomCenter)
-						.background(
-							Brush.verticalGradient(
-								colors = listOf(
-									Color.Transparent,
-									Color.Black.copy(alpha = 0.4f)
+				if (!isLoading) {
+					Box(
+						modifier = Modifier
+							.fillMaxWidth()
+							.height(100.dp)
+							.align(Alignment.BottomCenter)
+							.background(
+								Brush.verticalGradient(
+									colors = listOf(
+										Color.Transparent,
+										Color.Black.copy(alpha = 0.4f)
+									)
 								)
 							)
-						)
-				)
+					)
 
-				// Page indicator
-				Row(
-					Modifier
-						.align(Alignment.BottomCenter)
-						.padding(16.dp),
-					horizontalArrangement = Arrangement.Center
-				) {
-					repeat(horseBarnImages.size) { iteration ->
-						val color = if (pagerState.currentPage == iteration) {
-							Color.White
-						} else {
-							Color.White.copy(alpha = 0.5f)
+					// Page indicator
+					Row(
+						Modifier
+							.align(Alignment.BottomCenter)
+							.padding(16.dp),
+						horizontalArrangement = Arrangement.Center
+					) {
+						repeat(horseBarnImages.size) { iteration ->
+							val color = if (pagerState.currentPage == iteration) {
+								Color.White
+							} else {
+								Color.White.copy(alpha = 0.5f)
+							}
+							Box(
+								modifier = Modifier
+									.padding(4.dp)
+									.clip(CircleShape)
+									.background(color)
+									.size(8.dp)
+							)
 						}
-						Box(
-							modifier = Modifier
-								.padding(4.dp)
-								.clip(CircleShape)
-								.background(color)
-								.size(8.dp)
-						)
 					}
 				}
 			}
 		}
 	}
+}
+
+@Composable
+fun SkeletonCarousel() {
+	val infiniteTransition = rememberInfiniteTransition(label = "skeleton")
+	val alpha by infiniteTransition.animateFloat(
+		initialValue = 0.3f,
+		targetValue = 0.7f,
+		animationSpec = infiniteRepeatable(
+			animation = tween(1000),
+			repeatMode = RepeatMode.Reverse
+		),
+		label = "alpha"
+	)
+	
+	Box(
+		modifier = Modifier
+			.fillMaxSize()
+			.background(Color(0xFFE0E0E0).copy(alpha = alpha))
+	)
 }

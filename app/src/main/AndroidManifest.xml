@@ -1,14 +1,13 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.adincountry">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 	<application
 		android:name=".AdinCountryApp"
 		android:allowBackup="true"
 		android:label="adincountry"
-		android:theme="@style/Theme.adincountry.Splash">
+		android:theme="@style/Theme.adincountry">
 		<activity
 			android:name=".MainActivity"
 			android:exported="true"
-			android:theme="@style/Theme.adincountry.Splash">
+			android:theme="@style/Theme.adincountry">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
