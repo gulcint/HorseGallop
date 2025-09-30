@@ -277,8 +277,7 @@ fun QuickActionCard(action: QuickAction) {
 					fontWeight = FontWeight.Medium,
 					color = action.color,
 					textAlign = TextAlign.Center,
-					maxLines = 2,
-					overflow = TextOverflow.Ellipsis
+					maxLines = 2
 				)
 			}
 		}
