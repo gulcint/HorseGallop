@@ -27,5 +27,6 @@ include(
 	":feature_reservation",
 	":feature_orders",
 	":feature_reviews",
-	":feature_admin"
+	":feature_admin",
+	":feature_profile"
 )

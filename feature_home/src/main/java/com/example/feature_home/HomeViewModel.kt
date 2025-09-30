@@ -4,8 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.domain.model.SliderItem
 import com.example.domain.usecase.GetSliderUseCase
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,8 +15,8 @@ sealed class HomeUiState {
   data class Error(val message: String) : HomeUiState()
 }
 
-@HiltViewModel
-class HomeViewModel @Inject constructor(
+// TODO: Re-enable Hilt injection once DI is fully configured
+class HomeViewModel(
   private val getSliderUseCase: GetSliderUseCase
 ) : ViewModel() {
 

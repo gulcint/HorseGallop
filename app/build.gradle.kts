@@ -62,6 +62,7 @@ dependencies {
 	implementation(project(":feature_orders"))
 	implementation(project(":feature_reviews"))
 	implementation(project(":feature_admin"))
+	implementation(project(":feature_profile"))
 	
 	debugImplementation(libs.compose.tooling)
 	testImplementation(libs.junit)
