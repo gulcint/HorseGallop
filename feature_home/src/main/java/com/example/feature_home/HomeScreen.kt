@@ -123,7 +123,7 @@ fun WelcomeBanner() {
 	Card(
 		modifier = Modifier
 			.fillMaxWidth()
-			.height(198.dp),
+			.height(180.dp),
 		shape = RoundedCornerShape(16.dp)
 	) {
 		Box(
