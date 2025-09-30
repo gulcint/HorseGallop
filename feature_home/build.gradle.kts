@@ -21,6 +21,7 @@ dependencies {
 	implementation(libs.bundles.compose.base)
 	implementation(libs.coil.compose)
 	implementation(libs.lifecycle.compose)
+	implementation(libs.lottie.compose)
 }
 
 android {

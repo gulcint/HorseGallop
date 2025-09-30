@@ -1,12 +1,15 @@
 package com.example.adincountry.navigation
 
+import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.domain.model.UserRole
-import com.example.feature_auth.LoginScreen
-import com.example.feature_home.HomeScreen
+import com.example.feature_auth.ProfessionalLoginScreen
+import com.example.feature_home.ModernHomeScreen
 
 sealed class Dest(val route: String) {
   data object Login : Dest("login")
@@ -21,17 +24,35 @@ fun AppNavHost(
 ) {
   NavHost(navController = navController, startDestination = if (role == null) Dest.Login.route else Dest.Home.route) {
     composable(Dest.Login.route) {
-      LoginScreen(
-        onGoogleClick = { /* trigger */ },
-        onAppleClick = { /* trigger */ },
-        onEmailClick = { /* TODO */ }
+      ProfessionalLoginScreen(
+        onGoogleClick = { 
+          // Mock OAuth - Navigate to Home
+          navController.navigate(Dest.Home.route) {
+            popUpTo(Dest.Login.route) { inclusive = true }
+          }
+        },
+        onAppleClick = { 
+          // Mock OAuth - Navigate to Home
+          navController.navigate(Dest.Home.route) {
+            popUpTo(Dest.Login.route) { inclusive = true }
+          }
+        },
+        onEmailClick = { 
+          // Mock Email Login - Navigate to Home
+          navController.navigate(Dest.Home.route) {
+            popUpTo(Dest.Login.route) { inclusive = true }
+          }
+        }
       )
     }
     composable(Dest.Home.route) {
-      // val vm: HomeViewModel = hiltViewModel()
-      // vm.loadSlider()
-      // Observe state in your actual screen composition
-      HomeScreen(slides = emptyList())
+      // Home ekranında geri tuşu uygulamayı kapatır
+      val activity = LocalContext.current as? Activity
+      BackHandler {
+        activity?.finish()
+      }
+      
+      ModernHomeScreen(slides = emptyList())
     }
     composable(Dest.Admin.route) {
       // Admin panel root

@@ -1,7 +1,7 @@
 {
   "name": "adincountry-mock-api",
   "version": "1.0.0",
-  "description": "Mock API for AdInCountry Android app",
+  "description": "Mock API for AdinCountry Android app",
   "main": "server.js",
   "scripts": {
     "start": "json-server --watch db.json --port 3000",
