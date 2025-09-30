@@ -39,7 +39,10 @@ android {
 
 dependencies {
 	implementation(platform(libs.compose.bom))
-	implementation(libs.bundles.compose.base)
+	implementation(libs.compose.ui)
+	implementation(libs.compose.material3)
+	implementation(libs.compose.tooling)
+	implementation(libs.compose.navigation)
 	implementation(libs.lifecycle.runtime)
 	implementation(libs.lifecycle.vm)
 	implementation(libs.lifecycle.compose)

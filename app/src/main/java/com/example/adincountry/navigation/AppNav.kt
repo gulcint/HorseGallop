@@ -1,14 +1,12 @@
 package com.example.adincountry.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.domain.model.UserRole
 import com.example.feature_auth.LoginScreen
 import com.example.feature_home.HomeScreen
-import com.example.feature_home.HomeViewModel
 
 sealed class Dest(val route: String) {
   data object Login : Dest("login")
