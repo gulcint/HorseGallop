@@ -1,4 +1,4 @@
-package com.adincountry
+package com.horsegallop
 
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage

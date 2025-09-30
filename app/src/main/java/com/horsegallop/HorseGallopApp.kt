@@ -1,7 +1,9 @@
-package com.adincountry
+package com.horsegallop
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class AdinCountryApp : Application()
+class HorseGallopApp : Application()
+
+

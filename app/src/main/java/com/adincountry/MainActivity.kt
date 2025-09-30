@@ -1,4 +1,4 @@
-package com.adincountry
+package com.horsegallop
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -21,7 +21,7 @@ import android.media.AudioAttributes
 import android.media.SoundPool
 import androidx.compose.ui.platform.LocalContext
 import com.airbnb.lottie.compose.*
-import com.adincountry.navigation.AppNavHost
+import com.horsegallop.navigation.AppNavHost
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 

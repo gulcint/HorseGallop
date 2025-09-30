@@ -1,4 +1,4 @@
-package com.adincountry.navigation
+package com.horsegallop.navigation
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
