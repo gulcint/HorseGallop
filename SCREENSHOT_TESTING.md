@@ -108,7 +108,7 @@ Screenshot testleri şu konumlarda:
 
 ```
 feature_auth/src/test/java/com/example/feature_auth/ProfessionalLoginScreenTest.kt
-feature_home/src/test/java/com/example/feature_home/ModernHomeScreenTest.kt
+feature_home/src/test/java/com/example/feature_home/HomeScreenTest.kt
 ```
 
 ## 🤖 GitHub Actions

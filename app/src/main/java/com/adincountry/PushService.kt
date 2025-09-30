@@ -1,4 +1,4 @@
-package com.example.adincountry
+package com.adincountry
 
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage

@@ -1,4 +1,4 @@
-package com.example.adincountry.navigation
+package com.adincountry.navigation
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
@@ -9,7 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.domain.model.UserRole
 import com.example.feature_auth.ProfessionalLoginScreen
-import com.example.feature_home.ModernHomeScreen
+import com.example.feature_home.HomeScreen
 
 sealed class Dest(val route: String) {
   data object Login : Dest("login")
@@ -52,7 +52,7 @@ fun AppNavHost(
         activity?.finish()
       }
       
-      ModernHomeScreen(slides = emptyList())
+      HomeScreen(slides = emptyList())
     }
     composable(Dest.Admin.route) {
       // Admin panel root

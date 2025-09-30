@@ -1,68 +1,512 @@
 package com.example.feature_home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.core.localization.LocalizedContent
+import com.airbnb.lottie.compose.*
 import com.example.domain.model.SliderItem
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-@Composable
-fun HomeSlider(
-  slides: List<SliderItem>,
-  autoScrollMs: Long = 3000
-) {
-  val index = remember { mutableIntStateOf(0) }
-  LaunchedEffect(slides) {
-    while (slides.isNotEmpty()) {
-      delay(autoScrollMs)
-      index.intValue = (index.intValue + 1) % slides.size
-    }
-  }
-  LazyRow {
-    items(slides) { item ->
-      Card {
-        Box(modifier = Modifier.fillMaxWidth().height(180.dp).background(Color.Black)) {
-          AsyncImage(
-            model = item.imageUrl,
-            contentDescription = item.title
-          )
-        }
-      }
-    }
-  }
-}
+data class QuickAction(
+	val title: String,
+	val icon: ImageVector,
+	val color: Color,
+	val onClick: () -> Unit = {}
+)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-  slides: List<SliderItem>
+	slides: List<SliderItem> = emptyList()
 ) {
-  Text(text = LocalizedContent.getString(com.example.core.R.string.home_title), style = MaterialTheme.typography.headlineSmall)
-  HomeSlider(slides = slides)
+	Scaffold(
+		modifier = Modifier
+			.fillMaxSize()
+			.statusBarsPadding()
+			.navigationBarsPadding(),
+		topBar = {
+			TopAppBar(
+				title = {
+					Row(verticalAlignment = Alignment.CenterVertically) {
+						Text(
+							"adincountry",
+							style = MaterialTheme.typography.headlineMedium,
+							fontWeight = FontWeight.Bold
+						)
+					}
+				},
+				actions = {
+					IconButton(onClick = { }) {
+						Icon(Icons.Default.Notifications, contentDescription = "Bildirimler")
+					}
+					IconButton(onClick = { }) {
+						Icon(Icons.Default.Person, contentDescription = "Profil")
+					}
+				},
+				colors = TopAppBarDefaults.topAppBarColors(
+					containerColor = Color(0xFFF5F5F5),
+					titleContentColor = Color(0xFF1A1A1A)
+				)
+			)
+		},
+		containerColor = Color(0xFFFAFAFA)
+	) { padding ->
+		LazyColumn(
+			modifier = Modifier
+				.fillMaxSize()
+				.padding(padding),
+			contentPadding = PaddingValues(16.dp),
+			verticalArrangement = Arrangement.spacedBy(24.dp)
+		) {
+			// Welcome Banner with Lottie
+			item {
+				WelcomeBanner()
+			}
+			
+			// Horse Barn Carousel
+			item {
+				HorseBarnCarousel()
+			}
+			
+			// Quick Actions
+			item {
+				QuickActionsSection()
+			}
+			
+			// Featured Slider
+			if (slides.isNotEmpty()) {
+				item {
+					FeaturedSlider(slides)
+				}
+			}
+			
+			// Upcoming Lessons
+			item {
+				UpcomingLessons()
+			}
+			
+			// Restaurant Section
+			item {
+				RestaurantQuickOrder()
+			}
+		}
+	}
 }
 
-@Preview
 @Composable
-private fun HomePreview() {
-  HomeScreen(
-    slides = listOf(
-      SliderItem(id = "s1", imageUrl = "https://picsum.photos/800/400", title = "Camp", link = null, order = 1),
-      SliderItem(id = "s2", imageUrl = "https://picsum.photos/800/401", title = "Ride", link = null, order = 2)
-    )
-  )
+fun WelcomeBanner() {
+	Card(
+		modifier = Modifier
+			.fillMaxWidth()
+			.height(200.dp),
+		shape = RoundedCornerShape(16.dp)
+	) {
+		Box(
+			modifier = Modifier
+				.fillMaxSize()
+				.background(
+					Brush.horizontalGradient(
+						colors = listOf(
+							MaterialTheme.colorScheme.primary,
+							MaterialTheme.colorScheme.secondary
+						)
+					)
+				)
+		) {
+			Row(
+				modifier = Modifier
+					.fillMaxSize()
+					.padding(24.dp),
+				verticalAlignment = Alignment.CenterVertically
+			) {
+				Column(modifier = Modifier.weight(1f)) {
+					Text(
+						"Hoş Geldiniz!",
+						style = MaterialTheme.typography.headlineMedium,
+						fontWeight = FontWeight.Bold,
+						color = Color.White
+					)
+					Spacer(modifier = Modifier.height(8.dp))
+					Text(
+						"At binicilik maceranız burada başlıyor",
+						style = MaterialTheme.typography.bodyLarge,
+						color = Color.White.copy(alpha = 0.9f)
+					)
+				}
+				
+				// Mini Lottie Animation
+				Box(
+					modifier = Modifier.size(120.dp),
+					contentAlignment = Alignment.Center
+				) {
+					// Lottie animation (requires app module resource)
+					// val composition by rememberLottieComposition(
+					//	LottieCompositionSpec.RawRes(R.raw.horse)
+					// )
+					// Lottie animation placeholder
+					Icon(
+						Icons.Default.Person,
+						contentDescription = "Horse",
+						modifier = Modifier.size(80.dp),
+						tint = Color.White
+					)
+				}
+			}
+		}
+	}
+}
+
+@Composable
+fun QuickActionsSection() {
+	Column {
+		Text(
+			"Hızlı İşlemler",
+			style = MaterialTheme.typography.titleLarge,
+			fontWeight = FontWeight.Bold
+		)
+		Spacer(modifier = Modifier.height(12.dp))
+		
+		val actions = listOf(
+			QuickAction("Ders Rezervasyonu", Icons.Default.Add, Color(0xFF4CAF50)),
+			QuickAction("Programım", Icons.Default.List, Color(0xFF2196F3)),
+			QuickAction("Restoran", Icons.Default.Home, Color(0xFFFF9800)),
+			QuickAction("Yorumlar", Icons.Default.Star, Color(0xFFF44336))
+		)
+		
+		LazyRow(
+			horizontalArrangement = Arrangement.spacedBy(12.dp)
+		) {
+			items(actions) { action ->
+				QuickActionCard(action)
+			}
+		}
+	}
+}
+
+@Composable
+fun QuickActionCard(action: QuickAction) {
+	Card(
+		modifier = Modifier
+			.width(140.dp)
+			.height(140.dp),
+		onClick = action.onClick,
+		colors = CardDefaults.cardColors(
+			containerColor = action.color.copy(alpha = 0.1f)
+		),
+		shape = RoundedCornerShape(16.dp)
+	) {
+		Column(
+			modifier = Modifier
+				.fillMaxSize()
+				.padding(16.dp),
+			horizontalAlignment = Alignment.CenterHorizontally,
+			verticalArrangement = Arrangement.Center
+		) {
+			Box(
+				modifier = Modifier
+					.size(56.dp)
+					.clip(CircleShape)
+					.background(action.color.copy(alpha = 0.2f)),
+				contentAlignment = Alignment.Center
+			) {
+				Icon(
+					action.icon,
+					contentDescription = action.title,
+					tint = action.color,
+					modifier = Modifier.size(32.dp)
+				)
+			}
+			Spacer(modifier = Modifier.height(12.dp))
+			Text(
+				action.title,
+				style = MaterialTheme.typography.bodyMedium,
+				fontWeight = FontWeight.Medium,
+				color = action.color
+			)
+		}
+	}
+}
+
+@Composable
+fun FeaturedSlider(slides: List<SliderItem>) {
+	Column {
+		Text(
+			"Öne Çıkanlar",
+			style = MaterialTheme.typography.titleLarge,
+			fontWeight = FontWeight.Bold
+		)
+		Spacer(modifier = Modifier.height(12.dp))
+		
+		LazyRow(
+			horizontalArrangement = Arrangement.spacedBy(12.dp)
+		) {
+			items(slides) { slide ->
+				Card(
+					modifier = Modifier
+						.width(300.dp)
+						.height(180.dp),
+					shape = RoundedCornerShape(16.dp)
+				) {
+					Box {
+						AsyncImage(
+							model = slide.imageUrl,
+							contentDescription = slide.title,
+							modifier = Modifier.fillMaxSize(),
+							contentScale = ContentScale.Crop
+						)
+						Box(
+							modifier = Modifier
+								.fillMaxSize()
+								.background(
+									Brush.verticalGradient(
+										colors = listOf(
+											Color.Transparent,
+											Color.Black.copy(alpha = 0.7f)
+										)
+									)
+								)
+						)
+						Text(
+							slide.title,
+							modifier = Modifier
+								.align(Alignment.BottomStart)
+								.padding(16.dp),
+							style = MaterialTheme.typography.titleMedium,
+							fontWeight = FontWeight.Bold,
+							color = Color.White
+						)
+					}
+				}
+			}
+		}
+	}
+}
+
+@Composable
+fun UpcomingLessons() {
+	Card(
+		modifier = Modifier.fillMaxWidth(),
+		colors = CardDefaults.cardColors(
+			containerColor = MaterialTheme.colorScheme.secondaryContainer
+		)
+	) {
+		Column(modifier = Modifier.padding(16.dp)) {
+			Row(
+				modifier = Modifier.fillMaxWidth(),
+				horizontalArrangement = Arrangement.SpaceBetween,
+				verticalAlignment = Alignment.CenterVertically
+			) {
+				Text(
+					"Yaklaşan Dersler",
+					style = MaterialTheme.typography.titleMedium,
+					fontWeight = FontWeight.Bold
+				)
+				TextButton(onClick = { }) {
+					Text("Tümünü Gör")
+				}
+			}
+			
+			Spacer(modifier = Modifier.height(8.dp))
+			
+			// Sample lesson
+			LessonItem(
+				title = "Başlangıç At Binme",
+				instructor = "Ahmet Yılmaz",
+				date = "1 Ekim, 14:00"
+			)
+		}
+	}
+}
+
+@Composable
+fun LessonItem(title: String, instructor: String, date: String) {
+	Row(
+		modifier = Modifier
+			.fillMaxWidth()
+			.padding(vertical = 8.dp),
+		verticalAlignment = Alignment.CenterVertically
+	) {
+		Box(
+			modifier = Modifier
+				.size(48.dp)
+				.clip(CircleShape)
+				.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+			contentAlignment = Alignment.Center
+		) {
+			Icon(
+				Icons.Default.Add,
+				contentDescription = null,
+				tint = MaterialTheme.colorScheme.primary
+			)
+		}
+		
+		Spacer(modifier = Modifier.width(12.dp))
+		
+		Column(modifier = Modifier.weight(1f)) {
+			Text(
+				title,
+				style = MaterialTheme.typography.bodyLarge,
+				fontWeight = FontWeight.Medium
+			)
+			Text(
+				"$instructor • $date",
+				style = MaterialTheme.typography.bodySmall,
+				color = MaterialTheme.colorScheme.onSurfaceVariant
+			)
+		}
+		
+		Icon(
+			Icons.Default.ArrowForward,
+			contentDescription = "Detay",
+			tint = MaterialTheme.colorScheme.onSurfaceVariant
+		)
+	}
+}
+
+@Composable
+fun RestaurantQuickOrder() {
+	Card(
+		modifier = Modifier.fillMaxWidth(),
+		colors = CardDefaults.cardColors(
+			containerColor = Color(0xFFFF9800).copy(alpha = 0.1f)
+		)
+	) {
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(16.dp),
+			verticalAlignment = Alignment.CenterVertically
+		) {
+			Icon(
+				Icons.Default.ShoppingCart,
+				contentDescription = "Restoran",
+				tint = Color(0xFFFF9800),
+				modifier = Modifier.size(48.dp)
+			)
+			
+			Spacer(modifier = Modifier.width(16.dp))
+			
+			Column(modifier = Modifier.weight(1f)) {
+				Text(
+					"Restorandan Sipariş Ver",
+					style = MaterialTheme.typography.titleMedium,
+					fontWeight = FontWeight.Bold
+				)
+				Text(
+					"Taze lezzetler sizi bekliyor",
+					style = MaterialTheme.typography.bodySmall,
+					color = MaterialTheme.colorScheme.onSurfaceVariant
+				)
+			}
+			
+			Button(
+				onClick = { },
+				colors = ButtonDefaults.buttonColors(
+					containerColor = Color(0xFFFF9800)
+				)
+			) {
+				Text("Sipariş Ver")
+			}
+		}
+	}
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun HorseBarnCarousel() {
+	val horseBarnImages = listOf(
+		"https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=800&q=80", // Horse in barn
+		"https://images.unsplash.com/photo-1568572933382-74d440642117?w=800&q=80", // Horse stable
+		"https://images.unsplash.com/photo-1551191916-8d837be28e0f?w=800&q=80", // Horse riding
+		"https://images.unsplash.com/photo-1534330980a36-e0a5b4e0b7d5?w=800&q=80", // Barn interior
+		"https://images.unsplash.com/photo-1589729132389-8f0e0b55b91e?w=800&q=80"  // Horse farm
+	)
+	
+	val pagerState = rememberPagerState(pageCount = { horseBarnImages.size })
+	val coroutineScope = rememberCoroutineScope()
+	
+	// Auto-scroll effect
+	LaunchedEffect(Unit) {
+		while (true) {
+			delay(3000)
+			val nextPage = (pagerState.currentPage + 1) % horseBarnImages.size
+			pagerState.animateScrollToPage(nextPage)
+		}
+	}
+	
+	Column {
+		Text(
+			"At Çiftliğimiz",
+			style = MaterialTheme.typography.titleLarge,
+			fontWeight = FontWeight.Bold,
+			modifier = Modifier.padding(bottom = 12.dp)
+		)
+		
+		Card(
+			modifier = Modifier
+				.fillMaxWidth()
+				.height(200.dp),
+			shape = RoundedCornerShape(16.dp),
+			elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+		) {
+			Box {
+				HorizontalPager(
+					state = pagerState,
+					modifier = Modifier.fillMaxSize()
+				) { page ->
+					AsyncImage(
+						model = horseBarnImages[page],
+						contentDescription = "Horse Barn ${page + 1}",
+						modifier = Modifier.fillMaxSize(),
+						contentScale = ContentScale.Crop
+					)
+				}
+				
+				// Page indicator
+				Row(
+					Modifier
+						.align(Alignment.BottomCenter)
+						.padding(16.dp),
+					horizontalArrangement = Arrangement.Center
+				) {
+					repeat(horseBarnImages.size) { iteration ->
+						val color = if (pagerState.currentPage == iteration) {
+							Color.White
+						} else {
+							Color.White.copy(alpha = 0.5f)
+						}
+						Box(
+							modifier = Modifier
+								.padding(4.dp)
+								.clip(CircleShape)
+								.background(color)
+								.size(8.dp)
+						)
+					}
+				}
+			}
+		}
+	}
 }

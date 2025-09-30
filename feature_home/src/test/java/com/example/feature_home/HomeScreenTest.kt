@@ -6,7 +6,7 @@ import app.cash.paparazzi.Paparazzi
 import org.junit.Rule
 import org.junit.Test
 
-class ModernHomeScreenTest {
+class HomeScreenTest {
 
     @get:Rule
     val paparazzi = Paparazzi(
@@ -16,19 +16,19 @@ class ModernHomeScreenTest {
     )
 
     @Test
-    fun modernHomeScreen_emptyState() {
+    fun homeScreen_emptyState() {
         paparazzi.snapshot {
             MaterialTheme {
-                ModernHomeScreen(slides = emptyList())
+                HomeScreen(slides = emptyList())
             }
         }
     }
 
     @Test
-    fun modernHomeScreen_withSlides() {
+    fun homeScreen_withSlides() {
         paparazzi.snapshot {
             MaterialTheme {
-                ModernHomeScreen(
+                HomeScreen(
                     slides = listOf(
                         com.example.domain.model.SliderItem(
                             id = "1",

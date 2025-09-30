@@ -3,14 +3,14 @@ plugins {
 	kotlin("android")
 	kotlin("kapt")
 	id("com.google.dagger.hilt.android")
-	id("com.google.gms.google-services")
+	// id("com.google.gms.google-services") // Temporarily disabled
 }
 
 android {
-	namespace = "com.example.adincountry"
+	namespace = "com.adincountry"
 	compileSdk = 34
 	defaultConfig {
-		applicationId = "com.example.adincountry"
+		applicationId = "com.adincountry"
 		minSdk = 24
 		targetSdk = 34
 		versionCode = 1

@@ -1,4 +1,4 @@
-package com.example.adincountry
+package com.adincountry
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -17,7 +17,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
 import com.airbnb.lottie.compose.*
-import com.example.adincountry.navigation.AppNavHost
+import com.adincountry.navigation.AppNavHost
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 
