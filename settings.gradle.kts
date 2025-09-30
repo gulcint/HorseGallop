@@ -14,7 +14,7 @@ dependencyResolutionManagement {
 	}
 }
 
-rootProject.name = "adincountry"
+rootProject.name = "horsegallop"
 
 include(
 	":app",

@@ -2,12 +2,12 @@
 	<application
 		android:name=".HorseGallopApp"
 		android:allowBackup="true"
-		android:label="adincountry"
-		android:theme="@style/Theme.adincountry">
+		android:label="horsegallop"
+		android:theme="@style/Theme.horsegallop">
 		<activity
 			android:name=".MainActivity"
 			android:exported="true"
-			android:theme="@style/Theme.adincountry">
+			android:theme="@style/Theme.horsegallop">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />

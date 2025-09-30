@@ -60,7 +60,7 @@ fun ProfessionalLoginScreen(
                 Spacer(modifier = Modifier.height(24.dp))
                 
                 Text(
-                    text = "adincountry",
+                    text = "horsegallop",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF1A1A1A)

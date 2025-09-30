@@ -1,5 +1,5 @@
 <resources>
-	<string name="app_name">adincountry</string>
+    <string name="app_name">horsegallop</string>
 	<string name="welcome_title">Welcome</string>
 	<string name="signin_google">Sign in with Google</string>
 	<string name="signin_apple">Sign in with Apple</string>

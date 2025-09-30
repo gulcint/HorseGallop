@@ -1,15 +1,15 @@
 <resources>
-	<style name="Theme.adincountry" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.horsegallop" parent="android:Theme.Material.Light.NoActionBar">
 		<item name="android:statusBarColor">#F5F5F5</item>
 		<item name="android:windowLightStatusBar">true</item>
 		<item name="android:navigationBarColor">@android:color/white</item>
 		<item name="android:windowLightNavigationBar">true</item>
 	</style>
 	
-	<style name="Theme.adincountry.Splash" parent="Theme.SplashScreen">
+    <style name="Theme.horsegallop.Splash" parent="Theme.SplashScreen">
 		<item name="windowSplashScreenBackground">@color/splash_background</item>
 		<item name="windowSplashScreenAnimationDuration">0</item>
-		<item name="postSplashScreenTheme">@style/Theme.adincountry</item>
+        <item name="postSplashScreenTheme">@style/Theme.horsegallop</item>
 		<item name="android:statusBarColor">@android:color/white</item>
 		<item name="android:windowLightStatusBar">true</item>
 	</style>
