@@ -28,5 +28,6 @@ include(
 	":feature_orders",
 	":feature_reviews",
 	":feature_admin",
-	":feature_profile"
+	":feature_profile",
+	":feature_settings"
 )
