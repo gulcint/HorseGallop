@@ -37,6 +37,10 @@ fun ModernHomeScreen(
 	slides: List<SliderItem> = emptyList()
 ) {
 	Scaffold(
+		modifier = Modifier
+			.fillMaxSize()
+			.statusBarsPadding()
+			.navigationBarsPadding(),
 		topBar = {
 			TopAppBar(
 				title = {
@@ -57,10 +61,12 @@ fun ModernHomeScreen(
 					}
 				},
 				colors = TopAppBarDefaults.topAppBarColors(
-					containerColor = MaterialTheme.colorScheme.primaryContainer
+					containerColor = Color.White,
+					titleContentColor = Color(0xFF1A1A1A)
 				)
 			)
-		}
+		},
+		containerColor = Color(0xFFFAFAFA)
 	) { padding ->
 		LazyColumn(
 			modifier = Modifier
@@ -175,7 +181,7 @@ fun QuickActionsSection() {
 		val actions = listOf(
 			QuickAction("Ders Rezervasyonu", Icons.Default.Add, Color(0xFF4CAF50)),
 			QuickAction("Programım", Icons.Default.List, Color(0xFF2196F3)),
-			QuickAction("Restoran", Icons.Default.ShoppingCart, Color(0xFFFF9800)),
+			QuickAction("Restoran", Icons.Default.Fastfood, Color(0xFFFF9800)),
 			QuickAction("Yorumlar", Icons.Default.Star, Color(0xFFF44336))
 		)
 		

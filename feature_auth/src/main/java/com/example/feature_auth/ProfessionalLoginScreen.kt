@@ -32,6 +32,8 @@ fun ProfessionalLoginScreen(
                     )
                 )
             )
+            .statusBarsPadding()
+            .navigationBarsPadding()
     ) {
         Column(
             modifier = Modifier
@@ -40,7 +42,7 @@ fun ProfessionalLoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
             // Logo ve Başlık Bölümü
             Column(

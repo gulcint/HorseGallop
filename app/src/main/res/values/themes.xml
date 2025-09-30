@@ -1,12 +1,16 @@
 <resources>
 	<style name="Theme.adincountry" parent="android:Theme.Material.Light.NoActionBar">
 		<item name="android:statusBarColor">@android:color/transparent</item>
+		<item name="android:windowLightStatusBar">true</item>
+		<item name="android:navigationBarColor">@android:color/white</item>
+		<item name="android:windowLightNavigationBar">true</item>
 	</style>
 	
 	<style name="Theme.adincountry.Splash" parent="Theme.SplashScreen">
 		<item name="windowSplashScreenBackground">@color/splash_background</item>
-		<!-- Animasyonu kaldırdık - sadece beyaz ekran gösterecek -->
 		<item name="windowSplashScreenAnimationDuration">0</item>
 		<item name="postSplashScreenTheme">@style/Theme.adincountry</item>
+		<item name="android:statusBarColor">@android:color/white</item>
+		<item name="android:windowLightStatusBar">true</item>
 	</style>
 </resources>
