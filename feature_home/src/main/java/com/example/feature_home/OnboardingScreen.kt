@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -182,7 +183,7 @@ private fun OnboardingPageContent(page: OnboardingPage) {
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(260.dp)
+                    .height(300.dp)
             ) {
                 val ctx = LocalContext.current
                 val request = remember(page.imageUrl) {
@@ -193,16 +194,30 @@ private fun OnboardingPageContent(page: OnboardingPage) {
                         .memoryCacheKey(page.imageUrl ?: "")
                         .build()
                 }
-                SubcomposeAsyncImage(
-                    model = request,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    when (painter.state) {
-                        is AsyncImagePainter.State.Success -> SubcomposeAsyncImageContent()
-                        else -> { showImage = false }
+                Box(modifier = Modifier.fillMaxSize()) {
+                    SubcomposeAsyncImage(
+                        model = request,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        when (painter.state) {
+                            is AsyncImagePainter.State.Success -> SubcomposeAsyncImageContent()
+                            else -> { showImage = false }
+                        }
                     }
+                    // Subtle bottom gradient overlay to enhance perceived quality
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(Color.Transparent, Color(0x14000000)),
+                                    startY = 0f,
+                                    endY = Float.POSITIVE_INFINITY
+                                )
+                            )
+                    )
                 }
             }
         }

@@ -1,4 +1,4 @@
-# AdinCountry - Özellikler ve İyileştirmeler
+# HorseGallop - Özellikler ve İyileştirmeler
 
 ## 🚧 Yapılacaklar
 

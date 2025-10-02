@@ -1,4 +1,4 @@
-# 🚀 adincountry - Feature Summary
+# 🚀 HorseGallop - Feature Summary
 
 ## 📅 Tarih: 30 Eylül 2025
 
@@ -209,12 +209,12 @@ Modern Home Screen
 
 ## 🔗 Links
 
-- **Repository**: https://github.com/gulcint/adincountry
+- **Repository**: https://github.com/gulcint/horsegallop
 - **Branch**: feat/modern-home-design
 - **PR**: Ready to create
 
 ---
 
 **Developer**: @gulcint  
-**Project**: adincountry - At Binicilik Uygulaması  
+**Project**: HorseGallop - At Binicilik Uygulaması  
 **Status**: 🚀 Active Development
