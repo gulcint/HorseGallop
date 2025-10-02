@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-	namespace = "com.example.feature_reviews"
+	namespace = "com.horsegallop.feature_reviews"
 	compileSdk = 34
 	defaultConfig { minSdk = 24 }
 	buildFeatures { compose = true }

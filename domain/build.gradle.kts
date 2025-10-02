@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-	namespace = "com.example.domain"
+	namespace = "com.horsegallop.domain"
 	compileSdk = 34
 	defaultConfig { minSdk = 24 }
 }

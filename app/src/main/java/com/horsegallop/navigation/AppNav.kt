@@ -7,10 +7,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.domain.model.UserRole
-import com.example.feature_auth.ProfessionalLoginScreen
-import com.example.feature_home.HomeScreen
-import com.example.feature_home.OnboardingScreen
+import com.horsegallop.domain.model.UserRole
+import com.horsegallop.feature_auth.ProfessionalLoginScreen
+import com.horsegallop.feature_home.HomeScreen
+import com.horsegallop.feature_home.OnboardingScreen
 
 sealed class Dest(val route: String) {
   data object Onboarding : Dest("onboarding")

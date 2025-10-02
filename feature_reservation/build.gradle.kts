@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-	namespace = "com.example.feature_reservation"
+	namespace = "com.horsegallop.feature_reservation"
 	compileSdk = 34
 	defaultConfig { minSdk = 24 }
 	buildFeatures { compose = true }

@@ -1,4 +1,4 @@
-package com.example.feature_home
+package com.horsegallop.feature_home
 
 import androidx.compose.material3.MaterialTheme
 import app.cash.paparazzi.DeviceConfig
@@ -30,14 +30,14 @@ class HomeScreenTest {
             MaterialTheme {
                 HomeScreen(
                     slides = listOf(
-                        com.example.domain.model.SliderItem(
+                        com.horsegallop.domain.model.SliderItem(
                             id = "1",
                             imageUrl = "https://via.placeholder.com/800x400",
                             title = "Test Slide 1",
                             link = null,
                             order = 1
                         ),
-                        com.example.domain.model.SliderItem(
+                        com.horsegallop.domain.model.SliderItem(
                             id = "2",
                             imageUrl = "https://via.placeholder.com/800x400",
                             title = "Test Slide 2",

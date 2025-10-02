@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-	namespace = "com.example.core"
+	namespace = "com.horsegallop.core"
 	compileSdk = 34
 	defaultConfig { minSdk = 24 }
 	buildFeatures { compose = true }

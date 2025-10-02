@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-	namespace = "com.example.feature_orders"
+	namespace = "com.horsegallop.feature_orders"
 	compileSdk = 34
 	defaultConfig { minSdk = 24 }
 	buildFeatures { compose = true }

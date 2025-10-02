@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-	namespace = "com.example.feature_home"
+	namespace = "com.horsegallop.feature_home"
 	compileSdk = 34
 	defaultConfig { minSdk = 24 }
 	buildFeatures { compose = true }

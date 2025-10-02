@@ -1,4 +1,4 @@
-package com.example.feature_auth
+package com.horsegallop.feature_auth
 
 import androidx.compose.material3.MaterialTheme
 import app.cash.paparazzi.DeviceConfig

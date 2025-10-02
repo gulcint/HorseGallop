@@ -1,7 +1,7 @@
-package com.example.domain.usecase
+package com.horsegallop.domain.usecase
 
-import com.example.domain.model.SliderItem
-import com.example.domain.repository.HomeRepository
+import com.horsegallop.domain.model.SliderItem
+import com.horsegallop.domain.repository.HomeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest

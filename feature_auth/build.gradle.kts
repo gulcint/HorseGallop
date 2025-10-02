@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-	namespace = "com.example.feature_auth"
+	namespace = "com.horsegallop.feature_auth"
 	compileSdk = 34
 	defaultConfig { minSdk = 24 }
 	buildFeatures { compose = true }
