@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.horsegallop.theme.AppColors
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -92,8 +93,8 @@ fun HomeScreenContent(
 					}
 				},
 				colors = TopAppBarDefaults.topAppBarColors(
-					containerColor = Color(0xFFF5F5F5),
-					titleContentColor = Color(0xFF1A1A1A)
+					containerColor = MaterialTheme.colorScheme.surface,
+					titleContentColor = MaterialTheme.colorScheme.onSurface
 				)
 			)
 		},
@@ -220,10 +221,10 @@ fun QuickActionsSection() {
 		Spacer(modifier = Modifier.height(12.dp))
 		
 	val actions = listOf(
-		QuickAction(stringResource(R.string.action_lesson_reservation), Icons.Default.DateRange, Color(0xFF4CAF50)),
-		QuickAction(stringResource(R.string.action_my_schedule), Icons.Default.List, Color(0xFF2196F3)),
-		QuickAction(stringResource(R.string.action_restaurant), Icons.Filled.Restaurant, Color(0xFFFF9800)),
-		QuickAction(stringResource(R.string.action_reviews), Icons.Default.Star, Color(0xFFF44336))
+		QuickAction(stringResource(R.string.action_lesson_reservation), Icons.Default.DateRange, AppColors.ActionLesson),
+		QuickAction(stringResource(R.string.action_my_schedule), Icons.Default.List, AppColors.ActionSchedule),
+		QuickAction(stringResource(R.string.action_restaurant), Icons.Filled.Restaurant, AppColors.ActionRestaurant),
+		QuickAction(stringResource(R.string.action_reviews), Icons.Default.Star, AppColors.ActionReviews)
 	)
 		
 		LazyRow(
@@ -427,7 +428,7 @@ fun RestaurantQuickOrder() {
 	Card(
 		modifier = Modifier.fillMaxWidth(),
 		colors = CardDefaults.cardColors(
-			containerColor = Color(0xFFFF9800).copy(alpha = 0.1f)
+			containerColor = AppColors.ActionRestaurant.copy(alpha = 0.1f)
 		)
 	) {
 		Row(
@@ -439,7 +440,7 @@ fun RestaurantQuickOrder() {
 				Icon(
 					Icons.Filled.Restaurant,
 					contentDescription = stringResource(R.string.action_restaurant),
-					tint = Color(0xFFFF9800),
+					tint = AppColors.ActionRestaurant,
 					modifier = Modifier.size(48.dp)
 				)
 			
@@ -461,7 +462,7 @@ fun RestaurantQuickOrder() {
 			Button(
 				onClick = { },
 				colors = ButtonDefaults.buttonColors(
-					containerColor = Color(0xFFFF9800)
+					containerColor = AppColors.ActionRestaurant
 				)
 			) {
 				Text(stringResource(R.string.restaurant_order_button))

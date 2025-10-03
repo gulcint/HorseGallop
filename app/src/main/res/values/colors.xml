@@ -1,5 +1,87 @@
 <resources>
-	<color name="splash_background">#F5E6D3</color>
-	<color name="primary">#8B4513</color>
-	<color name="secondary">#D2691E</color>
+	<!-- Primary Brand Colors - Horse/Equestrian Theme -->
+	<color name="primary">#8B4513</color> <!-- Saddle Brown -->
+	<color name="primary_variant">#A0522D</color> <!-- Sienna -->
+	<color name="primary_light">#CD853F</color> <!-- Peru -->
+	<color name="primary_dark">#654321</color> <!-- Dark Brown -->
+	
+	<!-- Secondary Brand Colors -->
+	<color name="secondary">#D2691E</color> <!-- Chocolate -->
+	<color name="secondary_variant">#F4A460</color> <!-- Sandy Brown -->
+	<color name="secondary_light">#FFB366</color> <!-- Light Orange -->
+	<color name="secondary_dark">#B8860B</color> <!-- Dark Goldenrod -->
+	
+	<!-- Accent Colors -->
+	<color name="accent">#228B22</color> <!-- Forest Green -->
+	<color name="accent_light">#32CD32</color> <!-- Lime Green -->
+	<color name="accent_dark">#006400</color> <!-- Dark Green -->
+	
+	<!-- Neutral Colors -->
+	<color name="background">#FAFAFA</color> <!-- Light Gray -->
+	<color name="surface">#FFFFFF</color> <!-- White -->
+	<color name="surface_variant">#F5F5F5</color> <!-- Light Gray -->
+	<color name="surface_dark">#E8E8E8</color> <!-- Medium Gray -->
+	
+	<!-- Text Colors -->
+	<color name="on_primary">#FFFFFF</color> <!-- White on primary -->
+	<color name="on_secondary">#FFFFFF</color> <!-- White on secondary -->
+	<color name="on_background">#1A1A1A</color> <!-- Dark Gray -->
+	<color name="on_surface">#1A1A1A</color> <!-- Dark Gray -->
+	<color name="on_surface_variant">#666666</color> <!-- Medium Gray -->
+	<color name="text_primary">#1A1A1A</color> <!-- Dark Gray -->
+	<color name="text_secondary">#666666</color> <!-- Medium Gray -->
+	<color name="text_hint">#999999</color> <!-- Light Gray -->
+	
+	<!-- Status Colors -->
+	<color name="success">#4CAF50</color> <!-- Green -->
+	<color name="success_light">#81C784</color> <!-- Light Green -->
+	<color name="success_dark">#388E3C</color> <!-- Dark Green -->
+	
+	<color name="warning">#FF9800</color> <!-- Orange -->
+	<color name="warning_light">#FFB74D</color> <!-- Light Orange -->
+	<color name="warning_dark">#F57C00</color> <!-- Dark Orange -->
+	
+	<color name="error">#F44336</color> <!-- Red -->
+	<color name="error_light">#EF5350</color> <!-- Light Red -->
+	<color name="error_dark">#D32F2F</color> <!-- Dark Red -->
+	
+	<color name="info">#2196F3</color> <!-- Blue -->
+	<color name="info_light">#64B5F6</color> <!-- Light Blue -->
+	<color name="info_dark">#1976D2</color> <!-- Dark Blue -->
+	
+	<!-- Special Colors -->
+	<color name="splash_background">#F5E6D3</color> <!-- Cream -->
+	<color name="divider">#E0E0E0</color> <!-- Light Gray -->
+	<color name="border">#CCCCCC</color> <!-- Medium Gray -->
+	<color name="shadow">#80000000</color> <!-- Semi-transparent Black -->
+	
+	<!-- Gradient Colors -->
+	<color name="gradient_start">#8B4513</color> <!-- Primary -->
+	<color name="gradient_end">#D2691E</color> <!-- Secondary -->
+	<color name="gradient_light_start">#F5E6D3</color> <!-- Cream -->
+	<color name="gradient_light_end">#FFFFFF</color> <!-- White -->
+	
+	<!-- Card Colors -->
+	<color name="card_background">#FFFFFF</color> <!-- White -->
+	<color name="card_elevated">#FFFFFF</color> <!-- White with elevation -->
+	<color name="card_outline">#E0E0E0</color> <!-- Light Gray -->
+	
+	<!-- Button Colors -->
+	<color name="button_primary">#8B4513</color> <!-- Primary -->
+	<color name="button_secondary">#D2691E</color> <!-- Secondary -->
+	<color name="button_success">#4CAF50</color> <!-- Green -->
+	<color name="button_warning">#FF9800</color> <!-- Orange -->
+	<color name="button_error">#F44336</color> <!-- Red -->
+	<color name="button_info">#2196F3</color> <!-- Blue -->
+	
+	<!-- Quick Action Colors -->
+	<color name="action_lesson">#4CAF50</color> <!-- Green -->
+	<color name="action_schedule">#2196F3</color> <!-- Blue -->
+	<color name="action_restaurant">#FF9800</color> <!-- Orange -->
+	<color name="action_reviews">#F44336</color> <!-- Red -->
+	
+	<!-- Overlay Colors -->
+	<color name="overlay_light">#80FFFFFF</color> <!-- Semi-transparent White -->
+	<color name="overlay_dark">#80000000</color> <!-- Semi-transparent Black -->
+	<color name="overlay_primary">#808B4513</color> <!-- Semi-transparent Primary -->
 </resources>

@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.horsegallop.theme.AppColors
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -63,7 +64,7 @@ fun ProfessionalLoginScreen(
                     text = "horsegallop",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A1A1A)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -71,7 +72,7 @@ fun ProfessionalLoginScreen(
                 Text(
                     text = "At binicilik deneyiminiz başlıyor",
                     fontSize = 16.sp,
-                    color = Color(0xFF666666),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
             }
@@ -94,14 +95,14 @@ fun ProfessionalLoginScreen(
                         .padding(vertical = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Divider(modifier = Modifier.weight(1f), color = Color(0xFFE0E0E0))
+                    Divider(modifier = Modifier.weight(1f), color = AppColors.Divider)
                     Text(
                         text = "veya",
                         modifier = Modifier.padding(horizontal = 16.dp),
-                        color = Color(0xFF999999),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 14.sp
                     )
-                    Divider(modifier = Modifier.weight(1f), color = Color(0xFFE0E0E0))
+                    Divider(modifier = Modifier.weight(1f), color = AppColors.Divider)
                 }
                 
                 // Email Sign In
@@ -113,7 +114,7 @@ fun ProfessionalLoginScreen(
                 Text(
                     text = "Devam ederek Kullanım Koşulları ve Gizlilik Politikası'nı kabul etmiş olursunuz",
                     fontSize = 12.sp,
-                    color = Color(0xFF999999),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
@@ -134,7 +135,7 @@ fun GoogleSignInButton(onClick: () -> Unit) {
         shape = RoundedCornerShape(16.dp),
         color = Color.White,
         shadowElevation = 2.dp,
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0))
+        border = androidx.compose.foundation.BorderStroke(1.dp, AppColors.Divider)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -156,7 +157,7 @@ fun GoogleSignInButton(onClick: () -> Unit) {
                 text = "Google ile devam et",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF1F2937),
+                color = MaterialTheme.colorScheme.onSurface,
                 letterSpacing = 0.2.sp
             )
         }
@@ -209,7 +210,7 @@ fun EmailSignInButton(onClick: () -> Unit) {
             .fillMaxWidth()
             .height(56.dp),
         shape = RoundedCornerShape(16.dp),
-        color = Color(0xFF6366F1),
+        color = MaterialTheme.colorScheme.primary,
         shadowElevation = 2.dp
     ) {
         Row(
