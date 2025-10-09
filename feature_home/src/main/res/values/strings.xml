@@ -42,20 +42,29 @@
     <string name="onboarding_start">Başla</string>
     <string name="onboarding_progress">%1$d / %2$d</string>
     <string name="onboarding_lorem">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer at ligula nec metus aliquet dictum. Morbi non massa eu velit gravida hendrerit. Curabitur euismod, nunc in posuere viverra, mauris nibh semper mi, at luctus erat magna sit amet ligula.</string>
+    <string name="onboarding_callout_title">Binicilik Yolculuğun Başlıyor</string>
+    <string name="onboarding_callout_subtitle">Uzman eğitmenler, güvenli alanlar ve keyifli bir deneyim</string>
+    <string name="onboarding_learn_more">Daha Fazla</string>
+    <string name="onboarding_title_ride_tracking">Ride Tracking</string>
+    <string name="onboarding_subtitle_ride_tracking">GPS + Kalori + Rota. Hız, mesafe, süre ve tempo.</string>
+    <string name="onboarding_title_watch">Watch Companion</string>
+    <string name="onboarding_subtitle_watch">Saatten hız, mesafe, süre ve kalp atışı.</string>
+    <string name="onboarding_title_dashboard">Performance Dashboard</string>
+    <string name="onboarding_subtitle_dashboard">Hedefler, at bazlı istatistik ve ilerleme grafikleri.</string>
+    <string name="onboarding_title_community">Riders Community</string>
+    <string name="onboarding_subtitle_community">Paylaş, beğen, yorum yap ve liderlik tablosunda yer al.</string>
+    <string name="onboarding_feature_gps">Rota takibi (GPS)</string>
+    <string name="onboarding_feature_calorie">Kalori ve tempo</string>
+    <string name="onboarding_feature_trends">Günlük/Haftalık trendler</string>
+    <string name="onboarding_feature_heart">Kalp atışı ve kalori</string>
+    <string name="onboarding_feature_control">Başlat/Durdur kontrol</string>
+    <string name="onboarding_feature_sync">Anlık senkronizasyon</string>
+    <string name="onboarding_feature_durations">Günlük/Haftalık süre</string>
+    <string name="onboarding_feature_charts">İlerleme grafikleri</string>
+    <string name="onboarding_feature_goals">Kişisel hedefler</string>
+    <string name="onboarding_feature_sharing">Paylaşım ve yorumlar</string>
+    <string name="onboarding_feature_leaderboard">Haftalık leaderboard</string>
+    <string name="onboarding_feature_nearby">Nearby Riders</string>
 
-    <!-- Page 1: Ranch Intro -->
-    <string name="onboarding_title_ranch">Adin Country Çiftliği</string>
-    <string name="onboarding_subtitle_ranch">@string/onboarding_lorem</string>
-
-    <!-- Page 2: Lesson Packages -->
-    <string name="onboarding_title_packages">Paketler ve Dersler</string>
-    <string name="onboarding_subtitle_packages">@string/onboarding_lorem</string>
-
-    <!-- Page 3: Boarding & Care -->
-    <string name="onboarding_title_boarding">Pansiyon ve Bakım</string>
-    <string name="onboarding_subtitle_boarding">@string/onboarding_lorem</string>
-
-    <!-- Page 4: Cafe & Restaurant -->
-    <string name="onboarding_title_cafe">Restorant &amp; Kafe</string>
-    <string name="onboarding_subtitle_cafe">@string/onboarding_lorem</string>
+    
 </resources>

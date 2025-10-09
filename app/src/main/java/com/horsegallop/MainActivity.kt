@@ -92,24 +92,25 @@ fun SplashScreen(onFinished: () -> Unit) {
 			composition = composition,
 			iterations = LottieConstants.IterateForever
 		)
-        
-        // 2 saniye boyunca splash göster, sonra onboarding'e geç
-        LaunchedEffect(Unit) {
-            val mp = MediaPlayer.create(ctx, R.raw.horse_gallop)
-            if (mp != null) {
-                mp.start()
-            }
-            
-            delay(2000) // 2 saniye bekle
-            
-            // Ses durdur ve temizle
-            try {
-                mp?.stop()
-                mp?.release()
-            } catch (_: Throwable) {}
-            
-            onFinished()
-        }
+
+		val mediaPlayer = remember { MediaPlayer.create(ctx, R.raw.horse_gallop) }
+		LaunchedEffect(mediaPlayer) {
+			mediaPlayer?.let { mp ->
+				mp.isLooping = true
+				mp.setVolume(1f, 1f)
+				mp.start()
+			}
+			delay(2000)
+			onFinished()
+		}
+		DisposableEffect(Unit) {
+			onDispose {
+				try {
+					mediaPlayer?.stop()
+					mediaPlayer?.release()
+				} catch (_: Throwable) {}
+			}
+		}
 		
 		var showLottie by remember { mutableStateOf(true) }
 		LaunchedEffect(Unit) {

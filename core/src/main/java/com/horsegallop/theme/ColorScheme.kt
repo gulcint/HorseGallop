@@ -148,10 +148,10 @@ val DarkColorScheme = darkColorScheme(
 // Additional App-Specific Colors
 object AppColors {
     // Quick Action Colors
-    val ActionLesson = Color(0xFF4CAF50) // Green
-    val ActionSchedule = Color(0xFF2196F3) // Blue
-    val ActionRestaurant = Color(0xFFFF9800) // Orange
-    val ActionReviews = Color(0xFFF44336) // Red
+    val ActionLesson = Color(0xFFB46A3A) // WarmClay
+    val ActionSchedule = Color(0xFFC89272) // ToastedAlmond
+    val ActionRestaurant = Secondary // Chocolate, matches theme
+    val ActionReviews = Primary // Saddle Brown, matches theme
     
     // Status Colors
     val Success = Color(0xFF4CAF50) // Green
@@ -181,4 +181,12 @@ object AppColors {
     val OverlayLight = Color(0x80FFFFFF) // Semi-transparent White
     val OverlayDark = Color(0x80000000) // Semi-transparent Black
     val OverlayPrimary = Color(0x808B4513) // Semi-transparent Primary
+
+    // Light Coffee Tone (for light, warm UI overlays/backgrounds)
+    val LightCoffee = Color(0xFFEAD9C8)
+
+    // Warm Browns for backgrounds (avoid green/beige feel)
+    val WarmClay = Color(0xFFB46A3A)   // rich clay brown
+    val SoftSand = Color(0xFFD9B08C)   // soft sand, not pale beige
+    val ToastedAlmond = Color(0xFFC89272) // warm almond
 }
