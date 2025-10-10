@@ -1,8 +1,7 @@
 plugins {
-	id("com.android.library")
-	kotlin("android")
-	kotlin("kapt")
-	id("app.cash.paparazzi")
+    id("com.android.library")
+    kotlin("android")
+    kotlin("kapt")
 }
 
 android {
@@ -22,9 +21,7 @@ dependencies {
 	implementation(libs.bundles.compose.base)
 	implementation(libs.lottie.compose)
 	
-	// Screenshot testing
-	testImplementation("app.cash.paparazzi:paparazzi:1.3.4")
-	testImplementation("junit:junit:4.13.2")
+    testImplementation("junit:junit:4.13.2")
 }
 
 android {

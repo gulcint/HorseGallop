@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.horsegallop.domain.model.UserRole
 import com.horsegallop.feature_auth.LoginScreen
+import com.horsegallop.feature_home.BarnDetail
 import com.horsegallop.feature_home.HomeScreen
 import com.horsegallop.feature_home.OnboardingScreen
 
@@ -16,7 +17,7 @@ sealed class Dest(val route: String) {
   data object Onboarding : Dest("onboarding")
   data object Login : Dest("login")
   data object Home : Dest("home")
-  data object Admin : Dest("admin")
+  data object BarnDetail : Dest("barnDetail")
 }
 
 @Composable
@@ -67,11 +68,10 @@ fun AppNavHost(
       BackHandler {
         activity?.finish()
       }
-      
-      HomeScreen(slides = emptyList())
+      HomeScreen(navController = navController)
     }
-    composable(Dest.Admin.route) {
-      // Admin panel root
+    composable(Dest.BarnDetail.route) {
+      BarnDetail(slides = emptyList())
     }
   }
 }
