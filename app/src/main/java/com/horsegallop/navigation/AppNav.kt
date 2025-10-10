@@ -8,7 +8,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.horsegallop.domain.model.UserRole
-import com.horsegallop.feature_auth.ProfessionalLoginScreen
+import com.horsegallop.feature_auth.LoginScreen
 import com.horsegallop.feature_home.HomeScreen
 import com.horsegallop.feature_home.OnboardingScreen
 
@@ -40,7 +40,7 @@ fun AppNavHost(
       )
     }
     composable(Dest.Login.route) {
-      ProfessionalLoginScreen(
+      LoginScreen(
         onGoogleClick = { 
           // Mock OAuth - Navigate to Home
           navController.navigate(Dest.Home.route) {

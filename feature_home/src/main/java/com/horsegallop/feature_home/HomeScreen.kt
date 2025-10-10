@@ -20,6 +20,8 @@ import androidx.compose.ui.graphics.Color
 import com.horsegallop.theme.AppColors
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import coil.compose.AsyncImage
 import com.airbnb.lottie.compose.*
-import com.horsegallop.domain.model.SliderItem
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -35,6 +36,8 @@ import com.valentinilk.shimmer.shimmer
 import com.valentinilk.shimmer.defaultShimmerTheme
 import com.valentinilk.shimmer.rememberShimmer
 import kotlinx.coroutines.delay
+import androidx.compose.ui.tooling.preview.Preview
+import com.horsegallop.domain.model.SliderItem
 
 data class QuickAction(
 	val title: String,
@@ -63,6 +66,25 @@ fun HomeScreen(
 	}
 }
 
+@Preview(showBackground = true, name = "Home Loaded")
+@Composable
+private fun PreviewHomeScreen() {
+    MaterialTheme {
+        val sampleSlides = listOf(
+            com.horsegallop.domain.model.SliderItem(id = "s1", imageUrl = "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=1200", title = "Majestic Brown", link = null, order = 1),
+            com.horsegallop.domain.model.SliderItem(id = "s2", imageUrl = "https://images.unsplash.com/photo-1596464716127-f2a82984de30?w=1200", title = "White Portrait", link = null, order = 2),
+            com.horsegallop.domain.model.SliderItem(id = "s3", imageUrl = "https://images.unsplash.com/photo-1598632640487-6ea4a4e8b963?w=1200", title = "Field Runner", link = null, order = 3)
+        )
+        HomeScreenContent(slides = sampleSlides)
+    }
+}
+
+@Preview(showBackground = true, name = "Home Loading")
+@Composable
+private fun PreviewHomeScreenLoading() {
+    MaterialTheme { HomeScreenShimmer() }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenContent(
@@ -77,8 +99,8 @@ fun HomeScreenContent(
 			TopAppBar(
 			title = {
 				Row(verticalAlignment = Alignment.CenterVertically) {
-					Text(
-						stringResource(R.string.app_title),
+                    Text(
+                        stringResource(com.horsegallop.core.R.string.app_name),
 						style = MaterialTheme.typography.headlineMedium,
 						fontWeight = FontWeight.Bold
 					)
@@ -86,10 +108,10 @@ fun HomeScreenContent(
 			},
 			actions = {
 				IconButton(onClick = { }) {
-					Icon(Icons.Default.Notifications, contentDescription = stringResource(R.string.notifications_description))
+                    Icon(Icons.Default.Notifications, contentDescription = stringResource(com.horsegallop.core.R.string.notifications_description))
 				}
 				IconButton(onClick = { }) {
-					Icon(Icons.Default.Person, contentDescription = stringResource(R.string.profile_description))
+                    Icon(Icons.Default.Person, contentDescription = stringResource(com.horsegallop.core.R.string.profile_description))
 					}
 				},
 				colors = TopAppBarDefaults.topAppBarColors(
@@ -175,14 +197,14 @@ fun WelcomeBanner() {
 			) {
 			Column(modifier = Modifier.weight(1f)) {
 				Text(
-					stringResource(R.string.welcome_title),
+                    stringResource(com.horsegallop.core.R.string.welcome_title),
 					style = MaterialTheme.typography.headlineMedium,
 					fontWeight = FontWeight.Bold,
 					color = Color.White
 				)
 				Spacer(modifier = Modifier.height(8.dp))
 				Text(
-					stringResource(R.string.welcome_subtitle),
+                    stringResource(com.horsegallop.core.R.string.welcome_subtitle),
 					style = MaterialTheme.typography.bodyLarge,
 					color = Color.White.copy(alpha = 0.9f)
 				)
@@ -214,17 +236,17 @@ fun WelcomeBanner() {
 fun QuickActionsSection() {
 	Column {
 		Text(
-			stringResource(R.string.quick_actions_title),
+            stringResource(com.horsegallop.core.R.string.quick_actions_title),
 			style = MaterialTheme.typography.titleLarge,
 			fontWeight = FontWeight.Bold
 		)
 		Spacer(modifier = Modifier.height(12.dp))
 		
-	val actions = listOf(
-		QuickAction(stringResource(R.string.action_lesson_reservation), Icons.Default.DateRange, AppColors.ActionLesson),
-		QuickAction(stringResource(R.string.action_my_schedule), Icons.Default.List, AppColors.ActionSchedule),
-		QuickAction(stringResource(R.string.action_restaurant), Icons.Filled.Restaurant, AppColors.ActionRestaurant),
-		QuickAction(stringResource(R.string.action_reviews), Icons.Default.Star, AppColors.ActionReviews)
+    val actions = listOf(
+        QuickAction(stringResource(com.horsegallop.core.R.string.action_lesson_reservation), Icons.Default.DateRange, AppColors.ActionLesson),
+        QuickAction(stringResource(com.horsegallop.core.R.string.action_my_schedule), Icons.Default.List, AppColors.ActionSchedule),
+        QuickAction(stringResource(com.horsegallop.core.R.string.action_restaurant), Icons.Filled.Restaurant, AppColors.ActionRestaurant),
+        QuickAction(stringResource(com.horsegallop.core.R.string.action_reviews), Icons.Default.Star, AppColors.ActionReviews)
 	)
 		
 		LazyRow(
@@ -291,7 +313,7 @@ fun QuickActionCard(action: QuickAction) {
 fun FeaturedSlider(slides: List<SliderItem>) {
 	Column {
 		Text(
-			stringResource(R.string.featured_title),
+            stringResource(com.horsegallop.core.R.string.featured_title),
 			style = MaterialTheme.typography.titleLarge,
 			fontWeight = FontWeight.Bold
 		)
@@ -357,23 +379,23 @@ fun UpcomingLessons() {
 				verticalAlignment = Alignment.CenterVertically
 			) {
 				Text(
-					stringResource(R.string.upcoming_lessons_title),
+                    stringResource(com.horsegallop.core.R.string.upcoming_lessons_title),
 					style = MaterialTheme.typography.titleMedium,
 					fontWeight = FontWeight.Bold
 				)
 				TextButton(onClick = { }) {
-					Text(stringResource(R.string.view_all))
+                    Text(stringResource(com.horsegallop.core.R.string.view_all))
 				}
 			}
 			
 			Spacer(modifier = Modifier.height(8.dp))
 			
-			// Sample lesson
-			LessonItem(
-				title = "Başlangıç At Binme",
-				instructor = "Ahmet Yılmaz",
-				date = "1 Ekim, 14:00"
-			)
+            // Sample lesson
+            LessonItem(
+                title = stringResource(com.horsegallop.core.R.string.lesson_sample_title),
+                instructor = stringResource(com.horsegallop.core.R.string.lesson_sample_instructor),
+                date = stringResource(com.horsegallop.core.R.string.lesson_sample_date)
+            )
 		}
 	}
 }
@@ -415,11 +437,11 @@ fun LessonItem(title: String, instructor: String, date: String) {
 			)
 		}
 		
-		Icon(
-			Icons.Default.ArrowForward,
-			contentDescription = "Detay",
-			tint = MaterialTheme.colorScheme.onSurfaceVariant
-		)
+        Icon(
+            Icons.Default.ArrowForward,
+            contentDescription = stringResource(com.horsegallop.core.R.string.lesson_detail),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
 	}
 }
 
@@ -439,7 +461,7 @@ fun RestaurantQuickOrder() {
 		) {
 				Icon(
 					Icons.Filled.Restaurant,
-					contentDescription = stringResource(R.string.action_restaurant),
+                    contentDescription = stringResource(com.horsegallop.core.R.string.action_restaurant),
 					tint = AppColors.ActionRestaurant,
 					modifier = Modifier.size(48.dp)
 				)
@@ -447,13 +469,13 @@ fun RestaurantQuickOrder() {
 			Spacer(modifier = Modifier.width(16.dp))
 			
 			Column(modifier = Modifier.weight(1f)) {
-				Text(
-					stringResource(R.string.restaurant_order_button),
+                Text(
+                    stringResource(com.horsegallop.core.R.string.restaurant_order_button),
 					style = MaterialTheme.typography.titleMedium,
 					fontWeight = FontWeight.Bold
 				)
 				Text(
-					stringResource(R.string.restaurant_description),
+                    stringResource(com.horsegallop.core.R.string.restaurant_description),
 					style = MaterialTheme.typography.bodySmall,
 					color = MaterialTheme.colorScheme.onSurfaceVariant
 				)
@@ -465,7 +487,7 @@ fun RestaurantQuickOrder() {
 					containerColor = AppColors.ActionRestaurant
 				)
 			) {
-				Text(stringResource(R.string.restaurant_order_button))
+                Text(stringResource(com.horsegallop.core.R.string.restaurant_order_button))
 			}
 		}
 	}
@@ -484,20 +506,18 @@ fun HorseBarnCarousel() {
 		"https://images.unsplash.com/photo-1449034446853-66c86144b0ad?w=1200&auto=format&fit=crop&q=80"  // Majestic horse
 	)
 	
-	val pagerState = rememberPagerState(pageCount = { horseBarnImages.size })
-	var isLoading by remember { mutableStateOf(true) }
-	var imageLoaded by remember { mutableStateOf(false) }
-	
-	// Minimum loading time to show skeleton
-	LaunchedEffect(Unit) {
-		delay(800) // Minimum 800ms skeleton göster
-		if (imageLoaded) {
-			isLoading = false
-		}
-	}
+    val pagerState = rememberPagerState(pageCount = { horseBarnImages.size })
+    var imageLoaded by remember { mutableStateOf(false) }
+    var minSkeletonElapsed by remember { mutableStateOf(false) }
+
+    // En az gösterim süresi
+    LaunchedEffect(Unit) {
+        delay(800)
+        minSkeletonElapsed = true
+    }
 	
 	// Auto-scroll effect - daha yavaş (5 saniye)
-	LaunchedEffect(imageLoaded) {
+    LaunchedEffect(imageLoaded) {
 		if (!imageLoaded) return@LaunchedEffect
 		while (true) {
 			delay(5000)
@@ -508,7 +528,7 @@ fun HorseBarnCarousel() {
 	
 	Column {
 		Text(
-			stringResource(R.string.carousel_title),
+            stringResource(com.horsegallop.core.R.string.carousel_title),
 			style = MaterialTheme.typography.titleLarge,
 			fontWeight = FontWeight.Bold,
 			modifier = Modifier.padding(bottom = 12.dp)
@@ -526,35 +546,43 @@ fun HorseBarnCarousel() {
 					.fillMaxSize()
 					.background(Color(0xFFE0E0E0))
 			) {
-				if (isLoading) {
-					SkeletonCarousel()
-				}
-				
-				HorizontalPager(
+                val showSkeleton = !minSkeletonElapsed
+
+                // Images (hidden while skeleton is showing)
+                HorizontalPager(
 					state = pagerState,
-					modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer(alpha = if (showSkeleton) 0f else 1f)
 				) { page ->
-					AsyncImage(
-						model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
-							.data(horseBarnImages[page])
-							.crossfade(true)
-							.diskCachePolicy(coil.request.CachePolicy.ENABLED)
-							.memoryCachePolicy(coil.request.CachePolicy.ENABLED)
-							.listener(
-								onSuccess = { _, _ -> 
-									imageLoaded = true
-									isLoading = false
-								}
-							)
-							.build(),
-						contentDescription = "At Görseli ${page + 1}",
-						modifier = Modifier.fillMaxSize(),
-						contentScale = ContentScale.Crop
-					)
+                    AsyncImage(
+                        model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                            .data(horseBarnImages[page])
+                            .crossfade(true)
+                            .allowHardware(false)
+                            .diskCachePolicy(coil.request.CachePolicy.ENABLED)
+                            .memoryCachePolicy(coil.request.CachePolicy.ENABLED)
+                            .addHeader("User-Agent", "horsegallop/1.0 (Android)")
+                            .addHeader("Accept", "image/*")
+                            .listener(
+                                onSuccess = { _, _ -> imageLoaded = true },
+                                onError = { _, throwable ->
+                                    imageLoaded = true
+                                }
+                            )
+                            .build(),
+                        contentDescription = stringResource(com.horsegallop.core.R.string.carousel_image_description, page + 1),
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        placeholder = ColorPainter(Color(0xFFE0E0E0)),
+                        error = ColorPainter(Color(0xFFBDBDBD))
+                    )
 				}
+
+                // Remove extra skeleton overlay to avoid double skeleton after page skeleton ends
 				
 				// Dark overlay for better text visibility
-				if (!isLoading) {
+                if (!showSkeleton) {
 					Box(
 						modifier = Modifier
 							.fillMaxWidth()

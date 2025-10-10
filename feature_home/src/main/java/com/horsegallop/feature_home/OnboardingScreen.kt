@@ -48,6 +48,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import kotlinx.coroutines.delay
+import androidx.compose.ui.tooling.preview.Preview
  
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,43 +59,43 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
     val pages: List<OnboardingPage> = remember(primary, secondary) {
         listOf(
             OnboardingPage(
-                titleRes = R.string.onboarding_title_ride_tracking,
-                subtitleRes = R.string.onboarding_subtitle_ride_tracking,
+                titleRes = com.horsegallop.core.R.string.onboarding_title_ride_tracking,
+                subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_ride_tracking,
                 gradient = listOf(AppColors.WarmClay, AppColors.ToastedAlmond),
                 features = listOf(
-                    FeatureRes(Icons.Filled.Navigation, R.string.onboarding_feature_gps),
-                    FeatureRes(Icons.Filled.LocalFireDepartment, R.string.onboarding_feature_calorie),
-                    FeatureRes(Icons.Filled.Timeline, R.string.onboarding_feature_trends)
+                    FeatureRes(Icons.Filled.Navigation, com.horsegallop.core.R.string.onboarding_feature_gps),
+                    FeatureRes(Icons.Filled.LocalFireDepartment, com.horsegallop.core.R.string.onboarding_feature_calorie),
+                    FeatureRes(Icons.Filled.Timeline, com.horsegallop.core.R.string.onboarding_feature_trends)
                 )
             ),
             OnboardingPage(
-                titleRes = R.string.onboarding_title_watch,
-                subtitleRes = R.string.onboarding_subtitle_watch,
+                titleRes = com.horsegallop.core.R.string.onboarding_title_watch,
+                subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_watch,
                 gradient = listOf(AppColors.WarmClay, primary),
                 features = listOf(
-                    FeatureRes(Icons.Filled.MonitorHeart, R.string.onboarding_feature_heart),
-                    FeatureRes(Icons.Filled.DirectionsRun, R.string.onboarding_feature_control),
-                    FeatureRes(Icons.Filled.Timeline, R.string.onboarding_feature_sync)
+                    FeatureRes(Icons.Filled.MonitorHeart, com.horsegallop.core.R.string.onboarding_feature_heart),
+                    FeatureRes(Icons.Filled.DirectionsRun, com.horsegallop.core.R.string.onboarding_feature_control),
+                    FeatureRes(Icons.Filled.Timeline, com.horsegallop.core.R.string.onboarding_feature_sync)
                 )
             ),
             OnboardingPage(
-                titleRes = R.string.onboarding_title_dashboard,
-                subtitleRes = R.string.onboarding_subtitle_dashboard,
+                titleRes = com.horsegallop.core.R.string.onboarding_title_dashboard,
+                subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_dashboard,
                 gradient = listOf(AppColors.ToastedAlmond, primary),
                 features = listOf(
-                    FeatureRes(Icons.Filled.Insights, R.string.onboarding_feature_durations),
-                    FeatureRes(Icons.Filled.Timeline, R.string.onboarding_feature_charts),
-                    FeatureRes(Icons.Filled.EmojiEvents, R.string.onboarding_feature_goals)
+                    FeatureRes(Icons.Filled.Insights, com.horsegallop.core.R.string.onboarding_feature_durations),
+                    FeatureRes(Icons.Filled.Timeline, com.horsegallop.core.R.string.onboarding_feature_charts),
+                    FeatureRes(Icons.Filled.EmojiEvents, com.horsegallop.core.R.string.onboarding_feature_goals)
                 )
             ),
             OnboardingPage(
-                titleRes = R.string.onboarding_title_community,
-                subtitleRes = R.string.onboarding_subtitle_community,
+                titleRes = com.horsegallop.core.R.string.onboarding_title_community,
+                subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_community,
                 gradient = listOf(primary, AppColors.SoftSand),
                 features = listOf(
-                    FeatureRes(Icons.Filled.Groups, R.string.onboarding_feature_sharing),
-                    FeatureRes(Icons.Filled.EmojiEvents, R.string.onboarding_feature_leaderboard),
-                    FeatureRes(Icons.Filled.Navigation, R.string.onboarding_feature_nearby)
+                    FeatureRes(Icons.Filled.Groups, com.horsegallop.core.R.string.onboarding_feature_sharing),
+                    FeatureRes(Icons.Filled.EmojiEvents, com.horsegallop.core.R.string.onboarding_feature_leaderboard),
+                    FeatureRes(Icons.Filled.Navigation, com.horsegallop.core.R.string.onboarding_feature_nearby)
                 )
             )
         )
@@ -130,7 +131,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
         ) {
             Text(
                 text = stringResource(
-                    id = R.string.onboarding_progress,
+                    id = com.horsegallop.core.R.string.onboarding_progress,
                     pagerState.currentPage + 1,
                     pages.size
                 ),
@@ -180,7 +181,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     val isLast: Boolean = pagerState.currentPage == pages.lastIndex
-                    TextButton(onClick = onSkip) { Text(stringResource(R.string.onboarding_skip), color = MaterialTheme.colorScheme.onPrimary) }
+                    TextButton(onClick = onSkip) { Text(stringResource(com.horsegallop.core.R.string.onboarding_skip), color = MaterialTheme.colorScheme.onPrimary) }
                     Button(
                         onClick = {
                             if (isLast) onStart() else {
@@ -195,13 +196,21 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
                         Text(
-                            if (isLast) stringResource(R.string.onboarding_start)
-                            else stringResource(R.string.onboarding_next)
+                            if (isLast) stringResource(com.horsegallop.core.R.string.onboarding_start)
+                            else stringResource(com.horsegallop.core.R.string.onboarding_next)
                         )
                     }
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Onboarding - First Page")
+@Composable
+private fun PreviewOnboardingScreen() {
+    MaterialTheme {
+        OnboardingScreen()
     }
 }
 @Composable
@@ -406,14 +415,14 @@ private fun EngagingCallout(gradient: List<Color>) {
                 Text(text = "🐴", style = MaterialTheme.typography.headlineLarge, color = Color(0xFF8B4513))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = stringResource(id = R.string.onboarding_callout_title),
+                        text = stringResource(id = com.horsegallop.core.R.string.onboarding_callout_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF3B2A1E)
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = stringResource(id = R.string.onboarding_callout_subtitle),
+                        text = stringResource(id = com.horsegallop.core.R.string.onboarding_callout_subtitle),
                         style = MaterialTheme.typography.bodySmall,
                         color = Color(0x993B2A1E)
                     )

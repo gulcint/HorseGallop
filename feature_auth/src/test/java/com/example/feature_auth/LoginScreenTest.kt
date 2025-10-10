@@ -6,7 +6,7 @@ import app.cash.paparazzi.Paparazzi
 import org.junit.Rule
 import org.junit.Test
 
-class ProfessionalLoginScreenTest {
+class LoginScreenTest {
 
     @get:Rule
     val paparazzi = Paparazzi(
@@ -16,19 +16,23 @@ class ProfessionalLoginScreenTest {
     )
 
     @Test
-    fun professionalLoginScreen_defaultState() {
+    fun loginScreen_defaultState() {
         paparazzi.snapshot {
             MaterialTheme {
-                ProfessionalLoginScreen()
+                com.horsegallop.feature_auth.LoginScreen(
+                    onGoogleClick = {},
+                    onAppleClick = {},
+                    onEmailClick = {}
+                )
             }
         }
     }
 
     @Test
-    fun professionalLoginScreen_withCallbacks() {
+    fun loginScreen_withCallbacks() {
         paparazzi.snapshot {
             MaterialTheme {
-                ProfessionalLoginScreen(
+                com.horsegallop.feature_auth.LoginScreen(
                     onGoogleClick = {},
                     onAppleClick = {},
                     onEmailClick = {}

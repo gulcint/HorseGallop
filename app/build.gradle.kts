@@ -43,6 +43,7 @@ dependencies {
 	implementation(libs.compose.material3)
 	implementation(libs.compose.tooling)
 	implementation(libs.compose.navigation)
+	implementation("androidx.appcompat:appcompat:1.7.0")
 	implementation(libs.lifecycle.runtime)
 	implementation(libs.lifecycle.vm)
 	implementation(libs.lifecycle.compose)
