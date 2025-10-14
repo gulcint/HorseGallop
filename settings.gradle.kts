@@ -19,13 +19,6 @@ rootProject.name = "horsegallop"
 include(
 	":app",
 	":core",
-	":domain",
 	":data",
-	":feature_auth",
-	":feature_home",
-	":feature_schedule",
-	":feature_reservation",
-	":feature_orders",
-	":feature_reviews",
-	":feature_admin"
+	":compose"
 )

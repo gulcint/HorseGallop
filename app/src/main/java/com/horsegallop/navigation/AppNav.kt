@@ -7,11 +7,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.horsegallop.domain.model.UserRole
-import com.horsegallop.feature_auth.LoginScreen
-import com.horsegallop.feature_home.BarnDetail
-import com.horsegallop.feature_home.HomeScreen
-import com.horsegallop.feature_home.OnboardingScreen
+import com.horsegallop.feature.auth.domain.model.UserRole
+import com.horsegallop.feature.auth.presentation.LoginScreen
+import com.horsegallop.feature.home.presentation.BarnDetail
+import com.horsegallop.feature.home.presentation.BarnListScreen
+import com.horsegallop.feature.home.presentation.OnboardingScreen
 
 sealed class Dest(val route: String) {
   data object Onboarding : Dest("onboarding")
@@ -68,7 +68,8 @@ fun AppNavHost(
       BackHandler {
         activity?.finish()
       }
-      HomeScreen(navController = navController)
+      // New home uses bottom tabs; default show Barn list
+      BarnListScreen(onBarnClick = { navController.navigate(Dest.BarnDetail.route) })
     }
     composable(Dest.BarnDetail.route) {
       BarnDetail(slides = emptyList())
