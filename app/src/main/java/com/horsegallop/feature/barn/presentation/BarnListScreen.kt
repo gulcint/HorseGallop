@@ -1,4 +1,4 @@
-package com.horsegallop.feature.home.presentation
+package com.horsegallop.feature.barn.presentation
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,8 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-
-data class BarnUi(val id: String, val name: String, val description: String)
+import com.horsegallop.feature.barn.domain.model.BarnUi
 
 @Composable
 fun BarnListScreen(onBarnClick: (BarnUi) -> Unit) {

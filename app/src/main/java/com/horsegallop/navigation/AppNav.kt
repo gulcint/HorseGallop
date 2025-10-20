@@ -9,9 +9,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.horsegallop.feature.auth.domain.model.UserRole
 import com.horsegallop.feature.auth.presentation.LoginScreen
-import com.horsegallop.feature.home.presentation.BarnDetail
-import com.horsegallop.feature.home.presentation.BarnListScreen
-import com.horsegallop.feature.home.presentation.OnboardingScreen
+import com.horsegallop.feature.barn.presentation.BarnDetail
+import com.horsegallop.feature.home.presentation.HomeScreen
+import com.horsegallop.feature.onboarding.presentation.OnboardingScreen
 
 sealed class Dest(val route: String) {
   data object Onboarding : Dest("onboarding")
@@ -65,11 +65,8 @@ fun AppNavHost(
     composable(Dest.Home.route) {
       // Home ekranında geri tuşu uygulamayı kapatır
       val activity = LocalContext.current as? Activity
-      BackHandler {
-        activity?.finish()
-      }
-      // New home uses bottom tabs; default show Barn list
-      BarnListScreen(onBarnClick = { navController.navigate(Dest.BarnDetail.route) })
+      BackHandler { activity?.finish() }
+      HomeScreen(onBarnSelected = { navController.navigate(Dest.BarnDetail.route) })
     }
     composable(Dest.BarnDetail.route) {
       BarnDetail(slides = emptyList())

@@ -1,10 +1,9 @@
-package com.horsegallop.feature.home.presentation
+package com.horsegallop.feature.onboarding.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
+import androidx.compose.ui.tooling.preview.Preview
 import android.app.Activity
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material.icons.Icons
@@ -48,7 +48,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import kotlinx.coroutines.delay
-import androidx.compose.ui.tooling.preview.Preview
  
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -206,25 +205,9 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
     }
 }
 
-@Preview(showBackground = true, name = "Onboarding - First Page")
-@Composable
-private fun PreviewOnboardingScreen() {
-    MaterialTheme {
-        OnboardingScreen()
-    }
-}
 @Composable
 private fun ThemedAnimatedBackground(gradient: List<Color>) {
-    val transition = rememberInfiniteTransition(label = "bg")
-    val shift by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 900f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(12000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "shift"
-    )
+    // Simplified static background for better performance
     val colors = if (gradient.isNotEmpty()) gradient else listOf(
         MaterialTheme.colorScheme.primary,
         MaterialTheme.colorScheme.secondary
@@ -237,9 +220,7 @@ private fun ThemedAnimatedBackground(gradient: List<Color>) {
                     colors = listOf(
                         colors[0].copy(alpha = 0.95f),
                         colors.getOrElse(1) { colors[0] }.copy(alpha = 0.85f)
-                    ),
-                    start = Offset(0f, shift),
-                    end = Offset(shift, 0f)
+                    )
                 )
             )
     )
@@ -247,16 +228,7 @@ private fun ThemedAnimatedBackground(gradient: List<Color>) {
 
 @Composable
 private fun AnimatedCoffeeOverlay() {
-    val transition = rememberInfiniteTransition(label = "beige")
-    val shift by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 600f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(7000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "shift"
-    )
+    // Simplified static overlay for better performance
     val softCoffee1 = AppColors.LightCoffee.copy(alpha = 0.55f)
     val softCoffee2 = AppColors.LightCoffee.copy(alpha = 0.35f)
     val softCoffee3 = Color.White.copy(alpha = 0.30f)
@@ -265,10 +237,7 @@ private fun AnimatedCoffeeOverlay() {
             .fillMaxSize()
             .background(
                 Brush.linearGradient(
-                    colors = listOf(softCoffee1, softCoffee2, softCoffee3),
-                    start = Offset(0f, shift),
-                    end = Offset(shift, 0f),
-                    tileMode = TileMode.Clamp
+                    colors = listOf(softCoffee1, softCoffee2, softCoffee3)
                 )
             )
     )
@@ -277,16 +246,7 @@ private fun AnimatedCoffeeOverlay() {
 
 @Composable
 private fun OnboardingPageContentAnimated(page: OnboardingPage) {
-    val transition = rememberInfiniteTransition(label = "pulse")
-    val alphaAnim by transition.animateFloat(
-        initialValue = 0.92f,
-        targetValue = 1.0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2600, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "alpha"
-    )
+    // Simplified without continuous pulse animation for better performance
     var showContent by remember(page) { mutableStateOf(false) }
     val featureVisibility: MutableList<Boolean> = remember(page) {
         mutableStateListOf<Boolean>().apply { repeat(page.features.size) { add(false) } }
@@ -307,7 +267,7 @@ private fun OnboardingPageContentAnimated(page: OnboardingPage) {
             .fillMaxSize()
             .background(Color.Transparent)
             .padding(horizontal = 24.dp, vertical = 24.dp)
-            .graphicsLayer { alpha = alphaAnim },
+            .graphicsLayer { alpha = 1f },
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -328,21 +288,6 @@ private fun OnboardingPageContentAnimated(page: OnboardingPage) {
                     color = Color.White
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            AnimatedVisibility(
-                visible = showContent,
-                enter = fadeIn(animationSpec = tween(500)) +
-                        slideInVertically(initialOffsetY = { -16 }, animationSpec = tween(500)),
-                exit = fadeOut(animationSpec = tween(280)) +
-                        slideOutVertically(targetOffsetY = { -16 }, animationSpec = tween(280))
-            ) {
-                Text(
-                    text = stringResource(page.subtitleRes),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.9f),
-                    textAlign = TextAlign.Center
-                )
-            }
             Spacer(modifier = Modifier.height(16.dp))
         }
 
@@ -354,7 +299,7 @@ private fun OnboardingPageContentAnimated(page: OnboardingPage) {
             exit = fadeOut(animationSpec = tween(300)) +
                     slideOutVertically(targetOffsetY = { 28 }, animationSpec = tween(300))
         ) {
-            EngagingCallout(gradient = page.gradient)
+            EngagingCallout(titleRes = page.titleRes, subtitleRes = page.subtitleRes, gradient = page.gradient)
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -379,8 +324,6 @@ private fun OnboardingPageContentAnimated(page: OnboardingPage) {
     }
 }
 
-// Removed visual placeholder: if image fails, layout centers text/buttons and hides the image card
-
 private data class FeatureRes(val icon: androidx.compose.ui.graphics.vector.ImageVector, val textRes: Int)
 
 private data class OnboardingPage(
@@ -392,42 +335,54 @@ private data class OnboardingPage(
 
 
 @Composable
-private fun EngagingCallout(gradient: List<Color>) {
+private fun EngagingCallout(titleRes: Int, subtitleRes: Int, gradient: List<Color>) {
     Card(
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
+            .height(100.dp)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xCCFFFFFF))
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFF8F9FA),
+                            Color(0xFFE9ECEF)
+                        )
+                    )
+                )
                 .padding(16.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Emoji as lightweight visual mascot
-                Text(text = "🐴", style = MaterialTheme.typography.headlineLarge, color = Color(0xFF8B4513))
+                Text(
+                    text = "🐴", 
+                    style = MaterialTheme.typography.headlineMedium, 
+                    color = Color(0xFF8B4513)
+                )
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = stringResource(id = com.horsegallop.core.R.string.onboarding_callout_title),
+                        text = stringResource(id = titleRes),
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF3B2A1E)
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF2C3E50)
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = stringResource(id = com.horsegallop.core.R.string.onboarding_callout_subtitle),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color(0x993B2A1E)
-                    )
+                    val subtitle = stringResource(id = subtitleRes)
+                    if (subtitle.isNotBlank()) {
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0x7F2C3E50)
+                        )
+                    }
                 }
-                // No action button
             }
         }
     }
@@ -445,6 +400,29 @@ private fun FeatureBullet(icon: androidx.compose.ui.graphics.vector.ImageVector,
     ) {
         Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
         Text(text, color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A1A1A)
+@Composable
+private fun OnboardingScreenPreview() {
+    MaterialTheme {
+        OnboardingScreen(
+            onStart = {},
+            onSkip = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A1A1A)
+@Composable
+private fun EngagingCalloutPreview() {
+    MaterialTheme {
+        EngagingCallout(
+            titleRes = com.horsegallop.core.R.string.onboarding_title_ride_tracking,
+            subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_ride_tracking,
+            gradient = listOf(Color(0xFF4CAF50), Color(0xFF2E7D32))
+        )
     }
 }
 

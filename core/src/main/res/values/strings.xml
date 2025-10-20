@@ -71,8 +71,8 @@
     <string name="onboarding_callout_title">Your Riding Journey Begins</string>
     <string name="onboarding_callout_subtitle">Expert trainers, safe grounds and an enjoyable experience</string>
     <string name="onboarding_learn_more">Learn More</string>
-    <string name="onboarding_title_ride_tracking">Ride Tracking</string>
-    <string name="onboarding_subtitle_ride_tracking">GPS + Calories + Route. Speed, distance, duration and pace.</string>
+    <string name="onboarding_title_ride_tracking">Your Riding Adventure Begins</string>
+    <string name="onboarding_subtitle_ride_tracking">Track your route, speed and time in real‑time.</string>
     <string name="onboarding_title_watch">Watch Companion</string>
     <string name="onboarding_subtitle_watch">Speed, distance, duration and heart rate from your watch.</string>
     <string name="onboarding_title_dashboard">Performance Dashboard</string>

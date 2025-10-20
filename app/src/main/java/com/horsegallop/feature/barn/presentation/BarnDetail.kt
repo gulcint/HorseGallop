@@ -1,4 +1,4 @@
-package com.horsegallop.feature.home.presentation
+package com.horsegallop.feature.barn.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
