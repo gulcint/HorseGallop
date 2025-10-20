@@ -8,6 +8,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -52,7 +55,7 @@ fun HomeScreen(onBarnSelected: (BarnUi) -> Unit) {
         }
       }
     }
-  ) { padding ->
+  ) { _ ->
     when (selectedTab) {
       0 -> HomeDashboard(onStartRide = { selectedTab = 1 }, onViewBarns = { selectedTab = 2 })
       1 -> RideTrackingScreen(viewModel = com.horsegallop.feature.ride.presentation.RideTrackingViewModel())
@@ -64,8 +67,15 @@ fun HomeScreen(onBarnSelected: (BarnUi) -> Unit) {
 @Composable
 private fun HomeDashboard(onStartRide: () -> Unit, onViewBarns: () -> Unit) {
   LazyColumn(
-    modifier = Modifier.fillMaxSize(),
-    contentPadding = PaddingValues(16.dp),
+    modifier = Modifier
+      .fillMaxSize()
+      .windowInsetsPadding(WindowInsets.statusBars),
+    contentPadding = PaddingValues(
+      start = 16.dp,
+      end = 16.dp,
+      top = 16.dp,
+      bottom = 16.dp
+    ),
     verticalArrangement = Arrangement.spacedBy(20.dp)
   ) {
     item {
@@ -157,27 +167,26 @@ private fun QuickActionsSection(onStartRide: () -> Unit, onViewBarns: () -> Unit
       modifier = Modifier.padding(bottom = 12.dp)
     )
     
-    LazyRow(
+    Row(
+      modifier = Modifier.fillMaxWidth(),
       horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-      item {
-        QuickActionCard(
-          title = "Sürüşe Başla",
-          subtitle = "Yeni bir binicilik deneyimi",
-          icon = Icons.Filled.PlayArrow,
-          color = MaterialTheme.colorScheme.primary,
-          onClick = onStartRide
-        )
-      }
-      item {
-        QuickActionCard(
-          title = "Ahırları Görüntüle",
-          subtitle = "Yakındaki ahırları keşfet",
-          icon = Icons.Filled.LocationOn,
-          color = MaterialTheme.colorScheme.secondary,
-          onClick = onViewBarns
-        )
-      }
+      QuickActionCard(
+        title = "Sürüşe Başla",
+        subtitle = "Yeni bir binicilik deneyimi",
+        icon = Icons.Filled.PlayArrow,
+        color = MaterialTheme.colorScheme.primary,
+        onClick = onStartRide,
+        modifier = Modifier.weight(1f)
+      )
+      QuickActionCard(
+        title = "Ahırları Görüntüle",
+        subtitle = "Yakındaki ahırları keşfet",
+        icon = Icons.Filled.LocationOn,
+        color = MaterialTheme.colorScheme.secondary,
+        onClick = onViewBarns,
+        modifier = Modifier.weight(1f)
+      )
     }
   }
 }
@@ -188,11 +197,11 @@ private fun QuickActionCard(
   subtitle: String,
   icon: ImageVector,
   color: Color,
-  onClick: () -> Unit
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier
 ) {
   Card(
-    modifier = Modifier
-      .width(160.dp)
+    modifier = modifier
       .height(120.dp),
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     shape = RoundedCornerShape(16.dp),

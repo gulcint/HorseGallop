@@ -11,9 +11,9 @@ val OnPrimary = Color(0xFFFFFFFF) // White
 val PrimaryContainer = Color(0xFFF4A460) // Sandy Brown
 val OnPrimaryContainer = Color(0xFFFFFFFF) // White
 
-val Secondary = Color(0xFFD2691E) // Chocolate
+val Secondary = Color(0xFFA0522D) // Sienna - daha uyumlu kahverengi ton
 val OnSecondary = Color(0xFFFFFFFF) // White
-val SecondaryContainer = Color(0xFFFFB366) // Light Orange
+val SecondaryContainer = Color(0xFFD2B48C) // Tan - daha yumuşak ton
 val OnSecondaryContainer = Color(0xFFFFFFFF) // White
 
 val Tertiary = Color(0xFF228B22) // Forest Green
@@ -48,9 +48,9 @@ val OnPrimaryDark = Color(0xFFFFFFFF) // White
 val PrimaryContainerDark = Color(0xFFA0522D) // Sienna
 val OnPrimaryContainerDark = Color(0xFFFFFFFF) // White
 
-val SecondaryDark = Color(0xFFFFB366) // Light Orange
+val SecondaryDark = Color(0xFFD2B48C) // Tan - daha yumuşak ton
 val OnSecondaryDark = Color(0xFFFFFFFF) // White
-val SecondaryContainerDark = Color(0xFFB8860B) // Dark Goldenrod
+val SecondaryContainerDark = Color(0xFF8B7355) // Daha koyu kahverengi ton
 val OnSecondaryContainerDark = Color(0xFFFFFFFF) // White
 
 val TertiaryDark = Color(0xFF32CD32) // Lime Green
