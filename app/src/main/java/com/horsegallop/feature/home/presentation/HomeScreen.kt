@@ -180,8 +180,8 @@ private fun QuickActionsSection(onStartRide: () -> Unit, onViewBarns: () -> Unit
         modifier = Modifier.weight(1f)
       )
       QuickActionCard(
-        title = "Ahırları Görüntüle",
-        subtitle = "Yakındaki ahırları keşfet",
+        title = "Çiftlikleri Görüntüle",
+        subtitle = "Yakındaki çiftlikleri keşfet",
         icon = Icons.Filled.LocationOn,
         color = MaterialTheme.colorScheme.secondary,
         onClick = onViewBarns,
