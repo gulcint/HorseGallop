@@ -23,10 +23,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.horsegallop.feature.barn.presentation.BarnListScreen
 import com.horsegallop.feature.barn.domain.model.BarnUi
 import com.horsegallop.feature.ride.presentation.RideTrackingScreen
+import com.valentinilk.shimmer.shimmer
 
 @Composable
 fun HomeScreen(onBarnSelected: (BarnUi) -> Unit) {
@@ -62,9 +64,8 @@ fun HomeScreen(onBarnSelected: (BarnUi) -> Unit) {
 @Composable
 private fun HomeDashboard(onStartRide: () -> Unit, onViewBarns: () -> Unit) {
   LazyColumn(
-    modifier = Modifier
-      .fillMaxSize()
-      .padding(16.dp),
+    modifier = Modifier.fillMaxSize(),
+    contentPadding = PaddingValues(16.dp),
     verticalArrangement = Arrangement.spacedBy(20.dp)
   ) {
     item {
@@ -85,6 +86,11 @@ private fun HomeDashboard(onStartRide: () -> Unit, onViewBarns: () -> Unit) {
     
     item {
       TipsSection()
+    }
+    
+    // Bottom padding for better scrolling
+    item {
+      Spacer(modifier = Modifier.height(80.dp))
     }
   }
 }
@@ -243,14 +249,16 @@ private fun StatsOverviewSection() {
         value = "12",
         subtitle = "saat",
         icon = Icons.Filled.Timer,
-        color = MaterialTheme.colorScheme.primary
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.weight(1f)
       )
       StatCard(
         title = "Mesafe",
         value = "45.2",
         subtitle = "km",
         icon = Icons.Filled.Speed,
-        color = MaterialTheme.colorScheme.secondary
+        color = MaterialTheme.colorScheme.secondary,
+        modifier = Modifier.weight(1f)
       )
     }
   }
@@ -262,10 +270,11 @@ private fun StatCard(
   value: String,
   subtitle: String,
   icon: ImageVector,
-  color: Color
+  color: Color,
+  modifier: Modifier = Modifier
 ) {
   Card(
-    modifier = Modifier.fillMaxWidth(0.5f),
+    modifier = modifier,
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     shape = RoundedCornerShape(16.dp)
   ) {
@@ -441,5 +450,311 @@ private fun TipsSection() {
 }
 
 private data class TabItem(val label: String, val icon: ImageVector)
+
+// Shimmer Skeleton Components
+@Composable
+private fun HomeDashboardSkeleton() {
+  LazyColumn(
+    modifier = Modifier.fillMaxSize(),
+    contentPadding = PaddingValues(16.dp),
+    verticalArrangement = Arrangement.spacedBy(20.dp)
+  ) {
+    item {
+      WelcomeHeaderSkeleton()
+    }
+    
+    item {
+      QuickActionsSkeleton()
+    }
+    
+    item {
+      StatsOverviewSkeleton()
+    }
+    
+    item {
+      RecentActivitySkeleton()
+    }
+    
+    item {
+      TipsSkeleton()
+    }
+    
+    item {
+      Spacer(modifier = Modifier.height(80.dp))
+    }
+  }
+}
+
+@Composable
+private fun WelcomeHeaderSkeleton() {
+  Card(
+    modifier = Modifier
+      .fillMaxWidth()
+      .shimmer(),
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    shape = RoundedCornerShape(20.dp)
+  ) {
+    Box(
+      modifier = Modifier
+        .fillMaxWidth()
+        .height(120.dp)
+        .background(Color.Gray.copy(alpha = 0.3f))
+    )
+  }
+}
+
+@Composable
+private fun QuickActionsSkeleton() {
+  Column {
+    Box(
+      modifier = Modifier
+        .width(120.dp)
+        .height(24.dp)
+        .shimmer()
+        .background(Color.Gray.copy(alpha = 0.3f))
+        .clip(RoundedCornerShape(4.dp))
+    )
+    
+    Spacer(modifier = Modifier.height(12.dp))
+    
+    LazyRow(
+      horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+      items(2) {
+        Card(
+          modifier = Modifier
+            .width(160.dp)
+            .height(120.dp)
+            .shimmer(),
+          colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+          shape = RoundedCornerShape(16.dp)
+        ) {
+          Box(
+            modifier = Modifier
+              .fillMaxSize()
+              .background(Color.Gray.copy(alpha = 0.3f))
+          )
+        }
+      }
+    }
+  }
+}
+
+@Composable
+private fun StatsOverviewSkeleton() {
+  Column {
+    Box(
+      modifier = Modifier
+        .width(140.dp)
+        .height(24.dp)
+        .shimmer()
+        .background(Color.Gray.copy(alpha = 0.3f))
+        .clip(RoundedCornerShape(4.dp))
+    )
+    
+    Spacer(modifier = Modifier.height(12.dp))
+    
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+      repeat(2) {
+        Card(
+          modifier = Modifier
+            .weight(1f)
+            .shimmer(),
+          colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+          shape = RoundedCornerShape(16.dp)
+        ) {
+          Box(
+            modifier = Modifier
+              .fillMaxWidth()
+              .height(120.dp)
+              .background(Color.Gray.copy(alpha = 0.3f))
+          )
+        }
+      }
+    }
+  }
+}
+
+@Composable
+private fun RecentActivitySkeleton() {
+  Column {
+    Box(
+      modifier = Modifier
+        .width(120.dp)
+        .height(24.dp)
+        .shimmer()
+        .background(Color.Gray.copy(alpha = 0.3f))
+        .clip(RoundedCornerShape(4.dp))
+    )
+    
+    Spacer(modifier = Modifier.height(12.dp))
+    
+    Card(
+      modifier = Modifier
+        .fillMaxWidth()
+        .shimmer(),
+      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+      shape = RoundedCornerShape(16.dp)
+    ) {
+      Column(
+        modifier = Modifier.padding(16.dp)
+      ) {
+        repeat(2) {
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+              Box(
+                modifier = Modifier
+                  .size(40.dp)
+                  .shimmer()
+                  .background(Color.Gray.copy(alpha = 0.3f))
+                  .clip(CircleShape)
+              )
+              Column {
+                Box(
+                  modifier = Modifier
+                    .width(80.dp)
+                    .height(16.dp)
+                    .shimmer()
+                    .background(Color.Gray.copy(alpha = 0.3f))
+                    .clip(RoundedCornerShape(4.dp))
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(
+                  modifier = Modifier
+                    .width(60.dp)
+                    .height(12.dp)
+                    .shimmer()
+                    .background(Color.Gray.copy(alpha = 0.3f))
+                    .clip(RoundedCornerShape(4.dp))
+                )
+              }
+            }
+            Column(
+              horizontalAlignment = Alignment.End
+            ) {
+              Box(
+                modifier = Modifier
+                  .width(40.dp)
+                  .height(14.dp)
+                  .shimmer()
+                  .background(Color.Gray.copy(alpha = 0.3f))
+                  .clip(RoundedCornerShape(4.dp))
+              )
+              Spacer(modifier = Modifier.height(4.dp))
+              Box(
+                modifier = Modifier
+                  .width(50.dp)
+                  .height(12.dp)
+                  .shimmer()
+                  .background(Color.Gray.copy(alpha = 0.3f))
+                  .clip(RoundedCornerShape(4.dp))
+              )
+            }
+          }
+          if (it == 0) {
+            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+            Spacer(modifier = Modifier.height(12.dp))
+          }
+        }
+      }
+    }
+  }
+}
+
+@Composable
+private fun TipsSkeleton() {
+  Column {
+    Box(
+      modifier = Modifier
+        .width(140.dp)
+        .height(24.dp)
+        .shimmer()
+        .background(Color.Gray.copy(alpha = 0.3f))
+        .clip(RoundedCornerShape(4.dp))
+    )
+    
+    Spacer(modifier = Modifier.height(12.dp))
+    
+    Card(
+      modifier = Modifier
+        .fillMaxWidth()
+        .shimmer(),
+      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+      shape = RoundedCornerShape(16.dp)
+    ) {
+      Row(
+        modifier = Modifier.padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+      ) {
+        Box(
+          modifier = Modifier
+            .size(24.dp)
+            .shimmer()
+            .background(Color.Gray.copy(alpha = 0.3f))
+            .clip(CircleShape)
+        )
+        Column(modifier = Modifier.weight(1f)) {
+          Box(
+            modifier = Modifier
+              .width(100.dp)
+              .height(16.dp)
+              .shimmer()
+              .background(Color.Gray.copy(alpha = 0.3f))
+              .clip(RoundedCornerShape(4.dp))
+          )
+          Spacer(modifier = Modifier.height(8.dp))
+          Box(
+            modifier = Modifier
+              .fillMaxWidth()
+              .height(14.dp)
+              .shimmer()
+              .background(Color.Gray.copy(alpha = 0.3f))
+              .clip(RoundedCornerShape(4.dp))
+          )
+        }
+      }
+    }
+  }
+}
+
+// Preview Components
+@Preview(showBackground = true, backgroundColor = 0xFFF5F5F5)
+@Composable
+private fun HomeDashboardPreview() {
+  MaterialTheme {
+    HomeDashboard(
+      onStartRide = {},
+      onViewBarns = {}
+    )
+  }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF5F5F5)
+@Composable
+private fun HomeDashboardSkeletonPreview() {
+  MaterialTheme {
+    HomeDashboardSkeleton()
+  }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF5F5F5)
+@Composable
+private fun HomeScreenPreview() {
+  MaterialTheme {
+    HomeScreen(onBarnSelected = {})
+  }
+}
 
 
