@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Spacing System -->
+    <!-- Extra Small Spacing -->
+    <dimen name="spacing_xs">4dp</dimen>
+    <dimen name="spacing_xs_half">2dp</dimen>
+    
+    <!-- Small Spacing -->
+    <dimen name="spacing_sm">8dp</dimen>
+    <dimen name="spacing_sm_half">6dp</dimen>
+    
+    <!-- Medium Spacing -->
+    <dimen name="spacing_md">12dp</dimen>
+    <dimen name="spacing_md_half">10dp</dimen>
+    
+    <!-- Large Spacing -->
+    <dimen name="spacing_lg">16dp</dimen>
+    <dimen name="spacing_lg_half">14dp</dimen>
+    
+    <!-- Extra Large Spacing -->
+    <dimen name="spacing_xl">20dp</dimen>
+    <dimen name="spacing_xl_half">18dp</dimen>
+    
+    <!-- XXL Spacing -->
+    <dimen name="spacing_xxl">24dp</dimen>
+    <dimen name="spacing_xxl_half">22dp</dimen>
+    
+    <!-- XXXL Spacing -->
+    <dimen name="spacing_xxxl">32dp</dimen>
+    <dimen name="spacing_xxxl_half">28dp</dimen>
+    
+    <!-- Padding System -->
+    <!-- Card Padding -->
+    <dimen name="padding_card_sm">12dp</dimen>
+    <dimen name="padding_card_md">16dp</dimen>
+    <dimen name="padding_card_lg">20dp</dimen>
+    <dimen name="padding_card_xl">24dp</dimen>
+    
+    <!-- Screen Padding -->
+    <dimen name="padding_screen_horizontal">16dp</dimen>
+    <dimen name="padding_screen_vertical">16dp</dimen>
+    <dimen name="padding_screen_horizontal_lg">20dp</dimen>
+    <dimen name="padding_screen_vertical_lg">20dp</dimen>
+    
+    <!-- Content Padding -->
+    <dimen name="padding_content_horizontal">16dp</dimen>
+    <dimen name="padding_content_vertical">12dp</dimen>
+    
+    <!-- Icon Sizes -->
+    <dimen name="icon_xs">16dp</dimen>
+    <dimen name="icon_sm">20dp</dimen>
+    <dimen name="icon_md">24dp</dimen>
+    <dimen name="icon_lg">32dp</dimen>
+    <dimen name="icon_xl">40dp</dimen>
+    <dimen name="icon_xxl">48dp</dimen>
+    <dimen name="icon_xxxl">64dp</dimen>
+    
+    <!-- Component Heights -->
+    <dimen name="height_button_sm">32dp</dimen>
+    <dimen name="height_button_md">40dp</dimen>
+    <dimen name="height_button_lg">48dp</dimen>
+    <dimen name="height_button_xl">56dp</dimen>
+    
+    <dimen name="height_card_sm">80dp</dimen>
+    <dimen name="height_card_md">120dp</dimen>
+    <dimen name="height_card_lg">160dp</dimen>
+    <dimen name="height_card_xl">200dp</dimen>
+    
+    <dimen name="height_divider">1dp</dimen>
+    <dimen name="height_divider_thick">2dp</dimen>
+    
+    <!-- Component Widths -->
+    <dimen name="width_divider_thin">1dp</dimen>
+    <dimen name="width_divider_medium">2dp</dimen>
+    <dimen name="width_divider_thick">4dp</dimen>
+    
+    <!-- Border Radius -->
+    <dimen name="radius_xs">4dp</dimen>
+    <dimen name="radius_sm">8dp</dimen>
+    <dimen name="radius_md">12dp</dimen>
+    <dimen name="radius_lg">16dp</dimen>
+    <dimen name="radius_xl">20dp</dimen>
+    <dimen name="radius_xxl">24dp</dimen>
+    <dimen name="radius_xxxl">32dp</dimen>
+    
+    <!-- Elevation -->
+    <dimen name="elevation_none">0dp</dimen>
+    <dimen name="elevation_sm">2dp</dimen>
+    <dimen name="elevation_md">4dp</dimen>
+    <dimen name="elevation_lg">8dp</dimen>
+    <dimen name="elevation_xl">12dp</dimen>
+    
+    <!-- Special Dimensions -->
+    <dimen name="bottom_navigation_height">80dp</dimen>
+    <dimen name="top_app_bar_height">56dp</dimen>
+    <dimen name="fab_size">56dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+    
+    <!-- Grid Spacing -->
+    <dimen name="grid_spacing_sm">8dp</dimen>
+    <dimen name="grid_spacing_md">12dp</dimen>
+    <dimen name="grid_spacing_lg">16dp</dimen>
+    <dimen name="grid_spacing_xl">20dp</dimen>
+    
+    <!-- List Item Spacing -->
+    <dimen name="list_item_spacing_sm">8dp</dimen>
+    <dimen name="list_item_spacing_md">12dp</dimen>
+    <dimen name="list_item_spacing_lg">16dp</dimen>
+    
+    <!-- Section Spacing -->
+    <dimen name="section_spacing_sm">16dp</dimen>
+    <dimen name="section_spacing_md">20dp</dimen>
+    <dimen name="section_spacing_lg">24dp</dimen>
+    <dimen name="section_spacing_xl">32dp</dimen>
+    
+    <!-- Text Spacing -->
+    <dimen name="text_spacing_sm">4dp</dimen>
+    <dimen name="text_spacing_md">8dp</dimen>
+    <dimen name="text_spacing_lg">12dp</dimen>
+    
+    <!-- Aspect Ratios -->
+    <dimen name="aspect_ratio_16_9">1.78</dimen>
+    <dimen name="aspect_ratio_4_3">1.33</dimen>
+    <dimen name="aspect_ratio_1_1">1.0</dimen>
+    <dimen name="aspect_ratio_3_2">1.5</dimen>
+</resources>

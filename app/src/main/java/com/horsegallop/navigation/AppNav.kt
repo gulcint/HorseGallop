@@ -17,10 +17,13 @@ sealed class Dest(val route: String) {
   data object Onboarding : Dest("onboarding")
   data object Login : Dest("login")
   data object Home : Dest("home")
+  data object Ride : Dest("ride")
+  data object Barns : Dest("barns")
   data object BarnDetail : Dest("barnDetail")
 }
 
 @Composable
+@androidx.compose.material3.ExperimentalMaterial3Api
 fun AppNavHost(
   navController: NavHostController,
   role: UserRole?
@@ -66,9 +69,33 @@ fun AppNavHost(
       // Home ekranında geri tuşu uygulamayı kapatır
       val activity = LocalContext.current as? Activity
       BackHandler { activity?.finish() }
-      HomeScreen(onBarnSelected = { navController.navigate(Dest.BarnDetail.route) })
+      HomeScreen(
+        onStartRide = { navController.navigate(Dest.Ride.route) },
+        onViewBarns = { navController.navigate(Dest.Barns.route) },
+        onBarnSelected = { navController.navigate(Dest.BarnDetail.route) }
+      )
+    }
+    composable(Dest.Ride.route) {
+      // Ride ekranında geri tuşu Home'a döner
+      BackHandler { navController.popBackStack() }
+      com.horsegallop.feature.ride.presentation.RideTrackingScreen(
+        viewModel = com.horsegallop.feature.ride.presentation.RideTrackingViewModel(),
+        onHomeClick = { navController.navigate(Dest.Home.route) },
+        onBarnsClick = { navController.navigate(Dest.Barns.route) }
+      )
+    }
+    composable(Dest.Barns.route) {
+      // Barns ekranında geri tuşu Home'a döner
+      BackHandler { navController.popBackStack() }
+      com.horsegallop.feature.barn.presentation.BarnListScreen(
+        onBarnClick = { navController.navigate(Dest.BarnDetail.route) },
+        onHomeClick = { navController.navigate(Dest.Home.route) },
+        onRideClick = { navController.navigate(Dest.Ride.route) }
+      )
     }
     composable(Dest.BarnDetail.route) {
+      // BarnDetail ekranında geri tuşu önceki ekrana döner
+      BackHandler { navController.popBackStack() }
       BarnDetail(slides = emptyList())
     }
   }

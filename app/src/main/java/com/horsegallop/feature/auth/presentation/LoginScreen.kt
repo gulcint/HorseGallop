@@ -54,10 +54,12 @@ fun LoginScreen(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.Center
             ) {
-                Text(
-                    text = "🐴",
-                    fontSize = 120.sp,
-                    modifier = Modifier.padding(16.dp)
+                Image(
+                    painter = painterResource(id = R.mipmap.ic_launcher),
+                    contentDescription = stringResource(com.horsegallop.core.R.string.app_name),
+                    modifier = Modifier
+                        .size(200.dp)
+                        .padding(16.dp)
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
