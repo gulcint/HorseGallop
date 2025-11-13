@@ -29,7 +29,7 @@
     <string name="logout">Çıkış yap</string>
 
     <!-- Auth/Login -->
-    <string name="login_title_brand">Horse Gallop</string>
+    <string name="login_title_brand">horsegallop</string>
     <string name="login_subtitle">At binme deneyiminiz burada başlıyor</string>
     <string name="or_label">veya</string>
     <string name="terms_consent">Devam ederek Kullanım Koşulları ve Gizlilik Politikasını kabul etmiş olursunuz</string>
@@ -91,19 +91,4 @@
     <string name="onboarding_feature_sharing">Paylaşım ve yorumlar</string>
     <string name="onboarding_feature_leaderboard">Haftalık liderlik tablosu</string>
     <string name="onboarding_feature_nearby">Yakındaki Biniciler</string>
-    <!-- Ride Tracking -->
-    <string name="start_ride">Binişe Başla</string>
-    <string name="ride_conditions_detail">22°C • Güneşli • Hafif rüzgar</string>
-    <string name="ride_type_dressage">Dresaj</string>
-    <string name="ride_type_show_jumping">Engel Atlama</string>
-    <string name="ride_type_endurance">Dayanıklılık</string>
-    <string name="ride_type_trail_riding">Doğa Binişi</string>
-    <string name="stats_title">İstatistiklerin</string>
-    <string name="stats_hint">Günlük, haftalık ve toplam değerler</string>
-    <string name="stats_today">Bugün</string>
-    <string name="stats_week">Bu Hafta</string>
-    <string name="stats_total">Toplam</string>
-    <string name="ride_headline">Biniş için harika bir gün!</string>
-    <string name="ride_type_title">Biniş türü</string>
-    <string name="ride_type_hint">Biniş türünü seç; istatistikler ve içgörüler binişine göre şekillensin.</string>
 </resources>
