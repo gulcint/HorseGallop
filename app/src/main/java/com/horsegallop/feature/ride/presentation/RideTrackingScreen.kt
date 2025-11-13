@@ -243,10 +243,10 @@ fun RideTrackingScreen(
 }
 
 private enum class RideType(val displayName: String, val emoji: String) {
-  DRESSAGE("Dressage", "🐎"),
-  SHOW_JUMPING("Show Jumping", "🏇"),
-  ENDURANCE("Endurance", "⏱️"),
-  TRAIL_RIDING("Trail Riding", "🌲")
+  TRAINING("Training", "🏋️"),
+  TRAIL("Trail", "🌲"),
+  COMPETITION("Competition", "🏆"),
+  LEISURE("Leisure", "😊")
 }
 
 @Composable
@@ -275,8 +275,8 @@ private fun RideTypeCard(
         color = MaterialTheme.colorScheme.onSurfaceVariant
       )
       val types = listOf(
-        RideType.DRESSAGE, RideType.SHOW_JUMPING,
-        RideType.ENDURANCE, RideType.TRAIL_RIDING
+        RideType.TRAINING, RideType.TRAIL,
+        RideType.COMPETITION, RideType.LEISURE
       )
       Row(
         modifier = Modifier.fillMaxWidth(),
@@ -449,7 +449,7 @@ private fun RideTypeChip(
       containerColor = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface,
       contentColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
     ),
-    border = BorderStroke(dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin), MaterialTheme.colorScheme.primary) // themed border
+    border = BorderStroke(dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin), Color(0xFF8B4513)) // SaddleBrown border
   ) {
     Row(
       modifier = Modifier.fillMaxWidth(),
@@ -529,10 +529,10 @@ private fun WeatherTopRow() {
 @Composable
 private fun localizedRideTypeName(type: RideType): String {
   return when (type) {
-    RideType.DRESSAGE -> stringResource(id = com.horsegallop.core.R.string.ride_type_dressage)
-    RideType.SHOW_JUMPING -> stringResource(id = com.horsegallop.core.R.string.ride_type_show_jumping)
-    RideType.ENDURANCE -> stringResource(id = com.horsegallop.core.R.string.ride_type_endurance)
-    RideType.TRAIL_RIDING -> stringResource(id = com.horsegallop.core.R.string.ride_type_trail_riding)
+    RideType.TRAINING -> stringResource(id = com.horsegallop.core.R.string.ride_type_training)
+    RideType.TRAIL -> stringResource(id = com.horsegallop.core.R.string.ride_type_trail)
+    RideType.COMPETITION -> stringResource(id = com.horsegallop.core.R.string.ride_type_competition)
+    RideType.LEISURE -> stringResource(id = com.horsegallop.core.R.string.ride_type_leisure)
   }
 }
 
