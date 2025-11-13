@@ -215,8 +215,7 @@ fun RideTrackingScreen(
           modifier = Modifier
             .fillMaxWidth()
             .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl))
-            .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
-            .padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md)),
+            .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)),
           colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
           shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
           elevation = ButtonDefaults.buttonElevation(defaultElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm))
