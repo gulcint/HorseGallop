@@ -29,7 +29,7 @@
     <string name="logout">Çıkış yap</string>
 
     <!-- Auth/Login -->
-    <string name="login_title_brand">horsegallop</string>
+    <string name="login_title_brand">Horse Gallop</string>
     <string name="login_subtitle">At binme deneyiminiz burada başlıyor</string>
     <string name="or_label">veya</string>
     <string name="terms_consent">Devam ederek Kullanım Koşulları ve Gizlilik Politikasını kabul etmiş olursunuz</string>
