@@ -33,6 +33,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import java.util.Locale
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.material3.ExperimentalMaterial3Api
 
 private const val SPLASH_DURATION_MS: Long = 2000L
 private const val MEDIA_VOLUME_MAX: Float = 1f
@@ -52,24 +53,38 @@ class MainActivity : ComponentActivity() {
 			isAppearanceLightNavigationBars = true
 		}
 		
-		setContent {
-			MaterialTheme(colorScheme = LightColorScheme) {
-				AppContent()
-			}
-		}
+        setContent {
+            val scheme = LightColorScheme
+            androidx.compose.runtime.CompositionLocalProvider(
+                com.horsegallop.core.theme.LocalTextColors provides com.horsegallop.core.theme.textColorsFrom(scheme)
+            ) {
+                MaterialTheme(colorScheme = scheme) {
+                    AppContent()
+                }
+            }
+        }
 	}
 }
 
 @Preview(showBackground = true, name = "AppContent")
 @Composable
 private fun PreviewAppContent() {
-    MaterialTheme(colorScheme = LightColorScheme) { AppContent() }
+    val scheme = LightColorScheme
+    androidx.compose.runtime.CompositionLocalProvider(
+        com.horsegallop.core.theme.LocalTextColors provides com.horsegallop.core.theme.textColorsFrom(scheme)
+    ) {
+        MaterialTheme(colorScheme = scheme) { AppContent() }
+    }
 }
 
 @Preview(showBackground = true, name = "SplashScreen")
 @Composable
 private fun PreviewSplashScreen() {
-    MaterialTheme(colorScheme = LightColorScheme) {
+    val scheme = LightColorScheme
+    androidx.compose.runtime.CompositionLocalProvider(
+        com.horsegallop.core.theme.LocalTextColors provides com.horsegallop.core.theme.textColorsFrom(scheme)
+    ) {
+    MaterialTheme(colorScheme = scheme) {
         // Side-effect free splash preview (no MediaPlayer/Lottie playback)
         Box(
             modifier = Modifier
@@ -81,18 +96,19 @@ private fun PreviewSplashScreen() {
                 Text(
                     text = stringResource(com.horsegallop.core.R.string.welcome_title),
                     style = MaterialTheme.typography.headlineSmall,
-                    color = Color(0xFF222222)
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.size(6.dp))
                 Text(
                     text = stringResource(com.horsegallop.core.R.string.welcome_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color(0xFF666666)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
-    }
+    } }
 }
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppContent(): Unit {
     var showSplash: Boolean by remember { mutableStateOf(true) }
@@ -172,9 +188,9 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
 		}
 		// Localized welcome texts over splash (auto-resolved by app locales/device locale)
 		Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 64.dp)) {
-			Text(text = titleText, style = MaterialTheme.typography.headlineSmall, color = Color(0xFF222222))
+			Text(text = titleText, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.primary)
 			Spacer(modifier = Modifier.size(6.dp))
-			Text(text = subtitleText, style = MaterialTheme.typography.bodyMedium, color = Color(0xFF666666))
+			Text(text = subtitleText, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 		}
 	}
 }
