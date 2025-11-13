@@ -33,7 +33,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import java.util.Locale
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.material3.ExperimentalMaterial3Api
 
 private const val SPLASH_DURATION_MS: Long = 2000L
 private const val MEDIA_VOLUME_MAX: Float = 1f
@@ -94,7 +93,6 @@ private fun PreviewSplashScreen() {
         }
     }
 }
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppContent(): Unit {
     var showSplash: Boolean by remember { mutableStateOf(true) }

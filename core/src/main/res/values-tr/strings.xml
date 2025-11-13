@@ -91,27 +91,4 @@
     <string name="onboarding_feature_sharing">Paylaşım ve yorumlar</string>
     <string name="onboarding_feature_leaderboard">Haftalık liderlik tablosu</string>
     <string name="onboarding_feature_nearby">Yakındaki Biniciler</string>
-    <!-- Ride Tracking -->
-    <string name="riding_title_ready">Binişe hazır mısın?</string>
-    <string name="riding_title_active">Biniş yapılıyor…</string>
-    <string name="start_ride">Binişe Başla</string>
-    <string name="ride_conditions_good">İyi koşullar</string>
-    <string name="ride_conditions_detail">22°C • Güneşli • Hafif rüzgar</string>
-    <string name="ride_type_training">Antrenman</string>
-    <string name="ride_type_trail">Doğa</string>
-    <string name="ride_type_competition">Yarış</string>
-    <string name="ride_type_leisure">Keyif</string>
-    <string name="stats_title">İstatistiklerin</string>
-    <string name="stats_hint">Günlük, haftalık ve toplam değerler</string>
-    <string name="stats_today">Bugün</string>
-    <string name="stats_week">Bu Hafta</string>
-    <string name="stats_total">Toplam</string>
-    <string name="greeting_hello_rider">Merhaba, Binici!</string>
-    <string name="ride_headline">Biniş için harika bir gün!</string>
-    <string name="ride_type_title">Biniş türü</string>
-    <string name="ride_type_hint">Biniş türünü seç; istatistikler ve içgörüler binişine göre şekillensin.</string>
-    <string name="ride_type_desc_training">Antrenman: Intervaller, teknik, drill</string>
-    <string name="ride_type_desc_trail">Doğa: Dış mekan rota ve keşif</string>
-    <string name="ride_type_desc_competition">Yarış: Performans odaklı sürüşler</string>
-    <string name="ride_type_desc_leisure">Keyif: Hafif, rahat sürüşler</string>
 </resources>
