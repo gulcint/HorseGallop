@@ -27,14 +27,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsRun
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.ShowChart
+ 
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -68,6 +74,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
   import androidx.compose.ui.platform.LocalContext
@@ -75,6 +82,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 
 data class RideUiState(
   val speedKmh: Float,
@@ -152,14 +162,11 @@ fun RideTrackingScreen(
 ) {
   val state: RideUiState by viewModel.uiState.collectAsState()
   val context = LocalContext.current
+  var selectedRideType: RideType? by remember { mutableStateOf<RideType?>(null) }
   // Location tracking service removed - using mock data for now
   Scaffold(
-    topBar = {
-      TopAppBar(
-        title = { Text(if (state.isRiding) "Riding..." else "Ready to Ride?", fontWeight = FontWeight.Bold) },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
-      )
-    },
+    containerColor = MaterialTheme.colorScheme.background,
+    topBar = { /* No title - greeting moved into content */ },
     bottomBar = {
       NavigationBar {
         NavigationBarItem(
@@ -194,43 +201,357 @@ fun RideTrackingScreen(
       verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md))
     ) {
       WelcomeHeader()
+      WeatherTopRow()
       if (!state.isRiding) {
-        StartRideHero(onStart = { viewModel.toggleRide() })
+        RideTypeCard(
+          selectedRideType = selectedRideType,
+          onRideTypeSelected = { selectedRideType = it }
+        )
+        Spacer(Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md)))
+        StatsOverviewCard()
+        Spacer(modifier = Modifier.weight(1f))
+        Button(
+          onClick = { viewModel.toggleRide() },
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl))
+            .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
+            .padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md)),
+          colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+          shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+          elevation = ButtonDefaults.buttonElevation(defaultElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm))
+        ) {
+          Text(
+            text = stringResource(id = com.horsegallop.core.R.string.start_ride),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+          )
+        }
       } else {
         RideMapWithTimer(
           path = state.pathPoints,
           elapsedSec = state.durationSec
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
       StatsRow(speedKmh = state.speedKmh, distanceKm = state.distanceKm, durationSec = state.durationSec)
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
         ControlsRow(isRiding = state.isRiding, onStop = { viewModel.toggleRide() }, autoDetect = state.autoDetect, onToggleAuto = { viewModel.setAutoDetect(it) })
       }
     }
   }
 }
 
+private enum class RideType(val displayName: String, val emoji: String) {
+  DRESSAGE("Dressage", "🐎"),
+  SHOW_JUMPING("Show Jumping", "🏇"),
+  ENDURANCE("Endurance", "⏱️"),
+  TRAIL_RIDING("Trail Riding", "🌲")
+}
+
+@Composable
+private fun RideTypeCard(
+  selectedRideType: RideType?,
+  onRideTypeSelected: (RideType) -> Unit
+) {
+  Card(
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xxl))
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
+      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+    ) {
+      Text(
+        text = stringResource(id = com.horsegallop.core.R.string.ride_type_title),
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onSurface
+      )
+      Text(
+        text = stringResource(id = com.horsegallop.core.R.string.ride_type_hint),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+      )
+      val types = listOf(
+        RideType.DRESSAGE, RideType.SHOW_JUMPING,
+        RideType.ENDURANCE, RideType.TRAIL_RIDING
+      )
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
+      ) {
+        types.take(2).forEach { type ->
+          RideTypeChip(
+            type = type,
+            selected = selectedRideType == type,
+            onClick = { onRideTypeSelected(type) },
+            modifier = Modifier.weight(1f)
+          )
+        }
+      }
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
+      ) {
+        types.drop(2).forEach { type ->
+          RideTypeChip(
+            type = type,
+            selected = selectedRideType == type,
+            onClick = { onRideTypeSelected(type) },
+            modifier = Modifier.weight(1f)
+          )
+        }
+      }
+    }
+  }
+}
+
+@Composable
+private fun StatsOverviewCard() {
+  Card(
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xxl)),
+    elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm))
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
+      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)),
+      horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+      Text(
+        text = stringResource(id = com.horsegallop.core.R.string.stats_title),
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onSurface,
+        textAlign = TextAlign.Center
+      )
+      Text(
+        text = stringResource(id = com.horsegallop.core.R.string.stats_hint),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center
+      )
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        StatPill(
+          modifier = Modifier.weight(1f),
+          icon = { Icon(Icons.Filled.Speed, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+          value = "0",
+          label = stringResource(id = com.horsegallop.core.R.string.stats_today),
+          progress = 0f,
+          accent = MaterialTheme.colorScheme.primary
+        )
+        StatPill(
+          modifier = Modifier.weight(1f),
+          icon = { Icon(Icons.Filled.Explore, contentDescription = null, tint = MaterialTheme.colorScheme.secondary) },
+          value = "0",
+          label = stringResource(id = com.horsegallop.core.R.string.stats_week),
+          progress = 0f,
+          accent = MaterialTheme.colorScheme.secondary
+        )
+        StatPill(
+          modifier = Modifier.weight(1f),
+          icon = { Icon(Icons.Filled.ShowChart, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary) },
+          value = "0",
+          label = stringResource(id = com.horsegallop.core.R.string.stats_total),
+          progress = 0f,
+          accent = MaterialTheme.colorScheme.tertiary
+        )
+      }
+    }
+  }
+}
+
+@Composable
+private fun StatPill(
+  modifier: Modifier = Modifier,
+  icon: @Composable () -> Unit,
+  value: String,
+  label: String,
+  progress: Float,
+  accent: Color
+) {
+  Card(
+    modifier = modifier,
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xxl)),
+    elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm)),
+    border = BorderStroke(dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin), accent.copy(alpha = 0.35f))
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_sm)),
+      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_xs)),
+      horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+      Box(
+        modifier = Modifier
+          .size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_lg))
+          .clip(CircleShape)
+          .background(accent.copy(alpha = 0.12f)),
+        contentAlignment = Alignment.Center
+      ) { icon() }
+      Text(
+        text = value,
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onSurface,
+        fontWeight = FontWeight.Bold
+      )
+      Text(
+        text = label,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+      )
+      // subtle progress indicator
+      Canvas(
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(6.dp)
+          .clip(RoundedCornerShape(50))
+      ) {
+        // track
+        drawRoundRect(
+          color = Color.Black.copy(alpha = 0.08f),
+          cornerRadius = androidx.compose.ui.geometry.CornerRadius(50f, 50f)
+        )
+        // progress
+        val widthPx = size.width * progress.coerceIn(0f, 1f)
+        drawRoundRect(
+          color = accent,
+          size = androidx.compose.ui.geometry.Size(widthPx, size.height),
+          cornerRadius = androidx.compose.ui.geometry.CornerRadius(50f, 50f)
+        )
+      }
+    }
+  }
+}
+
+@Composable
+private fun RideTypeChip(
+  type: RideType,
+  selected: Boolean,
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  OutlinedButton(
+    onClick = onClick,
+    modifier = modifier
+      .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg)),
+    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+    colors = ButtonDefaults.outlinedButtonColors(
+      containerColor = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface,
+      contentColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+    ),
+    border = BorderStroke(dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin), MaterialTheme.colorScheme.primary) // themed border
+  ) {
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.Center,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Row(
+        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_xs)),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Text(type.emoji, maxLines = 1)
+        Text(
+          localizedRideTypeName(type),
+          style = MaterialTheme.typography.labelLarge,
+          maxLines = 2
+        )
+      }
+    }
+  }
+}
+
+@Composable
+private fun MiniStat(title: String, value: String) {
+  Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Text(
+      text = title,
+      style = MaterialTheme.typography.bodySmall,
+      color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_xs)))
+    Text(
+      text = value,
+      style = MaterialTheme.typography.titleMedium,
+      fontWeight = FontWeight.Bold,
+      color = MaterialTheme.colorScheme.onSurface
+    )
+  }
+}
+
+@Composable
+private fun WeatherTopRow() {
+  Column(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.spacedBy(0.dp)
+  ) {
+    Text(
+      text = stringResource(id = com.horsegallop.core.R.string.ride_headline),
+      style = MaterialTheme.typography.headlineSmall,
+      color = MaterialTheme.colorScheme.primary,
+      fontWeight = FontWeight.Bold,
+      textAlign = TextAlign.Center
+    )
+    Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
+    Row(
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
+    ) {
+      Box(
+        modifier = Modifier
+          .size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_xl))
+          .clip(CircleShape)
+          .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+        contentAlignment = Alignment.Center
+      ) {
+        Text("☀️")
+      }
+      Text(
+        text = stringResource(id = com.horsegallop.core.R.string.ride_conditions_detail),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+      )
+    }
+  }
+}
+
+@Composable
+private fun localizedRideTypeName(type: RideType): String {
+  return when (type) {
+    RideType.DRESSAGE -> stringResource(id = com.horsegallop.core.R.string.ride_type_dressage)
+    RideType.SHOW_JUMPING -> stringResource(id = com.horsegallop.core.R.string.ride_type_show_jumping)
+    RideType.ENDURANCE -> stringResource(id = com.horsegallop.core.R.string.ride_type_endurance)
+    RideType.TRAIL_RIDING -> stringResource(id = com.horsegallop.core.R.string.ride_type_trail_riding)
+  }
+}
+
 @Composable
 private fun WelcomeHeader() {
   val fade by animateFloatAsState(targetValue = 1f, animationSpec = tween(600), label = "fade")
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_lg))
-    ) {
-        Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
-        Text(
-            "🐴 Hello, Rider!",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
-        HorizontalDivider(
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            modifier = Modifier.padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_lg))
-        )
-    }
+  Column(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalAlignment = Alignment.CenterHorizontally
+  ) {
+    HorizontalDivider(
+      color = MaterialTheme.colorScheme.surfaceVariant,
+      modifier = Modifier.padding(
+        horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_lg),
+        vertical = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_xs)
+      )
+    )
+  }
 }
 
 @Composable

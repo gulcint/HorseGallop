@@ -29,7 +29,7 @@
 	<string name="logout">Logout</string>
     
     <!-- Auth/Login -->
-    <string name="login_title_brand">horsegallop</string>
+    <string name="login_title_brand">Horse Gallop</string>
     <string name="login_subtitle">Your horse riding experience starts here</string>
     <string name="or_label">or</string>
     <string name="terms_consent">By continuing you agree to the Terms of Use and Privacy Policy</string>
@@ -91,4 +91,19 @@
     <string name="onboarding_feature_sharing">Sharing and comments</string>
     <string name="onboarding_feature_leaderboard">Weekly leaderboard</string>
     <string name="onboarding_feature_nearby">Nearby Riders</string>
+    <!-- Ride Tracking -->
+    <string name="start_ride">Start Ride</string>
+    <string name="ride_conditions_detail">22°C • Sunny • Light breeze</string>
+    <string name="ride_type_dressage">Dressage</string>
+    <string name="ride_type_show_jumping">Show Jumping</string>
+    <string name="ride_type_endurance">Endurance</string>
+    <string name="ride_type_trail_riding">Trail Riding</string>
+    <string name="stats_title">Your stats</string>
+    <string name="stats_hint">Daily, weekly and total values</string>
+    <string name="stats_today">Today</string>
+    <string name="stats_week">This Week</string>
+    <string name="stats_total">Total</string>
+    <string name="ride_headline">Perfect day to ride!</string>
+    <string name="ride_type_title">Ride type</string>
+    <string name="ride_type_hint">Pick a type to tailor stats and insights to your ride.</string>
 </resources>
