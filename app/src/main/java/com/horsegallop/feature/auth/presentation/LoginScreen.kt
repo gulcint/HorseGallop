@@ -20,9 +20,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.horsegallop.R
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.dimensionResource
+ 
 
 @Composable
 fun LoginScreen(
@@ -47,71 +46,69 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+                .padding(
+                    horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
+                    vertical = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.weight(1f))
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                    painter = painterResource(id = R.mipmap.ic_launcher),
                     contentDescription = stringResource(com.horsegallop.core.R.string.app_name),
                     modifier = Modifier
-                        .size(200.dp)
-                        .padding(12.dp),
-                    contentScale = ContentScale.Fit
+                        .size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_xxxl))
                 )
-                Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     text = stringResource(com.horsegallop.core.R.string.login_title_brand),
-                    fontSize = 32.sp,
+                    fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = com.horsegallop.core.theme.LocalTextColors.current.titlePrimary
                 )
-                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = stringResource(com.horsegallop.core.R.string.login_subtitle),
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 14.sp,
+                    color = com.horsegallop.core.theme.LocalTextColors.current.bodySecondary,
                     textAlign = TextAlign.Center
                 )
             }
+            Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
             Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
             ) {
                 GoogleSignInButton(onClick = onGoogleClick)
                 AppleSignInButton(onClick = onAppleClick)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp),
+                        .padding(vertical = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Divider(modifier = Modifier.weight(1f), color = AppColors.Divider)
                     Text(
                         text = stringResource(com.horsegallop.core.R.string.or_label),
-                        modifier = Modifier.padding(horizontal = 16.dp),
+                        modifier = Modifier.padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 14.sp
                     )
                     Divider(modifier = Modifier.weight(1f), color = AppColors.Divider)
                 }
                 EmailSignInButton(onClick = onEmailClick)
-                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = stringResource(com.horsegallop.core.R.string.terms_consent),
                     fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = com.horsegallop.core.theme.LocalTextColors.current.bodyTertiary,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier
+                        .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_content_horizontal))
+                        .padding(top = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
                 )
             }
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }
@@ -134,25 +131,28 @@ fun GoogleSignInButton(onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp),
-        shape = RoundedCornerShape(16.dp),
+            .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
+        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
         color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 2.dp,
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+        shadowElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm),
+        border = androidx.compose.foundation.BorderStroke(
+            dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin),
+            MaterialTheme.colorScheme.primary
+        )
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_content_horizontal))
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_google_logo),
                 contentDescription = stringResource(com.horsegallop.core.R.string.cd_google_logo),
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_md))
             )
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
             Text(
                 text = stringResource(com.horsegallop.core.R.string.continue_with_google),
                 fontSize = 15.sp,
@@ -170,24 +170,24 @@ fun AppleSignInButton(onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp),
-        shape = RoundedCornerShape(16.dp),
+            .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
+        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
         color = Color(0xFF000000),
-        shadowElevation = 2.dp
+        shadowElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_content_horizontal))
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_apple_logo),
                 contentDescription = stringResource(com.horsegallop.core.R.string.cd_apple_logo),
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_md))
             )
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
             Text(
                 text = stringResource(com.horsegallop.core.R.string.continue_with_apple),
                 fontSize = 15.sp,
@@ -205,24 +205,24 @@ fun EmailSignInButton(onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp),
-        shape = RoundedCornerShape(16.dp),
+            .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
+        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
         color = MaterialTheme.colorScheme.primary,
-        shadowElevation = 2.dp
+        shadowElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_content_horizontal))
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_email_icon),
                 contentDescription = stringResource(com.horsegallop.core.R.string.cd_email_icon),
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_md))
             )
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
             Text(
                 text = stringResource(com.horsegallop.core.R.string.continue_with_email),
                 fontSize = 15.sp,
