@@ -29,7 +29,7 @@
 	<string name="logout">Logout</string>
     
     <!-- Auth/Login -->
-    <string name="login_title_brand">Horse Gallop</string>
+    <string name="login_title_brand">horsegallop</string>
     <string name="login_subtitle">Your horse riding experience starts here</string>
     <string name="or_label">or</string>
     <string name="terms_consent">By continuing you agree to the Terms of Use and Privacy Policy</string>
