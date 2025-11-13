@@ -91,4 +91,27 @@
     <string name="onboarding_feature_sharing">Sharing and comments</string>
     <string name="onboarding_feature_leaderboard">Weekly leaderboard</string>
     <string name="onboarding_feature_nearby">Nearby Riders</string>
+    <!-- Ride Tracking -->
+    <string name="riding_title_ready">Ready to ride?</string>
+    <string name="riding_title_active">Riding…</string>
+    <string name="start_ride">Start Ride</string>
+    <string name="ride_conditions_good">Good conditions</string>
+    <string name="ride_conditions_detail">22°C • Sunny • Light breeze</string>
+    <string name="ride_type_training">Training</string>
+    <string name="ride_type_trail">Trail</string>
+    <string name="ride_type_competition">Competition</string>
+    <string name="ride_type_leisure">Leisure</string>
+    <string name="stats_title">Your stats</string>
+    <string name="stats_hint">Daily, weekly and total values</string>
+    <string name="stats_today">Today</string>
+    <string name="stats_week">This Week</string>
+    <string name="stats_total">Total</string>
+    <string name="greeting_hello_rider">Hello, Rider!</string>
+    <string name="ride_headline">Perfect day to ride!</string>
+    <string name="ride_type_title">Ride type</string>
+    <string name="ride_type_hint">Pick a type to tailor stats and insights to your ride.</string>
+    <string name="ride_type_desc_training">Training: Intervals, technique, drills</string>
+    <string name="ride_type_desc_trail">Trail: Outdoor routes and exploration</string>
+    <string name="ride_type_desc_competition">Competition: Performance-focused rides</string>
+    <string name="ride_type_desc_leisure">Leisure: Easy, relaxed rides</string>
 </resources>
