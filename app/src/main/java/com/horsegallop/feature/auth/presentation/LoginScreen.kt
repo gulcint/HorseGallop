@@ -20,9 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.horsegallop.R
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.layout.ContentScale
 
 @Composable
 fun LoginScreen(
@@ -58,12 +55,11 @@ fun LoginScreen(
                 verticalArrangement = Arrangement.Center
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                    painter = painterResource(id = R.mipmap.ic_launcher),
                     contentDescription = stringResource(com.horsegallop.core.R.string.app_name),
                     modifier = Modifier
                         .size(200.dp)
-                        .padding(12.dp),
-                    contentScale = ContentScale.Fit
+                        .padding(16.dp)
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
@@ -136,9 +132,9 @@ fun GoogleSignInButton(onClick: () -> Unit) {
             .fillMaxWidth()
             .height(56.dp),
         shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface,
+        color = Color.White,
         shadowElevation = 2.dp,
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+        border = androidx.compose.foundation.BorderStroke(1.dp, AppColors.Divider)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
