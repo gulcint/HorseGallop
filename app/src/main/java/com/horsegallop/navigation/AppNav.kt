@@ -4,9 +4,11 @@ import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavType
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.horsegallop.feature.auth.domain.model.UserRole
 import com.horsegallop.feature.auth.presentation.LoginScreen
 import com.horsegallop.feature.barn.presentation.BarnDetail
@@ -19,7 +21,9 @@ sealed class Dest(val route: String) {
   data object Home : Dest("home")
   data object Ride : Dest("ride")
   data object Barns : Dest("barns")
-  data object BarnDetail : Dest("barnDetail")
+  data object BarnDetail : Dest("barnDetail/{id}") {
+    fun routeWithId(id: String): String = "barnDetail/$id"
+  }
 }
 
 @Composable
@@ -72,7 +76,7 @@ fun AppNavHost(
       HomeScreen(
         onStartRide = { navController.navigate(Dest.Ride.route) },
         onViewBarns = { navController.navigate(Dest.Barns.route) },
-        onBarnSelected = { navController.navigate(Dest.BarnDetail.route) }
+        onBarnSelected = { barn -> navController.navigate(Dest.BarnDetail.routeWithId(barn.id)) }
       )
     }
     composable(Dest.Ride.route) {
@@ -88,14 +92,18 @@ fun AppNavHost(
       // Barns ekranında geri tuşu Home'a döner
       BackHandler { navController.popBackStack() }
       com.horsegallop.feature.barn.presentation.BarnListScreen(
-        onBarnClick = { navController.navigate(Dest.BarnDetail.route) },
+        onBarnClick = { barn -> navController.navigate(Dest.BarnDetail.routeWithId(barn.id)) },
         onHomeClick = { navController.navigate(Dest.Home.route) },
         onRideClick = { navController.navigate(Dest.Ride.route) }
       )
     }
-    composable(Dest.BarnDetail.route) {
+    composable(
+      route = Dest.BarnDetail.route,
+      arguments = listOf(navArgument("id") { type = NavType.StringType })
+    ) { backStackEntry ->
       // BarnDetail ekranında geri tuşu önceki ekrana döner
       BackHandler { navController.popBackStack() }
+      val barnId = backStackEntry.arguments?.getString("id")
       BarnDetail(slides = emptyList())
     }
   }
