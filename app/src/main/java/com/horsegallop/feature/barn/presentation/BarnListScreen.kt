@@ -212,21 +212,6 @@ fun BarnListScreen(
               }
             }
           }
-          IconButton(
-            onClick = { /* center to my location */ },
-            modifier = Modifier
-              .align(Alignment.BottomEnd)
-              .padding(8.dp)
-          ) {
-            Card(shape = CircleShape, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-              Icon(
-                imageVector = Icons.Filled.Home,
-                contentDescription = "My location",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(8.dp)
-              )
-            }
-          }
           Text(
             text = if (query.isBlank()) "${content.resultsPrefix}: ${filtered.size}" else "Arama: ${filtered.size} sonuç",
             style = MaterialTheme.typography.labelMedium,
