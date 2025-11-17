@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
@@ -23,11 +25,14 @@ import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -36,11 +41,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -55,7 +62,11 @@ fun BarnListScreen(
   content: BarnsContent = BarnsContent(
     searchPlaceholder = "Çiftlik ara: ad veya konum yaz",
     mapTitle = "Yakındaki çiftlikler",
-    resultsPrefix = "Sonuç"
+    resultsPrefix = "Sonuç",
+    filtersTitle = "Filtreler",
+    filterLabels = listOf("Dresaj", "Engel Atlama", "Doğa", "Dayanıklılık"),
+    emptyTitle = "Sonuç bulunamadı",
+    emptySubtitle = "Arama terimini değiştirin veya filteleri temizleyin."
   )
 ) {
   data class BarnWithLocation(val barn: BarnUi, val lat: Double, val lng: Double)
@@ -64,10 +75,14 @@ fun BarnListScreen(
     BarnWithLocation(BarnUi("2", "Sable Ranch", "Trail and endurance"), 41.0151, 29.0037),
     BarnWithLocation(BarnUi("3", "Silver Hoof", "Dressage & Jumping"), 41.0258, 29.0150)
   )
-  var query: String by remember { mutableStateOf("") }
-  val filtered: List<BarnWithLocation> = remember(query, demo) {
-    if (query.isBlank()) demo else demo.filter { item ->
+  var query: String by rememberSaveable { mutableStateOf("") }
+  var selectedFilters: Set<String> by rememberSaveable { mutableStateOf(emptySet()) }
+  val filtered: List<BarnWithLocation> = remember(query, selectedFilters, demo) {
+    val base: List<BarnWithLocation> = if (query.isBlank()) demo else demo.filter { item ->
       item.barn.name.contains(query, ignoreCase = true) || item.barn.description.contains(query, ignoreCase = true)
+    }
+    if (selectedFilters.isEmpty()) base else base.filter { item ->
+      selectedFilters.any { flt -> item.barn.description.contains(flt, ignoreCase = true) || item.barn.name.contains(flt, ignoreCase = true) }
     }
   }
   Scaffold(
@@ -101,15 +116,47 @@ fun BarnListScreen(
         leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
         placeholder = { Text(text = content.searchPlaceholder) },
         singleLine = true,
+        trailingIcon = {
+          if (query.isNotBlank()) {
+            IconButton(onClick = { query = "" }) {
+              Icon(Icons.Filled.Remove, contentDescription = "Clear")
+            }
+          }
+        },
         modifier = Modifier.fillMaxWidth(),
         colors = OutlinedTextFieldDefaults.colors(
           focusedBorderColor = MaterialTheme.colorScheme.primary,
           unfocusedBorderColor = MaterialTheme.colorScheme.outline
         )
       )
+      if (!content.filterLabels.isNullOrEmpty()) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+          horizontalArrangement = Arrangement.spacedBy(8.dp),
+          verticalAlignment = Alignment.CenterVertically,
+          modifier = Modifier.fillMaxWidth()
+        ) {
+          content.filterLabels.forEach { label ->
+            val selected: Boolean = selectedFilters.contains(label)
+            FilterChip(
+              selected = selected,
+              onClick = {
+                selectedFilters = if (selected) selectedFilters - label else selectedFilters + label
+              },
+              label = { Text(text = label) },
+              colors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                selectedLabelColor = MaterialTheme.colorScheme.primary
+              )
+            )
+          }
+        }
+      }
       Spacer(modifier = Modifier.height(12.dp))
       Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier.fillMaxWidth().aspectRatio(1.4f)
       ) {
         Box(
@@ -165,12 +212,43 @@ fun BarnListScreen(
               }
             }
           }
+          IconButton(
+            onClick = { /* center to my location */ },
+            modifier = Modifier
+              .align(Alignment.BottomEnd)
+              .padding(8.dp)
+          ) {
+            Card(shape = CircleShape, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+              Icon(
+                imageVector = Icons.Filled.Home,
+                contentDescription = "My location",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(8.dp)
+              )
+            }
+          }
           Text(
             text = if (query.isBlank()) "${content.resultsPrefix}: ${filtered.size}" else "Arama: ${filtered.size} sonuç",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.align(Alignment.BottomStart).padding(8.dp)
           )
+        }
+      }
+      if (filtered.isEmpty()) {
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedCard(
+          shape = RoundedCornerShape(16.dp),
+          modifier = Modifier.fillMaxWidth()
+        ) {
+          Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp)
+          ) {
+            Text(text = content.emptyTitle ?: "No results", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(text = content.emptySubtitle ?: "Try adjusting your search or filters.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+          }
         }
       }
     }
