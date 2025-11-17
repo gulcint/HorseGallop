@@ -45,12 +45,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.horsegallop.feature.barn.domain.model.BarnUi
+import com.horsegallop.domain.model.content.BarnsContent
 
 @Composable
 fun BarnListScreen(
   onBarnClick: (BarnUi) -> Unit,
   onHomeClick: () -> Unit = {},
-  onRideClick: () -> Unit = {}
+  onRideClick: () -> Unit = {},
+  content: BarnsContent = BarnsContent(
+    searchPlaceholder = "Çiftlik ara: ad veya konum yaz",
+    mapTitle = "Yakındaki çiftlikler",
+    resultsPrefix = "Sonuç"
+  )
 ) {
   data class BarnWithLocation(val barn: BarnUi, val lat: Double, val lng: Double)
   val demo: List<BarnWithLocation> = listOf(
@@ -93,7 +99,7 @@ fun BarnListScreen(
         value = query,
         onValueChange = { query = it },
         leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
-        placeholder = { Text(text = "Çiftlik ara (isim veya açıklama)") },
+        placeholder = { Text(text = content.searchPlaceholder) },
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
         colors = OutlinedTextFieldDefaults.colors(
@@ -112,20 +118,8 @@ fun BarnListScreen(
         ) {
           val primaryColor = MaterialTheme.colorScheme.primary
           val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
-          val gridColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.06f)
           Canvas(modifier = Modifier.fillMaxSize()) {
-            // Subtle grid
-            val step = 40.dp.toPx()
-            var gx = 0f
-            while (gx < size.width) {
-              drawLine(gridColor, Offset(gx, 0f), Offset(gx, size.height), 1f)
-              gx += step
-            }
-            var gy = 0f
-            while (gy < size.height) {
-              drawLine(gridColor, Offset(0f, gy), Offset(size.width, gy), 1f)
-              gy += step
-            }
+            // Simplified drawing to avoid jank
             val minLat = filtered.minOfOrNull { it.lat } ?: 0.0
             val maxLat = filtered.maxOfOrNull { it.lat } ?: 1.0
             val minLng = filtered.minOfOrNull { it.lng } ?: 0.0
@@ -157,7 +151,7 @@ fun BarnListScreen(
             horizontalArrangement = Arrangement.SpaceBetween
           ) {
             Text(
-              text = "Yakındaki çiftlikler",
+              text = content.mapTitle,
               style = MaterialTheme.typography.labelMedium,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
               modifier = Modifier.weight(1f)
@@ -172,7 +166,7 @@ fun BarnListScreen(
             }
           }
           Text(
-            text = if (query.isBlank()) "Sonuç: ${filtered.size}" else "Arama: ${filtered.size} sonuç",
+            text = if (query.isBlank()) "${content.resultsPrefix}: ${filtered.size}" else "Arama: ${filtered.size} sonuç",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.align(Alignment.BottomStart).padding(8.dp)
