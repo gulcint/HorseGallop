@@ -13,17 +13,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DirectionsRun
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -92,7 +93,7 @@ fun BarnListScreen(
         value = query,
         onValueChange = { query = it },
         leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
-        placeholder = { Text(text = "Çiftlik ara") },
+        placeholder = { Text(text = "Çiftlik ara (isim veya açıklama)") },
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
         colors = OutlinedTextFieldDefaults.colors(
@@ -103,7 +104,7 @@ fun BarnListScreen(
       Spacer(modifier = Modifier.height(12.dp))
       Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        modifier = Modifier.fillMaxWidth().aspectRatio(1.5f)
+        modifier = Modifier.fillMaxWidth().aspectRatio(1.4f)
       ) {
         Box(
           modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant),
@@ -111,7 +112,20 @@ fun BarnListScreen(
         ) {
           val primaryColor = MaterialTheme.colorScheme.primary
           val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
+          val gridColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.06f)
           Canvas(modifier = Modifier.fillMaxSize()) {
+            // Subtle grid
+            val step = 40.dp.toPx()
+            var gx = 0f
+            while (gx < size.width) {
+              drawLine(gridColor, Offset(gx, 0f), Offset(gx, size.height), 1f)
+              gx += step
+            }
+            var gy = 0f
+            while (gy < size.height) {
+              drawLine(gridColor, Offset(0f, gy), Offset(size.width, gy), 1f)
+              gy += step
+            }
             val minLat = filtered.minOfOrNull { it.lat } ?: 0.0
             val maxLat = filtered.maxOfOrNull { it.lat } ?: 1.0
             val minLng = filtered.minOfOrNull { it.lng } ?: 0.0
@@ -123,52 +137,46 @@ fun BarnListScreen(
               val ny = if (maxLat != minLat) (1f - ((item.lat - minLat) / (maxLat - minLat)).toFloat()) else 0.5f
               val x = nx * w
               val y = ny * h
+              // Tail
+              drawLine(color = primaryColor, start = Offset(x, y - 8.dp.toPx()), end = Offset(x, y + 10.dp.toPx()), strokeWidth = 4f)
               drawCircle(
                 color = primaryColor,
                 radius = 8.dp.toPx(),
-                center = Offset(x, y)
+                center = Offset(x, y - 12.dp.toPx())
               )
               drawCircle(
                 color = onPrimaryColor,
                 radius = 3.dp.toPx(),
-                center = Offset(x, y)
+                center = Offset(x, y - 12.dp.toPx())
               )
             }
           }
-          Text(
-            text = "Harita (yakındaki çiftlikler)",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.align(Alignment.TopStart).padding(8.dp)
-          )
-        }
-      }
-      Spacer(modifier = Modifier.height(12.dp))
-      Text(
-        text = if (query.isBlank()) "Tüm çiftlikler" else "Sonuçlar: ${filtered.size}",
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = 4.dp)
-      )
-      Spacer(modifier = Modifier.height(8.dp))
-      LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.fillMaxWidth()
-      ) {
-        items(filtered) { item ->
-          Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-            Row(
-              modifier = Modifier.fillMaxWidth().clickable { onBarnClick(item.barn) }.padding(16.dp),
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-              Column(modifier = Modifier.weight(1f)) {
-                Text(item.barn.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(item.barn.description, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+          Row(
+            modifier = Modifier.align(Alignment.TopStart).padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+          ) {
+            Text(
+              text = "Yakındaki çiftlikler",
+              style = MaterialTheme.typography.labelMedium,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              modifier = Modifier.weight(1f)
+            )
+            Row {
+              IconButton(onClick = { /* zoom out placeholder */ }) {
+                Icon(Icons.Filled.Remove, contentDescription = "Zoom out", tint = MaterialTheme.colorScheme.onSurfaceVariant)
               }
-              Icon(Icons.Default.ArrowForward, contentDescription = null)
+              IconButton(onClick = { /* zoom in placeholder */ }) {
+                Icon(Icons.Filled.Add, contentDescription = "Zoom in", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+              }
             }
           }
+          Text(
+            text = if (query.isBlank()) "Sonuç: ${filtered.size}" else "Arama: ${filtered.size} sonuç",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.align(Alignment.BottomStart).padding(8.dp)
+          )
         }
       }
     }
