@@ -1,4 +1,4 @@
-package com.horsegallop.domain.model.remote
+package com.horsegallop.domain.model.content
 
 data class OnboardingPage(
   val title: String,
