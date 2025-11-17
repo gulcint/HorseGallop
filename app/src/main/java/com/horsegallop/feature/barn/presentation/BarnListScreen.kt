@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -45,6 +47,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontStyle
@@ -63,17 +66,29 @@ fun BarnListScreen(
     searchPlaceholder = "Çiftlik ara: ad veya konum yaz",
     mapTitle = "Yakındaki çiftlikler",
     resultsPrefix = "Sonuç",
-    filtersTitle = "Filtreler",
-    filterLabels = listOf("Dresaj", "Engel Atlama", "Doğa", "Dayanıklılık"),
+    filtersTitle = "Tesis ve hizmetler",
+    filterLabels = listOf("Kafe", "Kapalı manej", "Açık manej", "Otopark", "Ders", "Pansiyon", "Veteriner", "Nalban", "Işıklandırma", "Doğa parkuru", "Şu an açık"),
     emptyTitle = "Sonuç bulunamadı",
     emptySubtitle = "Arama terimini değiştirin veya filteleri temizleyin."
   )
 ) {
-  data class BarnWithLocation(val barn: BarnUi, val lat: Double, val lng: Double)
+  data class BarnWithLocation(val barn: BarnUi, val lat: Double, val lng: Double, val amenities: Set<String>)
   val demo: List<BarnWithLocation> = listOf(
-    BarnWithLocation(BarnUi("1", "Adin Country", "Beginner to Pro rides"), 41.0082, 28.9784),
-    BarnWithLocation(BarnUi("2", "Sable Ranch", "Trail and endurance"), 41.0151, 29.0037),
-    BarnWithLocation(BarnUi("3", "Silver Hoof", "Dressage & Jumping"), 41.0258, 29.0150)
+    BarnWithLocation(
+      barn = BarnUi("1", "Adin Country", "Beginner to Pro rides"),
+      lat = 41.0082, lng = 28.9784,
+      amenities = setOf("Kafe", "Kapalı manej", "Otopark", "Ders", "Işıklandırma", "Şu an açık")
+    ),
+    BarnWithLocation(
+      barn = BarnUi("2", "Sable Ranch", "Trail and endurance"),
+      lat = 41.0151, lng = 29.0037,
+      amenities = setOf("Açık manej", "Doğa parkuru", "Otopark", "Pansiyon", "Nalban")
+    ),
+    BarnWithLocation(
+      barn = BarnUi("3", "Silver Hoof", "Dressage & Jumping"),
+      lat = 41.0258, lng = 29.0150,
+      amenities = setOf("Kapalı manej", "Açık manej", "Ders", "Veteriner", "Otopark", "Şu an açık")
+    )
   )
   var query: String by rememberSaveable { mutableStateOf("") }
   var selectedFilters: Set<String> by rememberSaveable { mutableStateOf(emptySet()) }
@@ -81,9 +96,7 @@ fun BarnListScreen(
     val base: List<BarnWithLocation> = if (query.isBlank()) demo else demo.filter { item ->
       item.barn.name.contains(query, ignoreCase = true) || item.barn.description.contains(query, ignoreCase = true)
     }
-    if (selectedFilters.isEmpty()) base else base.filter { item ->
-      selectedFilters.any { flt -> item.barn.description.contains(flt, ignoreCase = true) || item.barn.name.contains(flt, ignoreCase = true) }
-    }
+    if (selectedFilters.isEmpty()) base else base.filter { item -> selectedFilters.all { it in item.amenities } }
   }
   Scaffold(
     bottomBar = {
@@ -131,12 +144,11 @@ fun BarnListScreen(
       )
       if (!content.filterLabels.isNullOrEmpty()) {
         Spacer(modifier = Modifier.height(8.dp))
-        Row(
+        LazyRow(
           horizontalArrangement = Arrangement.spacedBy(8.dp),
-          verticalAlignment = Alignment.CenterVertically,
           modifier = Modifier.fillMaxWidth()
         ) {
-          content.filterLabels.forEach { label ->
+          items(content.filterLabels) { label ->
             val selected: Boolean = selectedFilters.contains(label)
             FilterChip(
               selected = selected,
@@ -144,6 +156,15 @@ fun BarnListScreen(
                 selectedFilters = if (selected) selectedFilters - label else selectedFilters + label
               },
               label = { Text(text = label) },
+              leadingIcon = {
+                Box(
+                  modifier = Modifier
+                    .clip(CircleShape)
+                    .background(if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+                    .height(8.dp)
+                    .aspectRatio(1f)
+                )
+              },
               colors = FilterChipDefaults.filterChipColors(
                 selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
                 selectedLabelColor = MaterialTheme.colorScheme.primary
