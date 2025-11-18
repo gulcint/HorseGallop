@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,6 +34,8 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -52,6 +55,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -145,36 +149,93 @@ fun BarnListScreen(
           unfocusedBorderColor = MaterialTheme.colorScheme.outline
         )
       )
+      var showAllFilters by rememberSaveable { mutableStateOf(false) }
       if (!content.filterLabels.isNullOrEmpty()) {
         Spacer(modifier = Modifier.height(8.dp))
-        LazyRow(
-          horizontalArrangement = Arrangement.spacedBy(8.dp),
-          modifier = Modifier.fillMaxWidth()
-        ) {
-          items(content.filterLabels) { label ->
-            val selected: Boolean = selectedFilters.contains(label)
-            FilterChip(
-              selected = selected,
-              onClick = {
-                selectedFilters = if (selected) selectedFilters - label else selectedFilters + label
-              },
-              label = { Text(text = label) },
-              leadingIcon = {
-                Box(
-                  modifier = Modifier
-                    .clip(CircleShape)
-                    .background(if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
-                    .height(8.dp)
-                    .aspectRatio(1f)
+        Box(modifier = Modifier.fillMaxWidth()) {
+          LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+          ) {
+            items(content.filterLabels) { label ->
+              val selected: Boolean = selectedFilters.contains(label)
+              FilterChip(
+                selected = selected,
+                onClick = {
+                  selectedFilters = if (selected) selectedFilters - label else selectedFilters + label
+                },
+                label = { Text(text = label) },
+                leadingIcon = {
+                  Box(
+                    modifier = Modifier
+                      .clip(CircleShape)
+                      .background(if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+                      .height(8.dp)
+                      .aspectRatio(1f)
+                  )
+                },
+                colors = FilterChipDefaults.filterChipColors(
+                  selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                  selectedLabelColor = MaterialTheme.colorScheme.primary
                 )
-              },
-              colors = FilterChipDefaults.filterChipColors(
-                selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-                selectedLabelColor = MaterialTheme.colorScheme.primary
               )
-            )
+            }
+            item {
+              TextButton(onClick = { showAllFilters = true }) {
+                Text(text = "Tüm filtreler")
+              }
+            }
           }
+          Box(
+            modifier = Modifier
+              .align(Alignment.CenterEnd)
+              .height(32.dp)
+              .width(24.dp)
+              .background(
+                Brush.horizontalGradient(
+                  0f to Color.Transparent,
+                  1f to MaterialTheme.colorScheme.background
+                )
+              )
+          )
         }
+      }
+      if (showAllFilters && !content.filterLabels.isNullOrEmpty()) {
+        val allLabels = content.filterLabels
+        AlertDialog(
+          onDismissRequest = { showAllFilters = false },
+          confirmButton = {
+            TextButton(onClick = { showAllFilters = false }) {
+              Text("Uygula")
+            }
+          },
+          dismissButton = {
+            TextButton(onClick = {
+              selectedFilters = emptySet()
+              showAllFilters = false
+            }) {
+              Text("Temizle")
+            }
+          },
+          title = { Text(text = content.filtersTitle ?: "Filtreler") },
+          text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+              allLabels.forEach { label ->
+                val checked = selectedFilters.contains(label)
+                Row(
+                  verticalAlignment = Alignment.CenterVertically,
+                  horizontalArrangement = Arrangement.SpaceBetween,
+                  modifier = Modifier.fillMaxWidth()
+                ) {
+                  Text(text = label, color = MaterialTheme.colorScheme.onSurface)
+                  Checkbox(checked = checked, onCheckedChange = { isChecked ->
+                    selectedFilters = if (isChecked) selectedFilters + label else selectedFilters - label
+                  })
+                }
+              }
+            }
+          }
+        )
       }
       Spacer(modifier = Modifier.height(12.dp))
       Card(
