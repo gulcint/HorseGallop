@@ -299,15 +299,24 @@ private fun StatCard(
     shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
   ) {
     Column(
-      modifier = Modifier.padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
+      modifier = Modifier
+        .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
-      Icon(
-        icon,
-        contentDescription = null,
-        modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_md)),
-        tint = color
-      )
+      Box(
+        modifier = Modifier
+          .size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_xl))
+          .clip(CircleShape)
+          .background(color.copy(alpha = 0.12f)),
+        contentAlignment = Alignment.Center
+      ) {
+        Icon(
+          icon,
+          contentDescription = null,
+          modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_sm)),
+          tint = color
+        )
+      }
       Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
       Text(
         text = value,
