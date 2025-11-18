@@ -356,9 +356,6 @@ fun BarnListScreen(
               OutlinedButton(onClick = { selectedFilters = emptySet() }) {
                 Text(text = "Filtreleri temizle", color = MaterialTheme.colorScheme.onSurface)
               }
-              TextButton(onClick = { query = "" }) {
-                Text(text = "Aramayı temizle")
-              }
             }
           }
         }
