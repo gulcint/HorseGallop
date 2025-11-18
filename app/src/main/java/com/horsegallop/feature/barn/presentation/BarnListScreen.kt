@@ -152,12 +152,16 @@ fun BarnListScreen(
       var showAllFilters by rememberSaveable { mutableStateOf(false) }
       if (!content.filterLabels.isNullOrEmpty()) {
         Spacer(modifier = Modifier.height(8.dp))
+        val allLabels = content.filterLabels!!
+        val popularLabels = allLabels.take(6)
+        val inlineLabels = if (selectedFilters.isNotEmpty()) selectedFilters.toList() else popularLabels
+        val remainingCount = (allLabels.size - inlineLabels.size).coerceAtLeast(0)
         Box(modifier = Modifier.fillMaxWidth()) {
           LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth()
           ) {
-            items(content.filterLabels) { label ->
+            items(inlineLabels) { label ->
               val selected: Boolean = selectedFilters.contains(label)
               FilterChip(
                 selected = selected,
@@ -180,9 +184,16 @@ fun BarnListScreen(
                 )
               )
             }
-            item {
-              TextButton(onClick = { showAllFilters = true }) {
-                Text(text = "Tüm filtreler")
+            if (remainingCount > 0) {
+              item {
+                FilterChip(
+                  selected = false,
+                  onClick = { showAllFilters = true },
+                  label = { Text(text = "Tüm filtreler ($remainingCount)") },
+                  colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                  )
+                )
               }
             }
           }
@@ -198,6 +209,23 @@ fun BarnListScreen(
                 )
               )
           )
+        }
+        if (selectedFilters.isNotEmpty()) {
+          Spacer(modifier = Modifier.height(6.dp))
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+          ) {
+            Text(
+              text = "Seçili filtreler: ${selectedFilters.size}",
+              style = MaterialTheme.typography.labelMedium,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            TextButton(onClick = { selectedFilters = emptySet() }) {
+              Text(text = "Temizle")
+            }
+          }
         }
       }
       if (showAllFilters && !content.filterLabels.isNullOrEmpty()) {
