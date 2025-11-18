@@ -52,7 +52,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -255,28 +254,40 @@ fun BarnListScreen(
         Card(
           shape = RoundedCornerShape(16.dp),
           colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-          border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
+          border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)),
           modifier = Modifier.fillMaxWidth()
         ) {
           Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.fillMaxWidth().padding(20.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(16.dp)
           ) {
-            Icon(
-              imageVector = Icons.Filled.Search,
-              contentDescription = null,
-              tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-            )
+            Box(
+              modifier = Modifier
+                .height(40.dp)
+                .aspectRatio(1f)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)),
+              contentAlignment = Alignment.Center
+            ) {
+              Icon(
+                imageVector = Icons.Filled.Search,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+              )
+            }
             Text(
               text = content.emptyTitle ?: "Sonuç bulunamadı",
               style = MaterialTheme.typography.titleMedium,
               color = MaterialTheme.colorScheme.onSurface,
-              fontWeight = FontWeight.Bold
+              fontWeight = FontWeight.Bold,
+              textAlign = TextAlign.Center
             )
             Text(
               text = content.emptySubtitle ?: "Arama terimini değiştirin veya filtreleri temizleyin.",
-              style = MaterialTheme.typography.bodySmall,
+              style = MaterialTheme.typography.bodyMedium,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
               textAlign = TextAlign.Center
             )
@@ -284,7 +295,7 @@ fun BarnListScreen(
               OutlinedButton(onClick = { selectedFilters = emptySet() }) {
                 Text(text = "Filtreleri temizle")
               }
-              TextButton(onClick = { query = "" ; selectedFilters = emptySet() }) {
+              TextButton(onClick = { query = ""; selectedFilters = emptySet() }) {
                 Text(text = "Tümünü göster", color = MaterialTheme.colorScheme.primary)
               }
             }
