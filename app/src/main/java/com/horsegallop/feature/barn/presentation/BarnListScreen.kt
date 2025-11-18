@@ -50,9 +50,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -202,28 +199,22 @@ fun BarnListScreen(
               val ny = if (maxLat != minLat) (1f - ((item.lat - minLat) / (maxLat - minLat)).toFloat()) else 0.5f
               val x = nx * w
               val y = ny * h
-              // Horseshoe pin icon
-              val radius = 12.dp.toPx()
-              val strokeWidth = 4.dp.toPx()
-              // U-shape arc (open at the top)
-              drawArc(
+              // Tail + dot pin
+              drawLine(
                 color = primaryColor,
-                startAngle = 200f,
-                sweepAngle = 140f,
-                useCenter = false,
-                topLeft = Offset(x - radius, y - radius),
-                size = Size(radius * 2f, radius * 2f),
-                style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                start = Offset(x, y - 8.dp.toPx()),
+                end = Offset(x, y + 10.dp.toPx()),
+                strokeWidth = 4f
               )
-              // Inner accent arc for depth
-              drawArc(
-                color = onPrimaryColor.copy(alpha = 0.6f),
-                startAngle = 205f,
-                sweepAngle = 130f,
-                useCenter = false,
-                topLeft = Offset(x - (radius - 3.dp.toPx()), y - (radius - 3.dp.toPx())),
-                size = Size((radius - 3.dp.toPx()) * 2f, (radius - 3.dp.toPx()) * 2f),
-                style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
+              drawCircle(
+                color = primaryColor,
+                radius = 8.dp.toPx(),
+                center = Offset(x, y - 12.dp.toPx())
+              )
+              drawCircle(
+                color = onPrimaryColor,
+                radius = 3.dp.toPx(),
+                center = Offset(x, y - 12.dp.toPx())
               )
             }
           }
