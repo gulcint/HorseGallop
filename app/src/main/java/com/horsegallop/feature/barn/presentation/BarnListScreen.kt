@@ -298,8 +298,7 @@ fun BarnListScreen(
         Spacer(modifier = Modifier.height(12.dp))
         Card(
           shape = RoundedCornerShape(16.dp),
-          colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-          border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)),
+          colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
           modifier = Modifier.fillMaxWidth()
         ) {
           Column(
@@ -314,31 +313,31 @@ fun BarnListScreen(
                 .height(40.dp)
                 .aspectRatio(1f)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)),
+                .background(MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.12f)),
               contentAlignment = Alignment.Center
             ) {
               Icon(
                 imageVector = Icons.Filled.Search,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
               )
             }
             Text(
               text = content.emptyTitle ?: "Sonuç bulunamadı",
               style = MaterialTheme.typography.titleMedium,
-              color = MaterialTheme.colorScheme.onSurface,
+              color = MaterialTheme.colorScheme.onPrimaryContainer,
               fontWeight = FontWeight.Bold,
               textAlign = TextAlign.Center
             )
             Text(
               text = content.emptySubtitle ?: "Arama terimini değiştirin veya filtreleri temizleyin.",
               style = MaterialTheme.typography.bodyMedium,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f),
               textAlign = TextAlign.Center
             )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
               OutlinedButton(onClick = { selectedFilters = emptySet() }) {
-                Text(text = "Filtreleri temizle", color = MaterialTheme.colorScheme.onSurface)
+                Text(text = "Filtreleri temizle", color = MaterialTheme.colorScheme.onPrimaryContainer)
               }
             }
           }
