@@ -154,7 +154,6 @@ fun BarnListScreen(
         Spacer(modifier = Modifier.height(8.dp))
         val allLabels = content.filterLabels!!
         val listState = androidx.compose.foundation.lazy.rememberLazyListState()
-        val scope = androidx.compose.runtime.rememberCoroutineScope()
         var showScrollHint by rememberSaveable { mutableStateOf(true) }
         androidx.compose.runtime.LaunchedEffect(Unit) {
           kotlinx.coroutines.delay(1200)
@@ -202,15 +201,6 @@ fun BarnListScreen(
                 )
               )
           )
-          IconButton(
-            onClick = {
-              val next = (listState.firstVisibleItemIndex + 3).coerceAtMost(allLabels.lastIndex)
-              scope.launch { listState.animateScrollToItem(next) }
-            },
-            modifier = Modifier.align(Alignment.CenterEnd)
-          ) {
-            Icon(Icons.Filled.ArrowForward, contentDescription = "Daha fazla")
-          }
           if (showScrollHint) {
             Text(
               text = "Kaydır",
