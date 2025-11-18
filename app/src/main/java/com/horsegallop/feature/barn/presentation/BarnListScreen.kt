@@ -61,6 +61,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import com.horsegallop.feature.barn.domain.model.BarnUi
 import com.horsegallop.domain.model.content.BarnsContent
 
@@ -149,19 +150,23 @@ fun BarnListScreen(
           unfocusedBorderColor = MaterialTheme.colorScheme.outline
         )
       )
-      var showAllFilters by rememberSaveable { mutableStateOf(false) }
       if (!content.filterLabels.isNullOrEmpty()) {
         Spacer(modifier = Modifier.height(8.dp))
         val allLabels = content.filterLabels!!
-        val popularLabels = allLabels.take(6)
-        val inlineLabels = if (selectedFilters.isNotEmpty()) selectedFilters.toList() else popularLabels
-        val remainingCount = (allLabels.size - inlineLabels.size).coerceAtLeast(0)
+        val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+        val scope = androidx.compose.runtime.rememberCoroutineScope()
+        var showScrollHint by rememberSaveable { mutableStateOf(true) }
+        androidx.compose.runtime.LaunchedEffect(Unit) {
+          kotlinx.coroutines.delay(1200)
+          showScrollHint = false
+        }
         Box(modifier = Modifier.fillMaxWidth()) {
           LazyRow(
+            state = listState,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth()
           ) {
-            items(inlineLabels) { label ->
+            items(allLabels) { label ->
               val selected: Boolean = selectedFilters.contains(label)
               FilterChip(
                 selected = selected,
@@ -184,18 +189,6 @@ fun BarnListScreen(
                 )
               )
             }
-            if (remainingCount > 0) {
-              item {
-                FilterChip(
-                  selected = false,
-                  onClick = { showAllFilters = true },
-                  label = { Text(text = "Tüm filtreler ($remainingCount)") },
-                  colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = MaterialTheme.colorScheme.surfaceVariant
-                  )
-                )
-              }
-            }
           }
           Box(
             modifier = Modifier
@@ -209,61 +202,24 @@ fun BarnListScreen(
                 )
               )
           )
-        }
-        if (selectedFilters.isNotEmpty()) {
-          Spacer(modifier = Modifier.height(6.dp))
-          Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
+          IconButton(
+            onClick = {
+              val next = (listState.firstVisibleItemIndex + 3).coerceAtMost(allLabels.lastIndex)
+              scope.launch { listState.animateScrollToItem(next) }
+            },
+            modifier = Modifier.align(Alignment.CenterEnd)
           ) {
+            Icon(Icons.Filled.ArrowForward, contentDescription = "Daha fazla")
+          }
+          if (showScrollHint) {
             Text(
-              text = "Seçili filtreler: ${selectedFilters.size}",
-              style = MaterialTheme.typography.labelMedium,
-              color = MaterialTheme.colorScheme.onSurfaceVariant
+              text = "Kaydır",
+              style = MaterialTheme.typography.labelSmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              modifier = Modifier.align(Alignment.BottomEnd).padding(end = 28.dp)
             )
-            TextButton(onClick = { selectedFilters = emptySet() }) {
-              Text(text = "Temizle")
-            }
           }
         }
-      }
-      if (showAllFilters && !content.filterLabels.isNullOrEmpty()) {
-        val allLabels = content.filterLabels
-        AlertDialog(
-          onDismissRequest = { showAllFilters = false },
-          confirmButton = {
-            TextButton(onClick = { showAllFilters = false }) {
-              Text("Uygula")
-            }
-          },
-          dismissButton = {
-            TextButton(onClick = {
-              selectedFilters = emptySet()
-              showAllFilters = false
-            }) {
-              Text("Temizle")
-            }
-          },
-          title = { Text(text = content.filtersTitle ?: "Filtreler") },
-          text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-              allLabels.forEach { label ->
-                val checked = selectedFilters.contains(label)
-                Row(
-                  verticalAlignment = Alignment.CenterVertically,
-                  horizontalArrangement = Arrangement.SpaceBetween,
-                  modifier = Modifier.fillMaxWidth()
-                ) {
-                  Text(text = label, color = MaterialTheme.colorScheme.onSurface)
-                  Checkbox(checked = checked, onCheckedChange = { isChecked ->
-                    selectedFilters = if (isChecked) selectedFilters + label else selectedFilters - label
-                  })
-                }
-              }
-            }
-          }
-        )
       }
       Spacer(modifier = Modifier.height(12.dp))
       Card(
