@@ -154,11 +154,6 @@ fun BarnListScreen(
         Spacer(modifier = Modifier.height(8.dp))
         val allLabels = content.filterLabels!!
         val listState = androidx.compose.foundation.lazy.rememberLazyListState()
-        var showScrollHint by rememberSaveable { mutableStateOf(true) }
-        androidx.compose.runtime.LaunchedEffect(Unit) {
-          kotlinx.coroutines.delay(1200)
-          showScrollHint = false
-        }
         Box(modifier = Modifier.fillMaxWidth()) {
           LazyRow(
             state = listState,
@@ -189,26 +184,7 @@ fun BarnListScreen(
               )
             }
           }
-          Box(
-            modifier = Modifier
-              .align(Alignment.CenterEnd)
-              .height(32.dp)
-              .width(24.dp)
-              .background(
-                Brush.horizontalGradient(
-                  0f to Color.Transparent,
-                  1f to MaterialTheme.colorScheme.background
-                )
-              )
-          )
-          if (showScrollHint) {
-            Text(
-              text = "Kaydır",
-              style = MaterialTheme.typography.labelSmall,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-              modifier = Modifier.align(Alignment.BottomEnd).padding(end = 28.dp)
-            )
-          }
+          
         }
       }
       Spacer(modifier = Modifier.height(12.dp))
