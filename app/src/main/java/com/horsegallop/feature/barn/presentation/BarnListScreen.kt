@@ -333,7 +333,7 @@ fun BarnListScreen(
             Text(
               text = content.emptySubtitle ?: "Arama terimini değiştirin veya filtreleri temizleyin.",
               style = MaterialTheme.typography.bodyMedium,
-              color = MaterialTheme.colorScheme.primary.copy(alpha = 0.80f),
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
               textAlign = TextAlign.Center
             )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
