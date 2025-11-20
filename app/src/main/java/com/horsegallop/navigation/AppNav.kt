@@ -49,20 +49,7 @@ fun AppNavHost(
     }
     composable(Dest.Login.route) {
       LoginScreen(
-        onGoogleClick = { 
-          // Mock OAuth - Navigate to Home
-          navController.navigate(Dest.Home.route) {
-            popUpTo(Dest.Login.route) { inclusive = true }
-          }
-        },
-        onAppleClick = { 
-          // Mock OAuth - Navigate to Home
-          navController.navigate(Dest.Home.route) {
-            popUpTo(Dest.Login.route) { inclusive = true }
-          }
-        },
-        onEmailClick = { 
-          // Mock Email Login - Navigate to Home
+        onLoginSuccess = {
           navController.navigate(Dest.Home.route) {
             popUpTo(Dest.Login.route) { inclusive = true }
           }

@@ -18,13 +18,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import android.widget.Toast
 import androidx.compose.ui.tooling.preview.Preview
 import com.horsegallop.R
 import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -198,6 +198,8 @@ fun LoginScreen(
             Spacer(modifier = Modifier.weight(1f))
         }
     }
+
+    
 }
 
 @Preview(showBackground = true, name = "LoginScreen")
