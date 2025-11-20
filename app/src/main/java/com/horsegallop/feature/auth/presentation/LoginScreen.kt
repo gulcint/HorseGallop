@@ -24,6 +24,7 @@ import com.horsegallop.R
 import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.IntentSenderRequest
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.ConnectionResult
@@ -37,6 +38,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import kotlinx.coroutines.delay
 import androidx.compose.ui.res.dimensionResource
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.SignInClient
  
 
 @Composable
@@ -50,8 +54,32 @@ fun LoginScreen(
     val uiState by vm.uiState.collectAsState()
     val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val oneTapClient: SignInClient = remember { Identity.getSignInClient(context) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
-        if (res.resultCode == Activity.RESULT_OK) vm.onGoogleResult(res.data) else vm.onSignInCancelled()
+        if (res.resultCode == Activity.RESULT_OK) {
+            try {
+                val credential = oneTapClient.getSignInCredentialFromIntent(res.data)
+                val token = credential.googleIdToken
+                if (!token.isNullOrEmpty()) {
+                    vm.signInWithGoogleIdToken(token)
+                } else {
+                    vm.onGoogleResult(res.data)
+                }
+            } catch (e: Exception) {
+                vm.onGoogleResult(res.data)
+            }
+        } else vm.onSignInCancelled()
+    }
+    val oneTapLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { res ->
+        if (res.resultCode == Activity.RESULT_OK) {
+            try {
+                val credential = oneTapClient.getSignInCredentialFromIntent(res.data)
+                val token = credential.googleIdToken
+                if (!token.isNullOrEmpty()) vm.signInWithGoogleIdToken(token) else vm.onSignInCancelled()
+            } catch (_: Exception) {
+                vm.onSignInCancelled()
+            }
+        } else vm.onSignInCancelled()
     }
 
     LaunchedEffect(uiState.errorMessage) {
@@ -69,7 +97,6 @@ fun LoginScreen(
 
     LaunchedEffect(uiState.success) {
         if (uiState.success) {
-            delay(250)
             onGoogleClick()
         }
     }
@@ -87,11 +114,7 @@ fun LoginScreen(
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
-        AnimatedVisibility(visible = uiState.loading, enter = fadeIn(), exit = fadeOut()) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                androidx.compose.material3.CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
-        }
+        
         AnimatedVisibility(visible = uiState.success, enter = fadeIn(), exit = fadeOut()) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Row(
@@ -162,9 +185,30 @@ fun LoginScreen(
                                 )
                             }
                         } else {
-                            vm.trySilentSignIn { intent ->
-                                if (intent != null) launcher.launch(intent)
-                            }
+                            val serverClientId = context.getString(R.string.default_web_client_id)
+                            val request = BeginSignInRequest.Builder()
+                                .setGoogleIdTokenRequestOptions(
+                                    BeginSignInRequest.GoogleIdTokenRequestOptions.Builder()
+                                        .setSupported(true)
+                                        .setServerClientId(serverClientId)
+                                        .setFilterByAuthorizedAccounts(false)
+                                        .build()
+                                )
+                                .setAutoSelectEnabled(true)
+                                .build()
+                            oneTapClient.beginSignIn(request)
+                                .addOnSuccessListener { result ->
+                                    val pi = result.pendingIntent
+                                    try {
+                                        val req = IntentSenderRequest.Builder(pi).build()
+                                        oneTapLauncher.launch(req)
+                                    } catch (_: Throwable) {
+                                        vm.trySilentSignIn { intent -> if (intent != null) launcher.launch(intent) }
+                                    }
+                                }
+                                .addOnFailureListener {
+                                    vm.trySilentSignIn { intent -> if (intent != null) launcher.launch(intent) }
+                                }
                         }
                     }
                 })

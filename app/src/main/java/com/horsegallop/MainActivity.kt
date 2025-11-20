@@ -27,7 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalConfiguration
-import com.airbnb.lottie.compose.*
+ 
 import com.horsegallop.navigation.AppNavHost
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -38,8 +38,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.horsegallop.feature.auth.domain.model.UserRole
 
 private const val SPLASH_DURATION_MS: Long = 2000L
-private const val MEDIA_VOLUME_MAX: Float = 1f
-private const val LOTTIE_FILL_SCALE: Float = 0.6f
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -121,13 +119,6 @@ fun AppContent(): Unit {
     }
     
     if (showSplash) {
-		// Splash ekranında geri tuşu uygulamayı kapatır
-		val activity = LocalContext.current as? ComponentActivity
-		BackHandler {
-			// Uygulamayı kapat
-			activity?.finish()
-		}
-		
         SplashScreen(onFinished = { splashFinished = true })
     } else {
         // Ana uygulama - Navigation
@@ -147,53 +138,16 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
 			.background(Color.White),
 		contentAlignment = Alignment.Center
 	) {
-        val ctx = LocalContext.current
         val titleText: String = stringResource(com.horsegallop.core.R.string.welcome_title)
         val subtitleText: String = stringResource(com.horsegallop.core.R.string.welcome_subtitle)
-        val composition by rememberLottieComposition(
-			LottieCompositionSpec.RawRes(R.raw.horse)
-		)
-		val progress by animateLottieCompositionAsState(
-			composition = composition,
-			iterations = LottieConstants.IterateForever
-		)
-
-		val mediaPlayer = remember { MediaPlayer.create(ctx, R.raw.horse_gallop) }
-		LaunchedEffect(mediaPlayer) {
-			mediaPlayer?.let { mp ->
-				mp.isLooping = true
-				mp.setVolume(MEDIA_VOLUME_MAX, MEDIA_VOLUME_MAX)
-				mp.start()
-			}
-			delay(SPLASH_DURATION_MS)
-			onFinished()
-		}
-		DisposableEffect(Unit) {
-			onDispose {
-				try {
-					mediaPlayer?.stop()
-					mediaPlayer?.release()
-				} catch (_: Throwable) {}
-			}
-		}
-		
-		var showLottie: Boolean by remember { mutableStateOf(true) }
-		LaunchedEffect(Unit) {
-			delay(SPLASH_DURATION_MS)
-			showLottie = false
-		}
-		if (showLottie) {
-			LottieAnimation(
-				composition = composition,
-				progress = { progress },
-				modifier = Modifier.fillMaxSize(LOTTIE_FILL_SCALE)
-			)
-		}
-		// Localized welcome texts over splash (auto-resolved by app locales/device locale)
-		Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 64.dp)) {
-			Text(text = titleText, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.primary)
-			Spacer(modifier = Modifier.size(6.dp))
-			Text(text = subtitleText, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-		}
-	}
+        LaunchedEffect(Unit) {
+            delay(SPLASH_DURATION_MS)
+            onFinished()
+        }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = titleText, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.primary)
+            Spacer(modifier = Modifier.size(6.dp))
+            Text(text = subtitleText, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
 }

@@ -85,4 +85,12 @@ class LoginViewModel @Inject constructor(
             }
             .addOnFailureListener { onIntent(googleClient.signInIntent) }
     }
+
+    fun signInWithGoogleIdToken(token: String) {
+        _uiState.value = _uiState.value.copy(loading = true, errorMessage = null, success = false)
+        val credential = GoogleAuthProvider.getCredential(token, null)
+        auth.signInWithCredential(credential)
+            .addOnSuccessListener { _uiState.value = _uiState.value.copy(loading = false, success = true) }
+            .addOnFailureListener { _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_firebase") }
+    }
 }
