@@ -18,17 +18,70 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import android.widget.Toast
 import androidx.compose.ui.tooling.preview.Preview
 import com.horsegallop.R
 import androidx.compose.ui.res.dimensionResource
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import androidx.hilt.navigation.compose.hiltViewModel
  
 
 @Composable
 fun LoginScreen(
+    onLoginSuccess: () -> Unit = {},
     onGoogleClick: () -> Unit = {},
     onAppleClick: () -> Unit = {},
-    onEmailClick: () -> Unit = {}
+    onEmailClick: () -> Unit = {},
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsState()
+    val webClientId: String = remember {
+        val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
+        if (resId != 0) context.getString(resId) else ""
+    }
+    val hasWebClientId = remember(webClientId) {
+        webClientId.isNotBlank() && !webClientId.equals("YOUR_WEB_CLIENT_ID", ignoreCase = true)
+    }
+    val gso = remember(webClientId, hasWebClientId) {
+        val builder = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+        if (hasWebClientId) {
+            builder.requestIdToken(webClientId)
+        }
+        builder.build()
+    }
+    val googleClient = remember(gso) { GoogleSignIn.getClient(context, gso) }
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            val token = account.idToken
+            if (token.isNullOrEmpty()) {
+                Toast.makeText(
+                    context,
+                    "Google OAuth yapılandırması eksik: Web Client ID gerekli.",
+                    Toast.LENGTH_LONG
+                ).show()
+                return@rememberLauncherForActivityResult
+            }
+            viewModel.signInWithGoogleIdToken(token)
+        } catch (e: ApiException) {
+            Toast.makeText(
+                context,
+                "Google giriş başarısız (${e.statusCode})",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -80,7 +133,12 @@ fun LoginScreen(
             Column(
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
             ) {
-                GoogleSignInButton(onClick = onGoogleClick)
+                GoogleSignInButton(
+                    onClick = {
+                        onGoogleClick()
+                        launcher.launch(googleClient.signInIntent)
+                    }
+                )
                 AppleSignInButton(onClick = onAppleClick)
                 Row(
                     modifier = Modifier
@@ -110,6 +168,19 @@ fun LoginScreen(
             }
             Spacer(modifier = Modifier.weight(1f))
         }
+    }
+
+    when (val s = uiState) {
+        AuthUiState.Loading -> {
+            // optional: show a small loading indicator, keep UI simple
+        }
+        is AuthUiState.Error -> {
+            // optional: show a snackbar/text - kept minimal to not alter layout
+        }
+        AuthUiState.Success -> {
+            LaunchedEffect(Unit) { onLoginSuccess() }
+        }
+        else -> {}
     }
 }
 
