@@ -20,6 +20,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.horsegallop.R
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
+import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.launch
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import kotlinx.coroutines.delay
 import androidx.compose.ui.res.dimensionResource
  
 
@@ -29,6 +45,34 @@ fun LoginScreen(
     onAppleClick: () -> Unit = {},
     onEmailClick: () -> Unit = {}
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val vm: LoginViewModel = hiltViewModel()
+    val uiState by vm.uiState.collectAsState()
+    val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
+        if (res.resultCode == Activity.RESULT_OK) vm.onGoogleResult(res.data) else vm.onSignInCancelled()
+    }
+
+    LaunchedEffect(uiState.errorMessage) {
+        val msgKey = uiState.errorMessage
+        if (msgKey != null) {
+            val msg = when (msgKey) {
+                "auth_error_google" -> context.getString(com.horsegallop.core.R.string.auth_error_google)
+                "auth_error_firebase" -> context.getString(com.horsegallop.core.R.string.auth_error_firebase)
+                "auth_error_token_missing" -> context.getString(com.horsegallop.core.R.string.auth_error_token_missing)
+                else -> context.getString(com.horsegallop.core.R.string.error_unknown)
+            }
+            snackbarHostState.showSnackbar(message = msg)
+        }
+    }
+
+    LaunchedEffect(uiState.success) {
+        if (uiState.success) {
+            delay(250)
+            onGoogleClick()
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -43,6 +87,33 @@ fun LoginScreen(
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
+        AnimatedVisibility(visible = uiState.loading, enter = fadeIn(), exit = fadeOut()) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                androidx.compose.material3.CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
+        }
+        AnimatedVisibility(visible = uiState.success, enter = fadeIn(), exit = fadeOut()) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Row(
+                    modifier = Modifier.align(Alignment.Center),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
+                ) {
+                    Image(
+                        painter = painterResource(id = R.mipmap.ic_launcher),
+                        contentDescription = stringResource(com.horsegallop.core.R.string.app_name),
+                        modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_sm))
+                    )
+                    Text(
+                        text = stringResource(id = com.horsegallop.core.R.string.auth_success),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        }
+        androidx.compose.material3.SnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.TopCenter))
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -80,7 +151,23 @@ fun LoginScreen(
             Column(
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
             ) {
-                GoogleSignInButton(onClick = onGoogleClick)
+                GoogleSignInButton(onClick = {
+                    if (!uiState.loading) {
+                        val availability = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
+                        if (availability != ConnectionResult.SUCCESS) {
+                            scope.launch {
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                                snackbarHostState.showSnackbar(
+                                    message = context.getString(com.horsegallop.core.R.string.auth_error_play_services)
+                                )
+                            }
+                        } else {
+                            vm.trySilentSignIn { intent ->
+                                if (intent != null) launcher.launch(intent)
+                            }
+                        }
+                    }
+                })
                 AppleSignInButton(onClick = onAppleClick)
                 Row(
                     modifier = Modifier

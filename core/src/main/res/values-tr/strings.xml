@@ -39,6 +39,12 @@
     <string name="cd_google_logo">Google Logosu</string>
     <string name="cd_apple_logo">Apple Logosu</string>
     <string name="cd_email_icon">E‑posta Simgesi</string>
+    <string name="auth_error_google">Google ile giriş başarısız</string>
+    <string name="auth_error_firebase">Firebase kimlik doğrulama hatası</string>
+    <string name="auth_error_token_missing">Kimlik belirteci alınamadı</string>
+    <string name="auth_error_cancelled">Giriş işlemi iptal edildi</string>
+    <string name="auth_error_play_services">Google Play Services güncellenmeli</string>
+    <string name="auth_success">Başarıyla giriş yapıldı</string>
 
     <!-- Home/Onboarding/Restaurant -->
     <string name="welcome_subtitle">Atlı yolculuğunuz burada başlıyor</string>

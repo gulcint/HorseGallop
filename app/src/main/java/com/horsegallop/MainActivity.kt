@@ -34,6 +34,8 @@ import kotlinx.coroutines.delay
 import java.util.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.material3.ExperimentalMaterial3Api
+import com.google.firebase.auth.FirebaseAuth
+import com.horsegallop.feature.auth.domain.model.UserRole
 
 private const val SPLASH_DURATION_MS: Long = 2000L
 private const val MEDIA_VOLUME_MAX: Float = 1f
@@ -127,14 +129,15 @@ fun AppContent(): Unit {
 		}
 		
         SplashScreen(onFinished = { splashFinished = true })
-	} else {
-		// Ana uygulama - Navigation
-		val navController = rememberNavController()
-		AppNavHost(
-			navController = navController,
-			role = null
-		)
-	}
+    } else {
+        // Ana uygulama - Navigation
+        val navController = rememberNavController()
+        val isLoggedIn = remember { FirebaseAuth.getInstance().currentUser != null }
+        AppNavHost(
+            navController = navController,
+            role = if (isLoggedIn) UserRole.CUSTOMER else null
+        )
+    }
 }
 @Composable
 fun SplashScreen(onFinished: () -> Unit): Unit {

@@ -39,6 +39,12 @@
     <string name="cd_google_logo">Google Logo</string>
     <string name="cd_apple_logo">Apple Logo</string>
     <string name="cd_email_icon">Email Icon</string>
+    <string name="auth_error_google">Google sign-in failed</string>
+    <string name="auth_error_firebase">Firebase authentication error</string>
+    <string name="auth_error_token_missing">ID token could not be retrieved</string>
+    <string name="auth_error_cancelled">Sign-in was cancelled</string>
+    <string name="auth_error_play_services">Google Play Services needs update</string>
+    <string name="auth_success">Signed in successfully</string>
 
     <!-- Home/Onboarding/Restaurant -->
     <string name="welcome_subtitle">Your horse riding journey starts here</string>
