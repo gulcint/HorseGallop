@@ -189,4 +189,8 @@ object AppColors {
     val WarmClay = Color(0xFFB46A3A)   // rich clay brown
     val SoftSand = Color(0xFFD9B08C)   // soft sand, not pale beige
     val ToastedAlmond = Color(0xFFC89272) // warm almond
+    
+    // General text colors
+    // A slightly darker neutral gray for secondary texts across the app
+    val TextGray = Color(0xFF555555)
 }
