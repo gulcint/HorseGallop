@@ -1,9 +1,9 @@
 plugins {
-	id("com.android.application")
-	kotlin("android")
-	kotlin("kapt")
-	id("com.google.dagger.hilt.android")
-	// id("com.google.gms.google-services") // Temporarily disabled
+    id("com.android.application")
+    kotlin("android")
+    kotlin("kapt")
+    id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 }
 
 android {

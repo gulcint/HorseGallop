@@ -49,7 +49,7 @@ fun AppNavHost(
     }
     composable(Dest.Login.route) {
       LoginScreen(
-        onLoginSuccess = {
+        onGoogleClick = {
           navController.navigate(Dest.Home.route) {
             popUpTo(Dest.Login.route) { inclusive = true }
           }

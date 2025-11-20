@@ -21,67 +21,58 @@ import androidx.compose.ui.res.stringResource
 import android.widget.Toast
 import androidx.compose.ui.tooling.preview.Preview
 import com.horsegallop.R
-import androidx.compose.ui.res.dimensionResource
+import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.ui.platform.LocalContext
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.launch
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import kotlinx.coroutines.delay
+import androidx.compose.ui.res.dimensionResource
  
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit = {},
     onGoogleClick: () -> Unit = {},
     onAppleClick: () -> Unit = {},
-    onEmailClick: () -> Unit = {},
-    viewModel: AuthViewModel = hiltViewModel()
+    onEmailClick: () -> Unit = {}
 ) {
-    val context = LocalContext.current
-    val uiState by viewModel.uiState.collectAsState()
-    val webClientId: String = remember {
-        val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
-        if (resId != 0) context.getString(resId) else ""
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val vm: LoginViewModel = hiltViewModel()
+    val uiState by vm.uiState.collectAsState()
+    val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
+        if (res.resultCode == Activity.RESULT_OK) vm.onGoogleResult(res.data) else vm.onSignInCancelled()
     }
-    val hasWebClientId = remember(webClientId) {
-        webClientId.isNotBlank() && !webClientId.equals("YOUR_WEB_CLIENT_ID", ignoreCase = true)
-    }
-    val gso = remember(webClientId, hasWebClientId) {
-        val builder = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestEmail()
-        if (hasWebClientId) {
-            builder.requestIdToken(webClientId)
-        }
-        builder.build()
-    }
-    val googleClient = remember(gso) { GoogleSignIn.getClient(context, gso) }
-    val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        try {
-            val account = task.getResult(ApiException::class.java)
-            val token = account.idToken
-            if (token.isNullOrEmpty()) {
-                Toast.makeText(
-                    context,
-                    "Google OAuth yapılandırması eksik: Web Client ID gerekli.",
-                    Toast.LENGTH_LONG
-                ).show()
-                return@rememberLauncherForActivityResult
+
+    LaunchedEffect(uiState.errorMessage) {
+        val msgKey = uiState.errorMessage
+        if (msgKey != null) {
+            val msg = when (msgKey) {
+                "auth_error_google" -> context.getString(com.horsegallop.core.R.string.auth_error_google)
+                "auth_error_firebase" -> context.getString(com.horsegallop.core.R.string.auth_error_firebase)
+                "auth_error_token_missing" -> context.getString(com.horsegallop.core.R.string.auth_error_token_missing)
+                else -> context.getString(com.horsegallop.core.R.string.error_unknown)
             }
-            viewModel.signInWithGoogleIdToken(token)
-        } catch (e: ApiException) {
-            Toast.makeText(
-                context,
-                "Google giriş başarısız (${e.statusCode})",
-                Toast.LENGTH_SHORT
-            ).show()
+            snackbarHostState.showSnackbar(message = msg)
         }
     }
 
+    LaunchedEffect(uiState.success) {
+        if (uiState.success) {
+            delay(250)
+            onGoogleClick()
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -96,6 +87,33 @@ fun LoginScreen(
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
+        AnimatedVisibility(visible = uiState.loading, enter = fadeIn(), exit = fadeOut()) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                androidx.compose.material3.CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
+        }
+        AnimatedVisibility(visible = uiState.success, enter = fadeIn(), exit = fadeOut()) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Row(
+                    modifier = Modifier.align(Alignment.Center),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
+                ) {
+                    Image(
+                        painter = painterResource(id = R.mipmap.ic_launcher),
+                        contentDescription = stringResource(com.horsegallop.core.R.string.app_name),
+                        modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_sm))
+                    )
+                    Text(
+                        text = stringResource(id = com.horsegallop.core.R.string.auth_success),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        }
+        androidx.compose.material3.SnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.TopCenter))
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -133,12 +151,23 @@ fun LoginScreen(
             Column(
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
             ) {
-                GoogleSignInButton(
-                    onClick = {
-                        onGoogleClick()
-                        launcher.launch(googleClient.signInIntent)
+                GoogleSignInButton(onClick = {
+                    if (!uiState.loading) {
+                        val availability = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
+                        if (availability != ConnectionResult.SUCCESS) {
+                            scope.launch {
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                                snackbarHostState.showSnackbar(
+                                    message = context.getString(com.horsegallop.core.R.string.auth_error_play_services)
+                                )
+                            }
+                        } else {
+                            vm.trySilentSignIn { intent ->
+                                if (intent != null) launcher.launch(intent)
+                            }
+                        }
                     }
-                )
+                })
                 AppleSignInButton(onClick = onAppleClick)
                 Row(
                     modifier = Modifier
@@ -170,18 +199,7 @@ fun LoginScreen(
         }
     }
 
-    when (val s = uiState) {
-        AuthUiState.Loading -> {
-            // optional: show a small loading indicator, keep UI simple
-        }
-        is AuthUiState.Error -> {
-            // optional: show a snackbar/text - kept minimal to not alter layout
-        }
-        AuthUiState.Success -> {
-            LaunchedEffect(Unit) { onLoginSuccess() }
-        }
-        else -> {}
-    }
+    
 }
 
 @Preview(showBackground = true, name = "LoginScreen")
