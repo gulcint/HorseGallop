@@ -45,6 +45,23 @@
     <string name="auth_error_cancelled">Sign-in was cancelled</string>
     <string name="auth_error_play_services">Google Play Services needs update</string>
     <string name="auth_success">Signed in successfully</string>
+    <string name="login_email_label">Email</string>
+    <string name="login_email_placeholder">example@domain.com</string>
+    <string name="login_password_label">Password</string>
+    <string name="login_password_placeholder">••••••••</string>
+    <string name="password_toggle_show">Show</string>
+    <string name="password_toggle_hide">Hide</string>
+    <string name="forgot_password">Forgot password</string>
+    <string name="forgot_password_toast">Forgot password: coming soon.</string>
+    <string name="email_error_invalid">Enter a valid email</string>
+    <string name="password_error_min_length">Enter a password of at least 6 characters</string>
+    <string name="login_button">Sign In</string>
+    <string name="login_button_loading">Signing in…</string>
+    <string name="signup_prompt">Would you like to create an account?</string>
+    <!-- Theme -->
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
 
     <!-- Home/Onboarding/Restaurant -->
     <string name="welcome_subtitle">Your horse riding journey starts here</string>
