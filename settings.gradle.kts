@@ -20,5 +20,6 @@ include(
 	":app",
 	":core",
 	":data",
-	":compose"
+	":compose",
+	":domain"
 )
