@@ -11,6 +11,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.horsegallop.feature.auth.domain.model.UserRole
 import com.horsegallop.feature.auth.presentation.LoginScreen
+import com.horsegallop.feature.auth.presentation.EmailLoginScreen
+import com.horsegallop.feature.auth.presentation.EnrollmentScreen
+import com.horsegallop.feature.auth.presentation.ProfileScreen
 import com.horsegallop.feature.barn.presentation.BarnDetail
 import com.horsegallop.feature.home.presentation.HomeScreen
 import com.horsegallop.feature.onboarding.presentation.OnboardingScreen
@@ -21,6 +24,9 @@ sealed class Dest(val route: String) {
   data object Home : Dest("home")
   data object Ride : Dest("ride")
   data object Barns : Dest("barns")
+  data object EmailLogin : Dest("emailLogin")
+  data object Enroll : Dest("enroll")
+  data object Profile : Dest("profile")
   data object BarnDetail : Dest("barnDetail/{id}") {
     fun routeWithId(id: String): String = "barnDetail/$id"
   }
@@ -53,6 +59,29 @@ fun AppNavHost(
           navController.navigate(Dest.Home.route) {
             popUpTo(Dest.Login.route) { inclusive = true }
           }
+        },
+        onEmailClick = { navController.navigate(Dest.EmailLogin.route) },
+        onSignupClick = { navController.navigate(Dest.Enroll.route) }
+      )
+    }
+    composable(Dest.EmailLogin.route) {
+      EmailLoginScreen(
+        onBack = { navController.popBackStack() },
+        onSignup = { navController.navigate(Dest.Enroll.route) },
+        onSignedIn = {
+          navController.navigate(Dest.Home.route) {
+            popUpTo(Dest.Login.route) { inclusive = true }
+          }
+        }
+      )
+    }
+    composable(Dest.Enroll.route) {
+      EnrollmentScreen(
+        onBack = { navController.popBackStack() },
+        onSignedUp = {
+          navController.navigate(Dest.Home.route) {
+            popUpTo(Dest.Login.route) { inclusive = true }
+          }
         }
       )
     }
@@ -60,10 +89,22 @@ fun AppNavHost(
       // Home ekranında geri tuşu uygulamayı kapatır
       val activity = LocalContext.current as? Activity
       BackHandler { activity?.finish() }
+      val currentRoute = navController.currentBackStackEntry?.destination?.route
       HomeScreen(
+        currentRoute = currentRoute,
         onStartRide = { navController.navigate(Dest.Ride.route) },
         onViewBarns = { navController.navigate(Dest.Barns.route) },
-        onBarnSelected = { barn -> navController.navigate(Dest.BarnDetail.routeWithId(barn.id)) }
+        onProfileClick = { navController.navigate(Dest.Profile.route) }
+      )
+    }
+    composable(Dest.Profile.route) {
+      ProfileScreen(
+        onBack = { navController.popBackStack() },
+        onLogout = {
+          navController.navigate(Dest.Login.route) {
+            popUpTo(Dest.Home.route) { inclusive = true }
+          }
+        }
       )
     }
     composable(Dest.Ride.route) {
@@ -90,7 +131,6 @@ fun AppNavHost(
     ) { backStackEntry ->
       // BarnDetail ekranında geri tuşu önceki ekrana döner
       BackHandler { navController.popBackStack() }
-      val barnId = backStackEntry.arguments?.getString("id")
       BarnDetail(slides = emptyList())
     }
   }

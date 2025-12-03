@@ -2,7 +2,7 @@ package com.horsegallop.feature.auth.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.horsegallop.feature.auth.data.AuthRepository
+import com.horsegallop.domain.auth.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,5 +38,4 @@ class AuthViewModel @Inject constructor(
     fun isSignedIn(): Boolean = repo.isSignedIn()
     fun signOut() = repo.signOut()
 }
-
 
