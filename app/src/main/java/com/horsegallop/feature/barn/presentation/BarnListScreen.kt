@@ -106,30 +106,7 @@ fun BarnListScreen(
     }
     if (selectedFilters.isEmpty()) base else base.filter { item -> selectedFilters.all { it in item.amenities } }
   }
-  Scaffold(
-    bottomBar = {
-      NavigationBar {
-        NavigationBarItem(
-          icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
-          label = { Text("Home") },
-          selected = false,
-          onClick = onHomeClick
-        )
-        NavigationBarItem(
-          icon = { Icon(Icons.Filled.DirectionsRun, contentDescription = "Ride") },
-          label = { Text("Ride") },
-          selected = false,
-          onClick = onRideClick
-        )
-        NavigationBarItem(
-          icon = { Icon(Icons.Filled.List, contentDescription = "Barns") },
-          label = { Text("Barns") },
-          selected = true,
-          onClick = { /* Already on barns */ }
-        )
-      }
-    }
-  ) { padding ->
+  Scaffold { padding ->
     Column(modifier = Modifier.padding(padding).padding(12.dp)) {
       OutlinedTextField(
         value = query,
@@ -147,7 +124,7 @@ fun BarnListScreen(
         modifier = Modifier.fillMaxWidth(),
         colors = OutlinedTextFieldDefaults.colors(
           focusedBorderColor = MaterialTheme.colorScheme.primary,
-          unfocusedBorderColor = MaterialTheme.colorScheme.outline
+          unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
         )
       )
       if (!content.filterLabels.isNullOrEmpty()) {
@@ -313,5 +290,4 @@ fun BarnListScreen(
     }
   }
 }
-
 

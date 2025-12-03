@@ -9,6 +9,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -240,10 +242,10 @@ fun QuickActionsSection() {
 		
     val actions = listOf(
         QuickAction(stringResource(com.horsegallop.core.R.string.action_lesson_reservation), Icons.Default.DateRange, AppColors.ActionLesson),
-        QuickAction(stringResource(com.horsegallop.core.R.string.action_my_schedule), Icons.Default.List, AppColors.ActionSchedule),
+        QuickAction(stringResource(com.horsegallop.core.R.string.action_my_schedule), Icons.AutoMirrored.Filled.List, AppColors.ActionSchedule),
         QuickAction(stringResource(com.horsegallop.core.R.string.action_restaurant), Icons.Filled.Restaurant, AppColors.ActionRestaurant),
         QuickAction(stringResource(com.horsegallop.core.R.string.action_reviews), Icons.Default.Star, AppColors.ActionReviews)
-	)
+    )
 		
         LazyRow(
 			horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -389,7 +391,7 @@ fun LessonItem(title: String, instructor: String, date: String) {
 		}
 		
         Icon(
-            Icons.Default.ArrowForward,
+            Icons.AutoMirrored.Filled.ArrowForward,
             contentDescription = stringResource(com.horsegallop.core.R.string.lesson_detail),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
         )

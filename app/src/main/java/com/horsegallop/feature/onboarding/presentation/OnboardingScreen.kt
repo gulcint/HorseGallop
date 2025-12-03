@@ -29,7 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import android.app.Activity
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DirectionsRun
+import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.MonitorHeart
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Groups
@@ -55,12 +55,15 @@ import kotlinx.coroutines.delay
 fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
     val primary = MaterialTheme.colorScheme.primary
     val secondary = MaterialTheme.colorScheme.secondary
-    val pages: List<OnboardingPage> = remember(primary, secondary) {
+    val warmClay = AppColors.WarmClay
+    val toastedAlmond = AppColors.ToastedAlmond
+    val softSand = AppColors.SoftSand
+    val pages: List<OnboardingPage> = remember(primary, secondary, warmClay, toastedAlmond, softSand) {
         listOf(
             OnboardingPage(
                 titleRes = com.horsegallop.core.R.string.onboarding_title_ride_tracking,
                 subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_ride_tracking,
-                gradient = listOf(AppColors.WarmClay, AppColors.ToastedAlmond),
+                gradient = listOf(warmClay, toastedAlmond),
                 features = listOf(
                     FeatureRes(Icons.Filled.Navigation, com.horsegallop.core.R.string.onboarding_feature_gps),
                     FeatureRes(Icons.Filled.LocalFireDepartment, com.horsegallop.core.R.string.onboarding_feature_calorie),
@@ -70,17 +73,17 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
             OnboardingPage(
                 titleRes = com.horsegallop.core.R.string.onboarding_title_watch,
                 subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_watch,
-                gradient = listOf(AppColors.WarmClay, primary),
+                gradient = listOf(warmClay, primary),
                 features = listOf(
                     FeatureRes(Icons.Filled.MonitorHeart, com.horsegallop.core.R.string.onboarding_feature_heart),
-                    FeatureRes(Icons.Filled.DirectionsRun, com.horsegallop.core.R.string.onboarding_feature_control),
+                    FeatureRes(Icons.AutoMirrored.Filled.DirectionsRun, com.horsegallop.core.R.string.onboarding_feature_control),
                     FeatureRes(Icons.Filled.Timeline, com.horsegallop.core.R.string.onboarding_feature_sync)
                 )
             ),
             OnboardingPage(
                 titleRes = com.horsegallop.core.R.string.onboarding_title_dashboard,
                 subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_dashboard,
-                gradient = listOf(AppColors.ToastedAlmond, primary),
+                gradient = listOf(toastedAlmond, primary),
                 features = listOf(
                     FeatureRes(Icons.Filled.Insights, com.horsegallop.core.R.string.onboarding_feature_durations),
                     FeatureRes(Icons.Filled.Timeline, com.horsegallop.core.R.string.onboarding_feature_charts),
@@ -90,7 +93,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
             OnboardingPage(
                 titleRes = com.horsegallop.core.R.string.onboarding_title_community,
                 subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_community,
-                gradient = listOf(primary, AppColors.SoftSand),
+                gradient = listOf(primary, softSand),
                 features = listOf(
                     FeatureRes(Icons.Filled.Groups, com.horsegallop.core.R.string.onboarding_feature_sharing),
                     FeatureRes(Icons.Filled.EmojiEvents, com.horsegallop.core.R.string.onboarding_feature_leaderboard),
@@ -144,6 +147,8 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             )
         }
+
+        
 
         // Bottom controls
         Box(
@@ -204,6 +209,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
         }
     }
 }
+
 
 @Composable
 private fun ThemedAnimatedBackground(gradient: List<Color>) {
@@ -425,4 +431,3 @@ private fun EngagingCalloutPreview() {
         )
     }
 }
-
