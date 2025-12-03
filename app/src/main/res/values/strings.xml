@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="enrollment_title">Kaydol</string>
+    <string name="label_first_name">İsim</string>
+    <string name="label_last_name">Soyisim</string>
+    <string name="label_city">Şehir</string>
+    <string name="label_country_code">Ülke Kodu</string>
+    <string name="label_phone">Telefon</string>
+    <string name="label_email">Email</string>
+    <string name="label_password">Şifre (8+ karakter)</string>
+    <string name="strength_weak">Zayıf</string>
+    <string name="strength_medium">Orta</string>
+    <string name="strength_strong">Güçlü</string>
+    <string name="password_strength_prefix">Şifre Gücü: %1$s</string>
+    <string name="assistchip_location_label">Konumdan al</string>
+    <string name="signup_button">Kaydol</string>
+    <string name="media_volume_low_warning">Medya sesi düşük; ses duyulmayabilir</string>
+    <string name="error_invalid_form">Geçerli bilgileri girin ve güçlü şifre kullanın</string>
+</resources>

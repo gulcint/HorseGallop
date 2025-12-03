@@ -8,8 +8,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
+import com.horsegallop.feature.auth.domain.SignInWithGoogleUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -24,8 +23,8 @@ data class LoginUiState(
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val auth: FirebaseAuth,
-    private val googleClient: GoogleSignInClient
+    private val googleClient: GoogleSignInClient,
+    private val signInWithGoogle: SignInWithGoogleUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState
@@ -42,14 +41,12 @@ class LoginViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_token_missing")
                     return@launch
                 }
-                val credential = GoogleAuthProvider.getCredential(token, null)
-                auth.signInWithCredential(credential)
-                    .addOnSuccessListener {
-                        _uiState.value = _uiState.value.copy(loading = false, success = true)
-                    }
-                    .addOnFailureListener {
-                        _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_firebase")
-                    }
+                try {
+                    signInWithGoogle.execute(token)
+                    _uiState.value = _uiState.value.copy(loading = false, success = true)
+                } catch (e: Exception) {
+                    _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_firebase")
+                }
             } catch (e: ApiException) {
                 val key = when (e.statusCode) {
                     CommonStatusCodes.NETWORK_ERROR -> "error_network"
@@ -77,10 +74,18 @@ class LoginViewModel @Inject constructor(
                 if (token.isNullOrEmpty()) {
                     _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_token_missing")
                 } else {
-                    val credential = GoogleAuthProvider.getCredential(token, null)
-                    auth.signInWithCredential(credential)
-                        .addOnSuccessListener { _uiState.value = _uiState.value.copy(loading = false, success = true) }
-                        .addOnFailureListener { _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_firebase") }
+                    try {
+                        viewModelScope.launch {
+                            try {
+                                signInWithGoogle.execute(token)
+                                _uiState.value = _uiState.value.copy(loading = false, success = true)
+                            } catch (e: Exception) {
+                                _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_firebase")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_firebase")
+                    }
                 }
             }
             .addOnFailureListener { onIntent(googleClient.signInIntent) }

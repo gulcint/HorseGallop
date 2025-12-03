@@ -1,14 +1,9 @@
-package com.horsegallop.feature.auth.data
+package com.horsegallop.data.auth
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.horsegallop.domain.auth.AuthRepository
 import kotlinx.coroutines.tasks.await
-
-interface AuthRepository {
-    suspend fun signInWithGoogleIdToken(idToken: String)
-    fun isSignedIn(): Boolean
-    fun signOut()
-}
 
 class FirebaseAuthRepository(
     private val auth: FirebaseAuth
@@ -24,5 +19,4 @@ class FirebaseAuthRepository(
         auth.signOut()
     }
 }
-
 

@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import com.horsegallop.theme.LightColorScheme
+import com.horsegallop.theme.DarkColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +35,11 @@ import kotlinx.coroutines.delay
 import java.util.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.material3.ExperimentalMaterial3Api
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
+import android.os.Build
+import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.horsegallop.feature.auth.domain.model.UserRole
 
@@ -55,38 +61,20 @@ class MainActivity : ComponentActivity() {
 			isAppearanceLightNavigationBars = true
 		}
 		
-        setContent {
-            val scheme = LightColorScheme
-            androidx.compose.runtime.CompositionLocalProvider(
-                com.horsegallop.core.theme.LocalTextColors provides com.horsegallop.core.theme.textColorsFrom(scheme)
-            ) {
-                MaterialTheme(colorScheme = scheme) {
-                    AppContent()
-                }
-            }
-        }
-	}
+        setContent { AppTheme { AppContent() } }
+    }
 }
 
 @Preview(showBackground = true, name = "AppContent")
 @Composable
 private fun PreviewAppContent() {
-    val scheme = LightColorScheme
-    androidx.compose.runtime.CompositionLocalProvider(
-        com.horsegallop.core.theme.LocalTextColors provides com.horsegallop.core.theme.textColorsFrom(scheme)
-    ) {
-        MaterialTheme(colorScheme = scheme) { AppContent() }
-    }
+    AppTheme { AppContent() }
 }
 
 @Preview(showBackground = true, name = "SplashScreen")
 @Composable
 private fun PreviewSplashScreen() {
-    val scheme = LightColorScheme
-    androidx.compose.runtime.CompositionLocalProvider(
-        com.horsegallop.core.theme.LocalTextColors provides com.horsegallop.core.theme.textColorsFrom(scheme)
-    ) {
-    MaterialTheme(colorScheme = scheme) {
+    AppTheme {
         // Side-effect free splash preview (no MediaPlayer/Lottie playback)
         Box(
             modifier = Modifier
@@ -108,13 +96,15 @@ private fun PreviewSplashScreen() {
                 )
             }
         }
-    } }
+    }
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppContent(): Unit {
     var showSplash: Boolean by remember { mutableStateOf(true) }
     var splashFinished: Boolean by remember { mutableStateOf(false) }
+    val navController = rememberNavController()
+    val isLoggedIn = remember { FirebaseAuth.getInstance().currentUser != null }
     
     LaunchedEffect(splashFinished) {
         if (splashFinished) showSplash = false
@@ -130,13 +120,27 @@ fun AppContent(): Unit {
 		
         SplashScreen(onFinished = { splashFinished = true })
     } else {
-        // Ana uygulama - Navigation
-        val navController = rememberNavController()
-        val isLoggedIn = remember { FirebaseAuth.getInstance().currentUser != null }
+        val act = LocalContext.current as? ComponentActivity
+        BackHandler {
+            val canPop = navController.popBackStack()
+            if (!canPop) {
+                act?.finish()
+            }
+        }
         AppNavHost(
             navController = navController,
             role = if (isLoggedIn) UserRole.CUSTOMER else null
         )
+    }
+}
+
+@Composable
+private fun AppTheme(content: @Composable () -> Unit) {
+    val scheme = LightColorScheme
+    androidx.compose.runtime.CompositionLocalProvider(
+        com.horsegallop.core.theme.LocalTextColors provides com.horsegallop.core.theme.textColorsFrom(scheme)
+    ) {
+        MaterialTheme(colorScheme = scheme, content = content)
     }
 }
 @Composable
@@ -151,44 +155,94 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
         val titleText: String = stringResource(com.horsegallop.core.R.string.welcome_title)
         val subtitleText: String = stringResource(com.horsegallop.core.R.string.welcome_subtitle)
         val composition by rememberLottieComposition(
-			LottieCompositionSpec.RawRes(R.raw.horse)
-		)
-		val progress by animateLottieCompositionAsState(
-			composition = composition,
-			iterations = LottieConstants.IterateForever
-		)
+            LottieCompositionSpec.RawRes(R.raw.horse)
+        )
+        val progress by animateLottieCompositionAsState(
+            composition = composition,
+            iterations = LottieConstants.IterateForever
+        )
 
-		val mediaPlayer = remember { MediaPlayer.create(ctx, R.raw.horse_gallop) }
-		LaunchedEffect(mediaPlayer) {
-			mediaPlayer?.let { mp ->
-				mp.isLooping = true
-				mp.setVolume(MEDIA_VOLUME_MAX, MEDIA_VOLUME_MAX)
-				mp.start()
-			}
-			delay(SPLASH_DURATION_MS)
-			onFinished()
-		}
-		DisposableEffect(Unit) {
-			onDispose {
-				try {
-					mediaPlayer?.stop()
-					mediaPlayer?.release()
-				} catch (_: Throwable) {}
-			}
-		}
+        var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+        LaunchedEffect(Unit) {
+            val am = ctx.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val attrs = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()
+                val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).setAudioAttributes(attrs).setOnAudioFocusChangeListener { }.build()
+                am.requestAudioFocus(req)
+            } else {
+                am.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
+            }
+            runCatching {
+                val created = MediaPlayer.create(ctx, R.raw.horse_gallop)
+                if (created != null) {
+                    mediaPlayer = created
+                    mediaPlayer?.isLooping = true
+                    mediaPlayer?.setVolume(MEDIA_VOLUME_MAX, MEDIA_VOLUME_MAX)
+                    mediaPlayer?.start()
+                    val current = am.getStreamVolume(AudioManager.STREAM_MUSIC)
+                    val max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                    if (current <= max.coerceAtLeast(1) / 4) {
+                        Toast.makeText(ctx, ctx.getString(R.string.media_volume_low_warning), Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    val tmp = MediaPlayer()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        tmp.setAudioAttributes(
+                            AudioAttributes.Builder()
+                                .setUsage(AudioAttributes.USAGE_MEDIA)
+                                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                .build()
+                        )
+                    }
+                    tmp.setOnErrorListener { mp, _, _ ->
+                        try { mp.reset() } catch (_: Throwable) {}
+                        false
+                    }
+                    val afd = ctx.resources.openRawResourceFd(R.raw.horse_gallop)
+                    tmp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                    afd.close()
+                    tmp.isLooping = true
+                    tmp.setVolume(MEDIA_VOLUME_MAX, MEDIA_VOLUME_MAX)
+                    tmp.prepare()
+                    tmp.start()
+                    mediaPlayer = tmp
+                    val current = am.getStreamVolume(AudioManager.STREAM_MUSIC)
+                    val max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                    if (current <= max.coerceAtLeast(1) / 4) {
+                        Toast.makeText(ctx, ctx.getString(R.string.media_volume_low_warning), Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            delay(SPLASH_DURATION_MS)
+            onFinished()
+        }
+        DisposableEffect(Unit) {
+            onDispose {
+                try {
+                    mediaPlayer?.stop()
+                    mediaPlayer?.release()
+                    mediaPlayer = null
+                } catch (_: Throwable) {}
+                try {
+                    val am = ctx.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        val attrs = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()
+                        val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).setAudioAttributes(attrs).setOnAudioFocusChangeListener { }.build()
+                        am.abandonAudioFocusRequest(req)
+                    } else {
+                        am.abandonAudioFocus(null)
+                    }
+                } catch (_: Throwable) {}
+            }
+        }
 		
-		var showLottie: Boolean by remember { mutableStateOf(true) }
-		LaunchedEffect(Unit) {
-			delay(SPLASH_DURATION_MS)
-			showLottie = false
-		}
-		if (showLottie) {
-			LottieAnimation(
-				composition = composition,
-				progress = { progress },
-				modifier = Modifier.fillMaxSize(LOTTIE_FILL_SCALE)
-			)
-		}
+        if (composition != null) {
+            LottieAnimation(
+                composition = composition,
+                progress = { progress },
+                modifier = Modifier.size(220.dp)
+            )
+        }
 		// Localized welcome texts over splash (auto-resolved by app locales/device locale)
 		Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 64.dp)) {
 			Text(text = titleText, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.primary)

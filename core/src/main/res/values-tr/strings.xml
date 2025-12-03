@@ -45,6 +45,23 @@
     <string name="auth_error_cancelled">Giriş işlemi iptal edildi</string>
     <string name="auth_error_play_services">Google Play Services güncellenmeli</string>
     <string name="auth_success">Başarıyla giriş yapıldı</string>
+    <string name="login_email_label">E‑posta</string>
+    <string name="login_email_placeholder">örnek@alan.com</string>
+    <string name="login_password_label">Şifre</string>
+    <string name="login_password_placeholder">••••••••</string>
+    <string name="password_toggle_show">Göster</string>
+    <string name="password_toggle_hide">Gizle</string>
+    <string name="forgot_password">Şifremi unuttum</string>
+    <string name="forgot_password_toast">Şifremi unuttum: yakında aktif.</string>
+    <string name="email_error_invalid">Geçerli bir e‑posta girin</string>
+    <string name="password_error_min_length">En az 6 karakter şifre girin</string>
+    <string name="login_button">Giriş Yap</string>
+    <string name="login_button_loading">Giriş Yapılıyor…</string>
+    <string name="signup_prompt">Hesap açmak ister misin?</string>
+    <!-- Theme -->
+    <string name="theme_system">Sistem</string>
+    <string name="theme_light">Açık</string>
+    <string name="theme_dark">Koyu</string>
 
     <!-- Home/Onboarding/Restaurant -->
     <string name="welcome_subtitle">Atlı yolculuğunuz burada başlıyor</string>

@@ -4,6 +4,8 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 
 // Light Theme Colors
 val Primary = Color(0xFF8B4513) // Saddle Brown
@@ -148,49 +150,83 @@ val DarkColorScheme = darkColorScheme(
 // Additional App-Specific Colors
 object AppColors {
     // Quick Action Colors
-    val ActionLesson = Color(0xFFB46A3A) // WarmClay
-    val ActionSchedule = Color(0xFFC89272) // ToastedAlmond
-    val ActionRestaurant = Secondary // Chocolate, matches theme
-    val ActionReviews = Primary // Saddle Brown, matches theme
+    val ActionLesson: Color
+        @Composable get() = if (isDark()) Color(0xFF8B5A2B) else Color(0xFFB46A3A)
+    val ActionSchedule: Color
+        @Composable get() = if (isDark()) Color(0xFF9E6A4F) else Color(0xFFC89272)
+    val ActionRestaurant: Color
+        @Composable get() = if (isDark()) SecondaryContainerDark else Secondary
+    val ActionReviews: Color
+        @Composable get() = if (isDark()) PrimaryDark else Primary
     
     // Status Colors
-    val Success = Color(0xFF4CAF50) // Green
-    val SuccessLight = Color(0xFF81C784) // Light Green
-    val SuccessDark = Color(0xFF388E3C) // Dark Green
+    val Success: Color
+        @Composable get() = if (isDark()) Color(0xFF66BB6A) else Color(0xFF4CAF50)
+    val SuccessLight: Color
+        @Composable get() = if (isDark()) Color(0xFF43A047) else Color(0xFF81C784)
+    val SuccessDark: Color
+        @Composable get() = Color(0xFF388E3C)
     
-    val Warning = Color(0xFFFF9800) // Orange
-    val WarningLight = Color(0xFFFFB74D) // Light Orange
-    val WarningDark = Color(0xFFF57C00) // Dark Orange
+    val Warning: Color
+        @Composable get() = if (isDark()) Color(0xFFFFA726) else Color(0xFFFF9800)
+    val WarningLight: Color
+        @Composable get() = if (isDark()) Color(0xFFFF8F00) else Color(0xFFFFB74D)
+    val WarningDark: Color
+        @Composable get() = Color(0xFFF57C00)
     
-    val Info = Color(0xFF2196F3) // Blue
-    val InfoLight = Color(0xFF64B5F6) // Light Blue
-    val InfoDark = Color(0xFF1976D2) // Dark Blue
+    val Info: Color
+        @Composable get() = if (isDark()) Color(0xFF64B5F6) else Color(0xFF2196F3)
+    val InfoLight: Color
+        @Composable get() = if (isDark()) Color(0xFF42A5F5) else Color(0xFF64B5F6)
+    val InfoDark: Color
+        @Composable get() = Color(0xFF1976D2)
     
     // Special Colors
-    val SplashBackground = Color(0xFFF5E6D3) // Cream
-    val Divider = Color(0xFFE0E0E0) // Light Gray
-    val Border = Color(0xFFCCCCCC) // Medium Gray
+    val SplashBackground: Color
+        @Composable get() = if (isDark()) SurfaceDark else Color(0xFFF5E6D3)
+    val Divider: Color
+        @Composable get() = if (isDark()) Color(0xFF404040) else Color(0xFFE0E0E0)
+    val Border: Color
+        @Composable get() = if (isDark()) Color(0xFF666666) else Color(0xFFCCCCCC)
     
     // Gradient Colors
-    val GradientStart = Color(0xFF8B4513) // Primary
-    val GradientEnd = Color(0xFFD2691E) // Secondary
-    val GradientLightStart = Color(0xFFF5E6D3) // Cream
-    val GradientLightEnd = Color(0xFFFFFFFF) // White
+    val GradientStart: Color
+        @Composable get() = MaterialTheme.colorScheme.primary
+    val GradientEnd: Color
+        @Composable get() = MaterialTheme.colorScheme.secondary
+    val GradientLightStart: Color
+        @Composable get() = if (isDark()) SurfaceDark else Color(0xFFF5E6D3)
+    val GradientLightEnd: Color
+        @Composable get() = if (isDark()) SurfaceDark else Color(0xFFFFFFFF)
     
     // Overlay Colors
-    val OverlayLight = Color(0x80FFFFFF) // Semi-transparent White
-    val OverlayDark = Color(0x80000000) // Semi-transparent Black
-    val OverlayPrimary = Color(0x808B4513) // Semi-transparent Primary
+    val OverlayLight: Color
+        @Composable get() = Color(0x80FFFFFF)
+    val OverlayDark: Color
+        @Composable get() = Color(0x80000000)
+    val OverlayPrimary: Color
+        @Composable get() = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
 
     // Light Coffee Tone (for light, warm UI overlays/backgrounds)
-    val LightCoffee = Color(0xFFEAD9C8)
+    val LightCoffee: Color
+        @Composable get() = if (isDark()) Color(0xFF3A2E25) else Color(0xFFEAD9C8)
 
     // Warm Browns for backgrounds (avoid green/beige feel)
-    val WarmClay = Color(0xFFB46A3A)   // rich clay brown
-    val SoftSand = Color(0xFFD9B08C)   // soft sand, not pale beige
-    val ToastedAlmond = Color(0xFFC89272) // warm almond
+    val WarmClay: Color
+        @Composable get() = if (isDark()) Color(0xFF8B5A2B) else Color(0xFFB46A3A)
+    val SoftSand: Color
+        @Composable get() = if (isDark()) Color(0xFF8E7A64) else Color(0xFFD9B08C)
+    val ToastedAlmond: Color
+        @Composable get() = if (isDark()) Color(0xFF9E6A4F) else Color(0xFFC89272)
     
     // General text colors
-    // A slightly darker neutral gray for secondary texts across the app
-    val TextGray = Color(0xFF555555)
+    val TextGray: Color
+        @Composable get() = if (isDark()) Color(0xFFCCCCCC) else Color(0xFF555555)
+}
+
+@Composable
+private fun isDark(): Boolean {
+    val bg = MaterialTheme.colorScheme.background
+    val onBg = MaterialTheme.colorScheme.onBackground
+    return (bg == BackgroundDark && onBg == OnBackgroundDark) || (bg == SurfaceDark)
 }

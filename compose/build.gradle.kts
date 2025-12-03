@@ -21,6 +21,7 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
     implementation(libs.compose.tooling)
+    implementation(libs.shimmer.compose)
 }
 
 

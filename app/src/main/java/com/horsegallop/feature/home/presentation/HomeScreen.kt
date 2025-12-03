@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,43 +37,80 @@ import com.horsegallop.feature.barn.presentation.BarnListScreen
 import com.horsegallop.feature.barn.domain.model.BarnUi
 import com.horsegallop.feature.ride.presentation.RideTrackingScreen
 import com.valentinilk.shimmer.shimmer
+import com.horsegallop.compose.QuickActionCard
+import com.horsegallop.compose.StatCard
+import com.horsegallop.compose.ActivityItem
 
 @Composable
 fun HomeScreen(
+  currentRoute: String? = null,
   onStartRide: () -> Unit,
   onViewBarns: () -> Unit,
-  onBarnSelected: (BarnUi) -> Unit
+  onProfileClick: () -> Unit
 ) {
   Scaffold(
     bottomBar = {
       NavigationBar {
-        NavigationBarItem(
-          icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
-          label = { Text("Home") },
-          selected = true,
-          onClick = { /* Already on home */ }
-        )
-        NavigationBarItem(
-          icon = { Icon(Icons.Filled.DirectionsRun, contentDescription = "Ride") },
-          label = { Text("Ride") },
-          selected = false,
-          onClick = onStartRide
-        )
-        NavigationBarItem(
-          icon = { Icon(Icons.Filled.List, contentDescription = "Barns") },
-          label = { Text("Barns") },
-          selected = false,
-          onClick = onViewBarns
-        )
+      val navItemColors = NavigationBarItemDefaults.colors(
+        selectedIconColor = MaterialTheme.colorScheme.primary,
+        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        indicatorColor = MaterialTheme.colorScheme.surfaceVariant
+      )
+      NavigationBarItem(
+        icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
+        label = { Text("Home") },
+        selected = (currentRoute == com.horsegallop.navigation.Dest.Home.route),
+        onClick = { /* Already on home */ },
+        alwaysShowLabel = false,
+        colors = navItemColors
+      )
+      NavigationBarItem(
+        icon = { Icon(Icons.AutoMirrored.Filled.DirectionsRun, contentDescription = "Ride") },
+        label = { Text("Ride") },
+        selected = (currentRoute == com.horsegallop.navigation.Dest.Ride.route),
+        onClick = onStartRide,
+        alwaysShowLabel = false,
+        colors = navItemColors
+      )
+      NavigationBarItem(
+        icon = { Icon(Icons.Filled.Search, contentDescription = "Barns") },
+        label = { Text("Barns") },
+        selected = (currentRoute == com.horsegallop.navigation.Dest.Barns.route),
+        onClick = onViewBarns,
+        alwaysShowLabel = false,
+        colors = navItemColors
+      )
+      NavigationBarItem(
+        icon = { Icon(Icons.Filled.Person, contentDescription = "Profile") },
+        label = { Text("Profile") },
+        selected = (currentRoute == com.horsegallop.navigation.Dest.Profile.route),
+        onClick = onProfileClick,
+        alwaysShowLabel = false,
+        colors = navItemColors
+      )
       }
     }
-  ) { _ ->
-    HomeDashboard(onStartRide = onStartRide, onViewBarns = onViewBarns)
+  ) { padding ->
+    Box(modifier = Modifier.padding(padding)) {
+      HomeDashboard(onStartRide = onStartRide, onViewBarns = onViewBarns, onProfileClick = onProfileClick)
+    }
+  }
+}
+
+@Preview(showBackground = true, name = "HomeScreen")
+@Composable
+private fun PreviewHomeScreen() {
+  MaterialTheme {
+    HomeScreen(
+      onStartRide = {},
+      onViewBarns = {},
+      onProfileClick = {}
+    )
   }
 }
 
 @Composable
-private fun HomeDashboard(onStartRide: () -> Unit, onViewBarns: () -> Unit) {
+private fun HomeDashboard(onStartRide: () -> Unit, onViewBarns: () -> Unit, onProfileClick: () -> Unit) {
   LazyColumn(
     modifier = Modifier
       .fillMaxSize()
@@ -79,13 +118,13 @@ private fun HomeDashboard(onStartRide: () -> Unit, onViewBarns: () -> Unit) {
     contentPadding = PaddingValues(
       start = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
       end = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
-      top = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical) + dimensionResource(id = com.horsegallop.core.R.dimen.spacing_lg),
+      top = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical_lg),
       bottom = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)
     ),
     verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md))
   ) {
     item {
-      WelcomeHeader()
+      WelcomeHeader(onProfileClick = onProfileClick)
     }
     
     item {
@@ -112,9 +151,9 @@ private fun HomeDashboard(onStartRide: () -> Unit, onViewBarns: () -> Unit) {
 }
 
 @Composable
-private fun WelcomeHeader() {
+private fun WelcomeHeader(onProfileClick: () -> Unit) {
   Card(
-    modifier = Modifier.fillMaxWidth(),
+    modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)),
     colors = CardDefaults.cardColors(
       containerColor = MaterialTheme.colorScheme.primaryContainer
     ),
@@ -152,12 +191,22 @@ private fun WelcomeHeader() {
             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
           )
         }
-        Icon(
-          Icons.Filled.TrendingUp,
-          contentDescription = null,
-          modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_xxl)),
-          tint = MaterialTheme.colorScheme.primary
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+          Icon(
+            Icons.AutoMirrored.Filled.TrendingUp,
+            contentDescription = null,
+            modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_xxl)),
+            tint = MaterialTheme.colorScheme.primary
+          )
+          Spacer(modifier = Modifier.width(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
+          IconButton(onClick = onProfileClick) {
+            Icon(
+              Icons.Filled.Person,
+              contentDescription = "Profile",
+              tint = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+          }
+        }
       }
     }
   }
@@ -197,53 +246,6 @@ private fun QuickActionsSection(onStartRide: () -> Unit, onViewBarns: () -> Unit
   }
 }
 
-@Composable
-private fun QuickActionCard(
-  title: String,
-  subtitle: String,
-  icon: ImageVector,
-  color: Color,
-  onClick: () -> Unit,
-  modifier: Modifier = Modifier
-) {
-  Card(
-    modifier = modifier
-      .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_card_md))
-      .clickable { onClick() },
-    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
-  ) {
-    Box(
-      modifier = Modifier
-        .fillMaxSize()
-        .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md))
-    ) {
-      Column(
-        verticalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.fillMaxSize()
-      ) {
-        Icon(
-          icon,
-          contentDescription = null,
-          modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_lg)),
-          tint = color
-        )
-        Column {
-          Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.Bold
-          )
-          Text(
-            text = subtitle,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-          )
-        }
-      }
-    }
-  }
-}
 
 @Composable
 private fun StatsOverviewSection() {
@@ -281,62 +283,6 @@ private fun StatsOverviewSection() {
   }
 }
 
-@Composable
-private fun StatCard(
-  title: String,
-  value: String,
-  subtitle: String,
-  icon: ImageVector,
-  color: Color,
-  modifier: Modifier = Modifier,
-  onClick: (() -> Unit)? = null
-) {
-  Card(
-    modifier = modifier.then(
-      if (onClick != null) Modifier.clickable { onClick() } else Modifier
-    ),
-    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
-  ) {
-    Column(
-      modifier = Modifier
-        .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
-      horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-      Box(
-        modifier = Modifier
-          .size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_xl))
-          .clip(CircleShape)
-          .background(color.copy(alpha = 0.12f)),
-        contentAlignment = Alignment.Center
-      ) {
-        Icon(
-          icon,
-          contentDescription = null,
-          modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_sm)),
-          tint = color
-        )
-      }
-      Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
-      Text(
-        text = value,
-        style = MaterialTheme.typography.headlineSmall,
-        fontWeight = FontWeight.Bold
-      )
-      Text(
-        text = subtitle,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-      )
-      Text(
-        text = title,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-        modifier = Modifier.padding(top = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_xs))
-      )
-    }
-  }
-}
 
 @Composable
 private fun RecentActivitySection() {
@@ -361,7 +307,7 @@ private fun RecentActivitySection() {
           subtitle = "Bugün, 08:30",
           duration = "45 dk",
           distance = "8.2 km",
-          onClick = { /* Navigate to activity details */ }
+          icon = Icons.AutoMirrored.Filled.DirectionsRun
         )
         HorizontalDivider(modifier = Modifier.padding(vertical = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
         ActivityItem(
@@ -369,77 +315,13 @@ private fun RecentActivitySection() {
           subtitle = "Dün, 18:15",
           duration = "1 saat 20 dk",
           distance = "12.5 km",
-          onClick = { /* Navigate to activity details */ }
+          icon = Icons.AutoMirrored.Filled.DirectionsRun
         )
       }
     }
   }
 }
 
-@Composable
-private fun ActivityItem(
-  title: String,
-  subtitle: String,
-  duration: String,
-  distance: String,
-  onClick: (() -> Unit)? = null
-) {
-  Row(
-    modifier = Modifier
-      .fillMaxWidth()
-      .then(
-        if (onClick != null) Modifier.clickable { onClick() } else Modifier
-      ),
-    horizontalArrangement = Arrangement.SpaceBetween,
-    verticalAlignment = Alignment.CenterVertically
-  ) {
-    Row(
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
-    ) {
-      Box(
-        modifier = Modifier
-          .size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_xl))
-          .clip(CircleShape)
-          .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
-        contentAlignment = Alignment.Center
-      ) {
-        Icon(
-          Icons.Filled.DirectionsRun,
-          contentDescription = null,
-          tint = MaterialTheme.colorScheme.primary,
-          modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_sm))
-        )
-      }
-      Column {
-        Text(
-          text = title,
-          style = MaterialTheme.typography.titleSmall,
-          fontWeight = FontWeight.Medium
-        )
-        Text(
-          text = subtitle,
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-        )
-      }
-    }
-    Column(
-      horizontalAlignment = Alignment.End
-    ) {
-      Text(
-        text = duration,
-        style = MaterialTheme.typography.bodySmall,
-        fontWeight = FontWeight.Medium
-      )
-      Text(
-        text = distance,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-      )
-    }
-  }
-}
 
 @Composable
 private fun TipsSection() {
@@ -492,279 +374,32 @@ private data class TabItem(val label: String, val icon: ImageVector)
 // Shimmer Skeleton Components
 @Composable
 private fun HomeDashboardSkeleton() {
-  LazyColumn(
-    modifier = Modifier.fillMaxSize(),
-    contentPadding = PaddingValues(16.dp),
-    verticalArrangement = Arrangement.spacedBy(20.dp)
-  ) {
-    item {
-      WelcomeHeaderSkeleton()
-    }
-    
-    item {
-      QuickActionsSkeleton()
-    }
-    
-    item {
-      StatsOverviewSkeleton()
-    }
-    
-    item {
-      RecentActivitySkeleton()
-    }
-    
-    item {
-      TipsSkeleton()
-    }
-    
-    item {
-      Spacer(modifier = Modifier.height(80.dp))
-    }
-  }
+  com.horsegallop.compose.HomeDashboardSkeleton()
 }
 
 @Composable
 private fun WelcomeHeaderSkeleton() {
-  Card(
-    modifier = Modifier
-      .fillMaxWidth()
-      .shimmer(),
-    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    shape = RoundedCornerShape(20.dp)
-  ) {
-    Box(
-      modifier = Modifier
-        .fillMaxWidth()
-        .height(120.dp)
-        .background(Color.Gray.copy(alpha = 0.3f))
-    )
-  }
+  com.horsegallop.compose.WelcomeHeaderSkeleton()
 }
 
 @Composable
 private fun QuickActionsSkeleton() {
-  Column {
-    Box(
-      modifier = Modifier
-        .width(120.dp)
-        .height(24.dp)
-        .shimmer()
-        .background(Color.Gray.copy(alpha = 0.3f))
-        .clip(RoundedCornerShape(4.dp))
-    )
-    
-    Spacer(modifier = Modifier.height(12.dp))
-    
-    LazyRow(
-      horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-      items(2) {
-        Card(
-          modifier = Modifier
-            .width(160.dp)
-            .height(120.dp)
-            .shimmer(),
-          colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-          shape = RoundedCornerShape(16.dp)
-        ) {
-          Box(
-            modifier = Modifier
-              .fillMaxSize()
-              .background(Color.Gray.copy(alpha = 0.3f))
-          )
-        }
-      }
-    }
-  }
+  com.horsegallop.compose.QuickActionsSkeleton()
 }
 
 @Composable
 private fun StatsOverviewSkeleton() {
-  Column {
-    Box(
-      modifier = Modifier
-        .width(140.dp)
-        .height(24.dp)
-        .shimmer()
-        .background(Color.Gray.copy(alpha = 0.3f))
-        .clip(RoundedCornerShape(4.dp))
-    )
-    
-    Spacer(modifier = Modifier.height(12.dp))
-    
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-      repeat(2) {
-        Card(
-          modifier = Modifier
-            .weight(1f)
-            .shimmer(),
-          colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-          shape = RoundedCornerShape(16.dp)
-        ) {
-          Box(
-            modifier = Modifier
-              .fillMaxWidth()
-              .height(120.dp)
-              .background(Color.Gray.copy(alpha = 0.3f))
-          )
-        }
-      }
-    }
-  }
+  com.horsegallop.compose.StatsOverviewSkeleton()
 }
 
 @Composable
 private fun RecentActivitySkeleton() {
-  Column {
-    Box(
-      modifier = Modifier
-        .width(120.dp)
-        .height(24.dp)
-        .shimmer()
-        .background(Color.Gray.copy(alpha = 0.3f))
-        .clip(RoundedCornerShape(4.dp))
-    )
-    
-    Spacer(modifier = Modifier.height(12.dp))
-    
-    Card(
-      modifier = Modifier
-        .fillMaxWidth()
-        .shimmer(),
-      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-      shape = RoundedCornerShape(16.dp)
-    ) {
-      Column(
-        modifier = Modifier.padding(16.dp)
-      ) {
-        repeat(2) {
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Row(
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-              Box(
-                modifier = Modifier
-                  .size(40.dp)
-                  .shimmer()
-                  .background(Color.Gray.copy(alpha = 0.3f))
-                  .clip(CircleShape)
-              )
-              Column {
-                Box(
-                  modifier = Modifier
-                    .width(80.dp)
-                    .height(16.dp)
-                    .shimmer()
-                    .background(Color.Gray.copy(alpha = 0.3f))
-                    .clip(RoundedCornerShape(4.dp))
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Box(
-                  modifier = Modifier
-                    .width(60.dp)
-                    .height(12.dp)
-                    .shimmer()
-                    .background(Color.Gray.copy(alpha = 0.3f))
-                    .clip(RoundedCornerShape(4.dp))
-                )
-              }
-            }
-            Column(
-              horizontalAlignment = Alignment.End
-            ) {
-              Box(
-                modifier = Modifier
-                  .width(40.dp)
-                  .height(14.dp)
-                  .shimmer()
-                  .background(Color.Gray.copy(alpha = 0.3f))
-                  .clip(RoundedCornerShape(4.dp))
-              )
-              Spacer(modifier = Modifier.height(4.dp))
-              Box(
-                modifier = Modifier
-                  .width(50.dp)
-                  .height(12.dp)
-                  .shimmer()
-                  .background(Color.Gray.copy(alpha = 0.3f))
-                  .clip(RoundedCornerShape(4.dp))
-              )
-            }
-          }
-          if (it == 0) {
-            Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-            Spacer(modifier = Modifier.height(12.dp))
-          }
-        }
-      }
-    }
-  }
+  com.horsegallop.compose.RecentActivitySkeleton()
 }
 
 @Composable
 private fun TipsSkeleton() {
-  Column {
-    Box(
-      modifier = Modifier
-        .width(140.dp)
-        .height(24.dp)
-        .shimmer()
-        .background(Color.Gray.copy(alpha = 0.3f))
-        .clip(RoundedCornerShape(4.dp))
-    )
-    
-    Spacer(modifier = Modifier.height(12.dp))
-    
-    Card(
-      modifier = Modifier
-        .fillMaxWidth()
-        .shimmer(),
-      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-      shape = RoundedCornerShape(16.dp)
-    ) {
-      Row(
-        modifier = Modifier.padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-      ) {
-        Box(
-          modifier = Modifier
-            .size(24.dp)
-            .shimmer()
-            .background(Color.Gray.copy(alpha = 0.3f))
-            .clip(CircleShape)
-        )
-        Column(modifier = Modifier.weight(1f)) {
-          Box(
-            modifier = Modifier
-              .width(100.dp)
-              .height(16.dp)
-              .shimmer()
-              .background(Color.Gray.copy(alpha = 0.3f))
-              .clip(RoundedCornerShape(4.dp))
-          )
-          Spacer(modifier = Modifier.height(8.dp))
-          Box(
-            modifier = Modifier
-              .fillMaxWidth()
-              .height(14.dp)
-              .shimmer()
-              .background(Color.Gray.copy(alpha = 0.3f))
-              .clip(RoundedCornerShape(4.dp))
-          )
-        }
-      }
-    }
-  }
+  com.horsegallop.compose.TipsSkeleton()
 }
 
 // Preview Components
@@ -774,7 +409,8 @@ private fun HomeDashboardPreview() {
   MaterialTheme {
     HomeDashboard(
       onStartRide = {},
-      onViewBarns = {}
+      onViewBarns = {},
+      onProfileClick = {}
     )
   }
 }
@@ -783,7 +419,7 @@ private fun HomeDashboardPreview() {
 @Composable
 private fun HomeDashboardSkeletonPreview() {
   MaterialTheme {
-    HomeDashboardSkeleton()
+    com.horsegallop.compose.HomeDashboardSkeleton()
   }
 }
 
@@ -792,11 +428,10 @@ private fun HomeDashboardSkeletonPreview() {
 private fun HomeScreenPreview() {
   MaterialTheme {
     HomeScreen(
+      currentRoute = com.horsegallop.navigation.Dest.Home.route,
       onStartRide = {},
       onViewBarns = {},
-      onBarnSelected = {}
+      onProfileClick = {}
     )
   }
 }
-
-

@@ -166,29 +166,7 @@ fun RideTrackingScreen(
   // Location tracking service removed - using mock data for now
   Scaffold(
     containerColor = MaterialTheme.colorScheme.background,
-    topBar = { /* No title - greeting moved into content */ },
-    bottomBar = {
-      NavigationBar {
-        NavigationBarItem(
-          icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
-          label = { Text("Home") },
-          selected = false,
-          onClick = onHomeClick
-        )
-        NavigationBarItem(
-          icon = { Icon(Icons.Filled.DirectionsRun, contentDescription = "Ride") },
-          label = { Text("Ride") },
-          selected = true,
-          onClick = { /* Already on ride */ }
-        )
-        NavigationBarItem(
-          icon = { Icon(Icons.Filled.List, contentDescription = "Barns") },
-          label = { Text("Barns") },
-          selected = false,
-          onClick = onBarnsClick
-        )
-      }
-    }
+    topBar = { /* No title - greeting moved into content */ }
   ) { padding ->
     Column(
       modifier = Modifier
@@ -867,5 +845,4 @@ private fun ControlsRow(isRiding: Boolean, onStop: () -> Unit, autoDetect: Boole
 private fun PreviewRideTracking() {
   RideTrackingScreen(viewModel = RideTrackingViewModel())
 }
-
 

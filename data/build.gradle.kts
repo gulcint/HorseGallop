@@ -20,6 +20,7 @@ android {
 
 dependencies {
     implementation(project(":core"))
+    implementation(project(":domain"))
     implementation(libs.coroutines)
     implementation(libs.retrofit)
     implementation(libs.retrofit.moshi)
@@ -31,4 +32,7 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
     kapt(libs.room.compiler)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.google.auth)
 }
