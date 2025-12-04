@@ -2,12 +2,12 @@
     <!-- Main App Theme -->
     <style name="Theme.horsegallop" parent="android:Theme.Material.Light.NoActionBar">
         <!-- Status Bar -->
-        <item name="android:statusBarColor">@color/surface</item>
-        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:windowLightStatusBar">false</item>
         
         <!-- Navigation Bar -->
-        <item name="android:navigationBarColor">@color/surface</item>
-        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+        <item name="android:navigationBarColor">@color/secondary_variant</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
         
         <!-- Primary Colors -->
         <item name="colorPrimary">@color/primary</item>

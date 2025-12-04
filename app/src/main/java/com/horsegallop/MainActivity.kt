@@ -55,11 +55,10 @@ class MainActivity : ComponentActivity() {
 		// Enable edge-to-edge mode for modern UI
 		enableEdgeToEdge()
 		
-		// Set light status bar icons
-		WindowCompat.getInsetsController(window, window.decorView).apply {
-			isAppearanceLightStatusBars = true
-			isAppearanceLightNavigationBars = true
-		}
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = false
+        }
 		
         setContent { AppTheme { AppContent() } }
     }
@@ -76,12 +75,12 @@ private fun PreviewAppContent() {
 private fun PreviewSplashScreen() {
     AppTheme {
         // Side-effect free splash preview (no MediaPlayer/Lottie playback)
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
-            contentAlignment = Alignment.Center
-        ) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.Center
+    ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = stringResource(com.horsegallop.core.R.string.welcome_title),
