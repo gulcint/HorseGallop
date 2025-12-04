@@ -14,13 +14,9 @@ import javax.inject.Inject
 data class EnrollmentUiState(
   val firstName: String = "",
   val lastName: String = "",
-  val countryCode: String = "+90",
-  val phone: String = "",
   val birthDate: String = "",
-  val city: String = "",
   val email: String = "",
   val password: String = "",
-  val confirmPassword: String = "",
   val loading: Boolean = false,
   val error: String? = null,
   val showDatePicker: Boolean = false
@@ -36,19 +32,11 @@ class EnrollmentViewModel @Inject constructor(
 
   fun updateFirstName(v: String) { _ui.value = _ui.value.copy(firstName = v) }
   fun updateLastName(v: String) { _ui.value = _ui.value.copy(lastName = v) }
-  fun updateCity(v: String) { _ui.value = _ui.value.copy(city = v) }
   fun updateEmail(v: String) { _ui.value = _ui.value.copy(email = v) }
   fun updatePassword(v: String) { _ui.value = _ui.value.copy(password = v) }
-  fun updateConfirmPassword(v: String) { _ui.value = _ui.value.copy(confirmPassword = v) }
-  fun setCountryCode(code: String) { _ui.value = _ui.value.copy(countryCode = code) }
   fun toggleCountryMenu(expanded: Boolean) {}
   fun setBirthDate(date: String) { _ui.value = _ui.value.copy(birthDate = date) }
   fun setShowDatePicker(show: Boolean) { _ui.value = _ui.value.copy(showDatePicker = show) }
-
-  fun updatePhone(input: String) {
-    val digits = input.filter { it.isDigit() }
-    _ui.value = _ui.value.copy(phone = digits)
-  }
 
   fun signUp(onSuccess: () -> Unit) {
     val s = _ui.value
@@ -58,12 +46,8 @@ class EnrollmentViewModel @Inject constructor(
     val hasDigit = s.password.any { it.isDigit() }
     val hasSpecial = s.password.any { !it.isLetterOrDigit() }
     val strong = hasLen && hasUpper && hasLower && hasDigit && hasSpecial
-    val passMatch = s.confirmPassword == s.password
-    val phoneDigits = s.phone.filter { it.isDigit() }
-    val minLen = when (s.countryCode) { "+33" -> 9; else -> 10 }
-    val phoneValid = phoneDigits.length >= minLen
     val emailValid = s.email.contains("@")
-    if (s.firstName.isBlank() || s.lastName.isBlank() || s.city.isBlank() || !phoneValid || !emailValid || !strong || !passMatch) {
+    if (s.firstName.isBlank() || s.lastName.isBlank() || !emailValid || !strong) {
       _ui.value = s.copy(error = "Geçerli bilgileri girin ve güçlü şifre kullanın")
       return
     }
@@ -71,9 +55,6 @@ class EnrollmentViewModel @Inject constructor(
     signUpWithEmail.execute(
       firstName = s.firstName,
       lastName = s.lastName,
-      countryCode = s.countryCode,
-      phoneDigits = phoneDigits,
-      birthDate = s.birthDate,
       email = s.email,
       password = s.password,
       onSuccess = { _ui.value = _ui.value.copy(loading = false); onSuccess() },

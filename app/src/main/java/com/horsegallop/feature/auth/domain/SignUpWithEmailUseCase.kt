@@ -11,9 +11,6 @@ class SignUpWithEmailUseCase @Inject constructor(
   fun execute(
     firstName: String,
     lastName: String,
-    countryCode: String,
-    phoneDigits: String,
-    birthDate: String,
     email: String,
     password: String,
     onSuccess: () -> Unit,
@@ -29,9 +26,6 @@ class SignUpWithEmailUseCase @Inject constructor(
           val userMap = mapOf(
             "firstName" to firstName,
             "lastName" to lastName,
-            "phone" to (countryCode + phoneDigits),
-            "countryCode" to countryCode,
-            "birthDate" to birthDate,
             "email" to email
           )
           // Firestore’a kaydet ve e-posta doğrulama gönder
