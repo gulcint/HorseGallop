@@ -118,7 +118,7 @@ private fun HomeDashboard(onStartRide: () -> Unit, onViewBarns: () -> Unit, onPr
     contentPadding = PaddingValues(
       start = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
       end = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
-      top = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical_lg),
+      top = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical),
       bottom = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)
     ),
     verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md))
@@ -153,7 +153,7 @@ private fun HomeDashboard(onStartRide: () -> Unit, onViewBarns: () -> Unit, onPr
 @Composable
 private fun WelcomeHeader(onProfileClick: () -> Unit) {
   Card(
-    modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)),
+    modifier = Modifier.fillMaxWidth().padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)),
     colors = CardDefaults.cardColors(
       containerColor = MaterialTheme.colorScheme.primaryContainer
     ),
@@ -198,14 +198,6 @@ private fun WelcomeHeader(onProfileClick: () -> Unit) {
             modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_xxl)),
             tint = MaterialTheme.colorScheme.primary
           )
-          Spacer(modifier = Modifier.width(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
-          IconButton(onClick = onProfileClick) {
-            Icon(
-              Icons.Filled.Person,
-              contentDescription = "Profile",
-              tint = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-          }
         }
       }
     }
