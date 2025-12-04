@@ -117,11 +117,10 @@ fun BarnScreenContent(
 			)
 		},
 		containerColor = Color(0xFFFAFAFA)
-	) { padding ->
+	) { _ ->
 		LazyColumn(
 			modifier = Modifier
-				.fillMaxSize()
-				.padding(padding),
+				.fillMaxSize(),
 			contentPadding = PaddingValues(
 				start = 16.dp,
 				end = 16.dp,
@@ -611,11 +610,10 @@ fun BarnScreenShimmer() {
 			)
 		},
 		containerColor = Color(0xFFFAFAFA)
-	) { padding ->
+	) { _ ->
 		LazyColumn(
 			modifier = Modifier
-				.fillMaxSize()
-				.padding(padding),
+				.fillMaxSize(),
 			contentPadding = PaddingValues(
 				start = 16.dp,
 				end = 16.dp,

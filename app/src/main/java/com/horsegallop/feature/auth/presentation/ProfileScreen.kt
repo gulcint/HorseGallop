@@ -110,11 +110,10 @@ fun ProfileScreen(
     else -> fallbackProfile
   }
 
-  Scaffold { padding ->
+  Scaffold { _ ->
     Column(
       modifier = Modifier
         .fillMaxSize()
-        .padding(padding)
         .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal))
         .padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)),
       verticalArrangement = Arrangement.spacedBy(

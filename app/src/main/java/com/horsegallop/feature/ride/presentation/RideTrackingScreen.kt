@@ -167,11 +167,10 @@ fun RideTrackingScreen(
   Scaffold(
     containerColor = MaterialTheme.colorScheme.background,
     topBar = { /* No title - greeting moved into content */ }
-  ) { padding ->
+  ) { _ ->
     Column(
       modifier = Modifier
         .fillMaxSize()
-        .padding(padding)
         .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal))
         .padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)),
       verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md))

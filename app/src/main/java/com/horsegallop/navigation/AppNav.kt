@@ -120,8 +120,8 @@ fun AppNavHost(
         }
       }
     }
-  ) { innerPadding ->
-  NavHost(navController = navController, startDestination = if (role == null) Dest.Onboarding.route else Dest.Home.route, modifier = Modifier.padding(innerPadding)) {
+  ) { _ ->
+  NavHost(navController = navController, startDestination = if (role == null) Dest.Onboarding.route else Dest.Home.route, modifier = Modifier) {
     composable(Dest.Onboarding.route) {
       OnboardingScreen(
         onStart = {
