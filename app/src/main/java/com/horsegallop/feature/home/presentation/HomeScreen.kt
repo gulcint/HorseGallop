@@ -96,10 +96,7 @@ private fun HomeDashboard(onStartRide: () -> Unit, onViewBarns: () -> Unit, onPr
       TipsSection()
     }
     
-    // Bottom padding for better scrolling
-    item {
-      Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.bottom_navigation_height)))
-    }
+    // Removed manual bottom spacer to avoid double padding with Scaffold's innerPadding
   }
 }
 
