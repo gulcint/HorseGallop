@@ -2,13 +2,28 @@ package com.horsegallop.navigation
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.horsegallop.feature.auth.domain.model.UserRole
 import com.horsegallop.feature.auth.presentation.LoginScreen
 import com.horsegallop.feature.auth.presentation.EmailLoginScreen
@@ -38,7 +53,61 @@ fun AppNavHost(
   navController: NavHostController,
   role: UserRole?
 ) {
-  NavHost(navController = navController, startDestination = if (role == null) Dest.Onboarding.route else Dest.Home.route) {
+  val backStackEntry by navController.currentBackStackEntryAsState()
+  val currentRoute = backStackEntry?.destination?.route
+  val showBottomBar = currentRoute in listOf(Dest.Home.route, Dest.Barns.route, Dest.Profile.route)
+
+  Scaffold(
+    bottomBar = {
+      if (showBottomBar) {
+        Surface(
+          color = MaterialTheme.colorScheme.surface,
+          tonalElevation = 6.dp,
+          shadowElevation = 8.dp
+        ) {
+          NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+            NavigationBarItem(
+              selected = currentRoute == Dest.Home.route,
+              onClick = {
+                navController.navigate(Dest.Home.route) {
+                  popUpTo(navController.graph.findStartDestination().id)
+                  launchSingleTop = true
+                }
+              },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.Home, null) },
+              label = { androidx.compose.material3.Text(text = "Home") },
+              alwaysShowLabel = true
+            )
+            NavigationBarItem(
+              selected = currentRoute == Dest.Barns.route,
+              onClick = {
+                navController.navigate(Dest.Barns.route) {
+                  popUpTo(navController.graph.findStartDestination().id)
+                  launchSingleTop = true
+                }
+              },
+              icon = { androidx.compose.material3.Icon(Icons.AutoMirrored.Filled.List, null) },
+              label = { androidx.compose.material3.Text(text = "Barns") },
+              alwaysShowLabel = true
+            )
+            NavigationBarItem(
+              selected = currentRoute == Dest.Profile.route,
+              onClick = {
+                navController.navigate(Dest.Profile.route) {
+                  popUpTo(navController.graph.findStartDestination().id)
+                  launchSingleTop = true
+                }
+              },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.Person, null) },
+              label = { androidx.compose.material3.Text(text = "Profile") },
+              alwaysShowLabel = true
+            )
+          }
+        }
+      }
+    }
+  ) { innerPadding ->
+  NavHost(navController = navController, startDestination = if (role == null) Dest.Onboarding.route else Dest.Home.route, modifier = Modifier.padding(innerPadding)) {
     composable(Dest.Onboarding.route) {
       OnboardingScreen(
         onStart = {
@@ -86,10 +155,8 @@ fun AppNavHost(
       )
     }
     composable(Dest.Home.route) {
-      // Home ekranında geri tuşu uygulamayı kapatır
       val activity = LocalContext.current as? Activity
       BackHandler { activity?.finish() }
-      val currentRoute = navController.currentBackStackEntry?.destination?.route
       HomeScreen(
         currentRoute = currentRoute,
         onStartRide = { navController.navigate(Dest.Ride.route) },
@@ -108,7 +175,6 @@ fun AppNavHost(
       )
     }
     composable(Dest.Ride.route) {
-      // Ride ekranında geri tuşu Home'a döner
       BackHandler { navController.popBackStack() }
       com.horsegallop.feature.ride.presentation.RideTrackingScreen(
         viewModel = com.horsegallop.feature.ride.presentation.RideTrackingViewModel(),
@@ -129,9 +195,9 @@ fun AppNavHost(
       route = Dest.BarnDetail.route,
       arguments = listOf(navArgument("id") { type = NavType.StringType })
     ) { backStackEntry ->
-      // BarnDetail ekranında geri tuşu önceki ekrana döner
       BackHandler { navController.popBackStack() }
       BarnDetail(slides = emptyList())
     }
+  }
   }
 }
