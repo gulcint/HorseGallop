@@ -107,8 +107,6 @@ fun LoginScreen(
                     )
                 )
             )
-            .statusBarsPadding()
-            .navigationBarsPadding()
     ) {
         // Yükleme sırasında overlay kaldırıldı
         Column(

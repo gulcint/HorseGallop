@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.zIndex
+import androidx.compose.foundation.border
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.stringArrayResource
@@ -97,24 +100,17 @@ fun ProfileScreen(
     }
   }
 
-  Scaffold(
-    topBar = {
-      CenterAlignedTopAppBar(
-        title = {
-          Text(
-            text = stringResource(id = com.horsegallop.core.R.string.profile),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = onBack) {
-            Icon(Icons.Filled.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface)
-          }
-        }
-      )
-    }
-  ) { padding ->
+  // Derlenen adı başlıkta kullan
+  val nameDisplay = listOf(firstName, lastName).filter { it.isNotBlank() }.joinToString(" ")
+  val fallbackProfile = stringResource(id = com.horsegallop.core.R.string.profile)
+  val titleName = when {
+    nameDisplay.isNotBlank() -> nameDisplay
+    !user?.displayName.isNullOrBlank() -> user?.displayName ?: ""
+    email.isNotBlank() -> email
+    else -> fallbackProfile
+  }
+
+  Scaffold { padding ->
     Column(
       modifier = Modifier
         .fillMaxSize()
@@ -125,6 +121,21 @@ fun ProfileScreen(
         dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md)
       )
     ) {
+      // Kompakt başlık satırı (TopAppBar yerine daha az yükseklik)
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(top = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
+      ) {
+        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
+        Text(
+          text = titleName,
+          style = MaterialTheme.typography.titleMedium,
+          color = MaterialTheme.colorScheme.onSurface
+        )
+      }
       Surface(
         shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xl)),
         color = MaterialTheme.colorScheme.surface,
@@ -145,7 +156,7 @@ fun ProfileScreen(
         ) {
           Box(
             modifier = Modifier
-              .size(96.dp)
+              .size(92.dp)
               .clip(CircleShape)
               .background(
                 MaterialTheme.colorScheme.secondary.copy(
@@ -178,14 +189,25 @@ fun ProfileScreen(
             Box(
               modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .size(28.dp)
+                .zIndex(1f)
+                .size(32.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary),
+                .background(MaterialTheme.colorScheme.primary)
+                .border(
+                  androidx.compose.foundation.BorderStroke(
+                    dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin),
+                    MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                  )
+                )
+                .clickable { pickImageLauncher.launch("image/*") },
               contentAlignment = Alignment.Center
             ) {
-              Icon(Icons.Filled.Edit, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier
-                .size(18.dp)
-                .clickable { pickImageLauncher.launch("image/*") })
+              Icon(
+                Icons.Filled.Edit,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(18.dp)
+              )
             }
           }
           if (profileImageUri != null) {

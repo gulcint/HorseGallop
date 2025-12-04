@@ -90,9 +90,7 @@ fun BarnScreenContent(
 ) {
 	Scaffold(
 		modifier = Modifier
-			.fillMaxSize()
-			.statusBarsPadding()
-			.navigationBarsPadding(),
+			.fillMaxSize(),
 		topBar = {
 			TopAppBar(
 			title = {
@@ -584,9 +582,7 @@ fun HorseBarnCarousel() {
 fun BarnScreenShimmer() {
 	Scaffold(
 		modifier = Modifier
-			.fillMaxSize()
-			.statusBarsPadding()
-			.navigationBarsPadding(),
+			.fillMaxSize(),
 		topBar = {
 			TopAppBar(
 				title = {
