@@ -162,7 +162,8 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
         )
 
         var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
-        LaunchedEffect(Unit) {
+        LaunchedEffect(composition) {
+            if (composition == null) return@LaunchedEffect
             val am = ctx.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val attrs = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()
@@ -235,13 +236,11 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
             }
         }
 		
-        if (composition != null) {
-            LottieAnimation(
-                composition = composition,
-                progress = { progress },
-                modifier = Modifier.size(220.dp)
-            )
-        }
+        LottieAnimation(
+            composition = composition,
+            progress = { progress },
+            modifier = Modifier.size(220.dp)
+        )
 		// Localized welcome texts over splash (auto-resolved by app locales/device locale)
 		Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 64.dp)) {
 			Text(text = titleText, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.primary)
