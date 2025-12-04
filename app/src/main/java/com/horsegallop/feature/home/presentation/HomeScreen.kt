@@ -67,8 +67,7 @@ private fun PreviewHomeScreen() {
 private fun HomeDashboard(onStartRide: () -> Unit, onViewBarns: () -> Unit, onProfileClick: () -> Unit) {
   LazyColumn(
     modifier = Modifier
-      .fillMaxSize()
-      .windowInsetsPadding(WindowInsets.statusBars),
+      .fillMaxSize(),
     contentPadding = PaddingValues(
       start = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
       end = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),

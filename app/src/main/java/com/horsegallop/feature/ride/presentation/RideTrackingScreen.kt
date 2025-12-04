@@ -172,10 +172,8 @@ fun RideTrackingScreen(
       modifier = Modifier
         .fillMaxSize()
         .padding(padding)
-        .padding(
-          horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal), 
-          vertical = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)
-        ),
+        .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal))
+        .padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)),
       verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md))
     ) {
       WelcomeHeader()
@@ -193,7 +191,7 @@ fun RideTrackingScreen(
           modifier = Modifier
             .fillMaxWidth()
             .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl))
-            .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)),
+            ,
           colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
           shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
           elevation = ButtonDefaults.buttonElevation(defaultElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm))
@@ -845,4 +843,3 @@ private fun ControlsRow(isRiding: Boolean, onStop: () -> Unit, autoDetect: Boole
 private fun PreviewRideTracking() {
   RideTrackingScreen(viewModel = RideTrackingViewModel())
 }
-
