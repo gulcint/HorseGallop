@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Navigation
+import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.MaterialTheme
@@ -99,7 +100,7 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(Icons.Filled.Navigation, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.Pets, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) },
               label = { androidx.compose.material3.Text(text = "Ride", color = MaterialTheme.colorScheme.onPrimaryContainer) },
               alwaysShowLabel = true
             )
