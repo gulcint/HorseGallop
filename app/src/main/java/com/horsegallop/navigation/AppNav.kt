@@ -62,11 +62,11 @@ fun AppNavHost(
     bottomBar = {
       if (showBottomBar) {
         Surface(
-          color = MaterialTheme.colorScheme.surface,
+          color = MaterialTheme.colorScheme.primaryContainer,
           tonalElevation = 6.dp,
           shadowElevation = 8.dp
         ) {
-          NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+          NavigationBar(containerColor = MaterialTheme.colorScheme.primaryContainer) {
             NavigationBarItem(
               selected = currentRoute == Dest.Home.route,
               onClick = {
@@ -75,11 +75,11 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(Icons.Filled.Home, null) },
-              label = { androidx.compose.material3.Text(text = "Home") },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.Home, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) },
+              label = { androidx.compose.material3.Text(text = "Home", color = MaterialTheme.colorScheme.onPrimaryContainer) },
               alwaysShowLabel = true
             )
-          NavigationBarItem(
+            NavigationBarItem(
               selected = currentRoute == Dest.Barns.route,
               onClick = {
                 navController.navigate(Dest.Barns.route) {
@@ -87,8 +87,8 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(Icons.AutoMirrored.Filled.List, null) },
-              label = { androidx.compose.material3.Text(text = "Barns") },
+              icon = { androidx.compose.material3.Icon(Icons.AutoMirrored.Filled.List, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) },
+              label = { androidx.compose.material3.Text(text = "Barns", color = MaterialTheme.colorScheme.onPrimaryContainer) },
               alwaysShowLabel = true
             )
             NavigationBarItem(
@@ -99,8 +99,8 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(Icons.Filled.Navigation, null) },
-              label = { androidx.compose.material3.Text(text = "Ride") },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.Navigation, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) },
+              label = { androidx.compose.material3.Text(text = "Ride", color = MaterialTheme.colorScheme.onPrimaryContainer) },
               alwaysShowLabel = true
             )
             NavigationBarItem(
@@ -111,8 +111,8 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(Icons.Filled.Person, null) },
-              label = { androidx.compose.material3.Text(text = "Profile") },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.Person, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) },
+              label = { androidx.compose.material3.Text(text = "Profile", color = MaterialTheme.colorScheme.onPrimaryContainer) },
               alwaysShowLabel = true
             )
           }

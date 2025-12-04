@@ -48,53 +48,7 @@ fun HomeScreen(
   onViewBarns: () -> Unit,
   onProfileClick: () -> Unit
 ) {
-  Scaffold(
-    bottomBar = {
-      NavigationBar {
-      val navItemColors = NavigationBarItemDefaults.colors(
-        selectedIconColor = MaterialTheme.colorScheme.primary,
-        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        indicatorColor = MaterialTheme.colorScheme.surfaceVariant
-      )
-      NavigationBarItem(
-        icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
-        label = { Text("Home") },
-        selected = (currentRoute == com.horsegallop.navigation.Dest.Home.route),
-        onClick = { /* Already on home */ },
-        alwaysShowLabel = false,
-        colors = navItemColors
-      )
-      NavigationBarItem(
-        icon = { Icon(Icons.AutoMirrored.Filled.DirectionsRun, contentDescription = "Ride") },
-        label = { Text("Ride") },
-        selected = (currentRoute == com.horsegallop.navigation.Dest.Ride.route),
-        onClick = onStartRide,
-        alwaysShowLabel = false,
-        colors = navItemColors
-      )
-      NavigationBarItem(
-        icon = { Icon(Icons.Filled.Search, contentDescription = "Barns") },
-        label = { Text("Barns") },
-        selected = (currentRoute == com.horsegallop.navigation.Dest.Barns.route),
-        onClick = onViewBarns,
-        alwaysShowLabel = false,
-        colors = navItemColors
-      )
-      NavigationBarItem(
-        icon = { Icon(Icons.Filled.Person, contentDescription = "Profile") },
-        label = { Text("Profile") },
-        selected = (currentRoute == com.horsegallop.navigation.Dest.Profile.route),
-        onClick = onProfileClick,
-        alwaysShowLabel = false,
-        colors = navItemColors
-      )
-      }
-    }
-  ) { padding ->
-    Box(modifier = Modifier.padding(padding)) {
-      HomeDashboard(onStartRide = onStartRide, onViewBarns = onViewBarns, onProfileClick = onProfileClick)
-    }
-  }
+  HomeDashboard(onStartRide = onStartRide, onViewBarns = onViewBarns, onProfileClick = onProfileClick)
 }
 
 @Preview(showBackground = true, name = "HomeScreen")
