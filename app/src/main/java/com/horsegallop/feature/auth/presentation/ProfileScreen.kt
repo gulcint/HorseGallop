@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -65,7 +66,6 @@ fun ProfileScreen(
   val isGoogle = remember(user) { user?.providerData?.any { it.providerId == "google.com" } == true }
   var profileImageUri by remember { mutableStateOf<Uri?>(null) }
   var profileImageUrl by remember { mutableStateOf<String?>(null) }
-  val imagePermission = if (Build.VERSION.SDK_INT >= 33) android.Manifest.permission.READ_MEDIA_IMAGES else android.Manifest.permission.READ_EXTERNAL_STORAGE
   val pickImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
     profileImageUri = uri
     val uid = FirebaseAuth.getInstance().currentUser?.uid
@@ -79,9 +79,6 @@ fun ProfileScreen(
         }
       }
     }
-  }
-  val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-    if (granted) { pickImageLauncher.launch("image/*") }
   }
 
   LaunchedEffect(user?.uid) {
@@ -122,10 +119,8 @@ fun ProfileScreen(
       modifier = Modifier
         .fillMaxSize()
         .padding(padding)
-        .padding(
-          horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
-          vertical = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)
-        ),
+        .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal))
+        .padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)),
       verticalArrangement = Arrangement.spacedBy(
         dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md)
       )
@@ -148,21 +143,15 @@ fun ProfileScreen(
           ),
           verticalAlignment = Alignment.CenterVertically
         ) {
-          val initials = listOf(firstName, lastName)
-            .filter { it.isNotBlank() }
-            .map { it.trim() }
-            .map { it.firstOrNull()?.uppercaseChar() ?: ' ' }
-            .take(2)
-            .joinToString("")
           Box(
             modifier = Modifier
-              .size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_xxl))
+              .size(96.dp)
               .clip(CircleShape)
               .background(
                 MaterialTheme.colorScheme.secondary.copy(
-                  alpha = (0.12f + (kotlin.math.abs((firstName + lastName).hashCode() % 100) / 100f) * 0.18f))
+                  alpha = 0.18f)
                 )
-              .clickable { permissionLauncher.launch(imagePermission) },
+              .clickable { pickImageLauncher.launch("image/*") },
             contentAlignment = Alignment.Center
           ) {
             when {
@@ -183,23 +172,20 @@ fun ProfileScreen(
                 )
               }
               else -> {
-                Text(
-                  text = if (initials.isNotBlank()) initials else "?",
-                  style = MaterialTheme.typography.titleLarge,
-                  fontWeight = FontWeight.Bold,
-                  color = MaterialTheme.colorScheme.secondary
-                )
+                Icon(Icons.Filled.Person, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(48.dp))
               }
             }
             Box(
               modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .size(24.dp)
+                .size(28.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primary),
               contentAlignment = Alignment.Center
             ) {
-              Icon(Icons.Filled.Edit, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
+              Icon(Icons.Filled.Edit, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier
+                .size(18.dp)
+                .clickable { pickImageLauncher.launch("image/*") })
             }
           }
           if (profileImageUri != null) {
@@ -242,18 +228,42 @@ fun ProfileScreen(
           )
         ) {
           if (!isEditing) {
-            ProfileInfoRow(icon = Icons.Filled.Phone, label = stringResource(id = com.horsegallop.core.R.string.profile_description), value = phone)
+            ProfileInfoRow(icon = Icons.Filled.Person, label = "Ad Soyad", value = listOf(firstName, lastName).filter { it.isNotBlank() }.joinToString(" "))
             HorizontalDivider()
-            ProfileInfoRow(icon = Icons.Filled.CalendarToday, label = stringResource(id = com.horsegallop.core.R.string.date_time), value = birthDate)
+            ProfileInfoRow(icon = Icons.Filled.Phone, label = "Telefon", value = phone)
+            HorizontalDivider()
+            ProfileInfoRow(icon = Icons.Filled.CalendarToday, label = "Doğum tarihi", value = birthDate)
             HorizontalDivider()
             ProfileInfoRow(icon = Icons.Filled.Email, label = "Email", value = email)
             HorizontalDivider()
-            ProfileInfoRow(icon = Icons.Filled.Person, label = stringResource(id = com.horsegallop.R.string.label_city), value = city)
+            ProfileInfoRow(icon = Icons.Filled.LocationOn, label = stringResource(id = com.horsegallop.R.string.label_city), value = city)
           } else {
+            OutlinedTextField(
+              value = editFirstName,
+              onValueChange = { editFirstName = it },
+              label = { Text("Ad") },
+              singleLine = true,
+              modifier = Modifier.fillMaxWidth(),
+              colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+              )
+            )
+            OutlinedTextField(
+              value = editLastName,
+              onValueChange = { editLastName = it },
+              label = { Text("Soyad") },
+              singleLine = true,
+              modifier = Modifier.fillMaxWidth(),
+              colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+              )
+            )
             OutlinedTextField(
               value = editPhone,
               onValueChange = { editPhone = it },
-              label = { Text(stringResource(id = com.horsegallop.core.R.string.profile_description)) },
+              label = { Text("Telefon") },
               singleLine = true,
               modifier = Modifier.fillMaxWidth(),
               colors = OutlinedTextFieldDefaults.colors(
@@ -288,7 +298,7 @@ fun ProfileScreen(
             OutlinedTextField(
               value = editBirthDate,
               onValueChange = { editBirthDate = it },
-              label = { Text(stringResource(id = com.horsegallop.core.R.string.date_time)) },
+              label = { Text("Doğum tarihi") },
               singleLine = true,
               readOnly = true,
               modifier = Modifier.fillMaxWidth(),
@@ -368,12 +378,16 @@ fun ProfileScreen(
               val uid = user?.uid
               if (uid != null) {
                 val updates = hashMapOf(
+                  "firstName" to editFirstName,
+                  "lastName" to editLastName,
                   "phone" to editPhone,
                   "birthDate" to editBirthDate,
                   "city" to editCity
                 )
                 if (!isGoogle) { updates["email"] = editEmail }
                 db.collection("users").document(uid).update(updates as Map<String, Any>).addOnSuccessListener {
+                  firstName = editFirstName
+                  lastName = editLastName
                   phone = editPhone
                   birthDate = editBirthDate
                   city = editCity
