@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.MaterialTheme
@@ -55,7 +56,7 @@ fun AppNavHost(
 ) {
   val backStackEntry by navController.currentBackStackEntryAsState()
   val currentRoute = backStackEntry?.destination?.route
-  val showBottomBar = currentRoute in listOf(Dest.Home.route, Dest.Barns.route, Dest.Profile.route)
+  val showBottomBar = currentRoute in listOf(Dest.Home.route, Dest.Barns.route, Dest.Ride.route, Dest.Profile.route)
 
   Scaffold(
     bottomBar = {
@@ -78,7 +79,7 @@ fun AppNavHost(
               label = { androidx.compose.material3.Text(text = "Home") },
               alwaysShowLabel = true
             )
-            NavigationBarItem(
+          NavigationBarItem(
               selected = currentRoute == Dest.Barns.route,
               onClick = {
                 navController.navigate(Dest.Barns.route) {
@@ -88,6 +89,18 @@ fun AppNavHost(
               },
               icon = { androidx.compose.material3.Icon(Icons.AutoMirrored.Filled.List, null) },
               label = { androidx.compose.material3.Text(text = "Barns") },
+              alwaysShowLabel = true
+            )
+            NavigationBarItem(
+              selected = currentRoute == Dest.Ride.route,
+              onClick = {
+                navController.navigate(Dest.Ride.route) {
+                  popUpTo(navController.graph.findStartDestination().id)
+                  launchSingleTop = true
+                }
+              },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.Navigation, null) },
+              label = { androidx.compose.material3.Text(text = "Ride") },
               alwaysShowLabel = true
             )
             NavigationBarItem(
