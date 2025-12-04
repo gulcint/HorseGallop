@@ -111,6 +111,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .statusBarsPadding()
     ) {
         // Theme-based animated gradient background instead of external images
         ThemedAnimatedBackground(gradient = pages[pagerState.currentPage].gradient)
