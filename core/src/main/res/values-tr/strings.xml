@@ -129,4 +129,41 @@
     <string name="ride_headline">Biniş için harika bir gün!</string>
     <string name="ride_type_title">Biniş türü</string>
     <string name="ride_type_hint">Biniş türünü seç; istatistikler ve içgörüler binişine göre şekillensin.</string>
+    <!-- Home localized additions -->
+    <string name="qa_start_ride_title">Sürüşe Başla</string>
+    <string name="qa_start_ride_subtitle">Yeni bir binicilik deneyimi</string>
+    <string name="qa_view_barns_title">Çiftlikleri Görüntüle</string>
+    <string name="qa_view_barns_subtitle">Yakındaki çiftlikleri keşfet</string>
+    <string name="stats_yours_title">İstatistikleriniz</string>
+    <string name="stats_total_rides">Toplam Sürüş</string>
+    <string name="stats_hours_suffix">saat</string>
+    <string name="stats_distance">Mesafe</string>
+    <string name="stats_km_suffix">km</string>
+    <string name="recent_activity_title">Son Aktiviteler</string>
+    <string name="activity_morning_ride_title">Sabah Sürüşü</string>
+    <string name="activity_morning_ride_subtitle">Bugün, 08:30</string>
+    <string name="activity_duration_45m">45 dk</string>
+    <string name="activity_distance_8_2km">8.2 km</string>
+    <string name="activity_evening_ride_title">Akşam Turu</string>
+    <string name="activity_evening_ride_subtitle">Dün, 18:15</string>
+    <string name="activity_duration_1h20m">1 saat 20 dk</string>
+    <string name="activity_distance_12_5km">12.5 km</string>
+    <string name="riding_tips_title">Binicilik İpuçları</string>
+    <string name="tip_safe_riding_title">Güvenli Binicilik</string>
+    <string name="tip_safe_riding_subtitle">Her zaman kask takın ve güvenlik ekipmanlarınızı kontrol edin.</string>
+    <!-- Recent Activity formats -->
+    <string name="activity_subtitle_format">%1$s, %2$s</string>
+    <string name="activity_duration_minutes">%1$d dk</string>
+    <string name="activity_distance_km">%1$.1f km</string>
+    <!-- Profile labels -->
+    <string name="label_birth_date">Doğum tarihi</string>
+    <string name="label_city">Şehir</string>
+    <string name="label_email">E‑posta</string>
+    <string name="label_full_name">Ad Soyad</string>
+    <string name="label_phone">Telefon</string>
+    <string name="label_first_name">Ad</string>
+    <string name="label_last_name">Soyad</string>
+    <string name="button_edit">Düzenle</string>
+    <string name="button_cancel">İptal</string>
+    <string name="button_save">Kaydet</string>
 </resources>

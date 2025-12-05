@@ -30,8 +30,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalConfiguration
 import com.airbnb.lottie.compose.*
 import com.horsegallop.navigation.AppNavHost
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,7 +43,6 @@ import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
 import android.widget.Toast
-import com.google.firebase.auth.FirebaseAuth
 import com.horsegallop.feature.auth.domain.model.UserRole
 
 private const val SPLASH_DURATION_MS: Long = 2000L
@@ -49,8 +51,8 @@ private const val LOTTIE_FILL_SCALE: Float = 0.6f
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-	 override fun onCreate(savedInstanceState: Bundle?) {
-		super.onCreate(savedInstanceState)
+     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 		
 		// Enable edge-to-edge mode for modern UI
 		enableEdgeToEdge()
@@ -60,6 +62,21 @@ class MainActivity : ComponentActivity() {
             isAppearanceLightNavigationBars = false
         }
 		
+        // Handle Firebase verifyEmail deep link
+        intent?.data?.let { data ->
+            val mode = data.getQueryParameter("mode")
+            val oobCode = data.getQueryParameter("oobCode")
+            if (mode == "verifyEmail" && !oobCode.isNullOrBlank()) {
+                FirebaseAuth.getInstance().applyActionCode(oobCode)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Toast.makeText(this, "E-posta doğrulandı", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(this, task.exception?.localizedMessage ?: "Doğrulama başarısız", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+            }
+        }
         setContent { AppTheme { AppContent() } }
     }
 }
@@ -173,47 +190,49 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
                 am.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
             }
             runCatching {
-                val created = MediaPlayer.create(ctx, R.raw.horse_gallop)
-                if (created != null) {
-                    mediaPlayer = created
-                    mediaPlayer?.isLooping = true
-                    mediaPlayer?.setVolume(MEDIA_VOLUME_MAX, MEDIA_VOLUME_MAX)
-                    mediaPlayer?.start()
-                    val current = am.getStreamVolume(AudioManager.STREAM_MUSIC)
-                    val max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                    if (current <= max.coerceAtLeast(1) / 4) {
-                        Toast.makeText(ctx, ctx.getString(R.string.media_volume_low_warning), Toast.LENGTH_SHORT).show()
+                withContext(Dispatchers.IO) {
+                    val created = MediaPlayer.create(ctx, R.raw.horse_gallop)
+                    if (created != null) {
+                        mediaPlayer = created
+                        mediaPlayer?.isLooping = true
+                        mediaPlayer?.setVolume(MEDIA_VOLUME_MAX, MEDIA_VOLUME_MAX)
+                        mediaPlayer?.start()
+                    } else {
+                        val tmp = MediaPlayer()
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            tmp.setAudioAttributes(
+                                AudioAttributes.Builder()
+                                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                    .build()
+                            )
+                        }
+                        tmp.setOnErrorListener { mp, _, _ ->
+                            try { mp.reset() } catch (_: Throwable) {}
+                            false
+                        }
+                        val afd = ctx.resources.openRawResourceFd(R.raw.horse_gallop)
+                        tmp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                        afd.close()
+                        tmp.isLooping = true
+                        tmp.setVolume(MEDIA_VOLUME_MAX, MEDIA_VOLUME_MAX)
+                        tmp.setOnPreparedListener { it.start() }
+                        tmp.prepareAsync()
+                        mediaPlayer = tmp
                     }
-                } else {
-                    val tmp = MediaPlayer()
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        tmp.setAudioAttributes(
-                            AudioAttributes.Builder()
-                                .setUsage(AudioAttributes.USAGE_MEDIA)
-                                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                                .build()
-                        )
-                    }
-                    tmp.setOnErrorListener { mp, _, _ ->
-                        try { mp.reset() } catch (_: Throwable) {}
-                        false
-                    }
-                    val afd = ctx.resources.openRawResourceFd(R.raw.horse_gallop)
-                    tmp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
-                    afd.close()
-                    tmp.isLooping = true
-                    tmp.setVolume(MEDIA_VOLUME_MAX, MEDIA_VOLUME_MAX)
-                    tmp.prepare()
-                    tmp.start()
-                    mediaPlayer = tmp
-                    val current = am.getStreamVolume(AudioManager.STREAM_MUSIC)
-                    val max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                    if (current <= max.coerceAtLeast(1) / 4) {
-                        Toast.makeText(ctx, ctx.getString(R.string.media_volume_low_warning), Toast.LENGTH_SHORT).show()
-                    }
+                }
+                val current = am.getStreamVolume(AudioManager.STREAM_MUSIC)
+                val max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                if (current <= max.coerceAtLeast(1) / 4) {
+                    Toast.makeText(ctx, ctx.getString(R.string.media_volume_low_warning), Toast.LENGTH_SHORT).show()
                 }
             }
             delay(SPLASH_DURATION_MS)
+            try {
+                mediaPlayer?.stop()
+                mediaPlayer?.release()
+                mediaPlayer = null
+            } catch (_: Throwable) {}
             onFinished()
         }
         DisposableEffect(Unit) {

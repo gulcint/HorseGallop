@@ -111,8 +111,6 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .statusBarsPadding()
-            .navigationBarsPadding()
     ) {
         // Theme-based animated gradient background instead of external images
         ThemedAnimatedBackground(gradient = pages[pagerState.currentPage].gradient)
@@ -131,7 +129,6 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 24.dp)
         ) {
             Text(
                 text = stringResource(
@@ -156,7 +153,6 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .navigationBarsPadding()
                 .padding(12.dp)
         ) {
             Column(
@@ -275,7 +271,7 @@ private fun OnboardingPageContentAnimated(page: OnboardingPage) {
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Transparent)
-            .padding(horizontal = 16.dp, vertical = 24.dp)
+            .padding(horizontal = 24.dp, vertical = 24.dp)
             .graphicsLayer { alpha = 1f },
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally

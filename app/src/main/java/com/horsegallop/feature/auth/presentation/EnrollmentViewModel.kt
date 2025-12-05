@@ -19,7 +19,10 @@ data class EnrollmentUiState(
   val password: String = "",
   val loading: Boolean = false,
   val error: String? = null,
-  val showDatePicker: Boolean = false
+  val showDatePicker: Boolean = false,
+  val verificationSent: Boolean = false,
+  val verifying: Boolean = false,
+  val verificationError: String? = null
 )
 
 @HiltViewModel
@@ -38,7 +41,7 @@ class EnrollmentViewModel @Inject constructor(
   fun setBirthDate(date: String) { _ui.value = _ui.value.copy(birthDate = date) }
   fun setShowDatePicker(show: Boolean) { _ui.value = _ui.value.copy(showDatePicker = show) }
 
-  fun signUp(onSuccess: () -> Unit) {
+  fun signUp() {
     val s = _ui.value
     val hasLen = s.password.length >= 10
     val hasUpper = s.password.any { it.isUpperCase() }
@@ -57,8 +60,52 @@ class EnrollmentViewModel @Inject constructor(
       lastName = s.lastName,
       email = s.email,
       password = s.password,
-      onSuccess = { _ui.value = _ui.value.copy(loading = false); onSuccess() },
+      onSuccess = {
+        // E-posta doğrulama maili use case içinde gönderiliyor
+        _ui.value = _ui.value.copy(loading = false, verificationSent = true, verificationError = null)
+      },
       onError = { msg -> _ui.value = _ui.value.copy(loading = false, error = msg) }
     )
+  }
+
+  fun resendVerificationEmail() {
+    val user = auth.currentUser
+    if (user == null) {
+      _ui.value = _ui.value.copy(verificationError = "Kullanıcı oturumu bulunamadı")
+      return
+    }
+    _ui.value = _ui.value.copy(verifying = true, verificationError = null)
+    user.sendEmailVerification()
+      .addOnCompleteListener { task ->
+        _ui.value = _ui.value.copy(verifying = false)
+        if (!task.isSuccessful) {
+          _ui.value = _ui.value.copy(verificationError = task.exception?.localizedMessage ?: "Doğrulama e-postası gönderilemedi")
+        } else {
+          _ui.value = _ui.value.copy(verificationSent = true)
+        }
+      }
+  }
+
+  fun checkEmailVerified(onVerified: () -> Unit) {
+    val user = auth.currentUser
+    if (user == null) {
+      _ui.value = _ui.value.copy(verificationError = "Kullanıcı oturumu bulunamadı")
+      return
+    }
+    _ui.value = _ui.value.copy(verifying = true, verificationError = null)
+    user.reload()
+      .addOnCompleteListener { task ->
+        if (!task.isSuccessful) {
+          _ui.value = _ui.value.copy(verifying = false, verificationError = task.exception?.localizedMessage ?: "Doğrulama kontrolü başarısız")
+        } else {
+          val verified = auth.currentUser?.isEmailVerified == true
+          if (verified) {
+            _ui.value = _ui.value.copy(verifying = false)
+            onVerified()
+          } else {
+            _ui.value = _ui.value.copy(verifying = false, verificationError = "E-posta henüz doğrulanmadı. Lütfen maildeki linke tıklayın.")
+          }
+        }
+      }
   }
 }

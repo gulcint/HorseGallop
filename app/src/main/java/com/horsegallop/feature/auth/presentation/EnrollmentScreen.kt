@@ -73,14 +73,14 @@ fun EnrollmentScreen(
   Scaffold(
     topBar = {
       CenterAlignedTopAppBar(
-        title = { Text(text = stringResource(com.horsegallop.R.string.enrollment_title), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) },
+        title = { Text(text = stringResource(com.horsegallop.R.string.enrollment_title), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary) },
         navigationIcon = {
-          IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+          IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary) }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-          containerColor = MaterialTheme.colorScheme.surface,
-          navigationIconContentColor = MaterialTheme.colorScheme.primary,
-          titleContentColor = MaterialTheme.colorScheme.primary
+          containerColor = MaterialTheme.colorScheme.primary,
+          navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+          titleContentColor = MaterialTheme.colorScheme.onPrimary
         )
       )
     }
@@ -90,7 +90,6 @@ fun EnrollmentScreen(
       modifier = Modifier
         .fillMaxSize()
         .padding(padding)
-        .windowInsetsPadding(WindowInsets.navigationBars)
         .windowInsetsPadding(WindowInsets.ime)
         .padding(
           horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
@@ -222,7 +221,7 @@ fun EnrollmentScreen(
       val strong = hasLen && hasUpper && hasLower && hasDigit && hasSpecial
 
       Button(
-        onClick = { if (nameValid && emailValid && strong) vm.signUp(onSuccess = onSignedUp) },
+        onClick = { if (nameValid && emailValid && strong) vm.signUp() },
         enabled = !ui.loading && nameValid && emailValid && strong,
         modifier = Modifier
           .fillMaxWidth()
@@ -234,6 +233,41 @@ fun EnrollmentScreen(
 
       if (ui.loading) {
         LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+      }
+
+      if (ui.verificationSent) {
+        Surface(
+          modifier = Modifier.fillMaxWidth(),
+          shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+          color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+          border = androidx.compose.foundation.BorderStroke(
+            dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin),
+            MaterialTheme.colorScheme.primary
+          )
+        ) {
+          Column(
+            modifier = Modifier.padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+          ) {
+            Text(
+              text = "E-posta doğrulama gönderildi. Maildeki doğrulama linkine tıklayın.",
+              color = MaterialTheme.colorScheme.onSurface
+            )
+            if (ui.verificationError != null) {
+              Text(text = ui.verificationError ?: "", color = MaterialTheme.colorScheme.error)
+            }
+            Row(
+              horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+            ) {
+              OutlinedButton(onClick = { vm.resendVerificationEmail() }, enabled = !ui.verifying) {
+                Text(text = "Tekrar Gönder")
+              }
+              Button(onClick = { vm.checkEmailVerified(onVerified = onSignedUp) }, enabled = !ui.verifying) {
+                Text(text = "Doğruladım")
+              }
+            }
+          }
+        }
       }
     }
   }

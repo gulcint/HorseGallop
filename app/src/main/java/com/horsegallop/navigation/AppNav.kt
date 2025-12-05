@@ -3,11 +3,14 @@ package com.horsegallop.navigation
 import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Navigation
+import androidx.compose.material.icons.filled.Pets
 import androidx.compose.ui.res.painterResource
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.House
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -19,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavType
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -27,6 +31,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.horsegallop.feature.auth.domain.model.UserRole
+import androidx.compose.runtime.remember
 import com.horsegallop.feature.auth.presentation.LoginScreen
 import com.horsegallop.feature.auth.presentation.EmailLoginScreen
 import com.horsegallop.feature.auth.presentation.EnrollmentScreen
@@ -58,6 +63,10 @@ fun AppNavHost(
   val backStackEntry by navController.currentBackStackEntryAsState()
   val currentRoute = backStackEntry?.destination?.route
   val showBottomBar = currentRoute in listOf(Dest.Home.route, Dest.Barns.route, Dest.Ride.route, Dest.Profile.route)
+  val ctx = androidx.compose.ui.platform.LocalContext.current
+  val prefs = remember { ctx.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE) }
+  val onboardingDone = remember { prefs.getBoolean("onboarding_done", false) }
+  val startDest = if (role == null) { if (onboardingDone) Dest.Login.route else Dest.Onboarding.route } else Dest.Home.route
 
   Scaffold(
     bottomBar = {
@@ -88,7 +97,7 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(Icons.AutoMirrored.Filled.List, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.House, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) },
               label = { androidx.compose.material3.Text(text = "Barns", color = MaterialTheme.colorScheme.onPrimaryContainer) },
               alwaysShowLabel = true
             )
@@ -100,7 +109,7 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(painter = painterResource(id = com.horsegallop.R.drawable.ic_horseshoe), contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer) },
+              icon = { androidx.compose.material3.Icon(painter = painterResource(id = com.horsegallop.R.drawable.ic_horse), contentDescription = null, tint = Color.White) },
               label = { androidx.compose.material3.Text(text = "Ride", color = MaterialTheme.colorScheme.onPrimaryContainer) },
               alwaysShowLabel = true
             )
@@ -120,16 +129,18 @@ fun AppNavHost(
         }
       }
     }
-  ) { _ ->
-  NavHost(navController = navController, startDestination = if (role == null) Dest.Onboarding.route else Dest.Home.route, modifier = Modifier) {
+  ) { innerPadding ->
+  NavHost(navController = navController, startDestination = startDest, modifier = Modifier.fillMaxSize().padding(innerPadding)) {
     composable(Dest.Onboarding.route) {
       OnboardingScreen(
         onStart = {
+          prefs.edit().putBoolean("onboarding_done", true).apply()
           navController.navigate(Dest.Login.route) {
             popUpTo(Dest.Onboarding.route) { inclusive = true }
           }
         },
         onSkip = {
+          prefs.edit().putBoolean("onboarding_done", true).apply()
           navController.navigate(Dest.Login.route) {
             popUpTo(Dest.Onboarding.route) { inclusive = true }
           }
