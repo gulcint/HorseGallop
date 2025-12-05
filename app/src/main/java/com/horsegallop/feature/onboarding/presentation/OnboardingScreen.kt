@@ -129,7 +129,6 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 60.dp)
         ) {
             Text(
                 text = stringResource(
@@ -154,7 +153,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(24.dp)
+                .padding(12.dp)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -176,7 +175,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // Action buttons
                 Row(
@@ -294,7 +293,7 @@ private fun OnboardingPageContentAnimated(page: OnboardingPage) {
                     color = Color.White
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
         // Callout centered between title and features
@@ -308,7 +307,7 @@ private fun OnboardingPageContentAnimated(page: OnboardingPage) {
             EngagingCallout(titleRes = page.titleRes, subtitleRes = page.subtitleRes, gradient = page.gradient)
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Feature bullets
         Column(

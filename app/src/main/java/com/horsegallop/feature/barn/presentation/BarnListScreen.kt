@@ -63,7 +63,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import com.horsegallop.feature.barn.domain.model.BarnUi
-import com.horsegallop.domain.model.content.BarnsContent
+// Local screen content model for labels and placeholders
+data class BarnsContent(
+  val searchPlaceholder: String,
+  val mapTitle: String,
+  val resultsPrefix: String,
+  val filtersTitle: String,
+  val filterLabels: List<String>?,
+  val emptyTitle: String?,
+  val emptySubtitle: String?
+)
 
 @Composable
 fun BarnListScreen(
@@ -99,15 +108,14 @@ fun BarnListScreen(
     )
   )
   var query: String by rememberSaveable { mutableStateOf("") }
-  var selectedFilters: Set<String> by rememberSaveable { mutableStateOf(emptySet()) }
+  var selectedFilters: Set<String> by remember { mutableStateOf(emptySet<String>()) }
   val filtered: List<BarnWithLocation> = remember(query, selectedFilters, demo) {
     val base: List<BarnWithLocation> = if (query.isBlank()) demo else demo.filter { item ->
       item.barn.name.contains(query, ignoreCase = true) || item.barn.description.contains(query, ignoreCase = true)
     }
     if (selectedFilters.isEmpty()) base else base.filter { item -> selectedFilters.all { it in item.amenities } }
   }
-  Scaffold { padding ->
-    Column(modifier = Modifier.padding(padding).padding(12.dp)) {
+  Column(modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp)) {
       OutlinedTextField(
         value = query,
         onValueChange = { query = it },
@@ -280,14 +288,12 @@ fun BarnListScreen(
               textAlign = TextAlign.Center
             )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-              OutlinedButton(onClick = { selectedFilters = emptySet() }) {
+              OutlinedButton(onClick = { selectedFilters = emptySet<String>() }) {
                 Text(text = "Filtreleri temizle", color = MaterialTheme.colorScheme.primary)
-              }
-            }
-          }
-        }
+    }
+  }
+}
       }
     }
   }
 }
-

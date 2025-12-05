@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +41,7 @@ import com.valentinilk.shimmer.shimmer
 import com.horsegallop.compose.QuickActionCard
 import com.horsegallop.compose.StatCard
 import com.horsegallop.compose.ActivityItem
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun HomeScreen(
@@ -48,53 +50,7 @@ fun HomeScreen(
   onViewBarns: () -> Unit,
   onProfileClick: () -> Unit
 ) {
-  Scaffold(
-    bottomBar = {
-      NavigationBar {
-      val navItemColors = NavigationBarItemDefaults.colors(
-        selectedIconColor = MaterialTheme.colorScheme.primary,
-        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        indicatorColor = MaterialTheme.colorScheme.surfaceVariant
-      )
-      NavigationBarItem(
-        icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
-        label = { Text("Home") },
-        selected = (currentRoute == com.horsegallop.navigation.Dest.Home.route),
-        onClick = { /* Already on home */ },
-        alwaysShowLabel = false,
-        colors = navItemColors
-      )
-      NavigationBarItem(
-        icon = { Icon(Icons.AutoMirrored.Filled.DirectionsRun, contentDescription = "Ride") },
-        label = { Text("Ride") },
-        selected = (currentRoute == com.horsegallop.navigation.Dest.Ride.route),
-        onClick = onStartRide,
-        alwaysShowLabel = false,
-        colors = navItemColors
-      )
-      NavigationBarItem(
-        icon = { Icon(Icons.Filled.Search, contentDescription = "Barns") },
-        label = { Text("Barns") },
-        selected = (currentRoute == com.horsegallop.navigation.Dest.Barns.route),
-        onClick = onViewBarns,
-        alwaysShowLabel = false,
-        colors = navItemColors
-      )
-      NavigationBarItem(
-        icon = { Icon(Icons.Filled.Person, contentDescription = "Profile") },
-        label = { Text("Profile") },
-        selected = (currentRoute == com.horsegallop.navigation.Dest.Profile.route),
-        onClick = onProfileClick,
-        alwaysShowLabel = false,
-        colors = navItemColors
-      )
-      }
-    }
-  ) { padding ->
-    Box(modifier = Modifier.padding(padding)) {
-      HomeDashboard(onStartRide = onStartRide, onViewBarns = onViewBarns, onProfileClick = onProfileClick)
-    }
-  }
+  HomeDashboard(onStartRide = onStartRide, onViewBarns = onViewBarns, onProfileClick = onProfileClick)
 }
 
 @Preview(showBackground = true, name = "HomeScreen")
@@ -113,12 +69,11 @@ private fun PreviewHomeScreen() {
 private fun HomeDashboard(onStartRide: () -> Unit, onViewBarns: () -> Unit, onProfileClick: () -> Unit) {
   LazyColumn(
     modifier = Modifier
-      .fillMaxSize()
-      .windowInsetsPadding(WindowInsets.statusBars),
+      .fillMaxSize(),
     contentPadding = PaddingValues(
       start = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
       end = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
-      top = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical_lg),
+      top = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical),
       bottom = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)
     ),
     verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md))
@@ -136,24 +91,43 @@ private fun HomeDashboard(onStartRide: () -> Unit, onViewBarns: () -> Unit, onPr
     }
     
     item {
-      RecentActivitySection()
+      val vm: HomeViewModel = hiltViewModel()
+      val ui = vm.ui.collectAsState().value
+      if (ui.loading) {
+        RecentActivitySkeleton()
+      } else {
+        val activities = if (ui.activities.isEmpty()) listOf(
+          ActivityUi(
+            title = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_title),
+            dateLabel = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_subtitle).substringBefore(", "),
+            timeLabel = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_subtitle).substringAfter(", "),
+            durationMin = 45,
+            distanceKm = 8.2
+          ),
+          ActivityUi(
+            title = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_title),
+            dateLabel = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_subtitle).substringBefore(", "),
+            timeLabel = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_subtitle).substringAfter(", "),
+            durationMin = 80,
+            distanceKm = 12.5
+          )
+        ) else ui.activities
+        RecentActivitySection(activities = activities)
+      }
     }
     
     item {
       TipsSection()
     }
     
-    // Bottom padding for better scrolling
-    item {
-      Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.bottom_navigation_height)))
-    }
+    // Removed manual bottom spacer to avoid double padding with Scaffold's innerPadding
   }
 }
 
 @Composable
 private fun WelcomeHeader(onProfileClick: () -> Unit) {
   Card(
-    modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)),
+    modifier = Modifier.fillMaxWidth().padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)),
     colors = CardDefaults.cardColors(
       containerColor = MaterialTheme.colorScheme.primaryContainer
     ),
@@ -179,14 +153,14 @@ private fun WelcomeHeader(onProfileClick: () -> Unit) {
       ) {
         Column {
           Text(
-            text = "🐴 Hoş Geldiniz!",
+            text = stringResource(id = com.horsegallop.core.R.string.welcome_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onPrimaryContainer
           )
           Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
           Text(
-            text = "Binicilik serüveninize devam edin",
+            text = stringResource(id = com.horsegallop.core.R.string.welcome_subtitle),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
           )
@@ -198,14 +172,6 @@ private fun WelcomeHeader(onProfileClick: () -> Unit) {
             modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_xxl)),
             tint = MaterialTheme.colorScheme.primary
           )
-          Spacer(modifier = Modifier.width(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
-          IconButton(onClick = onProfileClick) {
-            Icon(
-              Icons.Filled.Person,
-              contentDescription = "Profile",
-              tint = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-          }
         }
       }
     }
@@ -216,7 +182,7 @@ private fun WelcomeHeader(onProfileClick: () -> Unit) {
 private fun QuickActionsSection(onStartRide: () -> Unit, onViewBarns: () -> Unit) {
   Column {
     Text(
-      text = "Hızlı İşlemler",
+      text = stringResource(id = com.horsegallop.core.R.string.quick_actions_title),
       style = MaterialTheme.typography.titleLarge,
       fontWeight = FontWeight.Bold,
       modifier = Modifier.padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
@@ -227,16 +193,16 @@ private fun QuickActionsSection(onStartRide: () -> Unit, onViewBarns: () -> Unit
       horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
     ) {
       QuickActionCard(
-        title = "Sürüşe Başla",
-        subtitle = "Yeni bir binicilik deneyimi",
+        title = stringResource(id = com.horsegallop.core.R.string.qa_start_ride_title),
+        subtitle = stringResource(id = com.horsegallop.core.R.string.qa_start_ride_subtitle),
         icon = Icons.Filled.PlayArrow,
         color = MaterialTheme.colorScheme.primary,
         onClick = onStartRide,
         modifier = Modifier.weight(1f)
       )
       QuickActionCard(
-        title = "Çiftlikleri Görüntüle",
-        subtitle = "Yakındaki çiftlikleri keşfet",
+        title = stringResource(id = com.horsegallop.core.R.string.qa_view_barns_title),
+        subtitle = stringResource(id = com.horsegallop.core.R.string.qa_view_barns_subtitle),
         icon = Icons.Filled.LocationOn,
         color = MaterialTheme.colorScheme.secondary,
         onClick = onViewBarns,
@@ -251,7 +217,7 @@ private fun QuickActionsSection(onStartRide: () -> Unit, onViewBarns: () -> Unit
 private fun StatsOverviewSection() {
   Column {
     Text(
-      text = "İstatistikleriniz",
+      text = stringResource(id = com.horsegallop.core.R.string.stats_yours_title),
       style = MaterialTheme.typography.titleLarge,
       fontWeight = FontWeight.Bold,
       modifier = Modifier.padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
@@ -262,18 +228,18 @@ private fun StatsOverviewSection() {
       horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
     ) {
       StatCard(
-        title = "Toplam Sürüş",
+        title = stringResource(id = com.horsegallop.core.R.string.stats_total_rides),
         value = "12",
-        subtitle = "saat",
+        subtitle = stringResource(id = com.horsegallop.core.R.string.stats_hours_suffix),
         icon = Icons.Filled.Timer,
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.weight(1f),
         onClick = { /* Navigate to detailed stats */ }
       )
       StatCard(
-        title = "Mesafe",
+        title = stringResource(id = com.horsegallop.core.R.string.stats_distance),
         value = "45.2",
-        subtitle = "km",
+        subtitle = stringResource(id = com.horsegallop.core.R.string.stats_km_suffix),
         icon = Icons.Filled.Speed,
         color = MaterialTheme.colorScheme.secondary,
         modifier = Modifier.weight(1f),
@@ -284,11 +250,34 @@ private fun StatsOverviewSection() {
 }
 
 
+data class ActivityUi(
+  val title: String,
+  val dateLabel: String,
+  val timeLabel: String,
+  val durationMin: Int,
+  val distanceKm: Double
+)
+
 @Composable
-private fun RecentActivitySection() {
+private fun RecentActivitySection(activities: List<ActivityUi> = listOf(
+  ActivityUi(
+    title = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_title),
+    dateLabel = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_subtitle).substringBefore(", "),
+    timeLabel = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_subtitle).substringAfter(", "),
+    durationMin = 45,
+    distanceKm = 8.2
+  ),
+  ActivityUi(
+    title = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_title),
+    dateLabel = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_subtitle).substringBefore(", "),
+    timeLabel = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_subtitle).substringAfter(", "),
+    durationMin = 80,
+    distanceKm = 12.5
+  )
+)) {
   Column {
     Text(
-      text = "Son Aktiviteler",
+      text = stringResource(id = com.horsegallop.core.R.string.recent_activity_title),
       style = MaterialTheme.typography.titleLarge,
       fontWeight = FontWeight.Bold,
       modifier = Modifier.padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
@@ -302,21 +291,27 @@ private fun RecentActivitySection() {
       Column(
         modifier = Modifier.padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md))
       ) {
-        ActivityItem(
-          title = "Sabah Sürüşü",
-          subtitle = "Bugün, 08:30",
-          duration = "45 dk",
-          distance = "8.2 km",
-          icon = Icons.AutoMirrored.Filled.DirectionsRun
-        )
+        val a1 = activities.getOrNull(0)
+        if (a1 != null) {
+          ActivityItem(
+            title = a1.title,
+            subtitle = stringResource(id = com.horsegallop.core.R.string.activity_subtitle_format, a1.dateLabel, a1.timeLabel),
+            duration = stringResource(id = com.horsegallop.core.R.string.activity_duration_minutes, a1.durationMin),
+            distance = stringResource(id = com.horsegallop.core.R.string.activity_distance_km, a1.distanceKm),
+            icon = Icons.AutoMirrored.Filled.DirectionsRun
+          )
+        }
         HorizontalDivider(modifier = Modifier.padding(vertical = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
-        ActivityItem(
-          title = "Akşam Turu",
-          subtitle = "Dün, 18:15",
-          duration = "1 saat 20 dk",
-          distance = "12.5 km",
-          icon = Icons.AutoMirrored.Filled.DirectionsRun
-        )
+        val a2 = activities.getOrNull(1)
+        if (a2 != null) {
+          ActivityItem(
+            title = a2.title,
+            subtitle = stringResource(id = com.horsegallop.core.R.string.activity_subtitle_format, a2.dateLabel, a2.timeLabel),
+            duration = stringResource(id = com.horsegallop.core.R.string.activity_duration_minutes, a2.durationMin),
+            distance = stringResource(id = com.horsegallop.core.R.string.activity_distance_km, a2.distanceKm),
+            icon = Icons.AutoMirrored.Filled.DirectionsRun
+          )
+        }
       }
     }
   }
@@ -327,10 +322,10 @@ private fun RecentActivitySection() {
 private fun TipsSection() {
   Column {
     Text(
-      text = "Binicilik İpuçları",
+      text = stringResource(id = com.horsegallop.core.R.string.riding_tips_title),
       style = MaterialTheme.typography.titleLarge,
       fontWeight = FontWeight.Bold,
-      modifier = Modifier.padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+      modifier = Modifier.padding(top = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm), bottom = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
     )
     
     Card(
@@ -353,19 +348,20 @@ private fun TipsSection() {
         )
         Column(modifier = Modifier.weight(1f)) {
           Text(
-            text = "Güvenli Binicilik",
+            text = stringResource(id = com.horsegallop.core.R.string.tip_safe_riding_title),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSecondaryContainer
           )
           Text(
-            text = "Her zaman kask takın ve güvenlik ekipmanlarınızı kontrol edin.",
+            text = stringResource(id = com.horsegallop.core.R.string.tip_safe_riding_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
           )
         }
       }
     }
+    Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md)))
   }
 }
 

@@ -2,11 +2,13 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-	<application
-		android:icon="@mipmap/ic_launcher"
-		android:name=".HorseGallopApp"
-		android:allowBackup="true"
-		android:label="horsegallop"
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <application
+        android:icon="@mipmap/ic_launcher"
+        android:name=".HorseGallopApp"
+        android:allowBackup="true"
+        android:label="horsegallop"
 		android:theme="@style/Theme.horsegallop">
 		<activity
 			android:name=".MainActivity"
@@ -15,6 +17,12 @@
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+				<data android:scheme="https" android:host="horsegallop.page.link" android:pathPrefix="/verify" />
 			</intent-filter>
 		</activity>
 	</application>

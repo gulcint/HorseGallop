@@ -82,9 +82,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.FieldValue
 
 data class RideUiState(
   val speedKmh: Float,
@@ -124,7 +129,7 @@ class RideTrackingViewModel : ViewModel() {
   }
   fun setAutoDetect(enabled: Boolean) { _uiState.value = _uiState.value.copy(autoDetect = enabled) }
   private fun startMockLoop() {
-    viewModelScope.launch {
+    viewModelScope.launch(Dispatchers.Default) {
       while (_uiState.value.isRiding) {
         delay(1000)
         val cur: RideUiState = _uiState.value
@@ -150,7 +155,28 @@ class RideTrackingViewModel : ViewModel() {
       }
     }
   }
-  private fun stopRide() { _uiState.value = _uiState.value.copy(speedKmh = 0f) }
+  private fun saveRideToFirestore() {
+    val cur: RideUiState = _uiState.value
+    viewModelScope.launch(Dispatchers.IO) {
+      try {
+        val uid: String? = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid != null) {
+          val data: MutableMap<String, Any> = hashMapOf(
+            "title" to "Ride",
+            "durationMin" to (cur.durationSec / 60),
+            "distanceKm" to cur.distanceKm.toDouble(),
+            "timestamp" to FieldValue.serverTimestamp()
+          )
+          Firebase.firestore.collection("users").document(uid).collection("rides").add(data)
+        }
+      } catch (_: Throwable) { }
+    }
+  }
+  private fun stopRide() {
+    val cur: RideUiState = _uiState.value
+    _uiState.value = cur.copy(speedKmh = 0f, isRiding = false)
+    saveRideToFirestore()
+  }
 }
 
 @Composable
@@ -167,16 +193,15 @@ fun RideTrackingScreen(
   Scaffold(
     containerColor = MaterialTheme.colorScheme.background,
     topBar = { /* No title - greeting moved into content */ }
-  ) { padding ->
+  ) { innerPadding ->
     Column(
       modifier = Modifier
         .fillMaxSize()
-        .padding(padding)
-        .padding(
-          horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal), 
-          vertical = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)
-        ),
-      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md))
+        .padding(innerPadding)
+        
+        .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal))
+        ,
+      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
     ) {
       WelcomeHeader()
       WeatherTopRow()
@@ -193,7 +218,7 @@ fun RideTrackingScreen(
           modifier = Modifier
             .fillMaxWidth()
             .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl))
-            .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)),
+            ,
           colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
           shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
           elevation = ButtonDefaults.buttonElevation(defaultElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm))
@@ -845,4 +870,3 @@ private fun ControlsRow(isRiding: Boolean, onStop: () -> Unit, autoDetect: Boole
 private fun PreviewRideTracking() {
   RideTrackingScreen(viewModel = RideTrackingViewModel())
 }
-

@@ -73,14 +73,14 @@ fun EnrollmentScreen(
   Scaffold(
     topBar = {
       CenterAlignedTopAppBar(
-        title = { Text(text = stringResource(com.horsegallop.R.string.enrollment_title), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) },
+        title = { Text(text = stringResource(com.horsegallop.R.string.enrollment_title), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary) },
         navigationIcon = {
-          IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+          IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary) }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-          containerColor = MaterialTheme.colorScheme.surface,
-          navigationIconContentColor = MaterialTheme.colorScheme.primary,
-          titleContentColor = MaterialTheme.colorScheme.primary
+          containerColor = MaterialTheme.colorScheme.primary,
+          navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+          titleContentColor = MaterialTheme.colorScheme.onPrimary
         )
       )
     }
@@ -90,7 +90,6 @@ fun EnrollmentScreen(
       modifier = Modifier
         .fillMaxSize()
         .padding(padding)
-        .windowInsetsPadding(WindowInsets.navigationBars)
         .windowInsetsPadding(WindowInsets.ime)
         .padding(
           horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
@@ -147,68 +146,7 @@ fun EnrollmentScreen(
               keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
             )
           }
-          var cityMenuExpanded by remember { mutableStateOf(false) }
-          Row(horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)), verticalAlignment = Alignment.CenterVertically) {
-            Box(modifier = Modifier.weight(1f)) {
-              OutlinedTextField(
-                value = ui.city,
-                onValueChange = vm::updateCity,
-                label = { Text(stringResource(com.horsegallop.R.string.label_city)) },
-                placeholder = { Text(stringResource(com.horsegallop.R.string.label_city)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                trailingIcon = { IconButton(onClick = { cityMenuExpanded = true }) { Icon(Icons.Filled.ArrowDropDown, contentDescription = null) } },
-                colors = OutlinedTextFieldDefaults.colors(
-                  focusedBorderColor = MaterialTheme.colorScheme.primary,
-                  unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
-                  errorBorderColor = MaterialTheme.colorScheme.error,
-                  focusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-              )
-              DropdownMenu(expanded = cityMenuExpanded, onDismissRequest = { cityMenuExpanded = false }) {
-                citySuggestions.forEach { city -> DropdownMenuItem(text = { Text(city) }, onClick = { vm.updateCity(city); cityMenuExpanded = false }) }
-              }
-            }
-          }
-          var codeMenuExpanded by remember { mutableStateOf(false) }
-          Row(horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)), verticalAlignment = Alignment.CenterVertically) {
-            Box {
-              OutlinedTextField(
-                value = ui.countryCode,
-                onValueChange = {},
-                label = { Text(stringResource(com.horsegallop.R.string.label_country_code)) },
-                readOnly = true,
-                singleLine = true,
-                modifier = Modifier.width(120.dp).clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.surface),
-                trailingIcon = { IconButton(onClick = { codeMenuExpanded = true }) { Icon(Icons.Filled.ArrowDropDown, contentDescription = null) } },
-                colors = OutlinedTextFieldDefaults.colors(
-                  focusedBorderColor = MaterialTheme.colorScheme.primary,
-                  unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
-                  focusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-              )
-              DropdownMenu(expanded = codeMenuExpanded, onDismissRequest = { codeMenuExpanded = false }) {
-                countryCodes.forEach { code -> DropdownMenuItem(text = { Text(code) }, onClick = { vm.setCountryCode(code); codeMenuExpanded = false }) }
-              }
-            }
-            OutlinedTextField(
-              value = ui.phone,
-              onValueChange = vm::updatePhone,
-              label = { Text(stringResource(com.horsegallop.R.string.label_phone)) },
-              placeholder = { Text(stringResource(com.horsegallop.R.string.label_phone)) },
-              singleLine = true,
-              modifier = Modifier.weight(1f),
-              colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
-                focusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-              ),
-              keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Phone,
-                imeAction = ImeAction.Next
-              )
-            )
-          }
+          
           
           OutlinedTextField(
             value = ui.email,
@@ -244,25 +182,7 @@ fun EnrollmentScreen(
               imeAction = ImeAction.Done
             )
           )
-          OutlinedTextField(
-            value = ui.confirmPassword,
-            onValueChange = vm::updateConfirmPassword,
-            label = { Text("Şifre (Tekrar)") },
-            singleLine = true,
-            isError = ui.confirmPassword.isNotEmpty() && ui.confirmPassword != ui.password,
-            visualTransformation = PasswordVisualTransformation(),
-            colors = OutlinedTextFieldDefaults.colors(
-              focusedBorderColor = MaterialTheme.colorScheme.primary,
-              unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
-              errorBorderColor = MaterialTheme.colorScheme.secondary,
-              focusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-            ),
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(
-              keyboardType = KeyboardType.Password,
-              imeAction = ImeAction.Next
-            )
-          )
+          
           val hasLen = ui.password.length >= 10
           val hasUpper = ui.password.any { it.isUpperCase() }
           val hasLower = ui.password.any { it.isLowerCase() }
@@ -283,9 +203,7 @@ fun EnrollmentScreen(
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.80f),
             style = MaterialTheme.typography.bodySmall
           )
-          if (ui.confirmPassword.isNotEmpty() && ui.confirmPassword != ui.password) {
-            Text(text = "Şifreler eşleşmiyor", color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.bodySmall)
-          }
+          
         }
       }
 
@@ -293,10 +211,7 @@ fun EnrollmentScreen(
         Text(text = stringResource(com.horsegallop.R.string.error_invalid_form), color = MaterialTheme.colorScheme.onSurfaceVariant)
       }
 
-      val nameValid = ui.firstName.isNotBlank() && ui.lastName.isNotBlank() && ui.city.isNotBlank()
-      val phoneDigits = ui.phone.filter { it.isDigit() }
-      val minLen = when (ui.countryCode) { "+33" -> 9; else -> 10 }
-      val phoneValid = phoneDigits.length >= minLen
+      val nameValid = ui.firstName.isNotBlank() && ui.lastName.isNotBlank()
       val emailValid = ui.email.contains("@")
       val hasLen = ui.password.length >= 10
       val hasUpper = ui.password.any { it.isUpperCase() }
@@ -306,8 +221,8 @@ fun EnrollmentScreen(
       val strong = hasLen && hasUpper && hasLower && hasDigit && hasSpecial
 
       Button(
-        onClick = { if (nameValid && phoneValid && emailValid && strong) vm.signUp(onSuccess = onSignedUp) },
-        enabled = !ui.loading && nameValid && phoneValid && emailValid && strong,
+        onClick = { if (nameValid && emailValid && strong) vm.signUp() },
+        enabled = !ui.loading && nameValid && emailValid && strong,
         modifier = Modifier
           .fillMaxWidth()
           .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
@@ -318,6 +233,41 @@ fun EnrollmentScreen(
 
       if (ui.loading) {
         LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+      }
+
+      if (ui.verificationSent) {
+        Surface(
+          modifier = Modifier.fillMaxWidth(),
+          shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+          color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+          border = androidx.compose.foundation.BorderStroke(
+            dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin),
+            MaterialTheme.colorScheme.primary
+          )
+        ) {
+          Column(
+            modifier = Modifier.padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+          ) {
+            Text(
+              text = "E-posta doğrulama gönderildi. Maildeki doğrulama linkine tıklayın.",
+              color = MaterialTheme.colorScheme.onSurface
+            )
+            if (ui.verificationError != null) {
+              Text(text = ui.verificationError ?: "", color = MaterialTheme.colorScheme.error)
+            }
+            Row(
+              horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+            ) {
+              OutlinedButton(onClick = { vm.resendVerificationEmail() }, enabled = !ui.verifying) {
+                Text(text = "Tekrar Gönder")
+              }
+              Button(onClick = { vm.checkEmailVerified(onVerified = onSignedUp) }, enabled = !ui.verifying) {
+                Text(text = "Doğruladım")
+              }
+            }
+          }
+        }
       }
     }
   }

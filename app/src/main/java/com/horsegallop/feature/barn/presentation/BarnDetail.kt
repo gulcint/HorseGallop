@@ -90,9 +90,7 @@ fun BarnScreenContent(
 ) {
 	Scaffold(
 		modifier = Modifier
-			.fillMaxSize()
-			.statusBarsPadding()
-			.navigationBarsPadding(),
+			.fillMaxSize(),
 		topBar = {
 			TopAppBar(
 			title = {
@@ -119,11 +117,11 @@ fun BarnScreenContent(
 			)
 		},
 		containerColor = Color(0xFFFAFAFA)
-	) { padding ->
-		LazyColumn(
-			modifier = Modifier
-				.fillMaxSize()
-				.padding(padding),
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
 			contentPadding = PaddingValues(
 				start = 16.dp,
 				end = 16.dp,
@@ -584,9 +582,7 @@ fun HorseBarnCarousel() {
 fun BarnScreenShimmer() {
 	Scaffold(
 		modifier = Modifier
-			.fillMaxSize()
-			.statusBarsPadding()
-			.navigationBarsPadding(),
+			.fillMaxSize(),
 		topBar = {
 			TopAppBar(
 				title = {
@@ -615,11 +611,11 @@ fun BarnScreenShimmer() {
 			)
 		},
 		containerColor = Color(0xFFFAFAFA)
-	) { padding ->
-		LazyColumn(
-			modifier = Modifier
-				.fillMaxSize()
-				.padding(padding),
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
 			contentPadding = PaddingValues(
 				start = 16.dp,
 				end = 16.dp,

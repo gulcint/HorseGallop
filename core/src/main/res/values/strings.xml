@@ -129,4 +129,41 @@
     <string name="ride_headline">Perfect day to ride!</string>
     <string name="ride_type_title">Ride type</string>
     <string name="ride_type_hint">Pick a type to tailor stats and insights to your ride.</string>
+    <!-- Home localized additions -->
+    <string name="qa_start_ride_title">Start Ride</string>
+    <string name="qa_start_ride_subtitle">Begin a new riding experience</string>
+    <string name="qa_view_barns_title">View Barns</string>
+    <string name="qa_view_barns_subtitle">Discover nearby barns</string>
+    <string name="stats_yours_title">Your Stats</string>
+    <string name="stats_total_rides">Total Ride</string>
+    <string name="stats_hours_suffix">hours</string>
+    <string name="stats_distance">Distance</string>
+    <string name="stats_km_suffix">km</string>
+    <string name="recent_activity_title">Recent Activity</string>
+    <string name="activity_morning_ride_title">Morning Ride</string>
+    <string name="activity_morning_ride_subtitle">Today, 08:30</string>
+    <string name="activity_duration_45m">45 min</string>
+    <string name="activity_distance_8_2km">8.2 km</string>
+    <string name="activity_evening_ride_title">Evening Tour</string>
+    <string name="activity_evening_ride_subtitle">Yesterday, 18:15</string>
+    <string name="activity_duration_1h20m">1 h 20 min</string>
+    <string name="activity_distance_12_5km">12.5 km</string>
+    <string name="riding_tips_title">Riding Tips</string>
+    <string name="tip_safe_riding_title">Safe Riding</string>
+    <string name="tip_safe_riding_subtitle">Always wear a helmet and check your safety gear.</string>
+    <!-- Recent Activity formats -->
+    <string name="activity_subtitle_format">%1$s, %2$s</string>
+    <string name="activity_duration_minutes">%1$d min</string>
+    <string name="activity_distance_km">%1$.1f km</string>
+    <!-- Profile labels -->
+    <string name="label_birth_date">Birth date</string>
+    <string name="label_city">City</string>
+    <string name="label_email">Email</string>
+    <string name="label_full_name">Full name</string>
+    <string name="label_phone">Phone</string>
+    <string name="label_first_name">First name</string>
+    <string name="label_last_name">Last name</string>
+    <string name="button_edit">Edit</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="button_save">Save</string>
 </resources>

@@ -107,8 +107,6 @@ fun LoginScreen(
                     )
                 )
             )
-            .statusBarsPadding()
-            .navigationBarsPadding()
     ) {
         // Yükleme sırasında overlay kaldırıldı
         Column(
@@ -173,6 +171,7 @@ fun LoginScreen(
                             ),
                         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
                     ) {
+                        Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_xs)))
                         OutlinedTextField(
                             value = email,
                             onValueChange = { value: String ->
