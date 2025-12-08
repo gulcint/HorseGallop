@@ -1,6 +1,7 @@
 package com.horsegallop.feature.auth.domain
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import javax.inject.Inject
 
@@ -30,10 +31,17 @@ class SignUpWithEmailUseCase @Inject constructor(
             if (uid == null) {
               onErrorRes(com.horsegallop.R.string.error_user_create_failed)
             } else {
+              val profile = UserProfileChangeRequest.Builder()
+                .setDisplayName("$firstName $lastName")
+                .build()
+              user.updateProfile(profile)
+                .addOnFailureListener { _ -> /* ignore profile name failure */ }
+
               val userMap = mapOf(
                 "firstName" to firstName,
                 "lastName" to lastName,
-                "email" to email
+                "email" to email,
+                "createdAt" to System.currentTimeMillis()
               )
               firestore.collection("users").document(uid).set(userMap)
                 .addOnSuccessListener {

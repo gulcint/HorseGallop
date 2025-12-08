@@ -249,9 +249,17 @@ fun LoginScreen(
                                 emailError = null
                                 FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
                                     .addOnSuccessListener {
+                                        val auth = FirebaseAuth.getInstance()
+                                        val user = auth.currentUser
                                         emailLoading = false
-                                        showLogoToast(context, context.getString(com.horsegallop.core.R.string.auth_success), false)
-                                        onGoogleClick()
+                                        if (user != null && user.isEmailVerified) {
+                                            showLogoToast(context, context.getString(com.horsegallop.core.R.string.auth_success), false)
+                                            onGoogleClick()
+                                        } else {
+                                            showLogoToast(context, "E-posta doğrulanmadı. Doğrulama e-postası gönderildi.", true)
+                                            runCatching { user?.sendEmailVerification() }
+                                            auth.signOut()
+                                        }
                                     }
                                     .addOnFailureListener { e ->
                                         emailLoading = false
