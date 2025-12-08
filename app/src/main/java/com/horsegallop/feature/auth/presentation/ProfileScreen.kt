@@ -315,128 +315,246 @@ fun ProfileScreen(
             HorizontalDivider()
             ProfileInfoRow(icon = Icons.Filled.LocationOn, label = stringResource(id = com.horsegallop.R.string.label_city), value = city)
           } else {
-            OutlinedTextField(
-              value = editFirstName,
-              onValueChange = { editFirstName = it },
-              placeholder = { Text(stringResource(id = com.horsegallop.core.R.string.label_first_name)) },
-              singleLine = true,
-              modifier = Modifier.fillMaxWidth(),
-              leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-              textStyle = MaterialTheme.typography.bodyLarge,
-              colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
-              )
-            )
-            OutlinedTextField(
-              value = editLastName,
-              onValueChange = { editLastName = it },
-              placeholder = { Text(stringResource(id = com.horsegallop.core.R.string.label_last_name)) },
-              singleLine = true,
-              modifier = Modifier.fillMaxWidth(),
-              leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-              textStyle = MaterialTheme.typography.bodyLarge,
-              colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
-              )
-            )
-            val countryCodes = listOf("+90", "+1", "+44", "+49", "+33", "+34", "+39", "+61", "+81", "+86", "+971", "+7")
-            var ccExpanded by remember { mutableStateOf(false) }
-            Row(horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))) {
-              ExposedDropdownMenuBox(expanded = ccExpanded, onExpandedChange = { ccExpanded = it }) {
-                OutlinedTextField(
-                  value = editCountryCode,
-                  onValueChange = { },
-                  placeholder = { Text(stringResource(id = com.horsegallop.R.string.label_country_code)) },
-                  singleLine = true,
-                  readOnly = true,
-                  leadingIcon = { Icon(Icons.Filled.Phone, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-                  trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = ccExpanded) },
-                  modifier = Modifier.width(110.dp).menuAnchor(),
-                  textStyle = MaterialTheme.typography.bodyLarge,
-                  colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
-                  )
-                )
-                ExposedDropdownMenu(expanded = ccExpanded, onDismissRequest = { ccExpanded = false }) {
-                  countryCodes.forEach { code ->
-                    DropdownMenuItem(text = { Text(code) }, onClick = { editCountryCode = code; ccExpanded = false })
-                  }
-                }
-              }
+            EditableInfoRow(icon = Icons.Filled.Person, label = stringResource(id = com.horsegallop.core.R.string.label_first_name)) {
               OutlinedTextField(
-                value = editPhone,
-                onValueChange = {
-                  val digits = it.filter { ch -> ch.isDigit() }.take(15)
-                  editPhone = digits
-                  val minLen = if (editCountryCode == "+33") 9 else 10
-                  phoneError = if (digits.length in minLen..15) null else "Geçerli telefon girin"
-                },
-                placeholder = { Text(stringResource(id = com.horsegallop.core.R.string.label_phone)) },
+                value = editFirstName,
+                onValueChange = { editFirstName = it },
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                isError = phoneError != null,
-                supportingText = { if (phoneError != null) Text(text = phoneError!!) },
-                modifier = Modifier.weight(1f),
-                visualTransformation = MaskedPhoneTransformation(editCountryCode),
-                textStyle = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg)),
+                textStyle = MaterialTheme.typography.bodySmall,
+                shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
                 colors = OutlinedTextFieldDefaults.colors(
                   focusedBorderColor = MaterialTheme.colorScheme.primary,
                   unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
                 )
               )
+            }
+            EditableInfoRow(icon = Icons.Filled.Person, label = stringResource(id = com.horsegallop.core.R.string.label_last_name)) {
+              OutlinedTextField(
+                value = editLastName,
+                onValueChange = { editLastName = it },
+                singleLine = true,
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg)),
+                textStyle = MaterialTheme.typography.bodySmall,
+                shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+                colors = OutlinedTextFieldDefaults.colors(
+                  focusedBorderColor = MaterialTheme.colorScheme.primary,
+                  unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+                )
+              )
+            }
+            val countryCodes = listOf("+90", "+1", "+44", "+49", "+33", "+34", "+39", "+61", "+81", "+86", "+971", "+7")
+            var ccExpanded by remember { mutableStateOf(false) }
+            EditableInfoRow(icon = Icons.Filled.Phone, label = stringResource(id = com.horsegallop.core.R.string.label_phone)) {
+              Row(
+                horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)),
+                verticalAlignment = Alignment.CenterVertically
+              ) {
+                ExposedDropdownMenuBox(expanded = ccExpanded, onExpandedChange = { ccExpanded = it }) {
+                  OutlinedTextField(
+                    value = editCountryCode,
+                    onValueChange = { },
+                    singleLine = true,
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = ccExpanded) },
+                    modifier = Modifier
+                      .widthIn(min = 96.dp, max = 120.dp)
+                      .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg))
+                      .menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable),
+                    textStyle = MaterialTheme.typography.bodySmall,
+                    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+                    colors = OutlinedTextFieldDefaults.colors(
+                      focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                      unfocusedBorderColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.30f),
+                      focusedTrailingIconColor = MaterialTheme.colorScheme.secondary,
+                      unfocusedTrailingIconColor = MaterialTheme.colorScheme.secondary
+                    )
+                  )
+                  ExposedDropdownMenu(
+                    expanded = ccExpanded,
+                    onDismissRequest = { ccExpanded = false },
+                    modifier = Modifier.background(MaterialTheme.colorScheme.surface).border(
+                      androidx.compose.foundation.BorderStroke(
+                        dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin),
+                        MaterialTheme.colorScheme.outlineVariant
+                      ),
+                      RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_sm))
+                    )
+                  ) {
+                  countryCodes.forEach { code ->
+                    DropdownMenuItem(
+                      text = { Text(code, color = MaterialTheme.colorScheme.onSurface) },
+                      onClick = { editCountryCode = code; ccExpanded = false },
+                      contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                        horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md),
+                        vertical = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)
+                      )
+                    )
+                  }
+                  }
+                }
+                OutlinedTextField(
+                  value = editPhone,
+                  onValueChange = {
+                    val digits = it.filter { ch -> ch.isDigit() }.take(15)
+                    editPhone = digits
+                    val minLen = if (editCountryCode == "+33") 9 else 10
+                    phoneError = if (digits.length in minLen..15) null else "Geçerli telefon girin"
+                  },
+                  singleLine = true,
+                  keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                  isError = phoneError != null,
+                  modifier = Modifier
+                    .weight(1f)
+                    .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg)),
+                  visualTransformation = MaskedPhoneTransformation(editCountryCode),
+                  textStyle = MaterialTheme.typography.bodySmall,
+                  shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+                  colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.30f),
+                    cursorColor = MaterialTheme.colorScheme.secondary,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                  )
+                )
+              }
+              if (phoneError != null) {
+                Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.text_spacing_sm)))
+                Text(text = phoneError!!, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+              }
             }
             var cityExpanded by remember { mutableStateOf(false) }
             var cityQuery by remember { mutableStateOf(editCity) }
             val filteredCities: List<String> = remember(cityQuery, citySuggestions) {
               if (cityQuery.isBlank()) citySuggestions else citySuggestions.filter { it.contains(cityQuery, ignoreCase = true) }
             }
-            ExposedDropdownMenuBox(expanded = cityExpanded, onExpandedChange = { cityExpanded = it }) {
-              OutlinedTextField(
-                value = cityQuery,
-                onValueChange = { cityQuery = it },
-                placeholder = { Text(stringResource(id = com.horsegallop.R.string.label_city)) },
-                singleLine = true,
-                leadingIcon = { Icon(Icons.Filled.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = cityExpanded) },
-                modifier = Modifier.fillMaxWidth().menuAnchor(),
-                textStyle = MaterialTheme.typography.bodyLarge,
-                colors = OutlinedTextFieldDefaults.colors(
-                  focusedBorderColor = MaterialTheme.colorScheme.primary,
-                  unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+            EditableInfoRow(icon = Icons.Filled.LocationOn, label = stringResource(id = com.horsegallop.R.string.label_city)) {
+              ExposedDropdownMenuBox(expanded = cityExpanded, onExpandedChange = { cityExpanded = it }) {
+                OutlinedTextField(
+                  value = cityQuery,
+                  onValueChange = { cityQuery = it },
+                  singleLine = true,
+                  trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = cityExpanded, modifier = Modifier.menuAnchor(androidx.compose.material3.MenuAnchorType.SecondaryEditable)) },
+                  modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg))
+                    .menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryEditable),
+                  textStyle = MaterialTheme.typography.bodySmall,
+                  shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+                  colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.30f),
+                    focusedTrailingIconColor = MaterialTheme.colorScheme.secondary,
+                    unfocusedTrailingIconColor = MaterialTheme.colorScheme.secondary
+                  )
                 )
-              )
-              ExposedDropdownMenu(expanded = cityExpanded, onDismissRequest = { cityExpanded = false }) {
-                filteredCities.forEach { cityItem ->
-                  DropdownMenuItem(text = { Text(cityItem) }, onClick = {
-                    editCity = cityItem
-                    cityQuery = cityItem
-                    cityExpanded = false
-                  })
+                ExposedDropdownMenu(
+                  expanded = cityExpanded,
+                  onDismissRequest = { cityExpanded = false },
+                  modifier = Modifier.background(MaterialTheme.colorScheme.surface).border(
+                    androidx.compose.foundation.BorderStroke(
+                      dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin),
+                      MaterialTheme.colorScheme.outlineVariant
+                    ),
+                    RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_sm))
+                  )
+                ) {
+                  filteredCities.forEach { cityItem ->
+                    DropdownMenuItem(
+                      text = { Text(cityItem, color = MaterialTheme.colorScheme.onSurface) },
+                      onClick = {
+                        editCity = cityItem
+                        cityQuery = cityItem
+                        cityExpanded = false
+                      },
+                      contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                        horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md),
+                        vertical = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)
+                      )
+                    )
+                  }
                 }
               }
             }
-            OutlinedTextField(
-              value = editBirthDate,
-              onValueChange = { editBirthDate = it },
-              placeholder = { Text(stringResource(id = com.horsegallop.core.R.string.label_birth_date)) },
-              singleLine = true,
-              readOnly = true,
-              modifier = Modifier.fillMaxWidth(),
-              leadingIcon = { Icon(Icons.Filled.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-              trailingIcon = {
-                IconButton(onClick = { showDatePicker = true }) {
-                  Icon(Icons.Filled.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+            var bdExpanded by remember { mutableStateOf(false) }
+            EditableInfoRow(icon = Icons.Filled.CalendarToday, label = stringResource(id = com.horsegallop.core.R.string.label_birth_date)) {
+              ExposedDropdownMenuBox(expanded = bdExpanded, onExpandedChange = { bdExpanded = it }) {
+                OutlinedTextField(
+                  value = editBirthDate,
+                  onValueChange = { },
+                  singleLine = true,
+                  readOnly = true,
+                  trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(
+                      expanded = bdExpanded,
+                      modifier = Modifier.menuAnchor(androidx.compose.material3.MenuAnchorType.SecondaryEditable)
+                    )
+                  },
+                  modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg))
+                    .menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable),
+                  textStyle = MaterialTheme.typography.bodySmall,
+                  shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+                  colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+                  )
+                )
+                ExposedDropdownMenu(
+                  expanded = bdExpanded,
+                  onDismissRequest = { bdExpanded = false },
+                  modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(
+                      androidx.compose.foundation.BorderStroke(
+                        dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin),
+                        MaterialTheme.colorScheme.outlineVariant
+                      ),
+                      RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_sm))
+                    )
+                    .heightIn(max = 360.dp)
+                ) {
+                  val safeInitialMillis = remember(editBirthDateMillis) { editBirthDateMillis ?: System.currentTimeMillis() }
+                  val datePickerState = androidx.compose.material3.rememberDatePickerState(initialSelectedDateMillis = safeInitialMillis)
+                  Column(
+                    modifier = Modifier.padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_sm)),
+                    verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.text_spacing_md))
+                  ) {
+                    androidx.compose.material3.DatePicker(
+                      state = datePickerState,
+                      colors = androidx.compose.material3.DatePickerDefaults.colors(
+                        selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+                        selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
+                        dayContentColor = MaterialTheme.colorScheme.onSurface,
+                        todayDateBorderColor = MaterialTheme.colorScheme.primary
+                      )
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))) {
+                      OutlinedButton(onClick = { bdExpanded = false }) { Text(text = stringResource(id = com.horsegallop.core.R.string.cancel)) }
+                      Button(onClick = {
+                        val millis = datePickerState.selectedDateMillis
+                        if (millis != null) {
+                          val cal = java.util.Calendar.getInstance()
+                          cal.timeInMillis = millis
+                          val y = cal.get(java.util.Calendar.YEAR)
+                          val m = cal.get(java.util.Calendar.MONTH) + 1
+                          val d = cal.get(java.util.Calendar.DAY_OF_MONTH)
+                          editBirthDate = String.format("%04d-%02d-%02d", y, m, d)
+                          editBirthDateMillis = millis
+                        }
+                        bdExpanded = false
+                      }) { Text(text = stringResource(id = com.horsegallop.core.R.string.ok)) }
+                    }
+                  }
                 }
-              },
-              textStyle = MaterialTheme.typography.bodyLarge,
-              colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
-              )
-            )
+              }
+            }
             }
           
         }
@@ -517,40 +635,7 @@ fun ProfileScreen(
         }
       }
       Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md)))
-      if (showDatePicker) {
-        val datePickerState = androidx.compose.material3.rememberDatePickerState()
-        androidx.compose.material3.DatePickerDialog(
-          onDismissRequest = { showDatePicker = false },
-          confirmButton = {
-            Button(onClick = {
-              val millis = datePickerState.selectedDateMillis
-              if (millis != null) {
-                val cal = java.util.Calendar.getInstance()
-                cal.timeInMillis = millis
-                val y = cal.get(java.util.Calendar.YEAR)
-                val m = cal.get(java.util.Calendar.MONTH) + 1
-                val d = cal.get(java.util.Calendar.DAY_OF_MONTH)
-                editBirthDate = String.format("%04d-%02d-%02d", y, m, d)
-                editBirthDateMillis = millis
-              }
-              showDatePicker = false
-            }) { Text(text = stringResource(id = com.horsegallop.core.R.string.ok)) }
-          },
-          dismissButton = {
-            OutlinedButton(onClick = { showDatePicker = false }) { Text(text = stringResource(id = com.horsegallop.core.R.string.cancel)) }
-          }
-        ) {
-          androidx.compose.material3.DatePicker(
-            state = datePickerState,
-            colors = androidx.compose.material3.DatePickerDefaults.colors(
-              selectedDayContainerColor = MaterialTheme.colorScheme.primary,
-              selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
-              dayContentColor = MaterialTheme.colorScheme.onSurface,
-              todayDateBorderColor = MaterialTheme.colorScheme.primary
-            )
-          )
-        }
-      }
+      
 
       
       
@@ -587,6 +672,40 @@ private fun ProfileInfoRow(icon: ImageVector, label: String, value: String) {
         style = MaterialTheme.typography.bodyLarge,
         fontWeight = FontWeight.Medium
       )
+    }
+  }
+}
+
+@Composable
+private fun EditableInfoRow(icon: ImageVector, label: String, content: @Composable () -> Unit) {
+  Row(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalArrangement = Arrangement.spacedBy(
+      dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)
+    ),
+    verticalAlignment = Alignment.CenterVertically
+  ) {
+    Box(
+      modifier = Modifier
+        .size(36.dp)
+        .clip(CircleShape)
+        .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)),
+      contentAlignment = Alignment.Center
+    ) {
+      Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(20.dp))
+    }
+    Column(
+      modifier = Modifier.weight(1f),
+      verticalArrangement = Arrangement.spacedBy(
+        dimensionResource(id = com.horsegallop.core.R.dimen.text_spacing_sm)
+      )
+    ) {
+      Text(
+        text = label,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+      )
+      content()
     }
   }
 }
