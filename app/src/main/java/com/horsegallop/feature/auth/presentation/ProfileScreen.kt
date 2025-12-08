@@ -34,6 +34,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import android.Manifest
@@ -63,14 +69,19 @@ fun ProfileScreen(
   var birthDate by remember { mutableStateOf("") }
   var city by remember { mutableStateOf("") }
   var email by remember { mutableStateOf(user?.email ?: "") }
+  val citySuggestions = stringArrayResource(com.horsegallop.R.array.city_list).toList()
   var isEditing by remember { mutableStateOf(false) }
   var editFirstName by remember { mutableStateOf("") }
   var editLastName by remember { mutableStateOf("") }
   var editPhone by remember { mutableStateOf("") }
   var editBirthDate by remember { mutableStateOf("") }
+  var editBirthDateMillis by remember { mutableStateOf<Long?>(null) }
   var editCity by remember { mutableStateOf("") }
-  var editEmail by remember { mutableStateOf("") }
+  
+  var phoneError by remember { mutableStateOf<String?>(null) }
+  var editCountryCode by remember { mutableStateOf("+90") }
   var showDatePicker by remember { mutableStateOf(false) }
+  var showCitySheet by remember { mutableStateOf(false) }
   val isGoogle = remember(user) { user?.providerData?.any { it.providerId == "google.com" } == true }
   var profileImageUri by remember { mutableStateOf<Uri?>(null) }
   var profileImageUrl by remember { mutableStateOf<String?>(null) }
@@ -103,10 +114,22 @@ fun ProfileScreen(
           firstName = doc.getString("firstName") ?: ""
           lastName = doc.getString("lastName") ?: ""
           phone = doc.getString("phone") ?: ""
-          birthDate = doc.getString("birthDate") ?: ""
+          val ts = doc.getTimestamp("birthDate")
+          if (ts != null) {
+            val cal = java.util.Calendar.getInstance()
+            cal.time = ts.toDate()
+            val y = cal.get(java.util.Calendar.YEAR)
+            val m = cal.get(java.util.Calendar.MONTH) + 1
+            val d = cal.get(java.util.Calendar.DAY_OF_MONTH)
+            birthDate = String.format("%04d-%02d-%02d", y, m, d)
+            editBirthDateMillis = ts.toDate().time
+          } else {
+            birthDate = doc.getString("birthDate") ?: ""
+          }
           city = doc.getString("city") ?: ""
           email = doc.getString("email") ?: (user?.email ?: "")
           profileImageUrl = doc.getString("photoUrl")
+          editCountryCode = doc.getString("countryCode") ?: "+90"
         }
     }
   }
@@ -160,14 +183,14 @@ fun ProfileScreen(
         Row(
           modifier = Modifier
             .fillMaxWidth()
-            .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_xl)),
+            .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
           horizontalArrangement = Arrangement.spacedBy(
             dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)
           ),
           verticalAlignment = Alignment.CenterVertically
         ) {
           Box(
-            modifier = Modifier.size(92.dp),
+            modifier = Modifier.size(80.dp),
             contentAlignment = Alignment.Center
           ) {
             Box(
@@ -251,9 +274,8 @@ fun ProfileScreen(
               dimensionResource(id = com.horsegallop.core.R.dimen.text_spacing_sm)
             )
           ) {
-            val nameDisplay = listOf(firstName, lastName).filter { it.isNotBlank() }.joinToString(" ")
             Text(
-              text = nameDisplay,
+              text = if (nameDisplay.isNotBlank()) nameDisplay else (user?.displayName ?: email),
               style = MaterialTheme.typography.titleLarge,
               fontWeight = FontWeight.Bold,
               color = MaterialTheme.colorScheme.onSurface
@@ -296,9 +318,11 @@ fun ProfileScreen(
             OutlinedTextField(
               value = editFirstName,
               onValueChange = { editFirstName = it },
-              label = { Text(stringResource(id = com.horsegallop.core.R.string.label_first_name)) },
+              placeholder = { Text(stringResource(id = com.horsegallop.core.R.string.label_first_name)) },
               singleLine = true,
               modifier = Modifier.fillMaxWidth(),
+              leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+              textStyle = MaterialTheme.typography.bodyLarge,
               colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
@@ -307,83 +331,113 @@ fun ProfileScreen(
             OutlinedTextField(
               value = editLastName,
               onValueChange = { editLastName = it },
-              label = { Text(stringResource(id = com.horsegallop.core.R.string.label_last_name)) },
+              placeholder = { Text(stringResource(id = com.horsegallop.core.R.string.label_last_name)) },
               singleLine = true,
               modifier = Modifier.fillMaxWidth(),
+              leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+              textStyle = MaterialTheme.typography.bodyLarge,
               colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
               )
             )
-            OutlinedTextField(
-              value = editPhone,
-              onValueChange = { editPhone = it },
-              label = { Text(stringResource(id = com.horsegallop.core.R.string.label_phone)) },
-              singleLine = true,
-              modifier = Modifier.fillMaxWidth(),
-              colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
-              )
-            )
-            var cityMenuExpanded by remember { mutableStateOf(false) }
-            val citySuggestions = stringArrayResource(com.horsegallop.R.array.city_list).toList()
-            val filteredCities = remember(editCity, citySuggestions) {
-              if (editCity.isBlank()) citySuggestions else citySuggestions.filter { it.contains(editCity, ignoreCase = true) }
-            }
-            Box {
+            val countryCodes = listOf("+90", "+1", "+44", "+49", "+33", "+34", "+39", "+61", "+81", "+86", "+971", "+7")
+            var ccExpanded by remember { mutableStateOf(false) }
+            Row(horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))) {
+              ExposedDropdownMenuBox(expanded = ccExpanded, onExpandedChange = { ccExpanded = it }) {
+                OutlinedTextField(
+                  value = editCountryCode,
+                  onValueChange = { },
+                  placeholder = { Text(stringResource(id = com.horsegallop.R.string.label_country_code)) },
+                  singleLine = true,
+                  readOnly = true,
+                  leadingIcon = { Icon(Icons.Filled.Phone, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                  trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = ccExpanded) },
+                  modifier = Modifier.width(110.dp).menuAnchor(),
+                  textStyle = MaterialTheme.typography.bodyLarge,
+                  colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+                  )
+                )
+                ExposedDropdownMenu(expanded = ccExpanded, onDismissRequest = { ccExpanded = false }) {
+                  countryCodes.forEach { code ->
+                    DropdownMenuItem(text = { Text(code) }, onClick = { editCountryCode = code; ccExpanded = false })
+                  }
+                }
+              }
               OutlinedTextField(
-                value = editCity,
-                onValueChange = { editCity = it; cityMenuExpanded = it.isNotBlank() },
-                label = { Text(stringResource(id = com.horsegallop.R.string.label_city)) },
+                value = editPhone,
+                onValueChange = {
+                  val digits = it.filter { ch -> ch.isDigit() }.take(15)
+                  editPhone = digits
+                  val minLen = if (editCountryCode == "+33") 9 else 10
+                  phoneError = if (digits.length in minLen..15) null else "Geçerli telefon girin"
+                },
+                placeholder = { Text(stringResource(id = com.horsegallop.core.R.string.label_phone)) },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                trailingIcon = { IconButton(onClick = { cityMenuExpanded = !cityMenuExpanded }) { Icon(Icons.Filled.ArrowDropDown, contentDescription = null, tint = MaterialTheme.colorScheme.primary) } },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                isError = phoneError != null,
+                supportingText = { if (phoneError != null) Text(text = phoneError!!) },
+                modifier = Modifier.weight(1f),
+                visualTransformation = MaskedPhoneTransformation(editCountryCode),
+                textStyle = MaterialTheme.typography.bodyLarge,
                 colors = OutlinedTextFieldDefaults.colors(
                   focusedBorderColor = MaterialTheme.colorScheme.primary,
                   unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
                 )
               )
-              DropdownMenu(expanded = cityMenuExpanded, onDismissRequest = { cityMenuExpanded = false }) {
+            }
+            var cityExpanded by remember { mutableStateOf(false) }
+            var cityQuery by remember { mutableStateOf(editCity) }
+            val filteredCities: List<String> = remember(cityQuery, citySuggestions) {
+              if (cityQuery.isBlank()) citySuggestions else citySuggestions.filter { it.contains(cityQuery, ignoreCase = true) }
+            }
+            ExposedDropdownMenuBox(expanded = cityExpanded, onExpandedChange = { cityExpanded = it }) {
+              OutlinedTextField(
+                value = cityQuery,
+                onValueChange = { cityQuery = it },
+                placeholder = { Text(stringResource(id = com.horsegallop.R.string.label_city)) },
+                singleLine = true,
+                leadingIcon = { Icon(Icons.Filled.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = cityExpanded) },
+                modifier = Modifier.fillMaxWidth().menuAnchor(),
+                textStyle = MaterialTheme.typography.bodyLarge,
+                colors = OutlinedTextFieldDefaults.colors(
+                  focusedBorderColor = MaterialTheme.colorScheme.primary,
+                  unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+                )
+              )
+              ExposedDropdownMenu(expanded = cityExpanded, onDismissRequest = { cityExpanded = false }) {
                 filteredCities.forEach { cityItem ->
-                  DropdownMenuItem(
-                    text = { Text(cityItem) },
-                    onClick = { editCity = cityItem; cityMenuExpanded = false }
-                  )
+                  DropdownMenuItem(text = { Text(cityItem) }, onClick = {
+                    editCity = cityItem
+                    cityQuery = cityItem
+                    cityExpanded = false
+                  })
                 }
               }
             }
             OutlinedTextField(
               value = editBirthDate,
               onValueChange = { editBirthDate = it },
-              label = { Text(stringResource(id = com.horsegallop.core.R.string.label_birth_date)) },
+              placeholder = { Text(stringResource(id = com.horsegallop.core.R.string.label_birth_date)) },
               singleLine = true,
               readOnly = true,
               modifier = Modifier.fillMaxWidth(),
+              leadingIcon = { Icon(Icons.Filled.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
               trailingIcon = {
                 IconButton(onClick = { showDatePicker = true }) {
                   Icon(Icons.Filled.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                 }
               },
+              textStyle = MaterialTheme.typography.bodyLarge,
               colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
               )
             )
             }
-            OutlinedTextField(
-              value = editEmail,
-              onValueChange = { editEmail = it },
-              label = { Text(stringResource(id = com.horsegallop.core.R.string.label_email)) },
-              singleLine = true,
-              modifier = Modifier.fillMaxWidth(),
-              enabled = !isGoogle,
-              readOnly = isGoogle,
-              colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
-              )
-            )
           
         }
       }
@@ -401,7 +455,6 @@ fun ProfileScreen(
               editLastName = lastName
               editPhone = phone
               editBirthDate = birthDate
-              editEmail = email
               editCity = city
               isEditing = true
             },
@@ -434,22 +487,27 @@ fun ProfileScreen(
           Button(
             onClick = {
               val uid = user?.uid
+              val minLen = if (editCountryCode == "+33") 9 else 10
+              val digitsValid = editPhone.all { it.isDigit() } && editPhone.length in minLen..15
+              if (!digitsValid) {
+                phoneError = "Geçerli telefon girin"
+                return@Button
+              }
               if (uid != null) {
                 val updates = hashMapOf(
                   "firstName" to editFirstName,
                   "lastName" to editLastName,
                   "phone" to editPhone,
-                  "birthDate" to editBirthDate,
-                  "city" to editCity
+                  "birthDate" to (editBirthDateMillis?.let { com.google.firebase.Timestamp(java.util.Date(it)) } ?: editBirthDate),
+                  "city" to editCity,
+                  "countryCode" to editCountryCode
                 )
-                if (!isGoogle) { updates["email"] = editEmail }
-                db.collection("users").document(uid).update(updates as Map<String, Any>).addOnSuccessListener {
+                db.collection("users").document(uid).set(updates as Map<String, Any>, com.google.firebase.firestore.SetOptions.merge()).addOnSuccessListener {
                   firstName = editFirstName
                   lastName = editLastName
                   phone = editPhone
                   birthDate = editBirthDate
                   city = editCity
-                  if (!isGoogle) { email = editEmail }
                   isEditing = false
                 }
               }
@@ -464,7 +522,7 @@ fun ProfileScreen(
         androidx.compose.material3.DatePickerDialog(
           onDismissRequest = { showDatePicker = false },
           confirmButton = {
-            TextButton(onClick = {
+            Button(onClick = {
               val millis = datePickerState.selectedDateMillis
               if (millis != null) {
                 val cal = java.util.Calendar.getInstance()
@@ -473,23 +531,28 @@ fun ProfileScreen(
                 val m = cal.get(java.util.Calendar.MONTH) + 1
                 val d = cal.get(java.util.Calendar.DAY_OF_MONTH)
                 editBirthDate = String.format("%04d-%02d-%02d", y, m, d)
+                editBirthDateMillis = millis
               }
               showDatePicker = false
             }) { Text(text = stringResource(id = com.horsegallop.core.R.string.ok)) }
           },
           dismissButton = {
-            TextButton(onClick = { showDatePicker = false }) { Text(text = stringResource(id = com.horsegallop.core.R.string.cancel)) }
+            OutlinedButton(onClick = { showDatePicker = false }) { Text(text = stringResource(id = com.horsegallop.core.R.string.cancel)) }
           }
         ) {
           androidx.compose.material3.DatePicker(
             state = datePickerState,
             colors = androidx.compose.material3.DatePickerDefaults.colors(
-              selectedDayContainerColor = MaterialTheme.colorScheme.secondary,
-              selectedDayContentColor = MaterialTheme.colorScheme.onSecondary
+              selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+              selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
+              dayContentColor = MaterialTheme.colorScheme.onSurface,
+              todayDateBorderColor = MaterialTheme.colorScheme.primary
             )
           )
         }
       }
+
+      
       
     }
   }
@@ -532,4 +595,31 @@ private fun ProfileInfoRow(icon: ImageVector, label: String, value: String) {
 @Composable
 private fun PreviewProfileScreen() {
   MaterialTheme { ProfileScreen(onBack = {}, onLogout = {}) }
+}
+
+private fun formatMaskedPhone(code: String, digits: String): String {
+  if (digits.isBlank()) return ""
+  return if (code == "+90") {
+    val p1 = digits.take(3)
+    val p2 = digits.drop(3).take(3)
+    val p3 = digits.drop(6).take(2)
+    val p4 = digits.drop(8).take(2)
+    listOf(code, if (p1.isNotBlank()) "($p1)" else "", p2, p3, p4)
+      .filter { it.isNotBlank() }
+      .joinToString(" ")
+  } else {
+    "$code $digits"
+  }
+}
+
+private class MaskedPhoneTransformation(private val code: String) : VisualTransformation {
+  override fun filter(text: AnnotatedString): TransformedText {
+    val digits = text.text.filter { it.isDigit() }
+    val masked = formatMaskedPhone(code, digits)
+    val mapping = object : OffsetMapping {
+      override fun originalToTransformed(offset: Int): Int = offset
+      override fun transformedToOriginal(offset: Int): Int = offset
+    }
+    return TransformedText(AnnotatedString(masked), mapping)
+  }
 }

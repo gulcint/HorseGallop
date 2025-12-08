@@ -57,6 +57,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.graphics.lerp
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import com.airbnb.lottie.compose.*
 
 @Composable
 fun EnrollmentScreen(
@@ -68,6 +69,7 @@ fun EnrollmentScreen(
   val ctx = LocalContext.current
   val countryCodes = listOf("+90", "+1", "+44", "+49", "+33", "+34", "+39", "+61", "+81", "+86", "+971", "+7")
   val citySuggestions = stringArrayResource(com.horsegallop.R.array.city_list).toList()
+  LaunchedEffect(Unit) { vm.loadLottieConfig() }
   
 
   Scaffold(
@@ -84,13 +86,14 @@ fun EnrollmentScreen(
         )
       )
     }
-  ) { padding ->
+  , containerColor = MaterialTheme.colorScheme.background) { padding ->
     
     Column(
       modifier = Modifier
         .fillMaxSize()
         .padding(padding)
         .windowInsetsPadding(WindowInsets.ime)
+        .navigationBarsPadding()
         .padding(
           horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
           vertical = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)
@@ -208,7 +211,7 @@ fun EnrollmentScreen(
       }
 
       if (ui.error != null) {
-        Text(text = stringResource(com.horsegallop.R.string.error_invalid_form), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(text = ui.error ?: stringResource(com.horsegallop.R.string.error_invalid_form), color = MaterialTheme.colorScheme.error)
       }
 
       val nameValid = ui.firstName.isNotBlank() && ui.lastName.isNotBlank()
@@ -226,8 +229,14 @@ fun EnrollmentScreen(
         modifier = Modifier
           .fillMaxWidth()
           .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
-        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
-      ) { Text(stringResource(com.horsegallop.R.string.signup_button)) }
+        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+        colors = ButtonDefaults.buttonColors(
+          containerColor = MaterialTheme.colorScheme.primary,
+          contentColor = MaterialTheme.colorScheme.onPrimary,
+          disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+          disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+      ) { Text(stringResource(com.horsegallop.R.string.enrollment_title)) }
 
       
 
@@ -235,40 +244,87 @@ fun EnrollmentScreen(
         LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
       }
 
-      if (ui.verificationSent) {
-        Surface(
+  if (ui.verificationSent) {
+    Surface(
+      modifier = Modifier.fillMaxWidth(),
+      shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+      color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+      border = androidx.compose.foundation.BorderStroke(
+        dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin),
+        MaterialTheme.colorScheme.primary
+      )
+    ) {
+      Column(
+        modifier = Modifier.padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+      ) {
+        Text(
+          text = "E-posta doğrulama gönderildi. Maildeki doğrulama linkine tıklayın.",
+          color = MaterialTheme.colorScheme.onSurface
+        )
+        if (ui.verificationError != null) {
+          Text(text = ui.verificationError ?: "", color = MaterialTheme.colorScheme.error)
+        }
+        OutlinedTextField(
+          value = ui.verificationCode,
+          onValueChange = vm::updateVerificationCode,
+          label = { Text(text = "Doğrulama Kodu") },
+          singleLine = true,
           modifier = Modifier.fillMaxWidth(),
-          shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
-          color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
-          border = androidx.compose.foundation.BorderStroke(
-            dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin),
-            MaterialTheme.colorScheme.primary
+          colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
           )
+        )
+        Row(
+          horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
         ) {
-          Column(
-            modifier = Modifier.padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
-          ) {
-            Text(
-              text = "E-posta doğrulama gönderildi. Maildeki doğrulama linkine tıklayın.",
-              color = MaterialTheme.colorScheme.onSurface
-            )
-            if (ui.verificationError != null) {
-              Text(text = ui.verificationError ?: "", color = MaterialTheme.colorScheme.error)
+          OutlinedButton(onClick = { vm.resendVerificationEmail() }, enabled = !ui.verifying) {
+            Text(text = "Tekrar Gönder")
+          }
+          Button(onClick = { vm.checkEmailVerified(onVerified = onSignedUp) }, enabled = !ui.verifying) { Text(text = "Doğruladım") }
+          Button(onClick = {
+            vm.applyVerificationCode { ok ->
+              // result overlay will show via ui state
+              if (ok) {
+                onSignedUp()
+              }
             }
-            Row(
-              horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
-            ) {
-              OutlinedButton(onClick = { vm.resendVerificationEmail() }, enabled = !ui.verifying) {
-                Text(text = "Tekrar Gönder")
-              }
-              Button(onClick = { vm.checkEmailVerified(onVerified = onSignedUp) }, enabled = !ui.verifying) {
-                Text(text = "Doğruladım")
-              }
+          }, enabled = !ui.verifying) {
+            Text(text = "Kodu Doğrula")
+          }
+        }
+      }
+    }
+  }
+
+  if (ui.showVerificationResult) {
+    val url = if (ui.verificationSuccess == true) ui.successLottieUrl else ui.errorLottieUrl
+    val composition by rememberLottieComposition(LottieCompositionSpec.Url(url))
+    val progress by animateLottieCompositionAsState(composition, iterations = 1)
+    androidx.compose.ui.window.Dialog(onDismissRequest = { vm.dismissVerificationResult() }) {
+      Box(
+        modifier = Modifier
+          .fillMaxSize()
+          .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)),
+        contentAlignment = Alignment.Center
+      ) {
+        Column(
+          horizontalAlignment = Alignment.CenterHorizontally,
+          verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+          LottieAnimation(composition = composition, progress = { progress }, modifier = Modifier.size(220.dp))
+          Text(text = if (ui.verificationSuccess == true) "Doğrulama tamamlandı" else "Kod geçersiz veya süresi dolmuş", color = MaterialTheme.colorScheme.onSurface)
+          Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedButton(onClick = { vm.dismissVerificationResult() }) { Text("Kapat") }
+            if (ui.verificationSuccess == true) {
+              Button(onClick = { vm.dismissVerificationResult(); onSignedUp() }) { Text("Devam Et") }
             }
           }
         }
       }
+    }
+  }
     }
   }
 

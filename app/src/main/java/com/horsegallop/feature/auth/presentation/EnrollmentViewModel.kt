@@ -22,7 +22,12 @@ data class EnrollmentUiState(
   val showDatePicker: Boolean = false,
   val verificationSent: Boolean = false,
   val verifying: Boolean = false,
-  val verificationError: String? = null
+  val verificationError: String? = null,
+  val verificationCode: String = "",
+  val showVerificationResult: Boolean = false,
+  val verificationSuccess: Boolean? = null,
+  val successLottieUrl: String = "",
+  val errorLottieUrl: String = ""
 )
 
 @HiltViewModel
@@ -84,6 +89,52 @@ class EnrollmentViewModel @Inject constructor(
           _ui.value = _ui.value.copy(verificationSent = true)
         }
       }
+  }
+
+  fun updateVerificationCode(code: String) {
+    _ui.value = _ui.value.copy(verificationCode = code)
+  }
+
+  fun applyVerificationCode(onResult: (Boolean) -> Unit) {
+    val code = _ui.value.verificationCode
+    if (code.isBlank()) {
+      _ui.value = _ui.value.copy(verificationError = "Kod boş olamaz")
+      return
+    }
+    _ui.value = _ui.value.copy(verifying = true, verificationError = null)
+    auth.applyActionCode(code)
+      .addOnCompleteListener { task ->
+        val ok = task.isSuccessful
+        _ui.value = _ui.value.copy(verifying = false, showVerificationResult = true, verificationSuccess = ok)
+        onResult(ok)
+      }
+  }
+
+  fun dismissVerificationResult() {
+    _ui.value = _ui.value.copy(showVerificationResult = false, verificationSuccess = null, verificationCode = "")
+  }
+
+  fun loadLottieConfig() {
+    try {
+      val fs = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+      fs.collection("appConfig").document("lottie").get()
+        .addOnSuccessListener { doc ->
+          val success = doc.getString("verificationSuccessUrl") ?: "https://assets9.lottiefiles.com/packages/lf20_jbrw3hcz.json"
+          val error = doc.getString("verificationErrorUrl") ?: "https://assets9.lottiefiles.com/packages/lf20_yYdx1X.json"
+          _ui.value = _ui.value.copy(successLottieUrl = success, errorLottieUrl = error)
+        }
+        .addOnFailureListener {
+          _ui.value = _ui.value.copy(
+            successLottieUrl = "https://assets9.lottiefiles.com/packages/lf20_jbrw3hcz.json",
+            errorLottieUrl = "https://assets9.lottiefiles.com/packages/lf20_yYdx1X.json"
+          )
+        }
+    } catch (_: Throwable) {
+      _ui.value = _ui.value.copy(
+        successLottieUrl = "https://assets9.lottiefiles.com/packages/lf20_jbrw3hcz.json",
+        errorLottieUrl = "https://assets9.lottiefiles.com/packages/lf20_yYdx1X.json"
+      )
+    }
   }
 
   fun checkEmailVerified(onVerified: () -> Unit) {

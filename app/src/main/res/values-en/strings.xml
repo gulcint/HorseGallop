@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="enrollment_title">Sign Up</string>
+    <string name="enrollment_title">Enrollment</string>
     <string name="label_first_name">First Name</string>
     <string name="label_last_name">Last Name</string>
     <string name="label_city">City</string>
@@ -13,7 +13,7 @@
     <string name="strength_strong">Strong</string>
     <string name="password_strength_prefix">Password Strength: %1$s</string>
     <string name="assistchip_location_label">Use Location</string>
-    <string name="signup_button">Sign Up</string>
+    <string name="signup_button">Enrollment</string>
     <string name="media_volume_low_warning">Media volume is low; sound may be inaudible</string>
     <string name="error_invalid_form">Please enter valid information and a strong password</string>
 </resources>
