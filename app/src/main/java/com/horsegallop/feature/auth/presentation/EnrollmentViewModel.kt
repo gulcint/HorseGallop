@@ -18,7 +18,7 @@ data class EnrollmentUiState(
   val email: String = "",
   val password: String = "",
   val loading: Boolean = false,
-  val error: String? = null,
+  val error: Int? = null,
   val showDatePicker: Boolean = false,
   val verificationSent: Boolean = false,
   val verifying: Boolean = false,
@@ -49,14 +49,9 @@ class EnrollmentViewModel @Inject constructor(
   fun signUp() {
     val s = _ui.value
     val hasLen = s.password.length >= 10
-    val hasUpper = s.password.any { it.isUpperCase() }
-    val hasLower = s.password.any { it.isLowerCase() }
-    val hasDigit = s.password.any { it.isDigit() }
-    val hasSpecial = s.password.any { !it.isLetterOrDigit() }
-    val strong = hasLen && hasUpper && hasLower && hasDigit && hasSpecial
-    val emailValid = s.email.contains("@")
-    if (s.firstName.isBlank() || s.lastName.isBlank() || !emailValid || !strong) {
-      _ui.value = s.copy(error = "Geçerli bilgileri girin ve güçlü şifre kullanın")
+    val emailValid = android.util.Patterns.EMAIL_ADDRESS.matcher(s.email).matches()
+    if (s.firstName.isBlank() || s.lastName.isBlank() || !emailValid || !hasLen) {
+      _ui.value = s.copy(error = com.horsegallop.R.string.error_invalid_form)
       return
     }
     _ui.value = s.copy(loading = true, error = null)
@@ -69,7 +64,7 @@ class EnrollmentViewModel @Inject constructor(
         // E-posta doğrulama maili use case içinde gönderiliyor
         _ui.value = _ui.value.copy(loading = false, verificationSent = true, verificationError = null)
       },
-      onError = { msg -> _ui.value = _ui.value.copy(loading = false, error = msg) }
+      onErrorRes = { resId -> _ui.value = _ui.value.copy(loading = false, error = resId) }
     )
   }
 

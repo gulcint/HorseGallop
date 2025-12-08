@@ -80,9 +80,7 @@ fun ProfileScreen(
   
   var phoneError by remember { mutableStateOf<String?>(null) }
   var editCountryCode by remember { mutableStateOf("+90") }
-  var showDatePicker by remember { mutableStateOf(false) }
-  var showCitySheet by remember { mutableStateOf(false) }
-  val isGoogle = remember(user) { user?.providerData?.any { it.providerId == "google.com" } == true }
+  
   var profileImageUri by remember { mutableStateOf<Uri?>(null) }
   var profileImageUrl by remember { mutableStateOf<String?>(null) }
   
@@ -137,12 +135,7 @@ fun ProfileScreen(
   // Derlenen adı başlıkta kullan
   val nameDisplay = listOf(firstName, lastName).filter { it.isNotBlank() }.joinToString(" ")
   val fallbackProfile = stringResource(id = com.horsegallop.core.R.string.profile)
-  val titleName = when {
-    nameDisplay.isNotBlank() -> nameDisplay
-    !user?.displayName.isNullOrBlank() -> user?.displayName ?: ""
-    email.isNotBlank() -> email
-    else -> fallbackProfile
-  }
+  
 
   Scaffold(contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)) { innerPadding ->
     Column(
@@ -403,7 +396,7 @@ fun ProfileScreen(
                     val digits = it.filter { ch -> ch.isDigit() }.take(15)
                     editPhone = digits
                     val minLen = if (editCountryCode == "+33") 9 else 10
-                    phoneError = if (digits.length in minLen..15) null else "Geçerli telefon girin"
+                    phoneError = if (digits.length in minLen..15) null else ctx.getString(com.horsegallop.R.string.error_phone_invalid)
                   },
                   singleLine = true,
                   keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),

@@ -14,13 +14,13 @@ class SignUpWithEmailUseCase @Inject constructor(
     email: String,
     password: String,
     onSuccess: () -> Unit,
-    onError: (String) -> Unit
+    onErrorRes: (Int) -> Unit
   ) {
     auth.fetchSignInMethodsForEmail(email)
       .addOnSuccessListener { methods ->
         val exists = methods.signInMethods?.isNotEmpty() == true
         if (exists) {
-          onError("Bu e-posta zaten kayıtlı")
+          onErrorRes(com.horsegallop.R.string.error_email_exists)
           return@addOnSuccessListener
         }
         auth.createUserWithEmailAndPassword(email, password)
@@ -28,7 +28,7 @@ class SignUpWithEmailUseCase @Inject constructor(
             val user = result.user
             val uid = user?.uid
             if (uid == null) {
-              onError("Kullanıcı oluşturulamadı")
+              onErrorRes(com.horsegallop.R.string.error_user_create_failed)
             } else {
               val userMap = mapOf(
                 "firstName" to firstName,
@@ -40,14 +40,13 @@ class SignUpWithEmailUseCase @Inject constructor(
                   user.sendEmailVerification()
                   onSuccess()
                 }
-                .addOnFailureListener { e -> onError(e.localizedMessage ?: "Veri kaydı başarısız") }
+                .addOnFailureListener { _ -> onErrorRes(com.horsegallop.R.string.error_data_save_failed) }
             }
           }
           .addOnFailureListener { e ->
-            val msg = e.localizedMessage ?: "Kayıt başarısız"
-            onError(msg)
+            onErrorRes(com.horsegallop.R.string.error_signup_failed)
           }
       }
-      .addOnFailureListener { e -> onError(e.localizedMessage ?: "Kayıt kontrolü başarısız") }
+      .addOnFailureListener { _ -> onErrorRes(com.horsegallop.R.string.error_signup_check_failed) }
   }
 }

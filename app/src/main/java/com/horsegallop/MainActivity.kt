@@ -56,14 +56,8 @@ class MainActivity : ComponentActivity() {
      override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 		
-        // Enable edge-to-edge and make system bars transparent
+        // Enable edge-to-edge
         enableEdgeToEdge()
-        window.statusBarColor = android.graphics.Color.TRANSPARENT
-        window.navigationBarColor = android.graphics.Color.TRANSPARENT
-        WindowCompat.getInsetsController(window, window.decorView).apply {
-            isAppearanceLightStatusBars = false
-            isAppearanceLightNavigationBars = false
-        }
 		
         // Handle Firebase verifyEmail deep link
         intent?.data?.let { data ->
