@@ -18,11 +18,16 @@ data class EnrollmentUiState(
   val email: String = "",
   val password: String = "",
   val loading: Boolean = false,
-  val error: String? = null,
+  val error: Int? = null,
   val showDatePicker: Boolean = false,
   val verificationSent: Boolean = false,
   val verifying: Boolean = false,
-  val verificationError: String? = null
+  val verificationError: String? = null,
+  val verificationCode: String = "",
+  val showVerificationResult: Boolean = false,
+  val verificationSuccess: Boolean? = null,
+  val successLottieUrl: String = "",
+  val errorLottieUrl: String = ""
 )
 
 @HiltViewModel
@@ -44,14 +49,9 @@ class EnrollmentViewModel @Inject constructor(
   fun signUp() {
     val s = _ui.value
     val hasLen = s.password.length >= 10
-    val hasUpper = s.password.any { it.isUpperCase() }
-    val hasLower = s.password.any { it.isLowerCase() }
-    val hasDigit = s.password.any { it.isDigit() }
-    val hasSpecial = s.password.any { !it.isLetterOrDigit() }
-    val strong = hasLen && hasUpper && hasLower && hasDigit && hasSpecial
-    val emailValid = s.email.contains("@")
-    if (s.firstName.isBlank() || s.lastName.isBlank() || !emailValid || !strong) {
-      _ui.value = s.copy(error = "Geçerli bilgileri girin ve güçlü şifre kullanın")
+    val emailValid = android.util.Patterns.EMAIL_ADDRESS.matcher(s.email).matches()
+    if (s.firstName.isBlank() || s.lastName.isBlank() || !emailValid || !hasLen) {
+      _ui.value = s.copy(error = com.horsegallop.R.string.error_invalid_form)
       return
     }
     _ui.value = s.copy(loading = true, error = null)
@@ -64,7 +64,7 @@ class EnrollmentViewModel @Inject constructor(
         // E-posta doğrulama maili use case içinde gönderiliyor
         _ui.value = _ui.value.copy(loading = false, verificationSent = true, verificationError = null)
       },
-      onError = { msg -> _ui.value = _ui.value.copy(loading = false, error = msg) }
+      onErrorRes = { resId -> _ui.value = _ui.value.copy(loading = false, error = resId) }
     )
   }
 
@@ -84,6 +84,52 @@ class EnrollmentViewModel @Inject constructor(
           _ui.value = _ui.value.copy(verificationSent = true)
         }
       }
+  }
+
+  fun updateVerificationCode(code: String) {
+    _ui.value = _ui.value.copy(verificationCode = code)
+  }
+
+  fun applyVerificationCode(onResult: (Boolean) -> Unit) {
+    val code = _ui.value.verificationCode
+    if (code.isBlank()) {
+      _ui.value = _ui.value.copy(verificationError = "Kod boş olamaz")
+      return
+    }
+    _ui.value = _ui.value.copy(verifying = true, verificationError = null)
+    auth.applyActionCode(code)
+      .addOnCompleteListener { task ->
+        val ok = task.isSuccessful
+        _ui.value = _ui.value.copy(verifying = false, showVerificationResult = true, verificationSuccess = ok)
+        onResult(ok)
+      }
+  }
+
+  fun dismissVerificationResult() {
+    _ui.value = _ui.value.copy(showVerificationResult = false, verificationSuccess = null, verificationCode = "")
+  }
+
+  fun loadLottieConfig() {
+    try {
+      val fs = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+      fs.collection("appConfig").document("lottie").get()
+        .addOnSuccessListener { doc ->
+          val success = doc.getString("verificationSuccessUrl") ?: "https://assets9.lottiefiles.com/packages/lf20_jbrw3hcz.json"
+          val error = doc.getString("verificationErrorUrl") ?: "https://assets9.lottiefiles.com/packages/lf20_yYdx1X.json"
+          _ui.value = _ui.value.copy(successLottieUrl = success, errorLottieUrl = error)
+        }
+        .addOnFailureListener {
+          _ui.value = _ui.value.copy(
+            successLottieUrl = "https://assets9.lottiefiles.com/packages/lf20_jbrw3hcz.json",
+            errorLottieUrl = "https://assets9.lottiefiles.com/packages/lf20_yYdx1X.json"
+          )
+        }
+    } catch (_: Throwable) {
+      _ui.value = _ui.value.copy(
+        successLottieUrl = "https://assets9.lottiefiles.com/packages/lf20_jbrw3hcz.json",
+        errorLottieUrl = "https://assets9.lottiefiles.com/packages/lf20_yYdx1X.json"
+      )
+    }
   }
 
   fun checkEmailVerified(onVerified: () -> Unit) {

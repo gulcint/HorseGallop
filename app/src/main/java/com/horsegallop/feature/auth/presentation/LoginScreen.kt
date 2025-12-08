@@ -61,6 +61,7 @@ import android.widget.TextView
 import android.view.Gravity
 import android.graphics.drawable.GradientDrawable
 import android.util.TypedValue
+import com.horsegallop.compose.HorseLoadingOverlay
  
 
 @Composable
@@ -108,7 +109,7 @@ fun LoginScreen(
                 )
             )
     ) {
-        // Yükleme sırasında overlay kaldırıldı
+        
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -149,6 +150,7 @@ fun LoginScreen(
                 var email by rememberSaveable { mutableStateOf("") }
                 var password by rememberSaveable { mutableStateOf("") }
                 var emailLoading by remember { mutableStateOf(false) }
+                HorseLoadingOverlay(visible = uiState.loading || emailLoading)
                 var emailError by remember { mutableStateOf<String?>(null) }
                 var showPassword by rememberSaveable { mutableStateOf(false) }
                 val focusManager = LocalFocusManager.current
@@ -405,6 +407,8 @@ fun GoogleSignInButton(loading: Boolean = false, onClick: () -> Unit) {
         }
     }
 }
+
+ 
 
 
 @Composable

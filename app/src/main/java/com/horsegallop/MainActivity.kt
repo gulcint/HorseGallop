@@ -44,6 +44,8 @@ import android.media.AudioManager
 import android.os.Build
 import android.widget.Toast
 import com.horsegallop.feature.auth.domain.model.UserRole
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
 
 private const val SPLASH_DURATION_MS: Long = 2000L
 private const val MEDIA_VOLUME_MAX: Float = 1f
@@ -54,13 +56,8 @@ class MainActivity : ComponentActivity() {
      override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 		
-		// Enable edge-to-edge mode for modern UI
-		enableEdgeToEdge()
-		
-        WindowCompat.getInsetsController(window, window.decorView).apply {
-            isAppearanceLightStatusBars = false
-            isAppearanceLightNavigationBars = false
-        }
+        // Enable edge-to-edge
+        enableEdgeToEdge()
 		
         // Handle Firebase verifyEmail deep link
         intent?.data?.let { data ->
@@ -126,6 +123,22 @@ fun AppContent(): Unit {
         if (splashFinished) showSplash = false
     }
     
+    // Sync system bars to current theme background for notch areas
+    val activity = LocalContext.current as? ComponentActivity
+    val bg = MaterialTheme.colorScheme.background
+    SideEffect {
+        val window = activity?.window
+        window?.statusBarColor = bg.toArgb()
+        window?.navigationBarColor = bg.toArgb()
+        if (window != null) {
+            val controller = WindowCompat.getInsetsController(window, window.decorView)
+            val lum = bg.luminance()
+            val light = lum > 0.5f
+            controller.isAppearanceLightStatusBars = light
+            controller.isAppearanceLightNavigationBars = light
+        }
+    }
+
     if (showSplash) {
 		// Splash ekranında geri tuşu uygulamayı kapatır
 		val activity = LocalContext.current as? ComponentActivity

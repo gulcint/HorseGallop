@@ -53,10 +53,13 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.text.input.KeyboardType
+import android.util.Patterns
+import com.horsegallop.compose.HorseLoadingOverlay
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.graphics.lerp
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import com.airbnb.lottie.compose.*
 
 @Composable
 fun EnrollmentScreen(
@@ -68,6 +71,7 @@ fun EnrollmentScreen(
   val ctx = LocalContext.current
   val countryCodes = listOf("+90", "+1", "+44", "+49", "+33", "+34", "+39", "+61", "+81", "+86", "+971", "+7")
   val citySuggestions = stringArrayResource(com.horsegallop.R.array.city_list).toList()
+  LaunchedEffect(Unit) { vm.loadLottieConfig() }
   
 
   Scaffold(
@@ -84,13 +88,14 @@ fun EnrollmentScreen(
         )
       )
     }
-  ) { padding ->
+  , containerColor = MaterialTheme.colorScheme.background) { padding ->
     
     Column(
       modifier = Modifier
         .fillMaxSize()
         .padding(padding)
         .windowInsetsPadding(WindowInsets.ime)
+        .navigationBarsPadding()
         .padding(
           horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
           vertical = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)
@@ -199,7 +204,7 @@ fun EnrollmentScreen(
           val strengthText = when (score) { 0,1 -> stringResource(com.horsegallop.R.string.strength_weak); 2,3 -> stringResource(com.horsegallop.R.string.strength_medium); else -> stringResource(com.horsegallop.R.string.strength_strong) }
           Text(text = stringResource(com.horsegallop.R.string.password_strength_prefix, strengthText), color = MaterialTheme.colorScheme.onSurfaceVariant)
           Text(
-            text = "Güçlü şifre için: en az 10 karakter, büyük-küçük harf, rakam ve özel karakter.",
+            text = stringResource(com.horsegallop.R.string.password_guidance),
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.80f),
             style = MaterialTheme.typography.bodySmall
           )
@@ -208,17 +213,32 @@ fun EnrollmentScreen(
       }
 
       if (ui.error != null) {
-        Text(text = stringResource(com.horsegallop.R.string.error_invalid_form), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(text = stringResource(ui.error), color = MaterialTheme.colorScheme.error)
       }
 
       val nameValid = ui.firstName.isNotBlank() && ui.lastName.isNotBlank()
-      val emailValid = ui.email.contains("@")
+      val emailValid = Patterns.EMAIL_ADDRESS.matcher(ui.email).matches()
       val hasLen = ui.password.length >= 10
-      val hasUpper = ui.password.any { it.isUpperCase() }
-      val hasLower = ui.password.any { it.isLowerCase() }
-      val hasDigit = ui.password.any { it.isDigit() }
-      val hasSpecial = ui.password.any { !it.isLetterOrDigit() }
-      val strong = hasLen && hasUpper && hasLower && hasDigit && hasSpecial
+      val score = listOf(
+        ui.password.any { it.isUpperCase() },
+        ui.password.any { it.isLowerCase() },
+        ui.password.any { it.isDigit() },
+        ui.password.any { !it.isLetterOrDigit() }
+      ).count { it }
+      val strong = hasLen
+
+      val disabledReasons = buildList {
+        if (!nameValid) add(stringResource(com.horsegallop.R.string.error_name_required))
+        if (!emailValid) add(stringResource(com.horsegallop.R.string.error_email_invalid))
+        if (!hasLen) add(stringResource(com.horsegallop.R.string.error_password_length))
+      }
+      if (disabledReasons.isNotEmpty()) {
+        Text(
+          text = disabledReasons.joinToString(" • "),
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+          style = MaterialTheme.typography.bodySmall
+        )
+      }
 
       Button(
         onClick = { if (nameValid && emailValid && strong) vm.signUp() },
@@ -226,49 +246,109 @@ fun EnrollmentScreen(
         modifier = Modifier
           .fillMaxWidth()
           .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
-        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
-      ) { Text(stringResource(com.horsegallop.R.string.signup_button)) }
+        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+        colors = ButtonDefaults.buttonColors(
+          containerColor = MaterialTheme.colorScheme.primary,
+          contentColor = MaterialTheme.colorScheme.onPrimary,
+          disabledContainerColor = MaterialTheme.colorScheme.primary,
+          disabledContentColor = MaterialTheme.colorScheme.onPrimary
+        )
+      ) {
+        if (ui.loading) {
+          Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))) {
+            CircularProgressIndicator(modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_sm)), color = MaterialTheme.colorScheme.onPrimary)
+            Text(stringResource(com.horsegallop.R.string.enrollment_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+          }
+        } else {
+          Text(stringResource(com.horsegallop.R.string.enrollment_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        }
+      }
 
       
 
-      if (ui.loading) {
-        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-      }
+      HorseLoadingOverlay(visible = ui.loading)
 
-      if (ui.verificationSent) {
-        Surface(
-          modifier = Modifier.fillMaxWidth(),
-          shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
-          color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
-          border = androidx.compose.foundation.BorderStroke(
-            dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin),
-            MaterialTheme.colorScheme.primary
-          )
-        ) {
-          Column(
-            modifier = Modifier.padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
-          ) {
-            Text(
-              text = "E-posta doğrulama gönderildi. Maildeki doğrulama linkine tıklayın.",
-              color = MaterialTheme.colorScheme.onSurface
+  if (ui.verificationSent) {
+    Surface(
+      modifier = Modifier.fillMaxWidth(),
+      shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+      color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+      border = androidx.compose.foundation.BorderStroke(
+        dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin),
+        MaterialTheme.colorScheme.primary
+      )
+    ) {
+      Column(
+        modifier = Modifier.padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+      ) {
+        Text(
+          text = stringResource(com.horsegallop.R.string.verification_sent_info),
+          color = MaterialTheme.colorScheme.onSurface
+        )
+        if (ui.verificationError != null) {
+          Text(text = ui.verificationError ?: "", color = MaterialTheme.colorScheme.error)
+        }
+          OutlinedTextField(
+            value = ui.verificationCode,
+            onValueChange = vm::updateVerificationCode,
+            label = { Text(text = stringResource(com.horsegallop.R.string.label_verification_code)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+              focusedBorderColor = MaterialTheme.colorScheme.primary,
+              unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
             )
-            if (ui.verificationError != null) {
-              Text(text = ui.verificationError ?: "", color = MaterialTheme.colorScheme.error)
+          )
+        Row(
+          horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+        ) {
+          OutlinedButton(onClick = { vm.resendVerificationEmail() }, enabled = !ui.verifying) {
+            Text(text = stringResource(com.horsegallop.R.string.btn_resend_verification))
+          }
+          Button(onClick = { vm.checkEmailVerified(onVerified = onSignedUp) }, enabled = !ui.verifying) { Text(text = stringResource(com.horsegallop.R.string.btn_confirm_verified)) }
+          Button(onClick = {
+            vm.applyVerificationCode { ok ->
+              // result overlay will show via ui state
+              if (ok) {
+                onSignedUp()
+              }
             }
-            Row(
-              horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
-            ) {
-              OutlinedButton(onClick = { vm.resendVerificationEmail() }, enabled = !ui.verifying) {
-                Text(text = "Tekrar Gönder")
-              }
-              Button(onClick = { vm.checkEmailVerified(onVerified = onSignedUp) }, enabled = !ui.verifying) {
-                Text(text = "Doğruladım")
-              }
+          }, enabled = !ui.verifying) {
+            Text(text = stringResource(com.horsegallop.R.string.btn_apply_code))
+          }
+        }
+      }
+    }
+  }
+
+  if (ui.showVerificationResult) {
+    val url = if (ui.verificationSuccess == true) ui.successLottieUrl else ui.errorLottieUrl
+    val composition by rememberLottieComposition(LottieCompositionSpec.Url(url))
+    val progress by animateLottieCompositionAsState(composition, iterations = 1)
+    androidx.compose.ui.window.Dialog(onDismissRequest = { vm.dismissVerificationResult() }) {
+      Box(
+        modifier = Modifier
+          .fillMaxSize()
+          .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)),
+        contentAlignment = Alignment.Center
+      ) {
+        Column(
+          horizontalAlignment = Alignment.CenterHorizontally,
+          verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+          LottieAnimation(composition = composition, progress = { progress }, modifier = Modifier.size(220.dp))
+          Text(text = if (ui.verificationSuccess == true) stringResource(com.horsegallop.R.string.verification_result_success) else stringResource(com.horsegallop.R.string.verification_result_error), color = MaterialTheme.colorScheme.onSurface)
+          Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedButton(onClick = { vm.dismissVerificationResult() }) { Text(stringResource(com.horsegallop.R.string.btn_close)) }
+            if (ui.verificationSuccess == true) {
+              Button(onClick = { vm.dismissVerificationResult(); onSignedUp() }) { Text(stringResource(com.horsegallop.R.string.btn_continue)) }
             }
           }
         }
       }
+    }
+  }
     }
   }
 

@@ -28,6 +28,9 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.ui.tooling.preview.Preview
 import android.app.Activity
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.luminance
+import androidx.core.view.WindowCompat
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.MonitorHeart
@@ -106,6 +109,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
     val scope = rememberCoroutineScope()
+    val activity = LocalContext.current as? Activity
 
     Box(
         modifier = Modifier
@@ -115,7 +119,6 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
         // Theme-based animated gradient background instead of external images
         ThemedAnimatedBackground(gradient = pages[pagerState.currentPage].gradient)
         // Back button exits app on onboarding
-        val activity = LocalContext.current as? Activity
         BackHandler(enabled = true) { activity?.finish() }
         // Pager - Full screen
         HorizontalPager(
@@ -125,10 +128,25 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
             OnboardingPageContentAnimated(pages[page])
         }
 
+        // Match system bar colors to current page background (no white gaps)
+        val barColor: Color = pages[pagerState.currentPage].gradient.firstOrNull() ?: MaterialTheme.colorScheme.background
+        SideEffect {
+            val window = activity?.window
+            window?.statusBarColor = barColor.toArgb()
+            window?.navigationBarColor = barColor.toArgb()
+            if (window != null) {
+                val controller = WindowCompat.getInsetsController(window, window.decorView)
+                val light = barColor.luminance() > 0.5f
+                controller.isAppearanceLightStatusBars = light
+                controller.isAppearanceLightNavigationBars = light
+            }
+        }
+
         // Progress indicator
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
+                .statusBarsPadding()
         ) {
             Text(
                 text = stringResource(
@@ -153,6 +171,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
                 .padding(12.dp)
         ) {
             Column(
@@ -176,7 +195,6 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
-
                 // Action buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -270,7 +288,6 @@ private fun OnboardingPageContentAnimated(page: OnboardingPage) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Transparent)
             .padding(horizontal = 24.dp, vertical = 24.dp)
             .graphicsLayer { alpha = 1f },
         verticalArrangement = Arrangement.Center,
@@ -292,6 +309,7 @@ private fun OnboardingPageContentAnimated(page: OnboardingPage) {
                     textAlign = TextAlign.Center,
                     color = Color.White
                 )
+            Spacer(modifier = Modifier.height(8.dp))
             }
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -305,7 +323,9 @@ private fun OnboardingPageContentAnimated(page: OnboardingPage) {
                     slideOutVertically(targetOffsetY = { 28 }, animationSpec = tween(300))
         ) {
             EngagingCallout(titleRes = page.titleRes, subtitleRes = page.subtitleRes, gradient = page.gradient)
+            Spacer(modifier = Modifier.height(12.dp))
         }
+
 
         Spacer(modifier = Modifier.height(12.dp))
 
