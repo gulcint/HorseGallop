@@ -266,14 +266,23 @@ fun EnrollmentScreen(
       
 
       if (ui.loading) {
-        androidx.compose.ui.window.Dialog(onDismissRequest = {}) {
+        androidx.compose.ui.window.Dialog(
+          onDismissRequest = {},
+          properties = androidx.compose.ui.window.DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false,
+            usePlatformDefaultWidth = false
+          )
+        ) {
           Box(
             modifier = Modifier
               .fillMaxSize()
               .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.75f)),
             contentAlignment = Alignment.Center
           ) {
-            CircularProgressIndicator()
+            val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(com.horsegallop.R.raw.horse))
+            val progress by animateLottieCompositionAsState(composition, iterations = LottieConstants.IterateForever)
+            LottieAnimation(composition = composition, progress = { progress }, modifier = Modifier.size(200.dp))
           }
         }
       }
