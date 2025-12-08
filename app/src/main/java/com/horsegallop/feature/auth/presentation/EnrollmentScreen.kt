@@ -54,6 +54,7 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.text.input.KeyboardType
 import android.util.Patterns
+import com.horsegallop.compose.HorseLoadingOverlay
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.graphics.lerp
 import java.text.SimpleDateFormat
@@ -265,27 +266,7 @@ fun EnrollmentScreen(
 
       
 
-      if (ui.loading) {
-        androidx.compose.ui.window.Dialog(
-          onDismissRequest = {},
-          properties = androidx.compose.ui.window.DialogProperties(
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false,
-            usePlatformDefaultWidth = false
-          )
-        ) {
-          Box(
-            modifier = Modifier
-              .fillMaxSize()
-              .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.75f)),
-            contentAlignment = Alignment.Center
-          ) {
-            val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(com.horsegallop.R.raw.horse))
-            val progress by animateLottieCompositionAsState(composition, iterations = LottieConstants.IterateForever)
-            LottieAnimation(composition = composition, progress = { progress }, modifier = Modifier.size(200.dp))
-          }
-        }
-      }
+      HorseLoadingOverlay(visible = ui.loading)
 
   if (ui.verificationSent) {
     Surface(
