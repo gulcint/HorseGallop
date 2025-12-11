@@ -21,6 +21,10 @@
     <string name="error_data_save_failed">Veri kaydı başarısız</string>
     <string name="error_signup_failed">Kayıt başarısız</string>
     <string name="error_signup_check_failed">Kayıt kontrolü başarısız</string>
+    <string name="error_invalid_email">Geçersiz e-posta adresi</string>
+    <string name="error_weak_password">Şifre güvenli değil</string>
+    <string name="error_operation_not_allowed">İşleme izin verilmiyor (Auth ayarı)</string>
+    <string name="error_network">Ağ bağlantı hatası</string>
     <string name="error_user_session_missing">Kullanıcı oturumu bulunamadı</string>
     <string name="error_verification_email_failed">Doğrulama e-postası gönderilemedi</string>
     <string name="error_code_empty">Kod boş olamaz</string>
@@ -37,7 +41,17 @@
     <string name="verification_result_success">Doğrulama tamamlandı</string>
     <string name="verification_result_error">Kod geçersiz veya süresi dolmuş</string>
     <string name="label_verification_code">Doğrulama Kodu</string>
+    <string name="verify_email_title">E-posta Doğrula</string>
+    <string name="verification_sent_to_email">Doğrulama e-postası %1$s adresine gönderildi.</string>
+    <string name="error_too_many_requests">Bu cihazdan yapılan istekler sınırlandırıldı. Lütfen daha sonra tekrar deneyin.</string>
+    <string name="error_quota_exceeded">E-posta gönderim kotası aşıldı. Lütfen daha sonra deneyin.</string>
+    <string name="verification_help">E-posta gelmediyse spam klasörünü kontrol edin ve birkaç dakika bekleyin.</string>
+    <string name="resend_cooldown_hint">Yeniden göndermek için %1$d sn bekleyin.</string>
     <string name="error_name_required">İsim ve soyisim gerekli</string>
     <string name="error_email_invalid">Geçerli e-posta girin</string>
     <string name="error_password_length">Şifre en az 10 karakter olmalı</string>
+    <string name="password_needs_upper">Büyük harf ekle</string>
+    <string name="password_needs_lower">Küçük harf ekle</string>
+    <string name="password_needs_digit">Rakam ekle</string>
+    <string name="password_needs_special">Özel karakter ekle</string>
 </resources>

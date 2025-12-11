@@ -1,6 +1,7 @@
 package com.horsegallop
 
 import android.os.Bundle
+import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -12,9 +13,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
+ 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
 import com.horsegallop.theme.LightColorScheme
 import com.horsegallop.theme.DarkColorScheme
 import androidx.compose.runtime.*
@@ -23,6 +27,9 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavHostController
+import com.horsegallop.navigation.Dest
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import android.media.MediaPlayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -46,6 +53,7 @@ import android.widget.Toast
 import com.horsegallop.feature.auth.domain.model.UserRole
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
+import com.horsegallop.core.debug.AppLog
 
 private const val SPLASH_DURATION_MS: Long = 2000L
 private const val MEDIA_VOLUME_MAX: Float = 1f
@@ -53,35 +61,35 @@ private const val LOTTIE_FILL_SCALE: Float = 0.6f
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-     override fun onCreate(savedInstanceState: Bundle?) {
+    var navControllerRef: NavHostController? = null
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-		
+        
         // Enable edge-to-edge
         enableEdgeToEdge()
-		
-        // Handle Firebase verifyEmail deep link
-        intent?.data?.let { data ->
-            val mode = data.getQueryParameter("mode")
-            val oobCode = data.getQueryParameter("oobCode")
-            if (mode == "verifyEmail" && !oobCode.isNullOrBlank()) {
-                FirebaseAuth.getInstance().applyActionCode(oobCode)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Toast.makeText(this, "E-posta doğrulandı", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(this, task.exception?.localizedMessage ?: "Doğrulama başarısız", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-            }
+        
+        // Default web verification akışı kullanılacak; intent deep link işlemesi kaldırıldı
+        val skipSplash = runCatching {
+            val d = intent?.data
+            d != null && d.scheme == "horsegallop" && d.host == "verify-complete"
+        }.getOrDefault(false)
+        setContent { AppTheme { AppContent(skipSplash) } }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        if (intent != null) {
+            setIntent(intent)
+            AppLog.i("MainActivity", "onNewIntent deliver deepLink=${intent.data}")
+            navControllerRef?.handleDeepLink(intent)
         }
-        setContent { AppTheme { AppContent() } }
     }
 }
 
 @Preview(showBackground = true, name = "AppContent")
 @Composable
 private fun PreviewAppContent() {
-    AppTheme { AppContent() }
+    AppTheme { AppContent(skipSplash = false) }
 }
 
 @Preview(showBackground = true, name = "SplashScreen")
@@ -113,15 +121,19 @@ private fun PreviewSplashScreen() {
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppContent(): Unit {
-    var showSplash: Boolean by remember { mutableStateOf(true) }
+fun AppContent(skipSplash: Boolean): Unit {
+    var showSplash: Boolean by remember { mutableStateOf(!skipSplash) }
     var splashFinished: Boolean by remember { mutableStateOf(false) }
     val navController = rememberNavController()
     val isLoggedIn = remember { FirebaseAuth.getInstance().currentUser != null }
+    val owner = LocalContext.current as? MainActivity
+    SideEffect { owner?.navControllerRef = navController }
     
     LaunchedEffect(splashFinished) {
         if (splashFinished) showSplash = false
     }
+
+    
     
     // Sync system bars to current theme background for notch areas
     val activity = LocalContext.current as? ComponentActivity
@@ -141,12 +153,11 @@ fun AppContent(): Unit {
 
     if (showSplash) {
 		// Splash ekranında geri tuşu uygulamayı kapatır
-		val activity = LocalContext.current as? ComponentActivity
+		val act = LocalContext.current as? ComponentActivity
 		BackHandler {
 			// Uygulamayı kapat
-			activity?.finish()
+			act?.finish()
 		}
-		
         SplashScreen(onFinished = { splashFinished = true })
     } else {
         val act = LocalContext.current as? ComponentActivity
@@ -156,11 +167,61 @@ fun AppContent(): Unit {
                 act?.finish()
             }
         }
+        AppLog.d("MainActivity", "AppNavHost compose start isLoggedIn=${isLoggedIn}")
         AppNavHost(
             navController = navController,
             role = if (isLoggedIn) UserRole.CUSTOMER else null
         )
+        LaunchedEffect(Unit) {
+            val auth = FirebaseAuth.getInstance()
+            val listener = FirebaseAuth.AuthStateListener { fa ->
+                if (fa.currentUser == null) {
+                    AppLog.w("AuthState", "currentUser null navigate Login")
+                    navController.navigate(Dest.Login.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            }
+            auth.addAuthStateListener(listener)
+            try {
+                while (true) {
+                    kotlinx.coroutines.delay(60000)
+                    val u = auth.currentUser ?: continue
+                    u.reload().addOnCompleteListener { t ->
+                        if (t.isSuccessful) {
+                            val cur = auth.currentUser
+                            val hasPasswordProvider = cur?.providerData?.any { it.providerId == "password" } == true
+                            val hasEmail = cur?.email != null
+                            if (!hasPasswordProvider || !hasEmail) {
+                                AppLog.w("AuthState", "provider/email missing signOut")
+                                auth.signOut()
+                                navController.navigate(Dest.Login.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                                    launchSingleTop = true
+                                }
+                            }
+                        } else {
+                            val ex = t.exception
+                            if (ex is com.google.firebase.auth.FirebaseAuthInvalidUserException) {
+                                AppLog.e("AuthState", "invalid user signOut")
+                                auth.signOut()
+                                navController.navigate(Dest.Login.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                                    launchSingleTop = true
+                                }
+                            }
+                        }
+                    }
+                }
+            } finally {
+                auth.removeAuthStateListener(listener)
+            }
+        }
+        
     }
+
+    
 }
 
 @Composable
@@ -177,107 +238,23 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
 	Box(
 		modifier = Modifier
 			.fillMaxSize()
-			.background(Color.White),
+			.background(MaterialTheme.colorScheme.background),
 		contentAlignment = Alignment.Center
 	) {
-        val ctx = LocalContext.current
-        val titleText: String = stringResource(com.horsegallop.core.R.string.welcome_title)
-        val subtitleText: String = stringResource(com.horsegallop.core.R.string.welcome_subtitle)
-        val composition by rememberLottieComposition(
-            LottieCompositionSpec.RawRes(R.raw.horse)
-        )
-        val progress by animateLottieCompositionAsState(
-            composition = composition,
-            iterations = LottieConstants.IterateForever
-        )
-
-        var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
-        LaunchedEffect(composition) {
-            if (composition == null) return@LaunchedEffect
-            val am = ctx.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val attrs = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()
-                val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).setAudioAttributes(attrs).setOnAudioFocusChangeListener { }.build()
-                am.requestAudioFocus(req)
-            } else {
-                am.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
-            }
-            runCatching {
-                withContext(Dispatchers.IO) {
-                    val created = MediaPlayer.create(ctx, R.raw.horse_gallop)
-                    if (created != null) {
-                        mediaPlayer = created
-                        mediaPlayer?.isLooping = true
-                        mediaPlayer?.setVolume(MEDIA_VOLUME_MAX, MEDIA_VOLUME_MAX)
-                        mediaPlayer?.start()
-                    } else {
-                        val tmp = MediaPlayer()
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            tmp.setAudioAttributes(
-                                AudioAttributes.Builder()
-                                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                                    .build()
-                            )
-                        }
-                        tmp.setOnErrorListener { mp, _, _ ->
-                            try { mp.reset() } catch (_: Throwable) {}
-                            false
-                        }
-                        val afd = ctx.resources.openRawResourceFd(R.raw.horse_gallop)
-                        tmp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
-                        afd.close()
-                        tmp.isLooping = true
-                        tmp.setVolume(MEDIA_VOLUME_MAX, MEDIA_VOLUME_MAX)
-                        tmp.setOnPreparedListener { it.start() }
-                        tmp.prepareAsync()
-                        mediaPlayer = tmp
-                    }
-                }
-                val current = am.getStreamVolume(AudioManager.STREAM_MUSIC)
-                val max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                if (current <= max.coerceAtLeast(1) / 4) {
-                    Toast.makeText(ctx, ctx.getString(R.string.media_volume_low_warning), Toast.LENGTH_SHORT).show()
-                }
-            }
-            delay(SPLASH_DURATION_MS)
-            try {
-                mediaPlayer?.stop()
-                mediaPlayer?.release()
-                mediaPlayer = null
-            } catch (_: Throwable) {}
-            onFinished()
-        }
-        DisposableEffect(Unit) {
-            onDispose {
-                try {
-                    mediaPlayer?.stop()
-                    mediaPlayer?.release()
-                    mediaPlayer = null
-                } catch (_: Throwable) {}
-                try {
-                    val am = ctx.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        val attrs = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()
-                        val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).setAudioAttributes(attrs).setOnAudioFocusChangeListener { }.build()
-                        am.abandonAudioFocusRequest(req)
-                    } else {
-                        am.abandonAudioFocus(null)
-                    }
-                } catch (_: Throwable) {}
-            }
-        }
-		
-        LottieAnimation(
-            composition = composition,
-            progress = { progress },
-            modifier = Modifier.size(220.dp)
-        )
-		// Localized welcome texts over splash (auto-resolved by app locales/device locale)
-		Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 64.dp)) {
-			Text(text = titleText, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.primary)
+		val titleText: String = stringResource(com.horsegallop.core.R.string.welcome_title)
+		val subtitleText: String = stringResource(com.horsegallop.core.R.string.welcome_subtitle)
+		LaunchedEffect(Unit) {
+			delay(SPLASH_DURATION_MS)
+			onFinished()
+		}
+		Column(horizontalAlignment = Alignment.CenterHorizontally) {
+			Image(painter = painterResource(id = com.horsegallop.R.mipmap.ic_launcher), contentDescription = null)
+			Spacer(modifier = Modifier.size(12.dp))
+			Text(text = titleText, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
 			Spacer(modifier = Modifier.size(6.dp))
-			Text(text = subtitleText, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+			Text(text = subtitleText, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+			Spacer(modifier = Modifier.size(16.dp))
+			androidx.compose.material3.CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
 		}
 	}
 }

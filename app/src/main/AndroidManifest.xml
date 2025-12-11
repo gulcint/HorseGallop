@@ -13,17 +13,23 @@
 		<activity
 			android:name=".MainActivity"
 			android:exported="true"
+			android:launchMode="singleTask"
 			android:theme="@style/Theme.horsegallop">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
-			<intent-filter>
-				<action android:name="android.intent.action.VIEW" />
-				<category android:name="android.intent.category.DEFAULT" />
-				<category android:name="android.intent.category.BROWSABLE" />
-				<data android:scheme="https" android:host="horsegallop.page.link" android:pathPrefix="/verify" />
-			</intent-filter>
+			    <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+
+        <!-- Email verification için URL -->
+        <data
+            android:scheme="horsegallop"
+            android:host="verify-complete" />
+    </intent-filter>
 		</activity>
 	</application>
 </manifest>

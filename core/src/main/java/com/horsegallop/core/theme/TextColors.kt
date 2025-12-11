@@ -11,6 +11,7 @@ data class TextColors(
   val bodyTertiary: Color,
   val hint: Color,
   val highlight: Color,
+  val error: Color,
   val inverse: Color
 )
 
@@ -22,6 +23,7 @@ val LocalTextColors = staticCompositionLocalOf {
     bodyTertiary = Color(0xFF7A7A7A),
     hint = Color(0xFF9E9E9E),
     highlight = Color(0xFF8B4513),
+    error = Color(0xFFD2691E),
     inverse = Color(0xFFFFFFFF)
   )
 }
@@ -34,8 +36,8 @@ fun textColorsFrom(colorScheme: ColorScheme): TextColors {
     bodyTertiary = colorScheme.onSurfaceVariant.copy(alpha = 0.9f),
     hint = colorScheme.outline,
     highlight = colorScheme.primary,
+    error = colorScheme.secondary,
     inverse = colorScheme.inverseOnSurface
   )
 }
-
 

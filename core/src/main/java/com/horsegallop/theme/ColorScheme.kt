@@ -25,7 +25,7 @@ val OnTertiaryContainer = Color(0xFFFFFFFF) // White
 
 val Error = Color(0xFFF44336) // Red
 val OnError = Color(0xFFFFFFFF) // White
-val ErrorContainer = Color(0xFFFFCDD2) // Light Red
+val ErrorContainer = SecondaryContainer
 val OnErrorContainer = Color(0xFFB71C1C) // Dark Red
 
 val Background = Color(0xFFFAFAFA) // Light Gray
@@ -62,7 +62,7 @@ val OnTertiaryContainerDark = Color(0xFFFFFFFF) // White
 
 val ErrorDark = Color(0xFFEF5350) // Light Red
 val OnErrorDark = Color(0xFFFFFFFF) // White
-val ErrorContainerDark = Color(0xFFB71C1C) // Dark Red
+val ErrorContainerDark = SecondaryContainerDark
 val OnErrorContainerDark = Color(0xFFFFFFFF) // White
 
 val BackgroundDark = Color(0xFF1A1A1A) // Dark Gray

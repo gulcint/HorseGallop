@@ -137,7 +137,7 @@ fun BarnListScreen(
       )
       if (!content.filterLabels.isNullOrEmpty()) {
         Spacer(modifier = Modifier.height(8.dp))
-        val allLabels = content.filterLabels!!
+        val allLabels = content.filterLabels ?: emptyList()
         val listState = androidx.compose.foundation.lazy.rememberLazyListState()
         Box(modifier = Modifier.fillMaxWidth()) {
           LazyRow(

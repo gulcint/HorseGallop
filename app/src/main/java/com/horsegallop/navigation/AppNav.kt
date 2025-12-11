@@ -29,6 +29,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.horsegallop.feature.auth.domain.model.UserRole
 import androidx.compose.runtime.remember
@@ -48,6 +49,7 @@ sealed class Dest(val route: String) {
   data object Barns : Dest("barns")
   data object EmailLogin : Dest("emailLogin")
   data object Enroll : Dest("enroll")
+  data object VerifyEmail : Dest("verifyEmail")
   data object Profile : Dest("profile")
   data object BarnDetail : Dest("barnDetail/{id}") {
     fun routeWithId(id: String): String = "barnDetail/$id"
@@ -169,17 +171,23 @@ fun AppNavHost(
         }
       )
     }
-    composable(Dest.Enroll.route) {
+    composable(
+      Dest.Enroll.route,
+      deepLinks = listOf(navDeepLink { uriPattern = "horsegallop://auto-enroll" })
+    ) {
       EnrollmentScreen(
         onBack = { navController.popBackStack() },
         onSignedUp = {
           navController.navigate(Dest.Home.route) {
-            popUpTo(Dest.Login.route) { inclusive = true }
+            popUpTo(navController.graph.findStartDestination().id) { inclusive = false }
+            launchSingleTop = true
           }
         }
       )
     }
-    composable(Dest.Home.route) {
+    composable(Dest.Home.route,
+      deepLinks = listOf(navDeepLink { uriPattern = "horsegallop://verify-complete" })
+    ) {
       val activity = LocalContext.current as? Activity
       BackHandler { activity?.finish() }
       HomeScreen(

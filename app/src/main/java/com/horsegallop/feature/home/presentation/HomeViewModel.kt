@@ -32,6 +32,7 @@ class HomeViewModel @Inject constructor(
   }
 
   fun loadRecentActivities() {
+    _ui.value = _ui.value.copy(loading = true, error = null)
     val uid = auth.currentUser?.uid
     if (uid == null) {
       _ui.value = UiState(activities = emptyList(), loading = false, error = null)
@@ -76,4 +77,3 @@ class HomeViewModel @Inject constructor(
     return SimpleDateFormat("HH:mm", locale).format(date)
   }
 }
-

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="enrollment_title">Enrollment</string>
+    <string name="enrollment_title">Sign Up</string>
     <string name="label_first_name">First Name</string>
     <string name="label_last_name">Last Name</string>
     <string name="label_city">City</string>
@@ -8,36 +8,56 @@
     <string name="label_phone">Phone</string>
     <string name="label_email">Email</string>
     <string name="label_password">Password (10+ characters)</string>
+
     <string name="strength_weak">Weak</string>
     <string name="strength_medium">Medium</string>
     <string name="strength_strong">Strong</string>
     <string name="password_strength_prefix">Password Strength: %1$s</string>
+
     <string name="assistchip_location_label">Use Location</string>
-    <string name="signup_button">Enrollment</string>
+    <string name="signup_button">Sign Up</string>
     <string name="media_volume_low_warning">Media volume is low; sound may be inaudible</string>
-    <string name="error_invalid_form">Please enter valid information and a strong password</string>
+
+    <string name="error_invalid_form">Enter valid information and use a strong password</string>
     <string name="error_email_exists">This email is already registered</string>
-    <string name="error_user_create_failed">User could not be created</string>
-    <string name="error_data_save_failed">Data save failed</string>
+    <string name="error_user_create_failed">User creation failed</string>
+    <string name="error_data_save_failed">Saving data failed</string>
     <string name="error_signup_failed">Sign up failed</string>
-    <string name="error_signup_check_failed">Sign up check failed</string>
-    <string name="error_user_session_missing">User session not found</string>
+    <string name="error_signup_check_failed">Sign up pre-check failed</string>
+    <string name="error_user_session_missing">No user session found</string>
     <string name="error_verification_email_failed">Verification email could not be sent</string>
     <string name="error_code_empty">Code cannot be empty</string>
     <string name="error_verification_check_failed">Verification check failed</string>
-    <string name="error_email_not_verified">Email is not yet verified. Please click the link in the email.</string>
+    <string name="error_email_not_verified">Email is not verified yet. Please tap the link in the email.</string>
     <string name="error_phone_invalid">Enter a valid phone number</string>
-    <string name="password_guidance">For a strong password: at least 10 characters, upper-lowercase letters, digits, and a special character.</string>
-    <string name="btn_resend_verification">Resend</string>
-    <string name="btn_confirm_verified">I Verified</string>
-    <string name="btn_apply_code">Verify Code</string>
-    <string name="btn_close">Close</string>
-    <string name="btn_continue">Continue</string>
-    <string name="verification_sent_info">Verification email sent. Click the verification link in the email.</string>
-    <string name="verification_result_success">Verification completed</string>
-    <string name="verification_result_error">Code invalid or expired</string>
-    <string name="label_verification_code">Verification Code</string>
-    <string name="error_name_required">First and last name are required</string>
     <string name="error_email_invalid">Enter a valid email</string>
     <string name="error_password_length">Password must be at least 10 characters</string>
+    <string name="error_invalid_email">Invalid email address</string>
+    <string name="error_weak_password">Password is not secure</string>
+    <string name="error_operation_not_allowed">Operation not allowed (Auth setting)</string>
+    <string name="error_network">Network error</string>
+
+    <string name="password_guidance">For a strong password: at least 10 characters, upper &amp; lower case letters, digits and a special character.</string>
+    <string name="password_needs_upper">Add an uppercase letter</string>
+    <string name="password_needs_lower">Add a lowercase letter</string>
+    <string name="password_needs_digit">Add a digit</string>
+    <string name="password_needs_special">Add a special character</string>
+
+    <string name="btn_resend_verification">Resend</string>
+    <string name="btn_confirm_verified">I Verified</string>
+    <string name="btn_apply_code">Apply Code</string>
+    <string name="btn_close">Close</string>
+    <string name="btn_continue">Continue</string>
+
+    <string name="verification_sent_info">Email verification sent. Please tap the verification link in your inbox.</string>
+    <string name="verification_result_success">Verification completed</string>
+    <string name="verification_result_error">Code is invalid or expired</string>
+    <string name="label_verification_code">Verification Code</string>
+    <string name="error_name_required">First and last name are required</string>
+    <string name="verify_email_title">Verify Email</string>
+    <string name="verification_sent_to_email">Verification email has been sent to %1$s.</string>
+    <string name="error_too_many_requests">Requests from this device are limited. Please try again later.</string>
+    <string name="error_quota_exceeded">Email sending quota exceeded. Please try again later.</string>
+    <string name="verification_help">If you don’t see the email, check the spam folder and wait a few minutes.</string>
+    <string name="resend_cooldown_hint">Please wait %1$d s before resending.</string>
 </resources>

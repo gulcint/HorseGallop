@@ -186,7 +186,7 @@ fun LoginScreen(
                             leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null) },
                             textStyle = TextStyle(fontSize = 14.sp),
                             isError = emailError != null,
-                            supportingText = { if (emailError != null) Text(emailError!!, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                            supportingText = { if (emailError != null) Text(emailError.orEmpty(), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),

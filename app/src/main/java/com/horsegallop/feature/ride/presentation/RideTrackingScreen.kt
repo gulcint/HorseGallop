@@ -635,8 +635,9 @@ private fun RideMapWithTimer(path: List<GeoPoint>, elapsedSec: Int) {
               val x = pad + nx * (size.width - 2 * pad)
               val y = pad + (1f - ny) * (size.height - 2 * pad)
               val current = Offset(x, y)
-              if (lastPoint != null) {
-                drawLine(color = primaryColor, start = lastPoint!!, end = current, strokeWidth = 6f, cap = StrokeCap.Round)
+              val lp = lastPoint
+              if (lp != null) {
+                drawLine(color = primaryColor, start = lp, end = current, strokeWidth = 6f, cap = StrokeCap.Round)
               }
               lastPoint = current
               if (idx == path.lastIndex) {

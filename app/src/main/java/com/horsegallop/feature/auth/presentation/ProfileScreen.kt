@@ -300,7 +300,7 @@ fun ProfileScreen(
           if (!isEditing) {
             ProfileInfoRow(icon = Icons.Filled.Person, label = stringResource(id = com.horsegallop.core.R.string.label_full_name), value = listOf(firstName, lastName).filter { it.isNotBlank() }.joinToString(" "))
             HorizontalDivider()
-            ProfileInfoRow(icon = Icons.Filled.Phone, label = stringResource(id = com.horsegallop.core.R.string.label_phone), value = phone)
+            ProfileInfoRow(icon = Icons.Filled.Phone, label = stringResource(id = com.horsegallop.core.R.string.label_phone), value = formatMaskedPhone(editCountryCode, phone.filter { it.isDigit() }))
             HorizontalDivider()
             ProfileInfoRow(icon = Icons.Filled.CalendarToday, label = stringResource(id = com.horsegallop.core.R.string.label_birth_date), value = birthDate)
             HorizontalDivider()
@@ -315,7 +315,7 @@ fun ProfileScreen(
                 singleLine = true,
                 modifier = Modifier
                   .fillMaxWidth()
-                  .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg)),
+                  .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md)),
                 textStyle = MaterialTheme.typography.bodySmall,
                 shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -331,7 +331,7 @@ fun ProfileScreen(
                 singleLine = true,
                 modifier = Modifier
                   .fillMaxWidth()
-                  .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg)),
+                  .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md)),
                 textStyle = MaterialTheme.typography.bodySmall,
                 shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -356,7 +356,7 @@ fun ProfileScreen(
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = ccExpanded) },
                     modifier = Modifier
                       .widthIn(min = 96.dp, max = 120.dp)
-                      .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg))
+                      .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md))
                       .menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable),
                     textStyle = MaterialTheme.typography.bodySmall,
                     shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
@@ -390,12 +390,12 @@ fun ProfileScreen(
                   }
                   }
                 }
+                val minLen = remember(editCountryCode) { if (editCountryCode == "+33") 9 else 10 }
                 OutlinedTextField(
                   value = editPhone,
                   onValueChange = {
                     val digits = it.filter { ch -> ch.isDigit() }.take(15)
                     editPhone = digits
-                    val minLen = if (editCountryCode == "+33") 9 else 10
                     phoneError = if (digits.length in minLen..15) null else ctx.getString(com.horsegallop.R.string.error_phone_invalid)
                   },
                   singleLine = true,
@@ -403,8 +403,8 @@ fun ProfileScreen(
                   isError = phoneError != null,
                   modifier = Modifier
                     .weight(1f)
-                    .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg)),
-                  visualTransformation = MaskedPhoneTransformation(editCountryCode),
+                    .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md)),
+                  visualTransformation = VisualTransformation.None,
                   textStyle = MaterialTheme.typography.bodySmall,
                   shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
                   colors = OutlinedTextFieldDefaults.colors(
@@ -418,7 +418,7 @@ fun ProfileScreen(
               }
               if (phoneError != null) {
                 Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.text_spacing_sm)))
-                Text(text = phoneError!!, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                Text(text = phoneError.orEmpty(), style = MaterialTheme.typography.bodySmall, color = com.horsegallop.core.theme.LocalTextColors.current.error)
               }
             }
             var cityExpanded by remember { mutableStateOf(false) }
@@ -432,10 +432,10 @@ fun ProfileScreen(
                   value = cityQuery,
                   onValueChange = { cityQuery = it },
                   singleLine = true,
-                  trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = cityExpanded, modifier = Modifier.menuAnchor(androidx.compose.material3.MenuAnchorType.SecondaryEditable)) },
+                  trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = cityExpanded) },
                   modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg))
+                    .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md))
                     .menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryEditable),
                   textStyle = MaterialTheme.typography.bodySmall,
                   shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
@@ -474,79 +474,51 @@ fun ProfileScreen(
                 }
               }
             }
-            var bdExpanded by remember { mutableStateOf(false) }
             EditableInfoRow(icon = Icons.Filled.CalendarToday, label = stringResource(id = com.horsegallop.core.R.string.label_birth_date)) {
-              ExposedDropdownMenuBox(expanded = bdExpanded, onExpandedChange = { bdExpanded = it }) {
-                OutlinedTextField(
-                  value = editBirthDate,
-                  onValueChange = { },
-                  singleLine = true,
-                  readOnly = true,
-                  trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(
-                      expanded = bdExpanded,
-                      modifier = Modifier.menuAnchor(androidx.compose.material3.MenuAnchorType.SecondaryEditable)
-                    )
-                  },
-                  modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg))
-                    .menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable),
-                  textStyle = MaterialTheme.typography.bodySmall,
-                  shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
-                  colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
-                  )
-                )
-                ExposedDropdownMenu(
-                  expanded = bdExpanded,
-                  onDismissRequest = { bdExpanded = false },
-                  modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(
-                      androidx.compose.foundation.BorderStroke(
-                        dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin),
-                        MaterialTheme.colorScheme.outlineVariant
-                      ),
-                      RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_sm))
-                    )
-                    .heightIn(max = 360.dp)
-                ) {
-                  val safeInitialMillis = remember(editBirthDateMillis) { editBirthDateMillis ?: System.currentTimeMillis() }
-                  val datePickerState = androidx.compose.material3.rememberDatePickerState(initialSelectedDateMillis = safeInitialMillis)
-                  Column(
-                    modifier = Modifier.padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_sm)),
-                    verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.text_spacing_md))
-                  ) {
-                    androidx.compose.material3.DatePicker(
-                      state = datePickerState,
-                      colors = androidx.compose.material3.DatePickerDefaults.colors(
-                        selectedDayContainerColor = MaterialTheme.colorScheme.primary,
-                        selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
-                        dayContentColor = MaterialTheme.colorScheme.onSurface,
-                        todayDateBorderColor = MaterialTheme.colorScheme.primary
-                      )
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))) {
-                      OutlinedButton(onClick = { bdExpanded = false }) { Text(text = stringResource(id = com.horsegallop.core.R.string.cancel)) }
-                      Button(onClick = {
-                        val millis = datePickerState.selectedDateMillis
-                        if (millis != null) {
-                          val cal = java.util.Calendar.getInstance()
-                          cal.timeInMillis = millis
-                          val y = cal.get(java.util.Calendar.YEAR)
-                          val m = cal.get(java.util.Calendar.MONTH) + 1
-                          val d = cal.get(java.util.Calendar.DAY_OF_MONTH)
-                          editBirthDate = String.format("%04d-%02d-%02d", y, m, d)
-                          editBirthDateMillis = millis
-                        }
-                        bdExpanded = false
-                      }) { Text(text = stringResource(id = com.horsegallop.core.R.string.ok)) }
+              val ctxLocal = LocalContext.current
+              OutlinedTextField(
+                value = editBirthDate,
+                onValueChange = { },
+                singleLine = true,
+                readOnly = true,
+                trailingIcon = { Icon(Icons.Filled.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md))
+                  .clickable {
+                    val minCal = java.util.Calendar.getInstance().apply {
+                      set(1900, java.util.Calendar.JANUARY, 1, 0, 0, 0)
+                      set(java.util.Calendar.MILLISECOND, 0)
                     }
-                  }
-                }
-              }
+                    val maxCal = java.util.Calendar.getInstance().apply {
+                      set(2025, java.util.Calendar.DECEMBER, 31, 23, 59, 59)
+                    }
+                    val minMillis = minCal.timeInMillis
+                    val maxMillis = maxCal.timeInMillis
+                    val initial = (editBirthDateMillis ?: System.currentTimeMillis()).coerceIn(minMillis, maxMillis)
+                    val cal = java.util.Calendar.getInstance().apply { timeInMillis = initial }
+                    val year = cal.get(java.util.Calendar.YEAR)
+                    val month = cal.get(java.util.Calendar.MONTH)
+                    val day = cal.get(java.util.Calendar.DAY_OF_MONTH)
+
+                    val themed = android.view.ContextThemeWrapper(ctxLocal, com.horsegallop.R.style.Theme_horsegallop)
+                    val dlg = android.app.DatePickerDialog(themed, { _, y, m, d ->
+                      editBirthDate = String.format("%04d-%02d-%02d", y, m + 1, d)
+                      val c = java.util.Calendar.getInstance()
+                      c.set(y, m, d, 0, 0, 0)
+                      editBirthDateMillis = c.timeInMillis
+                    }, year, month, day)
+                    dlg.datePicker.minDate = minMillis
+                    dlg.datePicker.maxDate = maxMillis
+                    dlg.show()
+                  },
+                textStyle = MaterialTheme.typography.bodySmall,
+                shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+                colors = OutlinedTextFieldDefaults.colors(
+                  focusedBorderColor = MaterialTheme.colorScheme.primary,
+                  unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+                )
+              )
             }
             }
           

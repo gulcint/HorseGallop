@@ -55,7 +55,7 @@ fun EmailLoginScreen(
           unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
         )
       )
-      if (error != null) Text(text = error!!, color = MaterialTheme.colorScheme.error)
+      if (error != null) Text(text = error.orEmpty(), color = com.horsegallop.core.theme.LocalTextColors.current.error)
       Button(onClick = {
         if (email.isBlank() || password.length < 6) {
           error = "Geçerli email ve 6+ karakter şifre girin"

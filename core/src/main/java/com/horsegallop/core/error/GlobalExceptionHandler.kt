@@ -28,7 +28,7 @@ class GlobalExceptionHandler private constructor(
     }
 
     companion object {
-        private const val TAG = "GlobalExceptionHandler"
+        private const val TAG = "horseGallopTest"
         
         fun install(isDebug: Boolean) {
             val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
