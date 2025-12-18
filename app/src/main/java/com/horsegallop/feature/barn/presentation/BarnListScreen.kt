@@ -195,119 +195,49 @@ fun BarnListScreen(
       }
       Spacer(modifier = Modifier.height(16.dp))
       
-      // Map başlığı ve View All butonu
-      Row(
+      // Map Banner
+      Card(
+        onClick = { navController?.navigate("barnsMapView") },
         modifier = Modifier
           .fillMaxWidth()
-          .padding(horizontal = 4.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+          .padding(bottom = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
       ) {
-        Text(
-          text = stringResource(com.horsegallop.core.R.string.barn_map_title),
-          style = MaterialTheme.typography.titleMedium,
-          fontWeight = FontWeight.Medium,
-          color = MaterialTheme.colorScheme.onSurface
-        )
-        TextButton(
-          onClick = { navController?.navigate("barnsMapView") },
-          shape = RoundedCornerShape(12.dp)
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.SpaceBetween
         ) {
-          Text("View All", color = MaterialTheme.colorScheme.primary)
-          Spacer(modifier = Modifier.width(4.dp))
-          Icon(
-            Icons.Filled.ArrowForward,
-            contentDescription = "View all barns",
-            modifier = Modifier.size(16.dp),
-            tint = MaterialTheme.colorScheme.primary
-          )
-        }
-      }
-      
-      Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        modifier = Modifier.fillMaxWidth().height(200.dp) // Sabit yükseklik
-      ) {
-        Box(
-          modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant),
-          contentAlignment = Alignment.TopStart
-        ) {
-          val primaryColor = MaterialTheme.colorScheme.primary
-          val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
-          val filtered = uiState.filteredBarns
-          
-          Canvas(modifier = Modifier.fillMaxSize()) {
-            // Simplified drawing to avoid jank
-            val minLat = filtered.minOfOrNull { it.lat } ?: 0.0
-            val maxLat = filtered.maxOfOrNull { it.lat } ?: 1.0
-            val minLng = filtered.minOfOrNull { it.lng } ?: 0.0
-            val maxLng = filtered.maxOfOrNull { it.lng } ?: 1.0
-            val w = this.size.width
-            val h = this.size.height
-            filtered.forEach { item ->
-              val nx = if (maxLng != minLng) ((item.lng - minLng) / (maxLng - minLng)).toFloat() else 0.5f
-              val ny = if (maxLat != minLat) (1f - ((item.lat - minLat) / (maxLat - minLat)).toFloat()) else 0.5f
-              val x = nx * w
-              val y = ny * h
-              // Tail + dot pin
-              drawLine(
-                color = primaryColor,
-                start = Offset(x, y - 8.dp.toPx()),
-                end = Offset(x, y + 10.dp.toPx()),
-                strokeWidth = 4f
-              )
-              drawCircle(
-                color = primaryColor,
-                radius = 8.dp.toPx(),
-                center = Offset(x, y - 12.dp.toPx())
-              )
-              drawCircle(
-                color = onPrimaryColor,
-                radius = 3.dp.toPx(),
-                center = Offset(x, y - 12.dp.toPx())
-              )
-            }
+          Column {
+            Text(
+              text = stringResource(com.horsegallop.core.R.string.barn_map_title),
+              style = MaterialTheme.typography.titleMedium,
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Text(
+              text = "Explore locations nearby",
+              style = MaterialTheme.typography.bodyMedium,
+              color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+            )
           }
-          Row(
-            modifier = Modifier.align(Alignment.TopStart).padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+          Surface(
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.1f),
+            modifier = Modifier.size(48.dp)
           ) {
-            Surface(
-              shape = RoundedCornerShape(12.dp),
-              color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
-              modifier = Modifier.weight(1f)
-            ) {
-              Text(
-                text = stringResource(com.horsegallop.core.R.string.barn_map_title),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+            Box(contentAlignment = Alignment.Center) {
+              Icon(
+                Icons.Filled.LocationOn,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.size(24.dp)
               )
             }
-            Spacer(modifier = Modifier.width(8.dp))
-            Surface(
-              shape = RoundedCornerShape(12.dp),
-              color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
-            ) {
-              Row {
-                IconButton(onClick = { /* zoom out placeholder */ }, modifier = Modifier.size(32.dp)) {
-                  Icon(Icons.Filled.Remove, contentDescription = "Zoom out", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
-                }
-                IconButton(onClick = { /* zoom in placeholder */ }, modifier = Modifier.size(32.dp)) {
-                  Icon(Icons.Filled.Add, contentDescription = "Zoom in", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
-                }
-              }
-            }
           }
-          Text(
-            text = if (uiState.query.isBlank()) "${stringResource(com.horsegallop.core.R.string.barn_results_prefix)}: ${filtered.size}" else stringResource(com.horsegallop.core.R.string.barn_search_results, filtered.size),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.align(Alignment.BottomStart).padding(8.dp)
-          )
         }
       }
       if (uiState.filteredBarns.isEmpty()) {

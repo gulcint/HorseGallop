@@ -25,7 +25,7 @@ class HomeViewModel @Inject constructor(
     loadRecentActivities()
   }
 
-  fun loadRecentActivities() {
+  fun loadRecentActivities(limit: Long = 2) {
     val uid = auth.currentUser?.uid
     if (uid == null) {
       _ui.value = HomeUiState(activities = emptyList(), loading = false, error = null)
@@ -33,7 +33,7 @@ class HomeViewModel @Inject constructor(
     }
     firestore.collection("users").document(uid).collection("rides")
       .orderBy("timestamp", Query.Direction.DESCENDING)
-      .limit(2)
+      .limit(limit)
       .get()
       .addOnSuccessListener { qs ->
         val items = qs.documents.map { doc ->
@@ -51,10 +51,10 @@ class HomeViewModel @Inject constructor(
             distanceKm = distanceKm
           )
         }
-        _ui.value = HomeUiState(activities = items, loading = false, error = null)
+        _ui.value = _ui.value.copy(activities = items, loading = false, error = null)
       }
       .addOnFailureListener { e ->
-        _ui.value = HomeUiState(activities = emptyList(), loading = false, error = e.localizedMessage)
+        _ui.value = _ui.value.copy(activities = emptyList(), loading = false, error = e.localizedMessage)
       }
   }
 

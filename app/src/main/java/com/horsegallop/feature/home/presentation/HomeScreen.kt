@@ -294,63 +294,49 @@ private fun RecentActivitySection(
         style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.Bold
       )
-      Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-        onClick = { onViewAllActivities?.invoke() }
+      TextButton(
+        onClick = { onViewAllActivities?.invoke() },
+        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
       ) {
-        Row(
-          modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-          Text(
-            text = "View All",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary
-          )
-          Icon(
-            Icons.AutoMirrored.Filled.ArrowForward,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(16.dp)
-          )
-        }
+        Text(
+          text = "View All",
+          style = MaterialTheme.typography.labelLarge,
+          color = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Icon(
+          Icons.AutoMirrored.Filled.ArrowForward,
+          contentDescription = null,
+          tint = MaterialTheme.colorScheme.primary,
+          modifier = Modifier.size(16.dp)
+        )
       }
     }
-    Spacer(modifier = Modifier.height(12.dp))
+    Spacer(modifier = Modifier.height(8.dp))
     
     Card(
       modifier = Modifier.fillMaxWidth(),
       colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-      shape = RoundedCornerShape(20.dp),
+      shape = RoundedCornerShape(16.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
       Column(
-        modifier = Modifier.padding(20.dp)
+        modifier = Modifier.padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
       ) {
-        val a1 = activities.getOrNull(0)
-        if (a1 != null) {
+        activities.take(2).forEachIndexed { index, activity ->
+          if (index > 0) {
+            HorizontalDivider(
+              modifier = Modifier.padding(vertical = 4.dp),
+              thickness = 0.5.dp,
+              color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f)
+            )
+          }
           ActivityItem(
-            title = a1.title,
-            subtitle = stringResource(id = com.horsegallop.core.R.string.activity_subtitle_format, a1.dateLabel, a1.timeLabel),
-            duration = stringResource(id = com.horsegallop.core.R.string.activity_duration_minutes, a1.durationMin),
-            distance = stringResource(id = com.horsegallop.core.R.string.activity_distance_km, a1.distanceKm),
-            icon = Icons.AutoMirrored.Filled.DirectionsRun
-          )
-        }
-        HorizontalDivider(
-          modifier = Modifier.padding(vertical = 12.dp),
-          thickness = 1.dp,
-          color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
-        )
-        val a2 = activities.getOrNull(1)
-        if (a2 != null) {
-          ActivityItem(
-            title = a2.title,
-            subtitle = stringResource(id = com.horsegallop.core.R.string.activity_subtitle_format, a2.dateLabel, a2.timeLabel),
-            duration = stringResource(id = com.horsegallop.core.R.string.activity_duration_minutes, a2.durationMin),
-            distance = stringResource(id = com.horsegallop.core.R.string.activity_distance_km, a2.distanceKm),
+            title = activity.title,
+            subtitle = stringResource(id = com.horsegallop.core.R.string.activity_subtitle_format, activity.dateLabel, activity.timeLabel),
+            duration = stringResource(id = com.horsegallop.core.R.string.activity_duration_minutes, activity.durationMin),
+            distance = stringResource(id = com.horsegallop.core.R.string.activity_distance_km, activity.distanceKm),
             icon = Icons.AutoMirrored.Filled.DirectionsRun
           )
         }
