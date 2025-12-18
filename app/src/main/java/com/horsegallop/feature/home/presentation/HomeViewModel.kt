@@ -1,67 +1,87 @@
 package com.horsegallop.feature.home.presentation
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.horsegallop.feature.auth.domain.usecase.GetCurrentUserIdUseCase
+import com.horsegallop.feature.home.domain.usecase.GetRecentActivitiesUseCase
+import com.horsegallop.feature.home.domain.usecase.GetUserStatsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-  private val auth: FirebaseAuth,
-  private val firestore: FirebaseFirestore
+  private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase,
+  private val getRecentActivitiesUseCase: GetRecentActivitiesUseCase,
+  private val getUserStatsUseCase: GetUserStatsUseCase
 ) : ViewModel() {
 
-  data class UiState(
-    val activities: List<ActivityUi> = emptyList(),
-    val loading: Boolean = true,
-    val error: String? = null
-  )
-
-  private val _ui = MutableStateFlow(UiState())
-  val ui: StateFlow<UiState> = _ui
+  private val _ui = MutableStateFlow(HomeUiState())
+  val ui: StateFlow<HomeUiState> = _ui
 
   init {
-    loadRecentActivities()
+    loadData()
   }
 
+<<<<<<< Updated upstream
   fun loadRecentActivities() {
     val uid = auth.currentUser?.uid
+=======
+  private fun loadData() {
+    val uid = getCurrentUserIdUseCase()
+>>>>>>> Stashed changes
     if (uid == null) {
-      _ui.value = UiState(activities = emptyList(), loading = false, error = null)
+      _ui.update { it.copy(loading = false) }
       return
     }
-    firestore.collection("users").document(uid).collection("rides")
-      .orderBy("timestamp", Query.Direction.DESCENDING)
-      .limit(2)
-      .get()
-      .addOnSuccessListener { qs ->
-        val items = qs.documents.map { doc ->
-          val ts = doc.getTimestamp("timestamp")?.toDate()
-          val title = doc.getString("title") ?: "Ride"
-          val durationMin = (doc.getLong("durationMin") ?: 0L).toInt()
-          val distanceKm = doc.getDouble("distanceKm") ?: (doc.getLong("distanceKm")?.toDouble() ?: 0.0)
-          val dateLabel = formatDate(ts)
-          val timeLabel = formatTime(ts)
-          ActivityUi(
-            title = title,
-            dateLabel = dateLabel,
-            timeLabel = timeLabel,
-            durationMin = durationMin,
-            distanceKm = distanceKm
-          )
+
+    loadStats(uid)
+    loadRecentActivities(uid)
+  }
+
+  private fun loadStats(uid: String) {
+    viewModelScope.launch {
+      getUserStatsUseCase(uid).collect { result ->
+        result.onSuccess { stats ->
+          _ui.update {
+            it.copy(
+              totalRides = stats.totalRides.toString(),
+              totalDistance = String.format(Locale.US, "%.1f", stats.totalDistanceKm)
+            )
+          }
+        }.onFailure {
+          // Log error or handle silently for stats
         }
-        _ui.value = UiState(activities = items, loading = false, error = null)
       }
-      .addOnFailureListener { e ->
-        _ui.value = UiState(activities = emptyList(), loading = false, error = e.localizedMessage)
+    }
+  }
+
+  private fun loadRecentActivities(uid: String) {
+    viewModelScope.launch {
+      _ui.update { it.copy(loading = true, error = null) }
+      getRecentActivitiesUseCase(uid).collect { result ->
+        result.onSuccess { activities ->
+          val items = activities.map { activity ->
+            ActivityUi(
+              title = activity.title,
+              dateLabel = formatDate(activity.timestamp),
+              timeLabel = formatTime(activity.timestamp),
+              durationMin = activity.durationMin,
+              distanceKm = activity.distanceKm
+            )
+          }
+          _ui.update { it.copy(activities = items, loading = false) }
+        }.onFailure { e ->
+          _ui.update { it.copy(loading = false, error = e.localizedMessage) }
+        }
       }
+    }
   }
 
   private fun formatDate(date: Date?): String {
