@@ -22,6 +22,7 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.compose.tooling)
     implementation(libs.shimmer.compose)
+    implementation(project(":core"))
 }
 
 

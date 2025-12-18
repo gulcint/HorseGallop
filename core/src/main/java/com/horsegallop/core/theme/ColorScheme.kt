@@ -154,6 +154,13 @@ object AppColors {
     val ActionReviews = Primary // Saddle Brown, matches theme
     
     // Status Colors
+    val StatusOnline = Color(0xFF4CAF50) // Green
+    val StatusOffline = Color(0xFF9E9E9E) // Gray
+    val StatusBusy = Color(0xFFF44336) // Red
+    
+    // Destructive Action Color (Themed)
+    val Destructive = Color(0xFF8B2323) // Dark Brownish Red
+
     val Success = Color(0xFF4CAF50) // Green
     val SuccessLight = Color(0xFF81C784) // Light Green
     val SuccessDark = Color(0xFF388E3C) // Dark Green

@@ -12,7 +12,12 @@ sealed class AuthState {
 interface AuthRepository {
   fun signInWithGoogle(idToken: String): Flow<Result<User>>
   fun signInWithApple(idToken: String): Flow<Result<User>>
-  fun refreshToken(): Flow<Result<Unit>>
+  fun signInWithEmail(email: String, password: String): Flow<Result<User>>
+  fun signUpWithEmail(email: String, password: String, firstName: String, lastName: String): Flow<Result<User>>
+    fun resendVerificationEmail(): Flow<Result<Unit>>
+    fun sendPasswordResetEmail(email: String): Flow<Result<Unit>>
+    fun confirmPasswordReset(code: String, newPassword: String): Flow<Result<Unit>>
+    fun refreshToken(): Flow<Result<Unit>>
   fun signOut(): Flow<Result<Unit>>
   fun observeAuthState(): Flow<AuthState>
 }
