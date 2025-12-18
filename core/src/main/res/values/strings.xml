@@ -8,6 +8,7 @@
 	<string name="schedule_title">Schedule</string>
 	<string name="lesson_title">Lesson</string>
 	<string name="instructor_name">Instructor</string>
+    <string name="lesson_details">%1$s • Instructor: %2$s</string>
 	<string name="date_time">Date &amp; Time</string>
 	<string name="loading">Loading...</string>
 	<string name="error_unknown">Unknown error occurred</string>
@@ -15,10 +16,12 @@
 	<string name="retry">Retry</string>
 	<string name="cancel">Cancel</string>
 	<string name="ok">OK</string>
-	<string name="save">Save</string>
-	<string name="delete">Delete</string>
-	<string name="edit">Edit</string>
-	<string name="add">Add</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="back">Back</string>
+    <string name="add">Add</string>
+    <string name="media_volume_low_warning">Medya sesi düşük; ses duyulmayabilir</string>
 	<string name="reserve">Reserve</string>
 	<string name="order">Order</string>
 	<string name="review">Review</string>
@@ -34,136 +37,225 @@
     <string name="or_label">or</string>
     <string name="terms_consent">By continuing you agree to the Terms of Use and Privacy Policy</string>
     <string name="continue_with_google">Continue with Google</string>
-    <string name="continue_with_apple">Continue with Apple</string>
-    <string name="continue_with_email">Continue with Email</string>
-    <string name="cd_google_logo">Google Logo</string>
-    <string name="cd_apple_logo">Apple Logo</string>
-    <string name="cd_email_icon">Email Icon</string>
-    <string name="auth_error_google">Google sign-in failed</string>
-    <string name="auth_error_firebase">Firebase authentication error</string>
-    <string name="auth_error_token_missing">ID token could not be retrieved</string>
-    <string name="auth_error_cancelled">Sign-in was cancelled</string>
-    <string name="auth_error_play_services">Google Play Services needs update</string>
-    <string name="auth_success">Signed in successfully</string>
-    <string name="login_email_label">Email</string>
-    <string name="login_email_placeholder">example@domain.com</string>
-    <string name="login_password_label">Password</string>
-    <string name="login_password_placeholder">••••••••</string>
-    <string name="password_toggle_show">Show</string>
-    <string name="password_toggle_hide">Hide</string>
-    <string name="forgot_password">Forgot password</string>
-    <string name="forgot_password_toast">Forgot password: coming soon.</string>
-    <string name="email_error_invalid">Enter a valid email</string>
-    <string name="password_error_min_length">Enter a password of at least 6 characters</string>
-    <string name="login_button">Sign In</string>
-    <string name="login_button_loading">Signing in…</string>
-    <string name="signup_prompt">Would you like to create an account?</string>
-    <!-- Theme -->
-    <string name="theme_system">System</string>
-    <string name="theme_light">Light</string>
-    <string name="theme_dark">Dark</string>
-
-    <!-- Home/Onboarding/Restaurant -->
-    <string name="welcome_subtitle">Your horse riding journey starts here</string>
-    <string name="carousel_title">Our Horses</string>
-    <string name="carousel_image_description">Horse Image %1$d</string>
+    <string name="auto_detect_ride">Auto detect ride</string>
+    <string name="prompt_create_account">Create Account</string>
+    <string name="welcome_subtitle">Your horse riding experience starts here</string>
+    
+    <!-- Home Screen -->
     <string name="quick_actions_title">Quick Actions</string>
-    <string name="action_lesson_reservation">Lesson Reservation</string>
-    <string name="action_my_schedule">My Schedule</string>
-    <string name="action_restaurant">Restaurant</string>
-    <string name="action_reviews">Reviews</string>
-    <string name="featured_title">Featured</string>
-    <string name="upcoming_lessons_title">Upcoming Lessons</string>
-    <string name="lesson_with_instructor">with %1$s</string>
-    <string name="lesson_time">%1$s - %2$s</string>
-    <string name="view_all">View All</string>
-    <string name="restaurant_title">Our Restaurant</string>
-    <string name="restaurant_description">Discover our delightful meals</string>
-    <string name="restaurant_order_button">Order from Restaurant</string>
-    <string name="lesson_detail">Detail</string>
-    <string name="notifications_description">Notifications</string>
-    <string name="profile_description">Profile</string>
-    <string name="lesson_sample_title">Beginner Horse Riding</string>
-    <string name="lesson_sample_instructor">Ahmet Yılmaz</string>
-    <string name="lesson_sample_date">Oct 1, 14:00</string>
-    <string name="onboarding_skip">Skip</string>
-    <string name="onboarding_next">Next</string>
-    <string name="onboarding_start">Start</string>
-    <string name="onboarding_progress">%1$d / %2$d</string>
-    <string name="onboarding_lorem">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer at ligula nec metus aliquet dictum. Morbi non massa eu velit gravida hendrerit. Curabitur euismod, nunc in posuere viverra, mauris nibh semper mi, at luctus erat magna sit amet ligula.</string>
-    <string name="onboarding_callout_title">Your Riding Journey Begins</string>
-    <string name="onboarding_callout_subtitle">Expert trainers, safe grounds and an enjoyable experience</string>
-    <string name="onboarding_learn_more">Learn More</string>
-    <string name="onboarding_title_ride_tracking">Your Riding Adventure Begins</string>
-    <string name="onboarding_subtitle_ride_tracking">Track your route, speed and time in real‑time.</string>
-    <string name="onboarding_title_watch">Watch Companion</string>
-    <string name="onboarding_subtitle_watch">Speed, distance, duration and heart rate from your watch.</string>
-    <string name="onboarding_title_dashboard">Performance Dashboard</string>
-    <string name="onboarding_subtitle_dashboard">Goals, horse-based stats and progress charts.</string>
-    <string name="onboarding_title_community">Riders Community</string>
-    <string name="onboarding_subtitle_community">Share, like, comment and join the leaderboard.</string>
-    <string name="onboarding_feature_gps">Route tracking (GPS)</string>
-    <string name="onboarding_feature_calorie">Calories and pace</string>
-    <string name="onboarding_feature_trends">Daily/Weekly trends</string>
-    <string name="onboarding_feature_heart">Heart rate and calories</string>
-    <string name="onboarding_feature_control">Start/Stop control</string>
-    <string name="onboarding_feature_sync">Realtime sync</string>
-    <string name="onboarding_feature_durations">Daily/Weekly duration</string>
-    <string name="onboarding_feature_charts">Progress charts</string>
-    <string name="onboarding_feature_goals">Personal goals</string>
-    <string name="onboarding_feature_sharing">Sharing and comments</string>
-    <string name="onboarding_feature_leaderboard">Weekly leaderboard</string>
-    <string name="onboarding_feature_nearby">Nearby Riders</string>
-    <!-- Ride Tracking -->
-    <string name="start_ride">Start Ride</string>
-    <string name="ride_conditions_detail">22°C • Sunny • Light breeze</string>
-    <string name="ride_type_dressage">Dressage</string>
-    <string name="ride_type_show_jumping">Show Jumping</string>
-    <string name="ride_type_endurance">Endurance</string>
-    <string name="ride_type_trail_riding">Trail Riding</string>
-    <string name="stats_title">Your stats</string>
-    <string name="stats_hint">Daily, weekly and total values</string>
-    <string name="stats_today">Today</string>
-    <string name="stats_week">This Week</string>
-    <string name="stats_total">Total</string>
-    <string name="ride_headline">Perfect day to ride!</string>
-    <string name="ride_type_title">Ride type</string>
-    <string name="ride_type_hint">Pick a type to tailor stats and insights to your ride.</string>
-    <!-- Home localized additions -->
     <string name="qa_start_ride_title">Start Ride</string>
-    <string name="qa_start_ride_subtitle">Begin a new riding experience</string>
+    <string name="qa_start_ride_subtitle">Begin your horse riding session</string>
     <string name="qa_view_barns_title">View Barns</string>
-    <string name="qa_view_barns_subtitle">Discover nearby barns</string>
+    <string name="qa_view_barns_subtitle">Find nearby horse facilities</string>
     <string name="stats_yours_title">Your Stats</string>
-    <string name="stats_total_rides">Total Ride</string>
-    <string name="stats_hours_suffix">hours</string>
+    <string name="stats_total_rides">Total Rides</string>
+    <string name="stats_hours_suffix">h</string>
     <string name="stats_distance">Distance</string>
     <string name="stats_km_suffix">km</string>
     <string name="recent_activity_title">Recent Activity</string>
     <string name="activity_morning_ride_title">Morning Ride</string>
-    <string name="activity_morning_ride_subtitle">Today, 08:30</string>
-    <string name="activity_duration_45m">45 min</string>
-    <string name="activity_distance_8_2km">8.2 km</string>
-    <string name="activity_evening_ride_title">Evening Tour</string>
-    <string name="activity_evening_ride_subtitle">Yesterday, 18:15</string>
-    <string name="activity_duration_1h20m">1 h 20 min</string>
-    <string name="activity_distance_12_5km">12.5 km</string>
-    <string name="riding_tips_title">Riding Tips</string>
-    <string name="tip_safe_riding_title">Safe Riding</string>
-    <string name="tip_safe_riding_subtitle">Always wear a helmet and check your safety gear.</string>
-    <!-- Recent Activity formats -->
-    <string name="activity_subtitle_format">%1$s, %2$s</string>
+    <string name="activity_morning_ride_subtitle">Beautiful sunrise trail</string>
+    <string name="activity_evening_ride_title">Evening Ride</string>
+    <string name="activity_evening_ride_subtitle">Peaceful sunset ride</string>
+    <string name="activity_subtitle_format">%1$s • %2$s</string>
     <string name="activity_duration_minutes">%1$d min</string>
     <string name="activity_distance_km">%1$.1f km</string>
-    <!-- Profile labels -->
-    <string name="label_birth_date">Birth date</string>
-    <string name="label_city">City</string>
-    <string name="label_email">Email</string>
-    <string name="label_full_name">Full name</string>
+    <string name="riding_tips_title">Riding Tips</string>
+    <string name="tip_safe_riding_title">Safe Riding Practices</string>
+    <string name="tip_safe_riding_subtitle">Always wear proper safety gear</string>
+    
+    <!-- Barn Screen -->
+    <string name="barn_search_placeholder">Search barns...</string>
+    <string name="barn_map_title">Map View</string>
+    <string name="barn_results_prefix">Showing</string>
+    <string name="barn_search_results">%1$d of %2$d barns</string>
+    <string name="barn_empty_title">No barns found</string>
+    <string name="barn_empty_subtitle">Try adjusting your search or filters</string>
+    <string name="barn_clear_filters">Clear Filters</string>
+    <string name="barn_filter_cafe">Cafe</string>
+    <string name="barn_filter_indoor_arena">Indoor Arena</string>
+    <string name="barn_filter_outdoor_arena">Outdoor Arena</string>
+    <string name="barn_filter_parking">Parking</string>
+    <string name="barn_filter_lessons">Lessons</string>
+    <string name="barn_filter_boarding">Boarding</string>
+    <string name="barn_filter_vet">Vet</string>
+    <string name="barn_filter_farrier">Farrier</string>
+    <string name="barn_filter_lighting">Lighting</string>
+    <string name="barn_filter_trail">Trail</string>
+    <string name="barn_filter_open_now">Open Now</string>
+    
+    <!-- Ride Screen -->
+    <string name="start_ride">Start Ride</string>
+    <string name="ride_type_title">Ride Type</string>
+    <string name="ride_type_hint">Select ride type</string>
+    <string name="ride_type_dressage">Dressage</string>
+    <string name="ride_type_show_jumping">Show Jumping</string>
+    <string name="ride_type_endurance">Endurance</string>
+    <string name="ride_type_trail_riding">Trail Riding</string>
+    <string name="stats_title">Stats</string>
+    <string name="ride_stats_subtitle">Your ride statistics</string>
+    <string name="stats_today">Today</string>
+    <string name="stats_week">Week</string>
+    <string name="stats_total">Total</string>
+    <string name="ride_headline">Ready to Ride?</string>
+    <string name="ride_conditions_detail">Check weather and trail conditions</string>
+    <string name="stat_speed">Speed</string>
+    <string name="stat_distance">Distance</string>
+    <string name="stat_duration">Duration</string>
+    <string name="setting_auto_detect">Auto-detect rides</string>
+    <string name="action_finish_ride">Finish Ride</string>
+    <string name="stop_ride_confirmation_title">Stop Ride?</string>
+    <string name="stop_ride_confirmation_message">Are you sure you want to stop this ride?</string>
+    <string name="action_confirm_stop">Stop</string>
+    <string name="action_cancel">Cancel</string>
+    
+    <!-- Onboarding -->
+    <string name="onboarding_title_ride_tracking">Ride Tracking</string>
+    <string name="onboarding_subtitle_ride_tracking">Track your rides with GPS</string>
+    <string name="onboarding_feature_gps">GPS Tracking</string>
+    <string name="onboarding_feature_calorie">Calorie Counter</string>
+    <string name="onboarding_feature_trends">Trend Analysis</string>
+    <string name="onboarding_title_watch">Watch Integration</string>
+    <string name="onboarding_subtitle_watch">Sync with your smartwatch</string>
+    <string name="onboarding_feature_heart">Heart Rate Monitor</string>
+    <string name="onboarding_feature_control">Remote Control</string>
+    <string name="onboarding_feature_sync">Data Sync</string>
+    <string name="onboarding_title_dashboard">Dashboard</string>
+    <string name="onboarding_subtitle_dashboard">View your progress</string>
+    <string name="onboarding_feature_durations">Ride Durations</string>
+    <string name="onboarding_feature_charts">Progress Charts</string>
+    <string name="onboarding_feature_goals">Goal Setting</string>
+    <string name="onboarding_title_community">Community</string>
+    <string name="onboarding_subtitle_community">Connect with riders</string>
+    <string name="onboarding_feature_sharing">Ride Sharing</string>
+    <string name="onboarding_feature_leaderboard">Leaderboards</string>
+    <string name="onboarding_feature_nearby">Find Nearby Riders</string>
+    <string name="onboarding_title_ranch">Discover Ranches</string>
+    <string name="onboarding_subtitle_ranch">Find the perfect place for your horse</string>
+    <string name="onboarding_title_packages">Riding Packages</string>
+    <string name="onboarding_subtitle_packages">Choose from various riding experiences</string>
+    <string name="onboarding_title_boarding">Horse Boarding</string>
+    <string name="onboarding_subtitle_boarding">Premium boarding services</string>
+    <string name="onboarding_title_cafe">Rider\'s Cafe</string>
+    <string name="onboarding_subtitle_cafe">Relax and socialize with fellow riders</string>
+    <string name="onboarding_progress">%1$d of %2$d</string>
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_start">Start</string>
+    <string name="onboarding_next">Next</string>
+    
+    <!-- Auth Errors -->
+    <string name="auth_error_cancelled">Sign in cancelled</string>
+    <string name="auth_error_firebase">Firebase authentication error</string>
+    <string name="auth_error_google">Google sign in error</string>
+    <string name="auth_error_play_services">Google Play Services error</string>
+    <string name="auth_error_token_missing">Token missing</string>
+    <string name="auth_success">Authentication successful</string>
+    
+    <!-- Profile -->
+    <string name="profile_description">Manage your profile</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="delete_account_confirmation">Are you sure you want to delete your account?</string>
+    <string name="delete_account_failed">Failed to delete account</string>
+    <string name="delete_account_reauth_required">Please re-authenticate to delete your account</string>
+    
+    <!-- Login -->
+    <string name="login_button">Login</string>
+    <string name="login_button_loading">Logging in...</string>
+    <string name="login_email_label">Email</string>
+    <string name="login_email_placeholder">Enter your email</string>
+    <string name="login_password_label">Password</string>
+    <string name="login_password_placeholder">Enter your password</string>
+    <string name="login_error_invalid_form">Please fill in all fields</string>
+    <string name="login_failed_default">Login failed</string>
+    <string name="login_signup_prompt">Don\'t have an account? Sign up</string>
+    <string name="login_verify_email_sent">Verification email sent</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="forgot_password_title">Reset Password</string>
+    <string name="forgot_password_subtitle">Enter your email to reset password</string>
+    <string name="forgot_password_toast">Password reset email sent</string>
+    <string name="send_reset_link">Send Reset Link</string>
+    <string name="password_reset_email_sent">Password reset email sent</string>
+    <string name="password_error_min_length">Password must be at least 6 characters</string>
+    <string name="password_toggle_show">Show password</string>
+    <string name="password_toggle_hide">Hide password</string>
+    <string name="signup_prompt">Create Account</string>
+    <string name="email_error_invalid">Invalid email format</string>
+    <string name="email_not_found">Email not found</string>
+    <string name="verify">Verify</string>
+    <string name="verify_google">Verify with Google</string>
+    <string name="reauth_title">Re-authenticate</string>
+    <string name="reauth_desc_google">Please sign in with Google again</string>
+    <string name="reauth_desc_password">Please enter your password again</string>
+    <string name="error_user_session_not_found">User session not found</string>
+    
+    <!-- Settings -->
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">System</string>
+    <string name="notifications_description">Manage notifications</string>
+    
+    <!-- Restaurant -->
+    <string name="restaurant_title">Restaurant</string>
+    <string name="restaurant_description">Order food and drinks</string>
+    <string name="restaurant_order_button">Order Now</string>
+    
+    <!-- Featured -->
+    <string name="featured_title">Featured</string>
+    <string name="carousel_title">Discover</string>
+    <string name="carousel_image_description">Carousel image</string>
+    
+    <!-- Live Route -->
+    <string name="live_route">Live Route</string>
+    
+    <!-- Actions -->
+    <string name="action_lesson_reservation">Lesson Reservation</string>
+    <string name="action_my_schedule">My Schedule</string>
+    <string name="action_restaurant">Restaurant</string>
+    <string name="action_reviews">Reviews</string>
+    
+    <!-- Trends -->
+    <string name="trend_daily">Daily</string>
+    <string name="trend_weekly">Weekly</string>
+    
+    <!-- Units -->
+    <string name="unit_kcal">kcal</string>
+    <string name="unit_km">km</string>
+    <string name="unit_kmh">km/h</string>
+    
+    <!-- View All -->
+    <string name="view_all">View All</string>
+    
+    <!-- Content Descriptions -->
+    <string name="cd_apple_logo">Apple logo</string>
+    <string name="cd_google_logo">Google logo</string>
+    <string name="cd_email_icon">Email icon</string>
+    
+    <!-- Forgot Password -->
+    <string name="password_reset_success_login">Password reset successful. You can now login with your new password.</string>
+    <string name="enter_new_password">Enter your new password</string>
+    <string name="new_password">New Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="passwords_do_not_match">Passwords do not match</string>
+    <string name="change_password">Change Password</string>
+    
+    <!-- Login -->
+    <string name="continue_with_email">Continue with Email</string>
+    
+    <!-- Profile -->
+    <string name="label_full_name">Full Name</string>
     <string name="label_phone">Phone</string>
-    <string name="label_first_name">First name</string>
-    <string name="label_last_name">Last name</string>
-    <string name="button_edit">Edit</string>
+    <string name="label_birth_date">Birth Date</string>
+    <string name="label_email">Email</string>
+    <string name="label_city">City</string>
+    <string name="label_first_name">First Name</string>
+    <string name="label_last_name">Last Name</string>
     <string name="button_cancel">Cancel</string>
     <string name="button_save">Save</string>
+    <string name="button_edit">Edit</string>
+    
+    <!-- Barn Detail -->
+    <string name="barn_detail_location">Location</string>
+    <string name="barn_detail_description">Description</string>
+    <string name="barn_detail_amenities">Amenities</string>
+    <string name="barn_detail_book_now">Book Now</string>
 </resources>
