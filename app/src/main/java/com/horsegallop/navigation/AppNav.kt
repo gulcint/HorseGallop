@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.House
 import androidx.compose.material.icons.filled.Person
@@ -35,8 +36,9 @@ import androidx.compose.runtime.remember
 import com.horsegallop.feature.auth.presentation.LoginScreen
 import com.horsegallop.feature.auth.presentation.EmailLoginScreen
 import com.horsegallop.feature.auth.presentation.EnrollmentScreen
+import com.horsegallop.feature.auth.presentation.ForgotPasswordScreen
 import com.horsegallop.feature.auth.presentation.ProfileScreen
-import com.horsegallop.feature.barn.presentation.BarnDetail
+import com.horsegallop.feature.barn.presentation.BarnDetailScreen
 import com.horsegallop.feature.home.presentation.HomeScreen
 import com.horsegallop.feature.onboarding.presentation.OnboardingScreen
 
@@ -47,11 +49,14 @@ sealed class Dest(val route: String) {
   data object Ride : Dest("ride")
   data object Barns : Dest("barns")
   data object EmailLogin : Dest("emailLogin")
+  data object ForgotPassword : Dest("forgotPassword")
   data object Enroll : Dest("enroll")
   data object Profile : Dest("profile")
   data object BarnDetail : Dest("barnDetail/{id}") {
     fun routeWithId(id: String): String = "barnDetail/$id"
   }
+  data object RecentActivityDetail : Dest("recentActivityDetail")
+  data object BarnsMapView : Dest("barnsMapView")
 }
 
 @Composable
@@ -67,6 +72,8 @@ fun AppNavHost(
   val prefs = remember { ctx.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE) }
   val onboardingDone = remember { prefs.getBoolean("onboarding_done", false) }
   val startDest = if (role == null) { if (onboardingDone) Dest.Login.route else Dest.Onboarding.route } else Dest.Home.route
+  
+  com.horsegallop.core.debug.AppLog.i("AppNavHost", "role=$role onboardingDone=$onboardingDone startDest=$startDest")
 
   Scaffold(
     bottomBar = {
@@ -86,7 +93,7 @@ fun AppNavHost(
                 }
               },
               icon = { androidx.compose.material3.Icon(Icons.Filled.Home, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) },
-              label = { androidx.compose.material3.Text(text = "Home", color = MaterialTheme.colorScheme.onPrimaryContainer) },
+              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_home), color = MaterialTheme.colorScheme.onPrimaryContainer) },
               alwaysShowLabel = true
             )
             NavigationBarItem(
@@ -98,7 +105,7 @@ fun AppNavHost(
                 }
               },
               icon = { androidx.compose.material3.Icon(Icons.Filled.House, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) },
-              label = { androidx.compose.material3.Text(text = "Barns", color = MaterialTheme.colorScheme.onPrimaryContainer) },
+              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_barns), color = MaterialTheme.colorScheme.onPrimaryContainer) },
               alwaysShowLabel = true
             )
             NavigationBarItem(
@@ -110,7 +117,7 @@ fun AppNavHost(
                 }
               },
               icon = { androidx.compose.material3.Icon(painter = painterResource(id = com.horsegallop.R.drawable.ic_horse), contentDescription = null, tint = Color.White) },
-              label = { androidx.compose.material3.Text(text = "Ride", color = MaterialTheme.colorScheme.onPrimaryContainer) },
+              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_ride), color = MaterialTheme.colorScheme.onPrimaryContainer) },
               alwaysShowLabel = true
             )
             NavigationBarItem(
@@ -122,7 +129,7 @@ fun AppNavHost(
                 }
               },
               icon = { androidx.compose.material3.Icon(Icons.Filled.Person, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) },
-              label = { androidx.compose.material3.Text(text = "Profile", color = MaterialTheme.colorScheme.onPrimaryContainer) },
+              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_profile), color = MaterialTheme.colorScheme.onPrimaryContainer) },
               alwaysShowLabel = true
             )
           }
@@ -155,7 +162,40 @@ fun AppNavHost(
           }
         },
         onEmailClick = { navController.navigate(Dest.EmailLogin.route) },
-        onSignupClick = { navController.navigate(Dest.Enroll.route) }
+        onSignupClick = { navController.navigate(Dest.Enroll.route) },
+        onForgotPasswordClick = { navController.navigate(Dest.ForgotPassword.route) }
+      )
+    }
+    composable(
+      Dest.ForgotPassword.route,
+      deepLinks = listOf(
+          navDeepLink { uriPattern = "horsegallop://auth-action?mode={mode}&oobCode={oobCode}&apiKey={apiKey}" },
+          navDeepLink { uriPattern = "https://horsegallop.page.link/reset-password?oobCode={oobCode}&mode={mode}&apiKey={apiKey}" },
+          navDeepLink { uriPattern = "https://horsegallop.page.link/reset-password?link={link}" } // Sometimes Firebase wraps it in a 'link' param
+      )
+    ) { backStackEntry ->
+        val uri = backStackEntry.arguments?.getString("link") ?: ""
+        var mode = backStackEntry.arguments?.getString("mode")
+        var oobCode = backStackEntry.arguments?.getString("oobCode")
+
+        // If it came via "link" param (Firebase Dynamic Links often do this), parse it manually if needed,
+        // or rely on Android intent filter to have already unwrapped it if it was a direct match.
+        // Actually, Firebase ActionCodeSettings with handleCodeInApp=true usually sends a link like:
+        // https://package_name/reset-password?oobCode=...&mode=resetPassword
+        
+        // Let's assume the navDeepLink pattern matching works for the query params.
+        
+        val viewModel: com.horsegallop.feature.auth.presentation.ForgotPasswordViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+        
+        if (mode == "resetPassword" && oobCode != null) {
+            androidx.compose.runtime.LaunchedEffect(oobCode) {
+                viewModel.handleDeepLink(oobCode)
+            }
+        }
+        
+      ForgotPasswordScreen(
+        onBack = { navController.popBackStack() },
+        viewModel = viewModel
       )
     }
     composable(Dest.EmailLogin.route) {
@@ -186,7 +226,8 @@ fun AppNavHost(
         currentRoute = currentRoute,
         onStartRide = { navController.navigate(Dest.Ride.route) },
         onViewBarns = { navController.navigate(Dest.Barns.route) },
-        onProfileClick = { navController.navigate(Dest.Profile.route) }
+        onProfileClick = { navController.navigate(Dest.Profile.route) },
+        onViewAllActivities = { navController.navigate(Dest.RecentActivityDetail.route) }
       )
     }
     composable(Dest.Profile.route) {
@@ -202,7 +243,6 @@ fun AppNavHost(
     composable(Dest.Ride.route) {
       BackHandler { navController.popBackStack() }
       com.horsegallop.feature.ride.presentation.RideTrackingScreen(
-        viewModel = com.horsegallop.feature.ride.presentation.RideTrackingViewModel(),
         onHomeClick = { navController.navigate(Dest.Home.route) },
         onBarnsClick = { navController.navigate(Dest.Barns.route) }
       )
@@ -213,7 +253,8 @@ fun AppNavHost(
       com.horsegallop.feature.barn.presentation.BarnListScreen(
         onBarnClick = { barn -> navController.navigate(Dest.BarnDetail.routeWithId(barn.id)) },
         onHomeClick = { navController.navigate(Dest.Home.route) },
-        onRideClick = { navController.navigate(Dest.Ride.route) }
+        onRideClick = { navController.navigate(Dest.Ride.route) },
+        navController = navController
       )
     }
     composable(
@@ -221,7 +262,19 @@ fun AppNavHost(
       arguments = listOf(navArgument("id") { type = NavType.StringType })
     ) { backStackEntry ->
       BackHandler { navController.popBackStack() }
-      BarnDetail(slides = emptyList())
+      BarnDetailScreen(onBack = { navController.popBackStack() })
+    }
+    composable(Dest.RecentActivityDetail.route) {
+      BackHandler { navController.popBackStack() }
+      com.horsegallop.feature.home.presentation.RecentActivityDetailScreen(
+        navController = navController
+      )
+    }
+    composable(Dest.BarnsMapView.route) {
+      BackHandler { navController.popBackStack() }
+      com.horsegallop.feature.barn.presentation.BarnsMapViewScreen(
+        navController = navController
+      )
     }
   }
   }

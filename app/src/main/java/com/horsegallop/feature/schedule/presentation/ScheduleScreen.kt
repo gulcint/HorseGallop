@@ -25,11 +25,14 @@ fun ScheduleScreen(
   LazyColumn {
     items(lessons) { lesson ->
       ListItem(
-        headlineContent = { Text(text = lesson.title) },
+        headlineContent = { Text(text = lesson.title, style = MaterialTheme.typography.titleMedium) },
         supportingContent = { 
-          Text(text = "${lesson.date} • ${stringResource(R.string.instructor_name)}: ${lesson.instructorName}") 
+          Text(
+            text = stringResource(R.string.lesson_details, lesson.date, lesson.instructorName),
+            style = MaterialTheme.typography.bodyMedium
+          ) 
         },
-        overlineContent = { Text(text = lesson.id) }
+        overlineContent = { Text(text = lesson.id, style = MaterialTheme.typography.labelSmall) }
       )
     }
   }
