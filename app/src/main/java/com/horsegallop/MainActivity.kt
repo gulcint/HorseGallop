@@ -28,11 +28,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.navigation.NavController
 import com.airbnb.lottie.compose.*
 import com.horsegallop.navigation.AppNavHost
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Locale
@@ -160,6 +164,70 @@ fun AppContent(): Unit {
             navController = navController,
             role = if (isLoggedIn) UserRole.CUSTOMER else null
         )
+<<<<<<< Updated upstream
+=======
+        DisposableEffect(navController) {
+            val auth = FirebaseAuth.getInstance()
+            val authListener = FirebaseAuth.AuthStateListener { fa ->
+                if (fa.currentUser == null) {
+                    AppLog.w("AuthState", "currentUser null navigate Login")
+                    navController.navigate(Dest.Login.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            }
+            auth.addAuthStateListener(authListener)
+
+            val lifecycle = act?.lifecycle
+            fun reloadAndCheck() {
+                val u = auth.currentUser ?: return
+                u.reload().addOnCompleteListener { t ->
+                    if (!t.isSuccessful) {
+                        val ex = t.exception
+                        if (ex is com.google.firebase.auth.FirebaseAuthInvalidUserException) {
+                            AppLog.e("AuthState", "invalid user signOut")
+                            auth.signOut()
+                            navController.navigate(Dest.Login.route) {
+                                popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                        return@addOnCompleteListener
+                    }
+                    val cur = auth.currentUser
+                    val hasProvider = cur?.providerData?.isNotEmpty() == true
+                    val hasEmail = cur?.email != null
+                    if (!hasProvider || !hasEmail) {
+                        AppLog.w("AuthState", "provider or email missing, signing out")
+                        auth.signOut()
+                        navController.navigate(Dest.Login.route) {
+                            popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                }
+            }
+
+            val lifecycleObserver = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) reloadAndCheck()
+            }
+            lifecycle?.addObserver(lifecycleObserver)
+
+            val destListener = NavController.OnDestinationChangedListener { _, destination, _ ->
+                val route = destination.route
+                if (route == Dest.Home.route || route == Dest.Profile.route) reloadAndCheck()
+            }
+            navController.addOnDestinationChangedListener(destListener)
+
+            onDispose {
+                lifecycle?.removeObserver(lifecycleObserver)
+                auth.removeAuthStateListener(authListener)
+                navController.removeOnDestinationChangedListener(destListener)
+            }
+        }
+        
+>>>>>>> Stashed changes
     }
 }
 
@@ -169,7 +237,11 @@ private fun AppTheme(content: @Composable () -> Unit) {
     androidx.compose.runtime.CompositionLocalProvider(
         com.horsegallop.core.theme.LocalTextColors provides com.horsegallop.core.theme.textColorsFrom(scheme)
     ) {
-        MaterialTheme(colorScheme = scheme, content = content)
+        MaterialTheme(
+            colorScheme = scheme,
+            typography = com.horsegallop.core.theme.AppTypography,
+            content = content
+        )
     }
 }
 @Composable
@@ -180,6 +252,7 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
 			.background(Color.White),
 		contentAlignment = Alignment.Center
 	) {
+<<<<<<< Updated upstream
         val ctx = LocalContext.current
         val titleText: String = stringResource(com.horsegallop.core.R.string.welcome_title)
         val subtitleText: String = stringResource(com.horsegallop.core.R.string.welcome_subtitle)
@@ -269,10 +342,83 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
         }
 		
         LottieAnimation(
+=======
+		val ctx = LocalContext.current
+		val titleText: String = stringResource(com.horsegallop.core.R.string.welcome_title)
+		val subtitleText: String = stringResource(com.horsegallop.core.R.string.welcome_subtitle)
+		val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(com.horsegallop.R.raw.horse))
+        val progress by animateLottieCompositionAsState(composition, iterations = LottieConstants.IterateForever)
+
+		var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+		LaunchedEffect(composition) {
+			if (composition == null) return@LaunchedEffect
+			val am = ctx.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				val attrs = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()
+				val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).setAudioAttributes(attrs).setOnAudioFocusChangeListener { }.build()
+				am.requestAudioFocus(req)
+			} else {
+				am.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
+			}
+			runCatching {
+				val created = MediaPlayer.create(ctx, com.horsegallop.R.raw.horse_gallop)
+				if (created != null) {
+					mediaPlayer = created
+					mediaPlayer?.isLooping = true
+					mediaPlayer?.setVolume(MEDIA_VOLUME_MAX, MEDIA_VOLUME_MAX)
+					mediaPlayer?.start()
+					val current = am.getStreamVolume(AudioManager.STREAM_MUSIC)
+					val max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+					if (current <= max.coerceAtLeast(1) / 4) {
+						Toast.makeText(ctx, "Medya sesi düşük; ses duyulmayabilir", Toast.LENGTH_SHORT).show()
+					}
+				} else {
+					val tmp = MediaPlayer()
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+						tmp.setAudioAttributes(
+							AudioAttributes.Builder()
+								.setUsage(AudioAttributes.USAGE_MEDIA)
+								.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+								.build()
+						)
+					}
+				}
+			}.onFailure {
+				AppLog.e("SplashScreen", "MediaPlayer create error: ${it.message}")
+			}
+		}
+		
+		LaunchedEffect(Unit) {
+			delay(SPLASH_DURATION_MS)
+			// Cleanup media player
+			try {
+				mediaPlayer?.stop()
+				mediaPlayer?.release()
+				mediaPlayer = null
+			} catch (_: Throwable) {}
+			try {
+				val am = ctx.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					val attrs = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()
+					val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).setAudioAttributes(attrs).setOnAudioFocusChangeListener { }.build()
+					am.abandonAudioFocusRequest(req)
+				} else {
+					am.abandonAudioFocus(null)
+				}
+			} catch (_: Throwable) {}
+			onFinished()
+		}
+		
+		LottieAnimation(
+>>>>>>> Stashed changes
             composition = composition,
             progress = { progress },
             modifier = Modifier.size(220.dp)
         )
+<<<<<<< Updated upstream
+=======
+		
+>>>>>>> Stashed changes
 		// Localized welcome texts over splash (auto-resolved by app locales/device locale)
 		Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 64.dp)) {
 			Text(text = titleText, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.primary)
