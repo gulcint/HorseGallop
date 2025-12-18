@@ -48,9 +48,18 @@ fun HomeScreen(
   currentRoute: String? = null,
   onStartRide: () -> Unit,
   onViewBarns: () -> Unit,
-  onProfileClick: () -> Unit
+  onProfileClick: () -> Unit,
+  onViewAllActivities: (() -> Unit)? = null,
+  viewModel: HomeViewModel = hiltViewModel()
 ) {
-  HomeDashboard(onStartRide = onStartRide, onViewBarns = onViewBarns, onProfileClick = onProfileClick)
+  val uiState by viewModel.ui.collectAsState()
+  HomeDashboard(
+    onStartRide = onStartRide,
+    onViewBarns = onViewBarns,
+    onProfileClick = onProfileClick,
+    onViewAllActivities = onViewAllActivities,
+    uiState = uiState
+  )
 }
 
 @Preview(showBackground = true, name = "HomeScreen")
@@ -66,7 +75,13 @@ private fun PreviewHomeScreen() {
 }
 
 @Composable
-private fun HomeDashboard(onStartRide: () -> Unit, onViewBarns: () -> Unit, onProfileClick: () -> Unit) {
+private fun HomeDashboard(
+  onStartRide: () -> Unit,
+  onViewBarns: () -> Unit,
+  onProfileClick: () -> Unit,
+  onViewAllActivities: (() -> Unit)? = null,
+  uiState: HomeUiState = HomeUiState(loading = false)
+) {
   LazyColumn(
     modifier = Modifier
       .fillMaxSize(),
@@ -87,16 +102,14 @@ private fun HomeDashboard(onStartRide: () -> Unit, onViewBarns: () -> Unit, onPr
     }
     
     item {
-      StatsOverviewSection()
+      StatsOverviewSection(totalRides = uiState.totalRides, totalDistance = uiState.totalDistance)
     }
     
     item {
-      val vm: HomeViewModel = hiltViewModel()
-      val ui = vm.ui.collectAsState().value
-      if (ui.loading) {
+      if (uiState.loading) {
         RecentActivitySkeleton()
       } else {
-        val activities = if (ui.activities.isEmpty()) listOf(
+        val activities = if (uiState.activities.isEmpty()) listOf(
           ActivityUi(
             title = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_title),
             dateLabel = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_subtitle).substringBefore(", "),
@@ -111,8 +124,8 @@ private fun HomeDashboard(onStartRide: () -> Unit, onViewBarns: () -> Unit, onPr
             durationMin = 80,
             distanceKm = 12.5
           )
-        ) else ui.activities
-        RecentActivitySection(activities = activities)
+        ) else uiState.activities
+        RecentActivitySection(activities = activities, onViewAllActivities = onViewAllActivities)
       }
     }
     
@@ -214,7 +227,7 @@ private fun QuickActionsSection(onStartRide: () -> Unit, onViewBarns: () -> Unit
 
 
 @Composable
-private fun StatsOverviewSection() {
+private fun StatsOverviewSection(totalRides: String, totalDistance: String) {
   Column {
     Text(
       text = stringResource(id = com.horsegallop.core.R.string.stats_yours_title),
@@ -229,7 +242,7 @@ private fun StatsOverviewSection() {
     ) {
       StatCard(
         title = stringResource(id = com.horsegallop.core.R.string.stats_total_rides),
-        value = "12",
+        value = totalRides,
         subtitle = stringResource(id = com.horsegallop.core.R.string.stats_hours_suffix),
         icon = Icons.Filled.Timer,
         color = MaterialTheme.colorScheme.primary,
@@ -238,7 +251,7 @@ private fun StatsOverviewSection() {
       )
       StatCard(
         title = stringResource(id = com.horsegallop.core.R.string.stats_distance),
-        value = "45.2",
+        value = totalDistance,
         subtitle = stringResource(id = com.horsegallop.core.R.string.stats_km_suffix),
         icon = Icons.Filled.Speed,
         color = MaterialTheme.colorScheme.secondary,
@@ -250,16 +263,9 @@ private fun StatsOverviewSection() {
 }
 
 
-data class ActivityUi(
-  val title: String,
-  val dateLabel: String,
-  val timeLabel: String,
-  val durationMin: Int,
-  val distanceKm: Double
-)
-
 @Composable
-private fun RecentActivitySection(activities: List<ActivityUi> = listOf(
+private fun RecentActivitySection(
+  activities: List<ActivityUi> = listOf(
   ActivityUi(
     title = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_title),
     dateLabel = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_subtitle).substringBefore(", "),
@@ -274,22 +280,54 @@ private fun RecentActivitySection(activities: List<ActivityUi> = listOf(
     durationMin = 80,
     distanceKm = 12.5
   )
-)) {
+),
+  onViewAllActivities: (() -> Unit)? = null
+) {
   Column {
-    Text(
-      text = stringResource(id = com.horsegallop.core.R.string.recent_activity_title),
-      style = MaterialTheme.typography.titleLarge,
-      fontWeight = FontWeight.Bold,
-      modifier = Modifier.padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
-    )
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Text(
+        text = stringResource(id = com.horsegallop.core.R.string.recent_activity_title),
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold
+      )
+      Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+        onClick = { onViewAllActivities?.invoke() }
+      ) {
+        Row(
+          modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+          Text(
+            text = "View All",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary
+          )
+          Icon(
+            Icons.AutoMirrored.Filled.ArrowForward,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(16.dp)
+          )
+        }
+      }
+    }
+    Spacer(modifier = Modifier.height(12.dp))
     
     Card(
       modifier = Modifier.fillMaxWidth(),
       colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-      shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
+      shape = RoundedCornerShape(20.dp),
+      elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
       Column(
-        modifier = Modifier.padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md))
+        modifier = Modifier.padding(20.dp)
       ) {
         val a1 = activities.getOrNull(0)
         if (a1 != null) {
@@ -301,7 +339,11 @@ private fun RecentActivitySection(activities: List<ActivityUi> = listOf(
             icon = Icons.AutoMirrored.Filled.DirectionsRun
           )
         }
-        HorizontalDivider(modifier = Modifier.padding(vertical = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
+        HorizontalDivider(
+          modifier = Modifier.padding(vertical = 12.dp),
+          thickness = 1.dp,
+          color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+        )
         val a2 = activities.getOrNull(1)
         if (a2 != null) {
           ActivityItem(

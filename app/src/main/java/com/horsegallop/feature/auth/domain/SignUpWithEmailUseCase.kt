@@ -1,42 +1,16 @@
 package com.horsegallop.feature.auth.domain
 
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.horsegallop.feature.auth.domain.model.User
+import com.horsegallop.feature.auth.domain.repository.AuthRepository
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class SignUpWithEmailUseCase @Inject constructor(
-  private val auth: FirebaseAuth,
-  private val firestore: FirebaseFirestore
+    private val repository: AuthRepository
 ) {
-  fun execute(
-    firstName: String,
-    lastName: String,
-    email: String,
-    password: String,
-    onSuccess: () -> Unit,
-    onError: (String) -> Unit
-  ) {
-    auth.createUserWithEmailAndPassword(email, password)
-      .addOnSuccessListener { result ->
-        val user = result.user
-        val uid = user?.uid
-        if (uid == null) {
-          onError("Kullanıcı oluşturulamadı")
-        } else {
-          val userMap = mapOf(
-            "firstName" to firstName,
-            "lastName" to lastName,
-            "email" to email
-          )
-          // Firestore’a kaydet ve e-posta doğrulama gönder
-          firestore.collection("users").document(uid).set(userMap)
-            .addOnSuccessListener {
-              user.sendEmailVerification()
-              onSuccess()
-            }
-            .addOnFailureListener { e -> onError(e.localizedMessage ?: "Veri kaydı başarısız") }
-        }
-      }
-      .addOnFailureListener { e -> onError(e.localizedMessage ?: "Kayıt başarısız") }
-  }
+
+    fun execute(email: String, password: String, firstName: String, lastName: String): Flow<Result<User>> {
+        return repository.signUpWithEmail(email, password, firstName, lastName)
+    }
+
 }

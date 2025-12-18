@@ -61,13 +61,15 @@ import android.widget.TextView
 import android.view.Gravity
 import android.graphics.drawable.GradientDrawable
 import android.util.TypedValue
+import com.horsegallop.compose.HorseLoadingOverlay
  
 
 @Composable
 fun LoginScreen(
     onGoogleClick: () -> Unit = {},
     onEmailClick: () -> Unit = {},
-    onSignupClick: () -> Unit = {}
+    onSignupClick: () -> Unit = {},
+    onForgotPasswordClick: () -> Unit = {}
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val vm: LoginViewModel = hiltViewModel()
@@ -84,6 +86,7 @@ fun LoginScreen(
                 "auth_error_google" -> context.getString(com.horsegallop.core.R.string.auth_error_google)
                 "auth_error_firebase" -> context.getString(com.horsegallop.core.R.string.auth_error_firebase)
                 "auth_error_token_missing" -> context.getString(com.horsegallop.core.R.string.auth_error_token_missing)
+                "login_verify_email_sent" -> context.getString(com.horsegallop.core.R.string.login_verify_email_sent)
                 else -> context.getString(com.horsegallop.core.R.string.error_unknown)
             }
             showLogoToast(context, msg, true)
@@ -108,7 +111,7 @@ fun LoginScreen(
                 )
             )
     ) {
-        // Yükleme sırasında overlay kaldırıldı
+        
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -131,13 +134,13 @@ fun LoginScreen(
                 )
                 Text(
                     text = stringResource(com.horsegallop.core.R.string.login_title_brand),
-                    fontSize = 28.sp,
+                    style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = com.horsegallop.core.theme.LocalTextColors.current.titlePrimary
                 )
                 Text(
                     text = stringResource(com.horsegallop.core.R.string.login_subtitle),
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = com.horsegallop.core.theme.LocalTextColors.current.bodySecondary,
                     textAlign = TextAlign.Center
                 )
@@ -146,11 +149,7 @@ fun LoginScreen(
             Column(
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
             ) {
-                var email by rememberSaveable { mutableStateOf("") }
-                var password by rememberSaveable { mutableStateOf("") }
-                var emailLoading by remember { mutableStateOf(false) }
-                var emailError by remember { mutableStateOf<String?>(null) }
-                var showPassword by rememberSaveable { mutableStateOf(false) }
+                HorseLoadingOverlay(visible = uiState.loading)
                 val focusManager = LocalFocusManager.current
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
@@ -173,18 +172,15 @@ fun LoginScreen(
                     ) {
                         Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_xs)))
                         OutlinedTextField(
-                            value = email,
-                            onValueChange = { value: String ->
-                                email = value
-                                emailError = null
-                            },
+                            value = uiState.email,
+                            onValueChange = vm::updateEmail,
                             singleLine = true,
-                            label = { Text(stringResource(com.horsegallop.core.R.string.login_email_label), fontSize = 13.sp) },
-                            placeholder = { Text(stringResource(com.horsegallop.core.R.string.login_email_placeholder), fontSize = 13.sp) },
+                            label = { Text(stringResource(com.horsegallop.core.R.string.login_email_label), style = MaterialTheme.typography.bodySmall) },
+                            placeholder = { Text(stringResource(com.horsegallop.core.R.string.login_email_placeholder), style = MaterialTheme.typography.bodySmall) },
                             leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null) },
-                            textStyle = TextStyle(fontSize = 14.sp),
-                            isError = emailError != null,
-                            supportingText = { if (emailError != null) Text(emailError!!, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+
+                            textStyle = MaterialTheme.typography.bodyMedium,
+
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
@@ -197,25 +193,22 @@ fun LoginScreen(
                             )
                         )
                         OutlinedTextField(
-                            value = password,
-                            onValueChange = { value: String ->
-                                password = value
-                                emailError = null
-                            },
+                            value = uiState.password,
+                            onValueChange = vm::updatePassword,
                             singleLine = true,
-                            label = { Text(stringResource(com.horsegallop.core.R.string.login_password_label), fontSize = 13.sp) },
-                            placeholder = { Text(stringResource(com.horsegallop.core.R.string.login_password_placeholder), fontSize = 13.sp) },
+                            label = { Text(stringResource(com.horsegallop.core.R.string.login_password_label), style = MaterialTheme.typography.bodySmall) },
+                            placeholder = { Text(stringResource(com.horsegallop.core.R.string.login_password_placeholder), style = MaterialTheme.typography.bodySmall) },
                             leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
                             trailingIcon = {
-                                IconButton(onClick = { showPassword = !showPassword }) {
+                                IconButton(onClick = vm::togglePasswordVisibility) {
                                     Icon(
-                                        imageVector = if (showPassword) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                        imageVector = if (uiState.isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
                                         contentDescription = null
                                     )
                                 }
                             },
-                            textStyle = TextStyle(fontSize = 14.sp),
-                            visualTransformation = if (showPassword) androidx.compose.ui.text.input.VisualTransformation.None else PasswordVisualTransformation(),
+                            textStyle = MaterialTheme.typography.bodyMedium,
+                            visualTransformation = if (uiState.isPasswordVisible) androidx.compose.ui.text.input.VisualTransformation.None else PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
@@ -228,43 +221,21 @@ fun LoginScreen(
                             )
                         )
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                            TextButton(onClick = {
-                                showLogoToast(context, context.getString(com.horsegallop.core.R.string.forgot_password_toast), false)
-                            }) { Text(stringResource(com.horsegallop.core.R.string.forgot_password)) }
+                            TextButton(onClick = onForgotPasswordClick) {
+                                Text(stringResource(com.horsegallop.core.R.string.forgot_password), style = MaterialTheme.typography.bodyMedium)
+                            }
                         }
                         Button(
-                            onClick = {
-                                if (emailLoading || uiState.loading) return@Button
-                                if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                                    emailError = context.getString(com.horsegallop.core.R.string.email_error_invalid)
-                                    return@Button
-                                }
-                                if (password.length < 6) {
-                                    emailError = context.getString(com.horsegallop.core.R.string.password_error_min_length)
-                                    return@Button
-                                }
-                                emailLoading = true
-                                emailError = null
-                                FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
-                                    .addOnSuccessListener {
-                                        emailLoading = false
-                                        showLogoToast(context, context.getString(com.horsegallop.core.R.string.auth_success), false)
-                                        onGoogleClick()
-                                    }
-                                    .addOnFailureListener { e ->
-                                        emailLoading = false
-                                        emailError = e.localizedMessage ?: context.getString(com.horsegallop.core.R.string.error_unknown)
-                                    }
-                            },
-                            enabled = !emailLoading && !uiState.loading,
+                            onClick = vm::login,
+                            enabled = !uiState.loading && uiState.isFormValid,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
                             shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
                         ) {
                             Text(
-                                text = if (emailLoading) stringResource(com.horsegallop.core.R.string.login_button_loading) else stringResource(com.horsegallop.core.R.string.login_button),
-                                fontSize = 14.sp
+                                text = if (uiState.loading) stringResource(com.horsegallop.core.R.string.login_button_loading) else stringResource(com.horsegallop.core.R.string.login_button),
+                                style = MaterialTheme.typography.labelLarge
                             )
                         }
                         Row(
@@ -272,7 +243,7 @@ fun LoginScreen(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             TextButton(onClick = onSignupClick) {
-                                Text(text = "Would you like to create an account?", color = MaterialTheme.colorScheme.primary)
+                                Text(text = stringResource(com.horsegallop.core.R.string.prompt_create_account), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodyMedium)
                             }
                         }
                     }
@@ -288,7 +259,7 @@ fun LoginScreen(
                         text = stringResource(com.horsegallop.core.R.string.or_label),
                         modifier = Modifier.padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 14.sp
+                        style = MaterialTheme.typography.bodyMedium
                     )
                     HorizontalDivider(modifier = Modifier.weight(1f), color = AppColors.Divider)
                 }
@@ -308,7 +279,7 @@ fun LoginScreen(
                 })
                 Text(
                     text = stringResource(com.horsegallop.core.R.string.terms_consent),
-                    fontSize = 12.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     color = com.horsegallop.core.theme.LocalTextColors.current.bodyTertiary,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
@@ -397,14 +368,15 @@ fun GoogleSignInButton(loading: Boolean = false, onClick: () -> Unit) {
             Spacer(modifier = Modifier.width(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
             Text(
                 text = stringResource(com.horsegallop.core.R.string.signin_google),
-                fontSize = 15.sp,
+                style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                letterSpacing = 0.2.sp
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
 }
+
+ 
 
 
 @Composable
@@ -433,10 +405,9 @@ fun EmailSignInButton(onClick: () -> Unit) {
             Spacer(modifier = Modifier.width(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
             Text(
                 text = stringResource(com.horsegallop.core.R.string.continue_with_email),
-                fontSize = 15.sp,
+                style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.SemiBold,
-                color = Color.White,
-                letterSpacing = 0.2.sp
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
     }

@@ -18,14 +18,8 @@ class HomeViewModel @Inject constructor(
   private val firestore: FirebaseFirestore
 ) : ViewModel() {
 
-  data class UiState(
-    val activities: List<ActivityUi> = emptyList(),
-    val loading: Boolean = true,
-    val error: String? = null
-  )
-
-  private val _ui = MutableStateFlow(UiState())
-  val ui: StateFlow<UiState> = _ui
+  private val _ui = MutableStateFlow(HomeUiState())
+  val ui: StateFlow<HomeUiState> = _ui
 
   init {
     loadRecentActivities()
@@ -34,7 +28,7 @@ class HomeViewModel @Inject constructor(
   fun loadRecentActivities() {
     val uid = auth.currentUser?.uid
     if (uid == null) {
-      _ui.value = UiState(activities = emptyList(), loading = false, error = null)
+      _ui.value = HomeUiState(activities = emptyList(), loading = false, error = null)
       return
     }
     firestore.collection("users").document(uid).collection("rides")
@@ -57,10 +51,10 @@ class HomeViewModel @Inject constructor(
             distanceKm = distanceKm
           )
         }
-        _ui.value = UiState(activities = items, loading = false, error = null)
+        _ui.value = HomeUiState(activities = items, loading = false, error = null)
       }
       .addOnFailureListener { e ->
-        _ui.value = UiState(activities = emptyList(), loading = false, error = e.localizedMessage)
+        _ui.value = HomeUiState(activities = emptyList(), loading = false, error = e.localizedMessage)
       }
   }
 
@@ -76,4 +70,20 @@ class HomeViewModel @Inject constructor(
     return SimpleDateFormat("HH:mm", locale).format(date)
   }
 }
+
+data class HomeUiState(
+  val activities: List<ActivityUi> = emptyList(),
+  val loading: Boolean = true,
+  val error: String? = null,
+  val totalRides: String = "0",
+  val totalDistance: String = "0.0"
+)
+
+data class ActivityUi(
+  val title: String,
+  val dateLabel: String,
+  val timeLabel: String,
+  val durationMin: Int,
+  val distanceKm: Double
+)
 

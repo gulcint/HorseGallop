@@ -7,10 +7,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.horsegallop.R
-import com.horsegallop.domain.auth.AuthRepository
-import com.horsegallop.data.auth.FirebaseAuthRepository
-import com.horsegallop.feature.auth.domain.SignUpWithEmailUseCase
-import com.horsegallop.feature.auth.domain.SignInWithGoogleUseCase
+import com.horsegallop.core.util.Constants
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,10 +21,6 @@ object AuthModule {
     @Provides
     @Singleton
     fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
-
-    @Provides
-    @Singleton
-    fun provideAuthRepository(auth: FirebaseAuth): AuthRepository = FirebaseAuthRepository(auth)
 
     @Provides
     @Singleton
@@ -46,16 +39,36 @@ object AuthModule {
 
     @Provides
     @Singleton
-    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance(Constants.FIREBASE_DB_NAME)
 
     @Provides
     @Singleton
-    fun provideSignUpWithEmailUseCase(auth: FirebaseAuth, firestore: FirebaseFirestore): SignUpWithEmailUseCase =
-        SignUpWithEmailUseCase(auth, firestore)
+    fun provideFirebaseStorage(): com.google.firebase.storage.FirebaseStorage = com.google.firebase.storage.FirebaseStorage.getInstance()
 
     @Provides
     @Singleton
-    fun provideSignInWithGoogleUseCase(repo: AuthRepository): SignInWithGoogleUseCase =
-        SignInWithGoogleUseCase(repo)
+    fun provideFirebaseAuthRepository(auth: FirebaseAuth): com.horsegallop.data.auth.FirebaseAuthRepository =
+        com.horsegallop.data.auth.FirebaseAuthRepository(auth)
 }
 
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class AuthBinderModule {
+    @dagger.Binds
+    @Singleton
+    abstract fun bindAuthRepository(
+        firebaseAuthRepository: com.horsegallop.data.auth.FirebaseAuthRepository
+    ): com.horsegallop.domain.auth.AuthRepository
+
+    @dagger.Binds
+    @Singleton
+    abstract fun bindFeatureAuthRepository(
+        authRepositoryImpl: com.horsegallop.feature.auth.data.repository.AuthRepositoryImpl
+    ): com.horsegallop.feature.auth.domain.repository.AuthRepository
+
+    @dagger.Binds
+    @Singleton
+    abstract fun bindProfileRepository(
+        profileRepositoryImpl: com.horsegallop.feature.auth.data.repository.ProfileRepositoryImpl
+    ): com.horsegallop.feature.auth.domain.repository.ProfileRepository
+}

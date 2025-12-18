@@ -28,6 +28,12 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.ui.tooling.preview.Preview
 import android.app.Activity
 import androidx.compose.ui.platform.LocalContext
+import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.luminance
+import androidx.core.view.WindowCompat
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.MonitorHeart
@@ -53,6 +59,7 @@ import kotlinx.coroutines.delay
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
+    // com.horsegallop.core.debug.AppLog.i("OnboardingScreen", "composed")
     val primary = MaterialTheme.colorScheme.primary
     val secondary = MaterialTheme.colorScheme.secondary
     val warmClay = AppColors.WarmClay
@@ -61,44 +68,28 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
     val pages: List<OnboardingPage> = remember(primary, secondary, warmClay, toastedAlmond, softSand) {
         listOf(
             OnboardingPage(
-                titleRes = com.horsegallop.core.R.string.onboarding_title_ride_tracking,
-                subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_ride_tracking,
+                titleRes = com.horsegallop.core.R.string.onboarding_title_ranch,
+                subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_ranch,
                 gradient = listOf(warmClay, toastedAlmond),
-                features = listOf(
-                    FeatureRes(Icons.Filled.Navigation, com.horsegallop.core.R.string.onboarding_feature_gps),
-                    FeatureRes(Icons.Filled.LocalFireDepartment, com.horsegallop.core.R.string.onboarding_feature_calorie),
-                    FeatureRes(Icons.Filled.Timeline, com.horsegallop.core.R.string.onboarding_feature_trends)
-                )
+                imageUrl = "https://images.unsplash.com/photo-1517971052751-77380514b35e?q=80&w=1600&auto=format&fit=crop"
             ),
             OnboardingPage(
-                titleRes = com.horsegallop.core.R.string.onboarding_title_watch,
-                subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_watch,
+                titleRes = com.horsegallop.core.R.string.onboarding_title_packages,
+                subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_packages,
                 gradient = listOf(warmClay, primary),
-                features = listOf(
-                    FeatureRes(Icons.Filled.MonitorHeart, com.horsegallop.core.R.string.onboarding_feature_heart),
-                    FeatureRes(Icons.AutoMirrored.Filled.DirectionsRun, com.horsegallop.core.R.string.onboarding_feature_control),
-                    FeatureRes(Icons.Filled.Timeline, com.horsegallop.core.R.string.onboarding_feature_sync)
-                )
+                imageUrl = "https://images.unsplash.com/photo-1563481088221-49923125159e?q=80&w=1600&auto=format&fit=crop"
             ),
             OnboardingPage(
-                titleRes = com.horsegallop.core.R.string.onboarding_title_dashboard,
-                subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_dashboard,
+                titleRes = com.horsegallop.core.R.string.onboarding_title_boarding,
+                subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_boarding,
                 gradient = listOf(toastedAlmond, primary),
-                features = listOf(
-                    FeatureRes(Icons.Filled.Insights, com.horsegallop.core.R.string.onboarding_feature_durations),
-                    FeatureRes(Icons.Filled.Timeline, com.horsegallop.core.R.string.onboarding_feature_charts),
-                    FeatureRes(Icons.Filled.EmojiEvents, com.horsegallop.core.R.string.onboarding_feature_goals)
-                )
+                imageUrl = "https://images.unsplash.com/photo-1586776360433-d1e69679d171?q=80&w=1600&auto=format&fit=crop"
             ),
             OnboardingPage(
-                titleRes = com.horsegallop.core.R.string.onboarding_title_community,
-                subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_community,
+                titleRes = com.horsegallop.core.R.string.onboarding_title_cafe,
+                subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_cafe,
                 gradient = listOf(primary, softSand),
-                features = listOf(
-                    FeatureRes(Icons.Filled.Groups, com.horsegallop.core.R.string.onboarding_feature_sharing),
-                    FeatureRes(Icons.Filled.EmojiEvents, com.horsegallop.core.R.string.onboarding_feature_leaderboard),
-                    FeatureRes(Icons.Filled.Navigation, com.horsegallop.core.R.string.onboarding_feature_nearby)
-                )
+                imageUrl = "https://images.unsplash.com/photo-1555937020-39b8121700c1?q=80&w=1600&auto=format&fit=crop"
             )
         )
     }
@@ -106,29 +97,38 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
     val scope = rememberCoroutineScope()
+    val activity = LocalContext.current as? Activity
+
+    var isNextButtonEnabled by remember { mutableStateOf(false) }
+    LaunchedEffect(pagerState.currentPage) {
+        isNextButtonEnabled = false
+        // Minimum time on page before allowing "Next"
+        delay(2500) 
+        isNextButtonEnabled = true
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Theme-based animated gradient background instead of external images
-        ThemedAnimatedBackground(gradient = pages[pagerState.currentPage].gradient)
         // Back button exits app on onboarding
-        val activity = LocalContext.current as? Activity
         BackHandler(enabled = true) { activity?.finish() }
         // Pager - Full screen
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize()
-        ) { page ->
-            OnboardingPageContentAnimated(pages[page])
+        ) { pageIndex ->
+            OnboardingPageContentAnimated(pages[pageIndex], isVisible = pagerState.currentPage == pageIndex)
         }
+
+
 
         // Progress indicator
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
+                .statusBarsPadding()
         ) {
             Text(
                 text = stringResource(
@@ -153,6 +153,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
                 .padding(12.dp)
         ) {
             Column(
@@ -176,7 +177,6 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
-
                 // Action buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -194,6 +194,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
                                 }
                             }
                         },
+                        enabled = isNextButtonEnabled || isLast,
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.height(48.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
@@ -250,81 +251,66 @@ private fun AnimatedCoffeeOverlay() {
 
 
 @Composable
-private fun OnboardingPageContentAnimated(page: OnboardingPage) {
-    // Simplified without continuous pulse animation for better performance
-    var showContent by remember(page) { mutableStateOf(false) }
-    val featureVisibility: MutableList<Boolean> = remember(page) {
-        mutableStateListOf<Boolean>().apply { repeat(page.features.size) { add(false) } }
-    }
-    LaunchedEffect(page) {
-        showContent = false
-        repeat(page.features.size) { featureVisibility[it] = false }
-        delay(150)
-        showContent = true
-        page.features.indices.forEach { i ->
-            delay(140)
-            featureVisibility[i] = true
-        }
-    }
-
+private fun OnboardingPageContentAnimated(page: OnboardingPage, isVisible: Boolean) {
+    val hasUrl: Boolean = !page.imageUrl.isNullOrBlank()
+    var showImage by remember(page.imageUrl) { mutableStateOf(hasUrl) }
+    val arrangement: Arrangement.Vertical = if (showImage) Arrangement.SpaceBetween else Arrangement.Center
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Transparent)
-            .padding(horizontal = 24.dp, vertical = 24.dp)
-            .graphicsLayer { alpha = 1f },
-        verticalArrangement = Arrangement.Center,
+            .background(Color(0xFFF8FAFC))
+            .padding(horizontal = 24.dp, vertical = 24.dp),
+        verticalArrangement = arrangement,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Title and subtitle
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            AnimatedVisibility(
-                visible = showContent,
-                enter = fadeIn(animationSpec = tween(550)) +
-                        slideInVertically(initialOffsetY = { -40 }, animationSpec = tween(550)),
-                exit = fadeOut(animationSpec = tween(300)) +
-                        slideOutVertically(targetOffsetY = { -40 }, animationSpec = tween(300))
+        if (showImage) {
+            Card(
+                shape = RoundedCornerShape(24.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(260.dp)
             ) {
-                Text(
-                    text = stringResource(page.titleRes),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    color = Color.White
+                val ctx = LocalContext.current
+                val request = remember(page.imageUrl) {
+                    ImageRequest.Builder(ctx)
+                        .data(page.imageUrl)
+                        .crossfade(true)
+                        .diskCacheKey(page.imageUrl ?: "")
+                        .memoryCacheKey(page.imageUrl ?: "")
+                        .build()
+                }
+                SubcomposeAsyncImage(
+                    model = request,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
                 )
             }
+        }
+
+        // Title and subtitle
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = stringResource(page.titleRes),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                color = Color(0xFF0F172A)
+            )
             Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(page.subtitleRes),
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color(0xFF475569),
+                textAlign = TextAlign.Center
+            )
         }
 
-        // Callout centered between title and features
-        AnimatedVisibility(
-            visible = showContent,
-            enter = fadeIn(animationSpec = tween(550)) +
-                    slideInVertically(initialOffsetY = { 28 }, animationSpec = tween(550)),
-            exit = fadeOut(animationSpec = tween(300)) +
-                    slideOutVertically(targetOffsetY = { 28 }, animationSpec = tween(300))
-        ) {
-            EngagingCallout(titleRes = page.titleRes, subtitleRes = page.subtitleRes, gradient = page.gradient)
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Feature bullets
-        Column(
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            page.features.forEachIndexed { i, feature ->
-                AnimatedVisibility(
-                    visible = featureVisibility.getOrNull(i) == true,
-                    enter = fadeIn(animationSpec = tween(400)) +
-                            slideInVertically(initialOffsetY = { 24 }, animationSpec = tween(400)),
-                    exit = fadeOut(animationSpec = tween(250)) +
-                            slideOutVertically(targetOffsetY = { 24 }, animationSpec = tween(250))
-                ) {
-                    FeatureBullet(icon = feature.icon, text = stringResource(id = feature.textRes))
-                }
-            }
+        if (showImage) {
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
@@ -335,7 +321,7 @@ private data class OnboardingPage(
     val titleRes: Int,
     val subtitleRes: Int,
     val gradient: List<Color>,
-    val features: List<FeatureRes> = emptyList()
+    val imageUrl: String? = null
 )
 
 
@@ -353,7 +339,7 @@ private fun EngagingCallout(titleRes: Int, subtitleRes: Int, gradient: List<Colo
                 .fillMaxSize()
                 .background(
                     brush = Brush.linearGradient(
-                        colors = listOf(
+                        colors = if (gradient.isNotEmpty()) gradient.map { it.copy(alpha = 0.1f) } else listOf(
                             Color(0xFFF8F9FA),
                             Color(0xFFE9ECEF)
                         )
@@ -415,18 +401,6 @@ private fun OnboardingScreenPreview() {
         OnboardingScreen(
             onStart = {},
             onSkip = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFF1A1A1A)
-@Composable
-private fun EngagingCalloutPreview() {
-    MaterialTheme {
-        EngagingCallout(
-            titleRes = com.horsegallop.core.R.string.onboarding_title_ride_tracking,
-            subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_ride_tracking,
-            gradient = listOf(Color(0xFF4CAF50), Color(0xFF2E7D32))
         )
     }
 }

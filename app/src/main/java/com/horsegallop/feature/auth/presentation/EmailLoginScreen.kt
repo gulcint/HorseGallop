@@ -7,86 +7,110 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.google.firebase.auth.FirebaseAuth
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.horsegallop.feature.auth.presentation.LoginViewModel
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.horsegallop.core.R
 
 @Composable
 fun EmailLoginScreen(
   onBack: () -> Unit,
   onSignup: () -> Unit,
-  onSignedIn: () -> Unit
+  onSignedIn: () -> Unit,
+  viewModel: LoginViewModel = hiltViewModel()
 ) {
-  val context = androidx.compose.ui.platform.LocalContext.current
+  val context = LocalContext.current
   val snackbarHostState = remember { SnackbarHostState() }
-  val scope = rememberCoroutineScope()
-  var email by remember { mutableStateOf("") }
-  var password by remember { mutableStateOf("") }
-  var loading by remember { mutableStateOf(false) }
-  var error by remember { mutableStateOf<String?>(null) }
+  val uiState by viewModel.uiState.collectAsState()
 
+  LaunchedEffect(uiState.success) {
+    if (uiState.success) {
+      snackbarHostState.showSnackbar(context.getString(R.string.auth_success))
+      onSignedIn()
+    }
+  }
+
+  LaunchedEffect(uiState.errorMessage) {
+    uiState.errorMessage?.let { errorKey ->
+      val message = when (errorKey) {
+        "login_verify_email_sent" -> context.getString(R.string.login_verify_email_sent)
+        "auth_error_cancelled" -> context.getString(com.horsegallop.core.R.string.auth_error_cancelled)
+        "auth_error_token_missing" -> context.getString(com.horsegallop.core.R.string.auth_error_token_missing)
+        "auth_error_firebase" -> context.getString(com.horsegallop.core.R.string.auth_error_firebase)
+        else -> errorKey
+      }
+      snackbarHostState.showSnackbar(message)
+    }
+  }
+
+  EmailLoginContent(
+    uiState = uiState,
+    onEmailChange = viewModel::updateEmail,
+    onPasswordChange = viewModel::updatePassword,
+    onLoginClick = viewModel::login,
+    onSignupClick = onSignup,
+    onBackClick = onBack,
+    snackbarHostState = snackbarHostState
+  )
+}
+
+@Composable
+fun EmailLoginContent(
+  uiState: com.horsegallop.feature.auth.presentation.LoginUiState,
+  onEmailChange: (String) -> Unit,
+  onPasswordChange: (String) -> Unit,
+  onLoginClick: () -> Unit,
+  onSignupClick: () -> Unit,
+  onBackClick: () -> Unit,
+  snackbarHostState: SnackbarHostState
+) {
   Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
     Column(
       modifier = Modifier.fillMaxWidth().align(Alignment.Center),
       verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-      Text(text = "Email ile Giriş", style = MaterialTheme.typography.titleLarge)
+      Text(text = stringResource(R.string.signin_email), style = MaterialTheme.typography.titleLarge)
       OutlinedTextField(
-        value = email,
-        onValueChange = { email = it },
-        label = { Text("Email") },
+        value = uiState.email,
+        onValueChange = onEmailChange,
+        label = { Text(stringResource(R.string.login_email_label)) },
         singleLine = true,
         colors = OutlinedTextFieldDefaults.colors(
           focusedBorderColor = MaterialTheme.colorScheme.primary,
           unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
-        )
+        ),
+        modifier = Modifier.fillMaxWidth()
       )
       OutlinedTextField(
-        value = password,
-        onValueChange = { password = it },
-        label = { Text("Şifre") },
+        value = uiState.password,
+        onValueChange = onPasswordChange,
+        label = { Text(stringResource(R.string.login_password_label)) },
         singleLine = true,
         visualTransformation = PasswordVisualTransformation(),
         colors = OutlinedTextFieldDefaults.colors(
           focusedBorderColor = MaterialTheme.colorScheme.primary,
           unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
-        )
+        ),
+        modifier = Modifier.fillMaxWidth()
       )
-      if (error != null) Text(text = error!!, color = MaterialTheme.colorScheme.error)
-      Button(onClick = {
-        if (email.isBlank() || password.length < 6) {
-          error = "Geçerli email ve 6+ karakter şifre girin"
+
+      
+      Button(
+        onClick = onLoginClick,
+        enabled = !uiState.loading,
+        modifier = Modifier.fillMaxWidth()
+      ) { 
+        if (uiState.loading) {
+          CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
+
         } else {
-          loading = true
-          error = null
-          val auth = FirebaseAuth.getInstance()
-          auth.signInWithEmailAndPassword(email, password)
-            .addOnSuccessListener {
-              val user = auth.currentUser
-              loading = false
-              if (user != null && user.isEmailVerified) {
-                scope.launch {
-                  snackbarHostState.currentSnackbarData?.dismiss()
-                  snackbarHostState.showSnackbar("Giriş başarılı")
-                  onSignedIn()
-                }
-              } else {
-                scope.launch {
-                  snackbarHostState.currentSnackbarData?.dismiss()
-                  snackbarHostState.showSnackbar("Lütfen e-postanı doğrula. Doğrulama maili gönderildi.")
-                }
-                runCatching { user?.sendEmailVerification() }
-                auth.signOut()
-              }
-            }
-            .addOnFailureListener { e -> loading = false; error = e.localizedMessage ?: "Giriş başarısız" }
+          Text(stringResource(R.string.login_button)) 
         }
-      }, enabled = !loading) { Text("Giriş Yap") }
-      TextButton(onClick = onSignup) { Text("Hesabın yok mu? Kaydol") }
-      TextButton(onClick = onBack) { Text("Geri") }
+      }
+      TextButton(onClick = onSignupClick) { Text(stringResource(R.string.login_signup_prompt)) }
+      TextButton(onClick = onBackClick) { Text(stringResource(R.string.back)) }
     }
     SnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.TopCenter))
   }
@@ -96,6 +120,14 @@ fun EmailLoginScreen(
 @Composable
 private fun PreviewEmailLoginScreen() {
   MaterialTheme {
-    EmailLoginScreen(onBack = {}, onSignup = {}, onSignedIn = {})
+    EmailLoginContent(
+      uiState = com.horsegallop.feature.auth.presentation.LoginUiState(),
+      onEmailChange = {},
+      onPasswordChange = {},
+      onLoginClick = {},
+      onSignupClick = {},
+      onBackClick = {},
+      snackbarHostState = remember { SnackbarHostState() }
+    )
   }
 }
