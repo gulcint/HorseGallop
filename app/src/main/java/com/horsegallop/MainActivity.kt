@@ -192,55 +192,26 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
         )
 
         var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
-        LaunchedEffect(composition) {
-            if (composition == null) return@LaunchedEffect
-            val am = ctx.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val attrs = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()
-                val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).setAudioAttributes(attrs).setOnAudioFocusChangeListener { }.build()
-                am.requestAudioFocus(req)
-            } else {
-                am.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
-            }
+        LaunchedEffect(Unit) {
+            com.horsegallop.core.debug.AppLog.i("SplashScreen", "Starting splash")
+            
+            // Play Sound
             runCatching {
-                withContext(Dispatchers.IO) {
-                    val created = MediaPlayer.create(ctx, R.raw.horse_gallop)
-                    if (created != null) {
-                        mediaPlayer = created
-                        mediaPlayer?.isLooping = true
-                        mediaPlayer?.setVolume(MEDIA_VOLUME_MAX, MEDIA_VOLUME_MAX)
-                        mediaPlayer?.start()
-                    } else {
-                        val tmp = MediaPlayer()
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            tmp.setAudioAttributes(
-                                AudioAttributes.Builder()
-                                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                                    .build()
-                            )
-                        }
-                        tmp.setOnErrorListener { mp, _, _ ->
-                            try { mp.reset() } catch (_: Throwable) {}
-                            false
-                        }
-                        val afd = ctx.resources.openRawResourceFd(R.raw.horse_gallop)
-                        tmp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
-                        afd.close()
-                        tmp.isLooping = true
-                        tmp.setVolume(MEDIA_VOLUME_MAX, MEDIA_VOLUME_MAX)
-                        tmp.setOnPreparedListener { it.start() }
-                        tmp.prepareAsync()
-                        mediaPlayer = tmp
-                    }
+                val created = MediaPlayer.create(ctx, R.raw.horse_gallop)
+                if (created != null) {
+                    mediaPlayer = created
+                    mediaPlayer?.setVolume(MEDIA_VOLUME_MAX, MEDIA_VOLUME_MAX)
+                    mediaPlayer?.start()
+                    com.horsegallop.core.debug.AppLog.i("SplashScreen", "MediaPlayer started")
+                } else {
+                    com.horsegallop.core.debug.AppLog.e("SplashScreen", "MediaPlayer.create returned null")
                 }
-                val current = am.getStreamVolume(AudioManager.STREAM_MUSIC)
-                val max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                if (current <= max.coerceAtLeast(1) / 4) {
-                    Toast.makeText(ctx, ctx.getString(R.string.media_volume_low_warning), Toast.LENGTH_SHORT).show()
-                }
+            }.onFailure {
+                com.horsegallop.core.debug.AppLog.e("SplashScreen", "Sound error: ${it.localizedMessage}")
             }
+
             delay(SPLASH_DURATION_MS)
+            
             try {
                 mediaPlayer?.stop()
                 mediaPlayer?.release()

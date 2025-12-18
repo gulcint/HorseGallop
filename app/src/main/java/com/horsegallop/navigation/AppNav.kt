@@ -77,7 +77,7 @@ fun AppNavHost(
   val onboardingDone = remember { prefs.getBoolean("onboarding_done", false) }
   val startDest = if (role == null) { if (onboardingDone) Dest.Login.route else Dest.Onboarding.route } else Dest.Home.route
   
-  // com.horsegallop.core.debug.AppLog.i("AppNavHost", "role=$role onboardingDone=$onboardingDone startDest=$startDest")
+  com.horsegallop.core.debug.AppLog.i("AppNavHost", "role=$role onboardingDone=$onboardingDone startDest=$startDest")
 
   Scaffold(
     bottomBar = {
