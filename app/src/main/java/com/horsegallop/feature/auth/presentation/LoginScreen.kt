@@ -96,7 +96,7 @@ fun LoginScreen(
 
     LaunchedEffect(uiState.success) {
         if (uiState.success) {
-            showLogoToast(context, context.getString(com.horsegallop.core.R.string.auth_success), false)
+            // Toast removed to speed up transition
             onGoogleClick()
         }
     }
@@ -269,14 +269,16 @@ fun LoginScreen(
                 }
                 GoogleSignInButton(loading = uiState.loading, onClick = {
                     if (!uiState.loading) {
-                        val availability = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
-                        if (availability != ConnectionResult.SUCCESS) {
-                            scope.launch {
-                                showLogoToast(context, context.getString(com.horsegallop.core.R.string.auth_error_play_services), true)
-                            }
-                        } else {
-                            vm.trySilentSignIn { intent ->
-                                if (intent != null) launcher.launch(intent)
+                        scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                            val availability = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
+                            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                if (availability != ConnectionResult.SUCCESS) {
+                                    showLogoToast(context, context.getString(com.horsegallop.core.R.string.auth_error_play_services), true)
+                                } else {
+                                    vm.trySilentSignIn { intent ->
+                                        if (intent != null) launcher.launch(intent)
+                                    }
+                                }
                             }
                         }
                     }

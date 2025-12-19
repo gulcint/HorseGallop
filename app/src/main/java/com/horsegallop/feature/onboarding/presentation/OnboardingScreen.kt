@@ -71,13 +71,15 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
     val softSand = AppColors.SoftSand
     val lightCoffee = AppColors.LightCoffee
 
+    // User requested less whiteness. We use Saddle Brown -> Toasted Almond/Soft Sand.
+    // This reduces the white intensity while keeping a gradient.
     val pages: List<OnboardingPage> = remember(primary, secondary, warmClay, toastedAlmond, softSand, lightCoffee) {
         listOf(
             OnboardingPage(
                 titleRes = com.horsegallop.core.R.string.onboarding_title_ranch,
                 subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_ranch,
-                // Lighter gradient: Toasted Almond -> Soft Sand
-                gradient = listOf(toastedAlmond, softSand),
+                // Saddle Brown -> Toasted Almond (Warm, reduced whiteness)
+                gradient = listOf(primary, toastedAlmond),
                 features = listOf(
                     FeatureRes(Icons.Filled.Home, com.horsegallop.core.R.string.barn_filter_indoor_arena),
                     FeatureRes(Icons.Filled.Landscape, com.horsegallop.core.R.string.barn_filter_outdoor_arena),
@@ -87,8 +89,8 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
             OnboardingPage(
                 titleRes = com.horsegallop.core.R.string.onboarding_title_packages,
                 subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_packages,
-                // Lighter gradient: Soft Sand -> Light Coffee
-                gradient = listOf(softSand, lightCoffee),
+                // Saddle Brown -> Soft Sand (Light beige, but not white)
+                gradient = listOf(primary, softSand),
                 features = listOf(
                     FeatureRes(Icons.Filled.School, com.horsegallop.core.R.string.ride_type_dressage),
                     FeatureRes(Icons.Filled.SportsScore, com.horsegallop.core.R.string.ride_type_show_jumping),
@@ -98,8 +100,8 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
             OnboardingPage(
                 titleRes = com.horsegallop.core.R.string.onboarding_title_boarding,
                 subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_boarding,
-                // Lighter gradient: Light Coffee -> Toasted Almond
-                gradient = listOf(lightCoffee, toastedAlmond),
+                // Saddle Brown -> Toasted Almond
+                gradient = listOf(primary, toastedAlmond),
                 features = listOf(
                     FeatureRes(Icons.Filled.BedroomParent, com.horsegallop.core.R.string.barn_filter_boarding),
                     FeatureRes(Icons.Filled.MedicalServices, com.horsegallop.core.R.string.barn_filter_vet),
@@ -109,8 +111,8 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
             OnboardingPage(
                 titleRes = com.horsegallop.core.R.string.onboarding_title_cafe,
                 subtitleRes = com.horsegallop.core.R.string.onboarding_subtitle_cafe,
-                // Lighter gradient: Toasted Almond -> Soft Sand
-                gradient = listOf(toastedAlmond, softSand),
+                // Saddle Brown -> Soft Sand
+                gradient = listOf(primary, softSand),
                 features = listOf(
                     FeatureRes(Icons.Filled.LocalCafe, com.horsegallop.core.R.string.barn_filter_cafe),
                     FeatureRes(Icons.Filled.RestaurantMenu, com.horsegallop.core.R.string.menu),
@@ -127,7 +129,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.ToastedAlmond) // Lighter base instead of dark Saddle Brown
+            .background(toastedAlmond) // Base color matching the lighter end of gradients
     ) {
         // Theme-based animated gradient background instead of external images
         ThemedAnimatedBackground(gradient = pages[pagerState.currentPage].gradient)
@@ -204,7 +206,12 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     val isLast: Boolean = pagerState.currentPage == pages.lastIndex
-                    TextButton(onClick = onSkip) { Text(stringResource(com.horsegallop.core.R.string.onboarding_skip), color = MaterialTheme.colorScheme.onPrimary) }
+                    TextButton(onClick = onSkip) { 
+                        Text(
+                            stringResource(com.horsegallop.core.R.string.onboarding_skip), 
+                            color = Color.White // Explicitly White as requested
+                        ) 
+                    }
                     Button(
                         onClick = {
                             if (isLast) onStart() else {

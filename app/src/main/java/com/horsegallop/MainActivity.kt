@@ -193,30 +193,38 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
         val lottieAnimatable = rememberLottieAnimatable()
         
         var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+        var isSoundReady by remember { mutableStateOf(false) }
         
-        // Sync Logic: Wait for composition -> Start Sound -> Start Anim -> Finish
-        LaunchedEffect(composition) {
-            if (composition == null) return@LaunchedEffect
-            
-            // 1. Start Sound (Main thread is fine for raw resource splash sound to ensure sync)
-            try {
-                val mp = MediaPlayer.create(ctx, R.raw.horse_gallop)
-                if (mp != null) {
-                    mp.setVolume(1.0f, 1.0f)
-                    mp.start()
-                    mediaPlayer = mp
+        // 1. Preload Sound in parallel
+        LaunchedEffect(Unit) {
+            withContext(Dispatchers.IO) {
+                try {
+                    val mp = MediaPlayer.create(ctx, R.raw.horse_gallop)
+                    if (mp != null) {
+                        mp.setVolume(1.0f, 1.0f)
+                        mediaPlayer = mp
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+                isSoundReady = true
             }
+        }
+        
+        // 2. Sync Logic: Wait for BOTH composition and sound -> Start -> Animate -> Finish
+        LaunchedEffect(composition, isSoundReady) {
+            if (composition == null || !isSoundReady) return@LaunchedEffect
             
-            // 2. Play Animation (suspend until finished)
+            // Start Sound
+            mediaPlayer?.start()
+            
+            // Play Animation (suspend until finished)
             lottieAnimatable.animate(
                 composition = composition!!,
                 iterations = 1
             )
             
-            // 3. Finish
+            // Finish
             onFinished()
         }
 
