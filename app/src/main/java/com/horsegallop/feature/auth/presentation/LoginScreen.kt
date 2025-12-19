@@ -150,7 +150,8 @@ fun LoginScreen(
             Column(
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
             ) {
-                HorseLoadingOverlay(visible = uiState.loading)
+                // Keep loading overlay visible even on success to prevent form from flickering during navigation
+                HorseLoadingOverlay(visible = uiState.loading || uiState.success)
                 val focusManager = LocalFocusManager.current
                 Surface(
                     modifier = Modifier.fillMaxWidth(),

@@ -393,7 +393,7 @@ private fun EngagingCallout(titleRes: Int, subtitleRes: Int, gradient: List<Colo
                         text = stringResource(id = titleRes),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF2C3E50)
+                        color = Color.Black
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     val subtitle = stringResource(id = subtitleRes)
@@ -401,7 +401,7 @@ private fun EngagingCallout(titleRes: Int, subtitleRes: Int, gradient: List<Colo
                         Text(
                             text = subtitle,
                             style = MaterialTheme.typography.bodySmall,
-                            color = AppColors.WarmClay // Lighter brown than Saddle Brown
+                            color = Color.Gray
                         )
                     }
                 }
