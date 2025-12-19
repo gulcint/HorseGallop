@@ -47,8 +47,11 @@ object AuthModule {
 
     @Provides
     @Singleton
-    fun provideFirebaseAuthRepository(auth: FirebaseAuth): com.horsegallop.data.auth.FirebaseAuthRepository =
-        com.horsegallop.data.auth.FirebaseAuthRepository(auth)
+    fun provideFirebaseAuthRepository(
+        auth: FirebaseAuth,
+        firestore: FirebaseFirestore
+    ): com.horsegallop.data.auth.FirebaseAuthRepository =
+        com.horsegallop.data.auth.FirebaseAuthRepository(auth, firestore)
 }
 
 @Module
@@ -59,7 +62,6 @@ abstract class AuthBinderModule {
     abstract fun bindAuthRepository(
         firebaseAuthRepository: com.horsegallop.data.auth.FirebaseAuthRepository
     ): com.horsegallop.domain.auth.AuthRepository
-
 
     @dagger.Binds
     @Singleton

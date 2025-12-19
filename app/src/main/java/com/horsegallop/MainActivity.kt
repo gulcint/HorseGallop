@@ -16,9 +16,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import com.horsegallop.theme.LightColorScheme
-import com.horsegallop.theme.DarkColorScheme
-import com.horsegallop.theme.AppColors
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,30 +25,23 @@ import androidx.navigation.compose.rememberNavController
 import android.media.MediaPlayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.airbnb.lottie.compose.*
 import com.horsegallop.navigation.AppNavHost
+import com.horsegallop.navigation.Dest
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.util.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.material3.ExperimentalMaterial3Api
-import android.media.AudioAttributes
-import android.media.AudioFocusRequest
-import android.media.AudioManager
-import android.os.Build
 import android.widget.Toast
 import com.horsegallop.domain.model.UserRole
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
-
-private const val SPLASH_DURATION_MS: Long = 2000L
-private const val MEDIA_VOLUME_MAX: Float = 1f
-private const val LOTTIE_FILL_SCALE: Float = 0.6f
+import com.horsegallop.core.debug.AppLog
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -161,6 +151,67 @@ fun AppContent(): Unit {
             navController = navController,
             role = if (isLoggedIn) UserRole.CUSTOMER else null
         )
+
+        DisposableEffect(navController) {
+            val auth = FirebaseAuth.getInstance()
+            val authListener = FirebaseAuth.AuthStateListener { fa ->
+                if (fa.currentUser == null) {
+                    AppLog.w("AuthState", "currentUser null navigate Login")
+                    navController.navigate(Dest.Login.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            }
+            auth.addAuthStateListener(authListener)
+
+            val lifecycle = act?.lifecycle
+            fun reloadAndCheck() {
+                val u = auth.currentUser ?: return
+                u.reload().addOnCompleteListener { t ->
+                    if (!t.isSuccessful) {
+                        val ex = t.exception
+                        if (ex is com.google.firebase.auth.FirebaseAuthInvalidUserException) {
+                            AppLog.e("AuthState", "invalid user signOut")
+                            auth.signOut()
+                            navController.navigate(Dest.Login.route) {
+                                popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                        return@addOnCompleteListener
+                    }
+                    val cur = auth.currentUser
+                    val hasProvider = cur?.providerData?.isNotEmpty() == true
+                    val hasEmail = cur?.email != null
+                    if (!hasProvider || !hasEmail) {
+                        AppLog.w("AuthState", "provider or email missing, signing out")
+                        auth.signOut()
+                        navController.navigate(Dest.Login.route) {
+                            popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                }
+            }
+
+            val lifecycleObserver = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) reloadAndCheck()
+            }
+            lifecycle?.addObserver(lifecycleObserver)
+
+            val destListener = NavController.OnDestinationChangedListener { _, destination, _ ->
+                val route = destination.route
+                if (route == Dest.Home.route || route == Dest.Profile.route) reloadAndCheck()
+            }
+            navController.addOnDestinationChangedListener(destListener)
+
+            onDispose {
+                lifecycle?.removeObserver(lifecycleObserver)
+                auth.removeAuthStateListener(authListener)
+                navController.removeOnDestinationChangedListener(destListener)
+            }
+        }
     }
 }
 
@@ -170,7 +221,11 @@ private fun AppTheme(content: @Composable () -> Unit) {
     androidx.compose.runtime.CompositionLocalProvider(
         com.horsegallop.core.theme.LocalTextColors provides com.horsegallop.core.theme.textColorsFrom(scheme)
     ) {
-        MaterialTheme(colorScheme = scheme, content = content)
+        MaterialTheme(
+            colorScheme = scheme,
+            typography = com.horsegallop.core.theme.AppTypography,
+            content = content
+        )
     }
 }
 
@@ -248,6 +303,7 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
             progress = { lottieAnimatable.progress },
             modifier = Modifier.size(220.dp)
         )
+		
 		// Localized welcome texts over splash (auto-resolved by app locales/device locale)
 		Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 64.dp)) {
 			Text(text = titleText, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.primary)
