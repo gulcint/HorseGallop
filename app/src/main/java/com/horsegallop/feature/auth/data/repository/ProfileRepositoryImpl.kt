@@ -23,11 +23,28 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override fun getUserProfile(uid: String): Flow<Result<UserProfile>> = flow {
         try {
-            val doc = firestore.collection("users").document(uid).get().await()
+            val docRef = firestore.collection("users").document(uid)
+            val doc = docRef.get().await()
+            val currentUser = auth.currentUser
+            
+            var fName = doc.getString("firstName") ?: ""
+            var lName = doc.getString("lastName") ?: ""
+            
+            // Fallback to Firebase Auth Display Name if Firestore data is missing
+            if (fName.isBlank() && lName.isBlank() && currentUser?.displayName.isNullOrBlank().not()) {
+                val parts = currentUser!!.displayName!!.trim().split(" ")
+                if (parts.isNotEmpty()) {
+                    fName = parts.first()
+                    if (parts.size > 1) {
+                        lName = parts.drop(1).joinToString(" ")
+                    }
+                }
+            }
+
             val profile = UserProfile(
-                firstName = doc.getString("firstName") ?: "",
-                lastName = doc.getString("lastName") ?: "",
-                email = doc.getString("email") ?: (auth.currentUser?.email ?: ""),
+                firstName = fName,
+                lastName = lName,
+                email = doc.getString("email") ?: (currentUser?.email ?: ""),
                 phone = doc.getString("phone") ?: "",
                 city = doc.getString("city") ?: "",
                 birthDate = doc.getString("birthDate") ?: "",
@@ -48,6 +65,21 @@ class ProfileRepositoryImpl @Inject constructor(
                 profile
             }
             
+            if (!doc.exists()) {
+                try {
+                    val init = hashMapOf(
+                        "firstName" to finalProfile.firstName,
+                        "lastName" to finalProfile.lastName,
+                        "email" to finalProfile.email,
+                        "phone" to finalProfile.phone,
+                        "city" to finalProfile.city,
+                        "birthDate" to finalProfile.birthDate,
+                        "photoUrl" to finalProfile.photoUrl,
+                        "countryCode" to finalProfile.countryCode
+                    )
+                    docRef.set(init, com.google.firebase.firestore.SetOptions.merge()).await()
+                } catch (_: Exception) { }
+            }
             emit(Result.success(finalProfile))
         } catch (e: Exception) {
             emit(Result.failure(e))
@@ -64,7 +96,7 @@ class ProfileRepositoryImpl @Inject constructor(
                 "birthDate" to profile.birthDate,
                 "countryCode" to profile.countryCode
             )
-            firestore.collection("users").document(uid).update(updates).await()
+            firestore.collection("users").document(uid).set(updates, com.google.firebase.firestore.SetOptions.merge()).await()
             emit(Result.success(Unit))
         } catch (e: Exception) {
             emit(Result.failure(e))

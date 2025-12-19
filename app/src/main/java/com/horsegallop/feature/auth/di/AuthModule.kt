@@ -60,11 +60,6 @@ abstract class AuthBinderModule {
         firebaseAuthRepository: com.horsegallop.data.auth.FirebaseAuthRepository
     ): com.horsegallop.domain.auth.AuthRepository
 
-    @dagger.Binds
-    @Singleton
-    abstract fun bindFeatureAuthRepository(
-        authRepositoryImpl: com.horsegallop.feature.auth.data.repository.AuthRepositoryImpl
-    ): com.horsegallop.feature.auth.domain.repository.AuthRepository
 
     @dagger.Binds
     @Singleton

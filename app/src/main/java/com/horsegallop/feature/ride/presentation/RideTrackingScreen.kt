@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.BorderStroke
@@ -203,8 +204,7 @@ fun RideTrackingScreen(
         ,
       verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
     ) {
-      WelcomeHeader()
-      WeatherTopRow()
+      WeatherTopRow(modifier = Modifier.padding(top = 24.dp))
       if (!state.isRiding) {
         RideTypeCard(
           selectedRideType = selectedRideType,
@@ -231,6 +231,7 @@ fun RideTrackingScreen(
             textAlign = TextAlign.Center
           )
         }
+        Spacer(Modifier.height(32.dp))
       } else {
         RideMapWithTimer(
           path = state.pathPoints,
@@ -493,9 +494,9 @@ private fun MiniStat(title: String, value: String) {
 }
 
 @Composable
-private fun WeatherTopRow() {
+private fun WeatherTopRow(modifier: Modifier = Modifier) {
   Column(
-    modifier = Modifier.fillMaxWidth(),
+    modifier = modifier.fillMaxWidth(),
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.spacedBy(0.dp)
   ) {
@@ -539,22 +540,7 @@ private fun localizedRideTypeName(type: RideType): String {
   }
 }
 
-@Composable
-private fun WelcomeHeader() {
-  val fade by animateFloatAsState(targetValue = 1f, animationSpec = tween(600), label = "fade")
-  Column(
-    modifier = Modifier.fillMaxWidth(),
-    horizontalAlignment = Alignment.CenterHorizontally
-  ) {
-    HorizontalDivider(
-      color = MaterialTheme.colorScheme.surfaceVariant,
-      modifier = Modifier.padding(
-        horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_lg),
-        vertical = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_xs)
-      )
-    )
-  }
-}
+
 
 @Composable
 private fun StartRideHero(onStart: () -> Unit) {

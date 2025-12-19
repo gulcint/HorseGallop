@@ -17,6 +17,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import com.horsegallop.theme.LightColorScheme
 import com.horsegallop.theme.DarkColorScheme
+import com.horsegallop.theme.AppColors
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +45,7 @@ import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
 import android.widget.Toast
-import com.horsegallop.feature.auth.domain.model.UserRole
+import com.horsegallop.domain.model.UserRole
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 
@@ -123,19 +125,18 @@ fun AppContent(): Unit {
         if (splashFinished) showSplash = false
     }
     
-    // Sync system bars to current theme background for notch areas
+    // Sync system bars color to app theme (Saddle Brown)
     val activity = LocalContext.current as? ComponentActivity
-    val bg = MaterialTheme.colorScheme.background
+    val primaryColor = MaterialTheme.colorScheme.primary
     SideEffect {
         val window = activity?.window
-        window?.statusBarColor = bg.toArgb()
-        window?.navigationBarColor = bg.toArgb()
         if (window != null) {
+            WindowCompat.setDecorFitsSystemWindows(window, true)
+            window.statusBarColor = primaryColor.toArgb()
+            window.navigationBarColor = primaryColor.toArgb()
             val controller = WindowCompat.getInsetsController(window, window.decorView)
-            val lum = bg.luminance()
-            val light = lum > 0.5f
-            controller.isAppearanceLightStatusBars = light
-            controller.isAppearanceLightNavigationBars = light
+            controller.isAppearanceLightStatusBars = false
+            controller.isAppearanceLightNavigationBars = false
         }
     }
 
@@ -172,14 +173,15 @@ private fun AppTheme(content: @Composable () -> Unit) {
         MaterialTheme(colorScheme = scheme, content = content)
     }
 }
+
 @Composable
 fun SplashScreen(onFinished: () -> Unit): Unit {
-	Box(
-		modifier = Modifier
-			.fillMaxSize()
-			.background(Color.White),
-		contentAlignment = Alignment.Center
-	) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
+        contentAlignment = Alignment.Center
+    ) {
         val ctx = LocalContext.current
         val titleText: String = stringResource(com.horsegallop.core.R.string.welcome_title)
         val subtitleText: String = stringResource(com.horsegallop.core.R.string.welcome_subtitle)
@@ -192,53 +194,41 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
         )
 
         var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
-        LaunchedEffect(Unit) {
-            com.horsegallop.core.debug.AppLog.i("SplashScreen", "Starting splash")
+        
+        // Ses ve zamanlama yönetimi - Lottie yüklendikten sonra başlar
+        LaunchedEffect(composition) {
+            if (composition == null) return@LaunchedEffect
             
-            // Play Sound
-            runCatching {
-                val created = MediaPlayer.create(ctx, R.raw.horse_gallop)
-                if (created != null) {
-                    mediaPlayer = created
-                    mediaPlayer?.setVolume(MEDIA_VOLUME_MAX, MEDIA_VOLUME_MAX)
-                    mediaPlayer?.start()
-                    com.horsegallop.core.debug.AppLog.i("SplashScreen", "MediaPlayer started")
-                } else {
-                    com.horsegallop.core.debug.AppLog.e("SplashScreen", "MediaPlayer.create returned null")
-                }
-            }.onFailure {
-                com.horsegallop.core.debug.AppLog.e("SplashScreen", "Sound error: ${it.localizedMessage}")
-            }
-
-            delay(SPLASH_DURATION_MS)
-            
+            // Sesi başlat
             try {
-                mediaPlayer?.stop()
-                mediaPlayer?.release()
-                mediaPlayer = null
-            } catch (_: Throwable) {}
+                withContext(Dispatchers.IO) {
+                    val mp = MediaPlayer.create(ctx, R.raw.horse_gallop)
+                    mp?.setVolume(1.0f, 1.0f)
+                    mp?.start()
+                    mediaPlayer = mp
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            
+            delay(SPLASH_DURATION_MS)
             onFinished()
         }
+
         DisposableEffect(Unit) {
             onDispose {
                 try {
-                    mediaPlayer?.stop()
+                    if (mediaPlayer?.isPlaying == true) {
+                        mediaPlayer?.stop()
+                    }
                     mediaPlayer?.release()
                     mediaPlayer = null
-                } catch (_: Throwable) {}
-                try {
-                    val am = ctx.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        val attrs = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()
-                        val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).setAudioAttributes(attrs).setOnAudioFocusChangeListener { }.build()
-                        am.abandonAudioFocusRequest(req)
-                    } else {
-                        am.abandonAudioFocus(null)
-                    }
-                } catch (_: Throwable) {}
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
         }
-		
+        
         LottieAnimation(
             composition = composition,
             progress = { progress },

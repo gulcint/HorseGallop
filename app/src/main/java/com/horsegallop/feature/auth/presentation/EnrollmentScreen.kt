@@ -6,6 +6,7 @@ import android.Manifest
 import android.location.LocationManager
 import android.location.Geocoder
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.ui.graphics.Color
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -73,12 +74,9 @@ fun EnrollmentScreen(
 ) {
   val vm: EnrollmentViewModel = androidx.hilt.navigation.compose.hiltViewModel()
   val ui = vm.ui.collectAsState().value
-  val ctx = LocalContext.current
 
   var showVerifySheet by remember { mutableStateOf(false) }
   val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-  val scope = rememberCoroutineScope()
-  var showBanner by remember { mutableStateOf(false) }
   
   val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
   var isForeground by remember { mutableStateOf(true) }
@@ -90,7 +88,11 @@ fun EnrollmentScreen(
     onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
   }
 
-  
+  LaunchedEffect(ui.verificationSent) {
+      if (ui.verificationSent) {
+          showVerifySheet = true
+      }
+  }
 
   Scaffold(
     topBar = {
@@ -142,7 +144,6 @@ fun EnrollmentScreen(
               value = ui.firstName,
               onValueChange = vm::updateFirstName,
               label = { Text(stringResource(com.horsegallop.R.string.label_first_name), style = MaterialTheme.typography.bodySmall) },
-              placeholder = { Text(stringResource(com.horsegallop.R.string.label_first_name), style = MaterialTheme.typography.bodySmall) },
               singleLine = true,
               modifier = Modifier.fillMaxWidth(),
               colors = OutlinedTextFieldDefaults.colors(
@@ -227,14 +228,21 @@ fun EnrollmentScreen(
             MaterialTheme.colorScheme.primary,
             progress.coerceIn(0f, 1f)
           )
-          LinearProgressIndicator(progress = { progress }, color = indicatorColor, trackColor = MaterialTheme.colorScheme.surfaceVariant)
-          val strengthText = when (score) { 0,1 -> stringResource(com.horsegallop.R.string.strength_weak); 2,3 -> stringResource(com.horsegallop.R.string.strength_medium); else -> stringResource(com.horsegallop.R.string.strength_strong) }
-          Text(text = stringResource(com.horsegallop.R.string.password_strength_prefix, strengthText), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-          Text(
-            text = stringResource(com.horsegallop.R.string.password_guidance),
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.80f),
-            style = MaterialTheme.typography.bodySmall
-          )
+          if (ui.password.isNotEmpty()) {
+              LinearProgressIndicator(progress = { progress }, color = indicatorColor, trackColor = MaterialTheme.colorScheme.surfaceVariant)
+              val strengthText = when (score) { 0,1 -> stringResource(com.horsegallop.R.string.strength_weak); 2,3 -> stringResource(com.horsegallop.R.string.strength_medium); else -> stringResource(com.horsegallop.R.string.strength_strong) }
+              Text(text = stringResource(com.horsegallop.R.string.password_strength_prefix, strengthText), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+          }
+          
+          if (ui.validationErrors.isNotEmpty()) {
+            val errorMessages = ui.validationErrors.map { stringResource(it) }
+
+            Text(
+              text = errorMessages.joinToString(" • "),
+              color = MaterialTheme.colorScheme.error,
+              style = MaterialTheme.typography.bodySmall
+            )
+          }
           
         }
       }
@@ -242,16 +250,6 @@ fun EnrollmentScreen(
       if (ui.error != null) {
 
         Text(text = stringResource(ui.error), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
-      }
-
-      if (ui.validationErrors.isNotEmpty()) {
-        val errorMessages = ui.validationErrors.map { stringResource(it) }
-
-        Text(
-          text = errorMessages.joinToString(" • "),
-          color = MaterialTheme.colorScheme.onSurfaceVariant,
-          style = MaterialTheme.typography.bodySmall
-        )
       }
 
       Button(
@@ -278,8 +276,7 @@ fun EnrollmentScreen(
         }
       }
 
-      
-
+      // Loading Overlay - only visible when loading
       HorseLoadingOverlay(visible = ui.loading)
 
 
@@ -306,11 +303,13 @@ fun EnrollmentScreen(
           val email = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.email
           val ctxLocal = androidx.compose.ui.platform.LocalContext.current
 
+          Spacer(modifier = Modifier.height(16.dp))
+
           Icon(
-            painter = painterResource(id = com.horsegallop.R.drawable.ic_horse),
+            painter = painterResource(id = com.horsegallop.R.mipmap.ic_launcher),
             contentDescription = null,
             modifier = Modifier.size(80.dp),
-            tint = MaterialTheme.colorScheme.tertiary
+            tint = Color.Unspecified
           )
 
           Column(
@@ -339,18 +338,28 @@ fun EnrollmentScreen(
 
           val pm = ctxLocal.packageManager
           val emailIntent = android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_APP_EMAIL)
-          val defaultEmailActivity = emailIntent.resolveActivity(pm)
-          if (defaultEmailActivity != null) {
-            Button(
-              onClick = { runCatching { ctxLocal.startActivity(emailIntent) } },
-              modifier = Modifier.fillMaxWidth(),
-              shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
-            ) { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.open_mail_app)) }
-          }
+          
+          Button(
+            onClick = { 
+                runCatching { ctxLocal.startActivity(emailIntent) }
+                    .onFailure { 
+                        // Fallback to chooser if specific category fails
+                        val chooser = android.content.Intent.createChooser(
+                            android.content.Intent(android.content.Intent.ACTION_SENDTO).apply { data = android.net.Uri.parse("mailto:") }, 
+                            "Open Email"
+                        )
+                        runCatching { ctxLocal.startActivity(chooser) }
+                    }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
+          ) { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.open_mail_app)) }
+          
         }
         LaunchedEffect(isForeground) {
           if (isForeground) {
             vm.checkEmailVerified(onVerified = {
+              vm.dismissVerificationResult()
               onSignedUp()
             })
           }

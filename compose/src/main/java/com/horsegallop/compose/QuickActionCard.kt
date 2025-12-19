@@ -32,7 +32,7 @@ fun QuickActionCard(
     modifier = modifier
       .height(120.dp),
     onClick = onClick,
-    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    colors = CardDefaults.cardColors(containerColor = Color.White),
     shape = RoundedCornerShape(16.dp)
   ) {
     Box(

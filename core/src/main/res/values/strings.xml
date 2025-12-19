@@ -175,7 +175,7 @@
     <string name="login_failed_default">Login failed</string>
     <string name="login_signup_prompt">Don\'t have an account? Sign up</string>
     <string name="login_verify_email_sent">Verification email sent</string>
-    <string name="forgot_password">Forgot Password?</string>
+    <string name="forgot_password">Forgot Password</string>
     <string name="forgot_password_title">Reset Password</string>
     <string name="forgot_password_subtitle">Enter your email to reset password</string>
     <string name="forgot_password_toast">Password reset email sent</string>
@@ -250,7 +250,7 @@
     <!-- Profile -->
     <string name="label_full_name">Full Name</string>
     <string name="label_phone">Phone</string>
-    <string name="label_birth_date">Birth Date</string>
+    <string name="label_birth_date">Date of Birth</string>
     <string name="label_email">Email</string>
     <string name="label_city">City</string>
     <string name="label_first_name">First Name</string>

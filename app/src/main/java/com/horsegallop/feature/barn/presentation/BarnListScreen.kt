@@ -43,7 +43,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -74,8 +77,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.horsegallop.feature.barn.domain.model.BarnUi
+import com.horsegallop.navigation.Dest
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BarnListScreen(
   onBarnClick: (BarnUi) -> Unit,
@@ -86,76 +91,85 @@ fun BarnListScreen(
 ) {
   val uiState by viewModel.uiState.collectAsState()
 
-  Column(modifier = Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 16.dp)) {
+  Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
+      Spacer(modifier = Modifier.height(32.dp))
       // Modern search bar with rounded corners and better spacing
-      Surface(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(top = 8.dp, bottom = 16.dp),
-        shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 2.dp
-      ) {
-        Row(
+      Row(
           modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Icon(
-            Icons.Filled.Search,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(20.dp)
-          )
-          Spacer(modifier = Modifier.width(12.dp))
-          Box(
-            modifier = Modifier.weight(1f),
-            contentAlignment = Alignment.CenterStart
+              .fillMaxWidth()
+              .padding(horizontal = 16.dp)
+              .padding(bottom = 16.dp),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+          Surface(
+              modifier = Modifier.weight(1f),
+              shape = RoundedCornerShape(24.dp),
+              color = MaterialTheme.colorScheme.surface,
+              shadowElevation = 2.dp
           ) {
-            if (uiState.query.isEmpty()) {
-              Text(
-                text = stringResource(com.horsegallop.core.R.string.barn_search_placeholder),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-              )
-            }
-            androidx.compose.foundation.text.BasicTextField(
-              value = uiState.query,
-              onValueChange = viewModel::updateQuery,
-              textStyle = MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.onSurface
-              ),
-              singleLine = true,
-              modifier = Modifier.fillMaxWidth()
-            )
-          }
-          if (uiState.query.isNotBlank()) {
-            Spacer(modifier = Modifier.width(8.dp))
-            IconButton(
-              onClick = viewModel::clearQuery,
-              modifier = Modifier.size(24.dp)
-            ) {
-              Icon(
-                Icons.Filled.Remove,
-                contentDescription = "Clear",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(16.dp)
-              )
-            }
-          }
+              Row(
+                  modifier = Modifier
+                      .fillMaxWidth()
+                      .padding(horizontal = 16.dp, vertical = 12.dp),
+                  verticalAlignment = Alignment.CenterVertically
+              ) {
+                  Icon(
+                      Icons.Filled.Search,
+                      contentDescription = null,
+                      tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                      modifier = Modifier.size(20.dp)
+                  )
+                  Spacer(modifier = Modifier.width(12.dp))
+                  Box(
+                      modifier = Modifier.weight(1f),
+                      contentAlignment = Alignment.CenterStart
+                  ) {
+                      if (uiState.query.isEmpty()) {
+                          Text(
+                              text = stringResource(com.horsegallop.core.R.string.barn_search_placeholder),
+                              style = MaterialTheme.typography.bodyMedium,
+                              color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                          )
+                      }
+                      androidx.compose.foundation.text.BasicTextField(
+                          value = uiState.query,
+                          onValueChange = viewModel::updateQuery,
+                          textStyle = MaterialTheme.typography.bodyMedium.copy(
+                              color = MaterialTheme.colorScheme.onSurface
+                          ),
+                          singleLine = true,
+                          modifier = Modifier.fillMaxWidth()
+                      )
+                  }
+                  if (uiState.query.isNotBlank()) {
+                      Spacer(modifier = Modifier.width(8.dp))
+                      IconButton(
+                          onClick = viewModel::clearQuery,
+                          modifier = Modifier.size(24.dp)
+                      ) {
+                          Icon(
+                              Icons.Filled.Remove,
+                              contentDescription = "Clear",
+                              tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                              modifier = Modifier.size(16.dp)
+                          )
+                      }
+                  }
 
-        }
+              }
+          }
       }
       
       if (uiState.availableFilters.isNotEmpty()) {
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         val listState = androidx.compose.foundation.lazy.rememberLazyListState()
         Box(modifier = Modifier.fillMaxWidth()) {
           LazyRow(
             state = listState,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
             modifier = Modifier.fillMaxWidth()
           ) {
             items(uiState.availableFilters) { filterKey ->
@@ -166,6 +180,7 @@ fun BarnListScreen(
                 onClick = { viewModel.toggleFilter(filterKey) },
                 shape = RoundedCornerShape(20.dp),
                 color = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                border = BorderStroke(1.dp, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
                 modifier = Modifier.height(36.dp)
               ) {
                 Row(
@@ -195,58 +210,39 @@ fun BarnListScreen(
       }
       Spacer(modifier = Modifier.height(16.dp))
       
-      // Map Banner
-      Card(
-        onClick = { navController?.navigate("barnsMapView") },
+      // Header for Barn List
+      Row(
         modifier = Modifier
-          .fillMaxWidth()
-          .padding(bottom = 16.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-      ) {
-        Row(
-          modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Text(
+            text = "Barns",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        TextButton(
+            onClick = { navController?.navigate(Dest.BarnsMapView.route) }
         ) {
-          Column {
             Text(
-              text = stringResource(com.horsegallop.core.R.string.barn_map_title),
-              style = MaterialTheme.typography.titleMedium,
-              fontWeight = FontWeight.Bold,
-              color = MaterialTheme.colorScheme.onSecondaryContainer
+                text = "View All",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary
             )
-            Text(
-              text = "Explore locations nearby",
-              style = MaterialTheme.typography.bodyMedium,
-              color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
-            )
-          }
-          Surface(
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.1f),
-            modifier = Modifier.size(48.dp)
-          ) {
-            Box(contentAlignment = Alignment.Center) {
-              Icon(
-                Icons.Filled.LocationOn,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                modifier = Modifier.size(24.dp)
-              )
-            }
-          }
         }
       }
+      Spacer(modifier = Modifier.height(8.dp))
+      
       if (uiState.filteredBarns.isEmpty()) {
         Spacer(modifier = Modifier.height(12.dp))
         Card(
           shape = RoundedCornerShape(24.dp),
           colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
           elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-          modifier = Modifier.fillMaxWidth()
+          modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
         ) {
           Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -290,11 +286,10 @@ fun BarnListScreen(
           }
         }
       } else {
-        Spacer(modifier = Modifier.height(12.dp))
         LazyColumn(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp, top = 8.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp)
         ) {
             items(uiState.filteredBarns) { barnWithLocation ->
                 BarnCard(barn = barnWithLocation.barn, onClick = { onBarnClick(barnWithLocation.barn) })
@@ -309,14 +304,13 @@ fun BarnCard(barn: BarnUi, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp)
             .shadow(
                 elevation = 4.dp,
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(24.dp),
                 ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
             )
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {

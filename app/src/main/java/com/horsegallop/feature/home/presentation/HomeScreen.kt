@@ -314,32 +314,17 @@ private fun RecentActivitySection(
     }
     Spacer(modifier = Modifier.height(8.dp))
     
-    Card(
-      modifier = Modifier.fillMaxWidth(),
-      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-      shape = RoundedCornerShape(16.dp),
-      elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    Column(
+      verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-      Column(
-        modifier = Modifier.padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-      ) {
-        activities.take(2).forEachIndexed { index, activity ->
-          if (index > 0) {
-            HorizontalDivider(
-              modifier = Modifier.padding(vertical = 4.dp),
-              thickness = 0.5.dp,
-              color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f)
-            )
-          }
-          ActivityItem(
-            title = activity.title,
-            subtitle = stringResource(id = com.horsegallop.core.R.string.activity_subtitle_format, activity.dateLabel, activity.timeLabel),
-            duration = stringResource(id = com.horsegallop.core.R.string.activity_duration_minutes, activity.durationMin),
-            distance = stringResource(id = com.horsegallop.core.R.string.activity_distance_km, activity.distanceKm),
-            icon = Icons.AutoMirrored.Filled.DirectionsRun
-          )
-        }
+      activities.take(2).forEach { activity ->
+        ActivityItem(
+          title = activity.title,
+          subtitle = stringResource(id = com.horsegallop.core.R.string.activity_subtitle_format, activity.dateLabel, activity.timeLabel),
+          duration = stringResource(id = com.horsegallop.core.R.string.activity_duration_minutes, activity.durationMin),
+          distance = stringResource(id = com.horsegallop.core.R.string.activity_distance_km, activity.distanceKm),
+          icon = Icons.AutoMirrored.Filled.DirectionsRun
+        )
       }
     }
   }

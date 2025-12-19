@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.horsegallop.core.debug.AppLog
 import com.horsegallop.feature.auth.domain.ResendVerificationEmailUseCase
 import com.horsegallop.feature.auth.domain.SignUpWithEmailUseCase
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -233,11 +234,24 @@ class EnrollmentViewModel @Inject constructor(
 
   fun checkEmailVerified(onVerified: (Boolean) -> Unit) {
     viewModelScope.launch {
-      // Email verification check logic here
-      // For now, assume it's verified after a delay
-      kotlinx.coroutines.delay(1000)
-      onVerified(true)
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user != null) {
+            try {
+                 user.reload().addOnCompleteListener { task: com.google.android.gms.tasks.Task<Void> ->
+                     if (task.isSuccessful) {
+                         val isVerified = user.isEmailVerified
+                         if (isVerified) {
+                             onVerified(true)
+                         } else {
+                             // Still not verified
+                             // AppLog.d("AuthSignUp", "Email not verified yet")
+                         }
+                     }
+                 }
+             } catch (e: Exception) {
+                // AppLog.e("AuthSignUp", "Error reloading user: ${e.localizedMessage}")
+            }
+        }
     }
-
   }
 }

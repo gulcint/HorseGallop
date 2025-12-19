@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Pets
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.material.icons.automirrored.filled.List
@@ -31,7 +32,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import com.horsegallop.feature.auth.domain.model.UserRole
+import com.horsegallop.domain.model.UserRole
 import androidx.compose.runtime.remember
 import com.horsegallop.feature.auth.presentation.LoginScreen
 import com.horsegallop.feature.auth.presentation.EmailLoginScreen
@@ -120,7 +121,7 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(painter = painterResource(id = com.horsegallop.R.drawable.ic_horse), contentDescription = null, tint = Color.White) },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.Pets, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) },
               label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.core.R.string.nav_ride), color = MaterialTheme.colorScheme.onPrimaryContainer) },
               alwaysShowLabel = true
             )

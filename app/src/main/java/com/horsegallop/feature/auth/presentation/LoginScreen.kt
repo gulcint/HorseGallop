@@ -87,6 +87,7 @@ fun LoginScreen(
                 "auth_error_firebase" -> context.getString(com.horsegallop.core.R.string.auth_error_firebase)
                 "auth_error_token_missing" -> context.getString(com.horsegallop.core.R.string.auth_error_token_missing)
                 "login_verify_email_sent" -> context.getString(com.horsegallop.core.R.string.login_verify_email_sent)
+                "Email not verified" -> context.getString(com.horsegallop.R.string.error_email_not_verified)
                 else -> context.getString(com.horsegallop.core.R.string.error_unknown)
             }
             showLogoToast(context, msg, true)
@@ -222,7 +223,10 @@ fun LoginScreen(
                         )
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                             TextButton(onClick = onForgotPasswordClick) {
-                                Text(stringResource(com.horsegallop.core.R.string.forgot_password), style = MaterialTheme.typography.bodyMedium)
+                                Text(
+                                    text = stringResource(com.horsegallop.core.R.string.forgot_password),
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                )
                             }
                         }
                         Button(
@@ -243,7 +247,7 @@ fun LoginScreen(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             TextButton(onClick = onSignupClick) {
-                                Text(text = stringResource(com.horsegallop.core.R.string.prompt_create_account), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodyMedium)
+                                Text(text = stringResource(com.horsegallop.core.R.string.prompt_create_account), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
