@@ -185,36 +185,42 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
         val ctx = LocalContext.current
         val titleText: String = stringResource(com.horsegallop.core.R.string.welcome_title)
         val subtitleText: String = stringResource(com.horsegallop.core.R.string.welcome_subtitle)
+        
         val composition by rememberLottieComposition(
             LottieCompositionSpec.RawRes(R.raw.horse)
         )
-        val progress by animateLottieCompositionAsState(
-            composition = composition,
-            iterations = LottieConstants.IterateForever
-        )
-
+        // Use LottieAnimatable to control playback precisely
+        val lottieAnimatable = rememberLottieAnimatable()
+        
         var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
         
-        // Ses ve zamanlama yönetimi - Lottie yüklendikten sonra başlar
+        // Sync Logic: Wait for composition -> Start Sound -> Start Anim -> Finish
         LaunchedEffect(composition) {
             if (composition == null) return@LaunchedEffect
             
-            // Sesi başlat
+            // 1. Start Sound (Main thread is fine for raw resource splash sound to ensure sync)
             try {
-                withContext(Dispatchers.IO) {
-                    val mp = MediaPlayer.create(ctx, R.raw.horse_gallop)
-                    mp?.setVolume(1.0f, 1.0f)
-                    mp?.start()
+                val mp = MediaPlayer.create(ctx, R.raw.horse_gallop)
+                if (mp != null) {
+                    mp.setVolume(1.0f, 1.0f)
+                    mp.start()
                     mediaPlayer = mp
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
             
-            delay(SPLASH_DURATION_MS)
+            // 2. Play Animation (suspend until finished)
+            lottieAnimatable.animate(
+                composition = composition!!,
+                iterations = 1
+            )
+            
+            // 3. Finish
             onFinished()
         }
 
+        // Cleanup sound on exit
         DisposableEffect(Unit) {
             onDispose {
                 try {
@@ -231,7 +237,7 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
         
         LottieAnimation(
             composition = composition,
-            progress = { progress },
+            progress = { lottieAnimatable.progress },
             modifier = Modifier.size(220.dp)
         )
 		// Localized welcome texts over splash (auto-resolved by app locales/device locale)
