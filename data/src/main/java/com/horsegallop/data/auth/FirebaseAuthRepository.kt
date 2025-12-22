@@ -22,7 +22,12 @@ class FirebaseAuthRepository @Inject constructor(
         val authResult = auth.signInWithCredential(credential).await()
         val user = authResult.user
         if (user != null) {
-            fetchOrCreateUser(user)
+            try {
+                fetchOrCreateUser(user)
+            } catch (e: Exception) {
+                // Ignore Firestore errors (e.g. offline) to allow login to proceed
+                e.printStackTrace()
+            }
         }
     }
 

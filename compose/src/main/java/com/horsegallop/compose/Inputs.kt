@@ -74,9 +74,7 @@ fun HorseGallopDropdown(
             shape = RoundedCornerShape(24.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
             )
         )
         ExposedDropdownMenu(
@@ -121,15 +119,12 @@ fun HorseGallopDatePicker(
                 ) 
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = false, 
+            enabled = true, 
             textStyle = MaterialTheme.typography.bodyMedium,
             shape = RoundedCornerShape(24.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                disabledBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
-                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledContainerColor = MaterialTheme.colorScheme.surface,
-                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
             )
         )
         // Overlay for click detection
