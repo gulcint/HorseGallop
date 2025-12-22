@@ -247,9 +247,10 @@ fun EnrollmentScreen(
         }
       }
 
-      if (ui.error != null) {
-
-        Text(text = stringResource(ui.error), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
+      if (ui.errorMessage != null) {
+          Text(text = ui.errorMessage, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
+      } else if (ui.error != null) {
+          Text(text = stringResource(ui.error), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
       }
 
       Button(
