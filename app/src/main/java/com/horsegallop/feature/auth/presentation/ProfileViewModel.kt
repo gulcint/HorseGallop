@@ -54,7 +54,10 @@ class ProfileViewModel @Inject constructor(
                         draftProfile = profile
                     )
                 }.onFailure { e ->
-                    _uiState.value = _uiState.value.copy(isLoading = false, error = e.localizedMessage)
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = e.localizedMessage
+                    )
                 }
             }
         }

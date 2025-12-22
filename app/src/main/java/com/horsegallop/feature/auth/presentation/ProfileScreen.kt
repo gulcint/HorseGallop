@@ -129,6 +129,7 @@ fun ProfileScreen(
 
       // Profile Card
       Surface(
+        modifier = Modifier.padding(top = dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md)),
         shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xl)),
         color = MaterialTheme.colorScheme.surface,
         shadowElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm),

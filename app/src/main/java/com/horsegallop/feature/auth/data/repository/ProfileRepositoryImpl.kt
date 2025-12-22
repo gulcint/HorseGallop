@@ -21,52 +21,57 @@ class ProfileRepositoryImpl @Inject constructor(
     private val storage: FirebaseStorage
 ) : ProfileRepository {
 
-    override fun getUserProfile(uid: String): Flow<Result<UserProfile>> = flow {
-        try {
-            val docRef = firestore.collection("users").document(uid)
-            val doc = docRef.get().await()
-            val currentUser = auth.currentUser
+    override fun getUserProfile(uid: String): Flow<Result<UserProfile>> = callbackFlow {
+        val docRef = firestore.collection("users").document(uid)
+        
+        val listener = docRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                trySend(Result.failure(error))
+                return@addSnapshotListener
+            }
             
-            var fName = doc.getString("firstName") ?: ""
-            var lName = doc.getString("lastName") ?: ""
-            
-            // Fallback to Firebase Auth Display Name if Firestore data is missing
-            if (fName.isBlank() && lName.isBlank() && currentUser?.displayName.isNullOrBlank().not()) {
-                val parts = currentUser!!.displayName!!.trim().split(" ")
-                if (parts.isNotEmpty()) {
-                    fName = parts.first()
-                    if (parts.size > 1) {
-                        lName = parts.drop(1).joinToString(" ")
+            if (snapshot != null) {
+                val currentUser = auth.currentUser
+                var fName = snapshot.getString("firstName") ?: ""
+                var lName = snapshot.getString("lastName") ?: ""
+                
+                // Fallback to Firebase Auth Display Name if Firestore data is missing
+                if (fName.isBlank() && lName.isBlank() && currentUser?.displayName.isNullOrBlank().not()) {
+                    val parts = currentUser!!.displayName!!.trim().split(" ")
+                    if (parts.isNotEmpty()) {
+                        fName = parts.first()
+                        if (parts.size > 1) {
+                            lName = parts.drop(1).joinToString(" ")
+                        }
                     }
                 }
-            }
 
-            val profile = UserProfile(
-                firstName = fName,
-                lastName = lName,
-                email = doc.getString("email") ?: (currentUser?.email ?: ""),
-                phone = doc.getString("phone") ?: "",
-                city = doc.getString("city") ?: "",
-                birthDate = doc.getString("birthDate") ?: "",
-                photoUrl = doc.getString("photoUrl"),
-                countryCode = doc.getString("countryCode") ?: "+90"
-            )
-            
-            // Handle Timestamp if present
-            val ts = doc.getTimestamp("birthDate")
-            val finalProfile = if (ts != null) {
-                val cal = java.util.Calendar.getInstance()
-                cal.time = ts.toDate()
-                val y = cal.get(java.util.Calendar.YEAR)
-                val m = cal.get(java.util.Calendar.MONTH) + 1
-                val d = cal.get(java.util.Calendar.DAY_OF_MONTH)
-                profile.copy(birthDate = String.format("%04d-%02d-%02d", y, m, d))
-            } else {
-                profile
-            }
-            
-            if (!doc.exists()) {
-                try {
+                val profile = UserProfile(
+                    firstName = fName,
+                    lastName = lName,
+                    email = snapshot.getString("email") ?: (currentUser?.email ?: ""),
+                    phone = snapshot.getString("phone") ?: "",
+                    city = snapshot.getString("city") ?: "",
+                    birthDate = snapshot.getString("birthDate") ?: "",
+                    photoUrl = snapshot.getString("photoUrl"),
+                    countryCode = snapshot.getString("countryCode") ?: "+90"
+                )
+                
+                // Handle Timestamp if present
+                val ts = snapshot.getTimestamp("birthDate")
+                val finalProfile = if (ts != null) {
+                    val cal = java.util.Calendar.getInstance()
+                    cal.time = ts.toDate()
+                    val y = cal.get(java.util.Calendar.YEAR)
+                    val m = cal.get(java.util.Calendar.MONTH) + 1
+                    val d = cal.get(java.util.Calendar.DAY_OF_MONTH)
+                    profile.copy(birthDate = String.format("%04d-%02d-%02d", y, m, d))
+                } else {
+                    profile
+                }
+
+                if (!snapshot.exists()) {
+                    // Try initialize if doesn't exist (non-blocking)
                     val init = hashMapOf(
                         "firstName" to finalProfile.firstName,
                         "lastName" to finalProfile.lastName,
@@ -77,13 +82,14 @@ class ProfileRepositoryImpl @Inject constructor(
                         "photoUrl" to finalProfile.photoUrl,
                         "countryCode" to finalProfile.countryCode
                     )
-                    docRef.set(init, com.google.firebase.firestore.SetOptions.merge()).await()
-                } catch (_: Exception) { }
+                    docRef.set(init, com.google.firebase.firestore.SetOptions.merge())
+                }
+                
+                trySend(Result.success(finalProfile))
             }
-            emit(Result.success(finalProfile))
-        } catch (e: Exception) {
-            emit(Result.failure(e))
         }
+        
+        awaitClose { listener.remove() }
     }
 
     override fun updateUserProfile(uid: String, profile: UserProfile): Flow<Result<Unit>> = flow {

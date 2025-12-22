@@ -1,6 +1,7 @@
 @file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 package com.horsegallop.feature.home.presentation
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -19,12 +20,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
+import com.horsegallop.core.components.ViewAllButton
+import com.horsegallop.core.components.HorseGallopSearchBar
+import com.horsegallop.navigation.Dest
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -95,6 +94,17 @@ private fun HomeDashboard(
   ) {
     item {
       WelcomeHeader(onProfileClick = onProfileClick)
+    }
+
+    item {
+      var searchQuery by remember { mutableStateOf("") }
+      HorseGallopSearchBar(
+        query = searchQuery,
+        onQueryChange = { searchQuery = it },
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+      )
     }
     
     item {
@@ -294,40 +304,21 @@ private fun RecentActivitySection(
         style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.Bold
       )
-      Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+      com.horsegallop.core.components.ViewAllButton(
         onClick = { onViewAllActivities?.invoke() }
-      ) {
-        Row(
-          modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-          Text(
-            text = "View All",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary
-          )
-          Icon(
-            Icons.AutoMirrored.Filled.ArrowForward,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(16.dp)
-          )
-        }
-      }
+      )
     }
     Spacer(modifier = Modifier.height(12.dp))
     
     Card(
-      modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+      modifier = Modifier.fillMaxWidth(),
+      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)),
       shape = RoundedCornerShape(20.dp),
-      elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+      elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+      border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.08f))
     ) {
       Column(
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
       ) {
         val a1 = activities.getOrNull(0)
         if (a1 != null) {
@@ -466,7 +457,7 @@ private fun HomeDashboardSkeletonPreview() {
 private fun HomeScreenPreview() {
   MaterialTheme {
     HomeScreen(
-      currentRoute = com.horsegallop.navigation.Dest.Home.route,
+      currentRoute = Dest.Home.route,
       onStartRide = {},
       onViewBarns = {},
       onProfileClick = {}

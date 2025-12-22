@@ -15,6 +15,7 @@ android {
 dependencies {
 	implementation(platform(libs.compose.bom))
 	implementation(libs.bundles.compose.base)
+	implementation(libs.compose.icons.extended)
 	implementation(libs.coroutines)
 	implementation(libs.androidx.core.ktx)
 }
