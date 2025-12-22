@@ -321,13 +321,13 @@ private fun RecentActivitySection(
     Spacer(modifier = Modifier.height(12.dp))
     
     Card(
-      modifier = Modifier.fillMaxWidth(),
+      modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
       colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
       shape = RoundedCornerShape(20.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
       Column(
-        modifier = Modifier.padding(20.dp)
+        modifier = Modifier.padding(16.dp)
       ) {
         val a1 = activities.getOrNull(0)
         if (a1 != null) {
@@ -340,9 +340,9 @@ private fun RecentActivitySection(
           )
         }
         HorizontalDivider(
-          modifier = Modifier.padding(vertical = 12.dp),
+          modifier = Modifier.padding(vertical = 4.dp), // Reduced padding, divider makes it clean
           thickness = 1.dp,
-          color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+          color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f)
         )
         val a2 = activities.getOrNull(1)
         if (a2 != null) {
