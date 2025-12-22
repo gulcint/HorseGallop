@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.text.KeyboardOptions
@@ -55,7 +56,7 @@ import com.horsegallop.R
 import com.google.android.gms.common.api.ApiException
 import com.horsegallop.core.theme.AppColors
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.horsegallop.core.util.DateUtils
+// import com.horsegallop.core.util.DateUtils
 import java.util.Calendar
 
 @Composable
@@ -95,7 +96,24 @@ fun ProfileScreen(
   }
 
 
-  Scaffold(contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)) { innerPadding ->
+  Scaffold(
+      contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
+      topBar = {
+        CenterAlignedTopAppBar(
+          title = { Text(text = stringResource(id = com.horsegallop.core.R.string.profile)) },
+          navigationIcon = {
+            IconButton(onClick = onBack) {
+              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+            }
+          },
+          colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+            titleContentColor = MaterialTheme.colorScheme.onPrimary
+          )
+        )
+      }
+  ) { innerPadding ->
     Column(
       modifier = Modifier
         .fillMaxSize()
@@ -107,19 +125,7 @@ fun ProfileScreen(
         dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md)
       )
     ) {
-      // Header
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
-      ) {
-        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
-        Text(
-          text = if (nameDisplay.isNotBlank()) nameDisplay else fallbackProfile,
-          style = MaterialTheme.typography.headlineSmall,
-          color = MaterialTheme.colorScheme.primary
-        )
-      }
+      
 
       // Profile Card
       Surface(
@@ -212,10 +218,10 @@ fun ProfileScreen(
             )
           ) {
             Text(
-              text = if (nameDisplay.isNotBlank()) nameDisplay else stringResource(com.horsegallop.core.R.string.profile_description),
+              text = if (nameDisplay.isNotBlank()) nameDisplay else "User",
               style = MaterialTheme.typography.titleLarge,
               fontWeight = FontWeight.Bold,
-              color = MaterialTheme.colorScheme.onSurface
+              color = MaterialTheme.colorScheme.primary
             )
             Text(
               text = displayProfile.email,
@@ -245,15 +251,13 @@ fun ProfileScreen(
           if (!state.isEditing) {
             ProfileInfoRow(icon = Icons.Filled.Person, label = stringResource(id = com.horsegallop.core.R.string.label_full_name), value = nameDisplay)
             HorizontalDivider()
-<<<<<<< Updated upstream
-            ProfileInfoRow(icon = Icons.Filled.Phone, label = stringResource(id = com.horsegallop.core.R.string.label_phone), value = phone)
-=======
+
             ProfileInfoRow(icon = Icons.Filled.Phone, label = stringResource(id = com.horsegallop.core.R.string.label_phone), value = formatMaskedPhone(displayProfile.countryCode, displayProfile.phone.filter { it.isDigit() }))
               HorizontalDivider()
               ProfileInfoRow(icon = Icons.Filled.CalendarToday, label = stringResource(id = com.horsegallop.core.R.string.label_birth_date), value = displayProfile.birthDate)
               HorizontalDivider()
               ProfileInfoRow(icon = Icons.Filled.Email, label = stringResource(id = com.horsegallop.core.R.string.label_email), value = displayProfile.email)
->>>>>>> Stashed changes
+
             HorizontalDivider()
             ProfileInfoRow(icon = Icons.Filled.LocationOn, label = stringResource(id = com.horsegallop.core.R.string.label_city), value = displayProfile.city)
           } else {
@@ -262,13 +266,9 @@ fun ProfileScreen(
                 value = displayProfile.firstName,
                 onValueChange = { viewModel.updateDraft(firstName = it) },
                 singleLine = true,
-<<<<<<< Updated upstream
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg)),
-=======
+
                 modifier = Modifier.fillMaxWidth().heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md)),
->>>>>>> Stashed changes
+
                 textStyle = MaterialTheme.typography.bodySmall,
                 shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -282,13 +282,9 @@ fun ProfileScreen(
                 value = displayProfile.lastName,
                 onValueChange = { viewModel.updateDraft(lastName = it) },
                 singleLine = true,
-<<<<<<< Updated upstream
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg)),
-=======
+
                 modifier = Modifier.fillMaxWidth().heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md)),
->>>>>>> Stashed changes
+
                 textStyle = MaterialTheme.typography.bodySmall,
                 shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -298,59 +294,23 @@ fun ProfileScreen(
               )
             }
             val countryCodes = state.countryCodes
-            var ccExpanded by remember { mutableStateOf(false) }
             EditableInfoRow(icon = Icons.Filled.Phone, label = stringResource(id = com.horsegallop.core.R.string.label_phone)) {
               Row(
                   horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)),
                 verticalAlignment = Alignment.CenterVertically
               ) {
-                ExposedDropdownMenuBox(expanded = ccExpanded, onExpandedChange = { ccExpanded = it }) {
-                  OutlinedTextField(
+                com.horsegallop.compose.HorseGallopDropdown(
                     value = displayProfile.countryCode,
-                    onValueChange = { },
-                    singleLine = true,
-                    readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = ccExpanded) },
-<<<<<<< Updated upstream
-                    modifier = Modifier
-                      .widthIn(min = 96.dp, max = 120.dp)
-                      .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg))
-                      .menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable),
-=======
-                    modifier = Modifier.menuAnchor().width(100.dp).heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md)),
->>>>>>> Stashed changes
-                    textStyle = MaterialTheme.typography.bodySmall,
-                    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
-                    colors = OutlinedTextFieldDefaults.colors(
-                      focusedBorderColor = MaterialTheme.colorScheme.primary,
-                      unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
-                    )
-                  )
-                  ExposedDropdownMenu(expanded = ccExpanded, onDismissRequest = { ccExpanded = false }) {
-                    countryCodes.forEach { code ->
-                      DropdownMenuItem(
-                        text = { Text(code) },
-                        onClick = {
-                          viewModel.updateDraft(countryCode = code)
-                          ccExpanded = false
-                        }
-                      )
-                    }
-                  }
-                }
+                    onValueChange = { viewModel.updateDraft(countryCode = it) },
+                    options = countryCodes,
+                    modifier = Modifier.width(100.dp).heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md))
+                )
+
                 OutlinedTextField(
-<<<<<<< Updated upstream
-                  value = editPhone,
-                  onValueChange = {
-                    val digits = it.filter { ch -> ch.isDigit() }.take(15)
-                    editPhone = digits
-                    val minLen = if (editCountryCode == "+33") 9 else 10
-                    phoneError = if (digits.length in minLen..15) null else ctx.getString(com.horsegallop.R.string.error_phone_invalid)
-                  },
-=======
+
                   value = displayProfile.phone,
                   onValueChange = { if (it.length <= 15 && it.all { c -> c.isDigit() }) viewModel.updateDraft(phone = it) },
->>>>>>> Stashed changes
+
                   singleLine = true,
                   modifier = Modifier.weight(1f).heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md)),
                   textStyle = MaterialTheme.typography.bodySmall,
@@ -360,77 +320,7 @@ fun ProfileScreen(
                     unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
                   ),
                   keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-<<<<<<< Updated upstream
-                  isError = phoneError != null,
-                  modifier = Modifier
-                    .weight(1f)
-                    .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg)),
-                  visualTransformation = MaskedPhoneTransformation(editCountryCode),
-                  textStyle = MaterialTheme.typography.bodySmall,
-                  shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
-                  colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.secondary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.30f),
-                    cursorColor = MaterialTheme.colorScheme.secondary,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                  )
-                )
-              }
-              if (phoneError != null) {
-                Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.text_spacing_sm)))
-                Text(text = phoneError!!, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
-              }
-            }
-            var cityExpanded by remember { mutableStateOf(false) }
-            var cityQuery by remember { mutableStateOf(editCity) }
-            val filteredCities: List<String> = remember(cityQuery, citySuggestions) {
-              if (cityQuery.isBlank()) citySuggestions else citySuggestions.filter { it.contains(cityQuery, ignoreCase = true) }
-            }
-            EditableInfoRow(icon = Icons.Filled.LocationOn, label = stringResource(id = com.horsegallop.R.string.label_city)) {
-              ExposedDropdownMenuBox(expanded = cityExpanded, onExpandedChange = { cityExpanded = it }) {
-                OutlinedTextField(
-                  value = cityQuery,
-                  onValueChange = { cityQuery = it },
-                  singleLine = true,
-                  trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = cityExpanded, modifier = Modifier.menuAnchor(androidx.compose.material3.MenuAnchorType.SecondaryEditable)) },
-                  modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg))
-                    .menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryEditable),
-                  textStyle = MaterialTheme.typography.bodySmall,
-                  shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
-                  colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.secondary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.30f),
-                    focusedTrailingIconColor = MaterialTheme.colorScheme.secondary,
-                    unfocusedTrailingIconColor = MaterialTheme.colorScheme.secondary
-                  )
-                )
-                ExposedDropdownMenu(
-                  expanded = cityExpanded,
-                  onDismissRequest = { cityExpanded = false },
-                  modifier = Modifier.background(MaterialTheme.colorScheme.surface).border(
-                    androidx.compose.foundation.BorderStroke(
-                      dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin),
-                      MaterialTheme.colorScheme.outlineVariant
-                    ),
-                    RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_sm))
-                  )
-                ) {
-                  filteredCities.forEach { cityItem ->
-                    DropdownMenuItem(
-                      text = { Text(cityItem, color = MaterialTheme.colorScheme.onSurface) },
-                      onClick = {
-                        editCity = cityItem
-                        cityQuery = cityItem
-                        cityExpanded = false
-                      },
-                      contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                        horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md),
-                        vertical = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)
-                      )
-=======
+
                   visualTransformation = PhoneVisualTransformation(displayProfile.countryCode)
                 )
               }
@@ -452,176 +342,26 @@ fun ProfileScreen(
                 calendar.get(Calendar.DAY_OF_MONTH)
             )
 
-            EditableInfoRow(icon = Icons.Filled.CalendarToday, label = stringResource(id = com.horsegallop.core.R.string.label_birth_date)) {
-                Box(modifier = Modifier.fillMaxWidth().clickable { datePickerDialog.show() }) {
-                    OutlinedTextField(
-                        value = displayProfile.birthDate,
-                        onValueChange = { },
-                        singleLine = true,
-                        readOnly = true, // Make it read-only so user has to pick date
-                        modifier = Modifier.fillMaxWidth().heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md)),
-                        textStyle = MaterialTheme.typography.bodySmall,
-                        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
-                        ),
-                        enabled = false // Disable direct input
->>>>>>> Stashed changes
-                    )
-                    // Overlay a transparent box to capture clicks if enabled=false blocks clicks
-                    Box(modifier = Modifier.matchParentSize().clickable { datePickerDialog.show() })
-                }
+            EditableInfoRow(icon = Icons.Filled.CalendarToday, label = "Date of Birth") {
+                com.horsegallop.compose.HorseGallopDatePicker(
+                    value = displayProfile.birthDate,
+                    onDateSelected = { datePickerDialog.show() },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md))
+                )
             }
 
             // City
             val cities = stringArrayResource(com.horsegallop.core.R.array.city_list).toList()
-            var cityExpanded by remember { mutableStateOf(false) }
             EditableInfoRow(icon = Icons.Filled.LocationOn, label = stringResource(id = com.horsegallop.core.R.string.label_city)) {
-                 ExposedDropdownMenuBox(expanded = cityExpanded, onExpandedChange = { cityExpanded = it }) {
-                  OutlinedTextField(
+                 com.horsegallop.compose.HorseGallopDropdown(
                     value = displayProfile.city,
-                    onValueChange = { },
-                    singleLine = true,
-                    readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = cityExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth().heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md)),
-                    textStyle = MaterialTheme.typography.bodySmall,
-                    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
-                    colors = OutlinedTextFieldDefaults.colors(
-                      focusedBorderColor = MaterialTheme.colorScheme.primary,
-                      unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
-                    )
-                  )
-                  ExposedDropdownMenu(expanded = cityExpanded, onDismissRequest = { cityExpanded = false }) {
-                    cities.forEach { c ->
-                      DropdownMenuItem(
-                        text = { Text(c) },
-                        onClick = {
-                          viewModel.updateDraft(city = c)
-                          cityExpanded = false
-                        }
-                      )
-                    }
-                  }
-                }
+                    onValueChange = { viewModel.updateDraft(city = it) },
+                    options = cities,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md))
+                 )
             }
-<<<<<<< Updated upstream
-            var bdExpanded by remember { mutableStateOf(false) }
-            EditableInfoRow(icon = Icons.Filled.CalendarToday, label = stringResource(id = com.horsegallop.core.R.string.label_birth_date)) {
-              ExposedDropdownMenuBox(expanded = bdExpanded, onExpandedChange = { bdExpanded = it }) {
-                OutlinedTextField(
-                  value = editBirthDate,
-                  onValueChange = { },
-                  singleLine = true,
-                  readOnly = true,
-                  trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(
-                      expanded = bdExpanded,
-                      modifier = Modifier.menuAnchor(androidx.compose.material3.MenuAnchorType.SecondaryEditable)
-                    )
-                  },
-                  modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg))
-                    .menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable),
-                  textStyle = MaterialTheme.typography.bodySmall,
-                  shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
-                  colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
-                  )
-                )
-                ExposedDropdownMenu(
-                  expanded = bdExpanded,
-                  onDismissRequest = { bdExpanded = false },
-                  modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(
-                      androidx.compose.foundation.BorderStroke(
-                        dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin),
-                        MaterialTheme.colorScheme.outlineVariant
-                      ),
-                      RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_sm))
-                    )
-                    .heightIn(max = 360.dp)
-                ) {
-                  val safeInitialMillis = remember(editBirthDateMillis) { editBirthDateMillis ?: System.currentTimeMillis() }
-                  val datePickerState = androidx.compose.material3.rememberDatePickerState(initialSelectedDateMillis = safeInitialMillis)
-                  Column(
-                    modifier = Modifier.padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_sm)),
-                    verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.text_spacing_md))
-                  ) {
-                    androidx.compose.material3.DatePicker(
-                      state = datePickerState,
-                      colors = androidx.compose.material3.DatePickerDefaults.colors(
-                        selectedDayContainerColor = MaterialTheme.colorScheme.primary,
-                        selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
-                        dayContentColor = MaterialTheme.colorScheme.onSurface,
-                        todayDateBorderColor = MaterialTheme.colorScheme.primary
-                      )
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))) {
-                      OutlinedButton(onClick = { bdExpanded = false }) { Text(text = stringResource(id = com.horsegallop.core.R.string.cancel)) }
-                      Button(onClick = {
-                        val millis = datePickerState.selectedDateMillis
-                        if (millis != null) {
-                          val cal = java.util.Calendar.getInstance()
-                          cal.timeInMillis = millis
-                          val y = cal.get(java.util.Calendar.YEAR)
-                          val m = cal.get(java.util.Calendar.MONTH) + 1
-                          val d = cal.get(java.util.Calendar.DAY_OF_MONTH)
-                          editBirthDate = String.format("%04d-%02d-%02d", y, m, d)
-                          editBirthDateMillis = millis
-                        }
-                        bdExpanded = false
-                      }) { Text(text = stringResource(id = com.horsegallop.core.R.string.ok)) }
-                    }
-                  }
-                }
-              }
-            }
-            }
-          
-        }
-      }
 
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(
-          dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)
-        )
-      ) {
-        if (!isEditing) {
-          OutlinedButton(
-            onClick = {
-              editFirstName = firstName
-              editLastName = lastName
-              editPhone = phone
-              editBirthDate = birthDate
-              editCity = city
-              isEditing = true
-            },
-            modifier = Modifier.weight(1f)
-          ) { Text(text = stringResource(id = com.horsegallop.core.R.string.button_edit)) }
-          Button(
-            onClick = {
-              auth.signOut()
-              val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(ctx.getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build()
-              GoogleSignIn.getClient(ctx, gso).signOut()
-              onLogout()
-            },
-            modifier = Modifier.weight(1f),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-          ) {
-            Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondary)
-            Spacer(modifier = Modifier.width(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
-            Text(text = stringResource(id = com.horsegallop.core.R.string.logout))
-=======
->>>>>>> Stashed changes
+
           }
         }
       }
@@ -629,7 +369,9 @@ fun ProfileScreen(
       // Buttons
       if (state.isEditing) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = androidx.compose.foundation.layout.WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 64.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             OutlinedButton(
@@ -666,6 +408,7 @@ fun ProfileScreen(
 
 
       }
+      Spacer(modifier = Modifier.height(140.dp))
     }
   }
 

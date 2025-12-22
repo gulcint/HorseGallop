@@ -39,6 +39,7 @@ fun EmailLoginScreen(
         "auth_error_cancelled" -> context.getString(com.horsegallop.core.R.string.auth_error_cancelled)
         "auth_error_token_missing" -> context.getString(com.horsegallop.core.R.string.auth_error_token_missing)
         "auth_error_firebase" -> context.getString(com.horsegallop.core.R.string.auth_error_firebase)
+        "Email not verified" -> context.getString(com.horsegallop.R.string.error_email_not_verified)
         else -> errorKey
       }
       snackbarHostState.showSnackbar(message)
@@ -95,12 +96,7 @@ fun EmailLoginContent(
         ),
         modifier = Modifier.fillMaxWidth()
       )
-<<<<<<< Updated upstream
-      if (error != null) Text(text = error!!, color = MaterialTheme.colorScheme.error)
-      Button(onClick = {
-        if (email.isBlank() || password.length < 6) {
-          error = "Geçerli email ve 6+ karakter şifre girin"
-=======
+
       
       Button(
         onClick = onLoginClick,
@@ -109,7 +105,7 @@ fun EmailLoginContent(
       ) { 
         if (uiState.loading) {
           CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
->>>>>>> Stashed changes
+
         } else {
           Text(stringResource(R.string.login_button)) 
         }

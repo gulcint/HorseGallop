@@ -1,13 +1,19 @@
 package com.horsegallop.feature.auth.domain
 
-import com.horsegallop.feature.auth.domain.repository.AuthRepository
+import com.horsegallop.domain.auth.AuthRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class SignOutUseCase @Inject constructor(
     private val repository: AuthRepository
 ) {
-    fun execute(): Flow<Result<Unit>> {
-        return repository.signOut()
+    fun execute(): Flow<Result<Unit>> = flow {
+        try {
+            repository.signOut()
+            emit(Result.success(Unit))
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
     }
 }

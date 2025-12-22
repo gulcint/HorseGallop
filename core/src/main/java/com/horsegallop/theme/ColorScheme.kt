@@ -23,7 +23,7 @@ val OnTertiary = Color(0xFFFFFFFF) // White
 val TertiaryContainer = Color(0xFF32CD32) // Lime Green
 val OnTertiaryContainer = Color(0xFFFFFFFF) // White
 
-val Error = Color(0xFFF44336) // Red
+val Error = Color(0xFFC62828) // Dark Red (Red 800)
 val OnError = Color(0xFFFFFFFF) // White
 val ErrorContainer = Color(0xFFFFCDD2) // Light Red
 val OnErrorContainer = Color(0xFFB71C1C) // Dark Red

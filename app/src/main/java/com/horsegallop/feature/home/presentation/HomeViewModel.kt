@@ -29,20 +29,15 @@ class HomeViewModel @Inject constructor(
     loadData()
   }
 
-<<<<<<< Updated upstream
-  fun loadRecentActivities() {
-    val uid = auth.currentUser?.uid
-=======
   private fun loadData() {
     val uid = getCurrentUserIdUseCase()
->>>>>>> Stashed changes
     if (uid == null) {
       _ui.update { it.copy(loading = false) }
       return
     }
 
     loadStats(uid)
-    loadRecentActivities(uid)
+    loadRecentActivities()
   }
 
   private fun loadStats(uid: String) {
@@ -52,7 +47,7 @@ class HomeViewModel @Inject constructor(
           _ui.update {
             it.copy(
               totalRides = stats.totalRides.toString(),
-              totalDistance = String.format(Locale.US, "%.1f", stats.totalDistanceKm)
+              totalDistance = String.format(Locale.US, "%.1f", stats.totalDistance)
             )
           }
         }.onFailure {
@@ -62,10 +57,11 @@ class HomeViewModel @Inject constructor(
     }
   }
 
-  private fun loadRecentActivities(uid: String) {
+  fun loadRecentActivities(limit: Int = 5) {
+    val uid = getCurrentUserIdUseCase() ?: return
     viewModelScope.launch {
       _ui.update { it.copy(loading = true, error = null) }
-      getRecentActivitiesUseCase(uid).collect { result ->
+      getRecentActivitiesUseCase(uid, limit).collect { result ->
         result.onSuccess { activities ->
           val items = activities.map { activity ->
             ActivityUi(
@@ -97,3 +93,18 @@ class HomeViewModel @Inject constructor(
   }
 }
 
+data class HomeUiState(
+  val activities: List<ActivityUi> = emptyList(),
+  val loading: Boolean = true,
+  val error: String? = null,
+  val totalRides: String = "0",
+  val totalDistance: String = "0.0"
+)
+
+data class ActivityUi(
+  val title: String,
+  val dateLabel: String,
+  val timeLabel: String,
+  val durationMin: Int,
+  val distanceKm: Double
+)

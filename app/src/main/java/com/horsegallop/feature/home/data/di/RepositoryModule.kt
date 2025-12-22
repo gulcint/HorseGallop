@@ -1,8 +1,6 @@
 package com.horsegallop.feature.home.data.di
 
-import com.horsegallop.feature.auth.data.repository.AuthRepositoryImpl
 import com.horsegallop.feature.home.data.repository.HomeRepositoryImpl
-import com.horsegallop.feature.auth.domain.repository.AuthRepository
 import com.horsegallop.feature.home.domain.repository.HomeRepository
 import dagger.Binds
 import dagger.Module

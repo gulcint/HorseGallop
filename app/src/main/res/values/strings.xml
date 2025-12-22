@@ -40,4 +40,13 @@
     <string name="error_name_required">İsim ve soyisim gerekli</string>
     <string name="error_email_invalid">Geçerli e-posta girin</string>
     <string name="error_password_length">Şifre en az 10 karakter olmalı</string>
+    
+    <!-- Missing Enrollment Strings -->
+    <string name="verify_email_title">Verify your email</string>
+    <string name="verification_sent_to_email">We sent a verification link to %1$s</string>
+    <string name="open_mail_app">Open Mail App</string>
+    <string name="password_needs_upper">Uppercase letter</string>
+    <string name="password_needs_lower">Lowercase letter</string>
+    <string name="password_needs_digit">Number</string>
+    <string name="password_needs_special">Special character</string>
 </resources>

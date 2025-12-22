@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Pets
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.material.icons.automirrored.filled.List
@@ -31,7 +32,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import com.horsegallop.feature.auth.domain.model.UserRole
+import com.horsegallop.domain.model.UserRole
 import androidx.compose.runtime.remember
 import com.horsegallop.feature.auth.presentation.LoginScreen
 import com.horsegallop.feature.auth.presentation.EmailLoginScreen
@@ -41,6 +42,10 @@ import com.horsegallop.feature.auth.presentation.ProfileScreen
 import com.horsegallop.feature.barn.presentation.BarnDetailScreen
 import com.horsegallop.feature.home.presentation.HomeScreen
 import com.horsegallop.feature.onboarding.presentation.OnboardingScreen
+
+import androidx.navigation.navDeepLink
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.horsegallop.feature.ride.presentation.RideTrackingViewModel
 
 sealed class Dest(val route: String) {
   data object Onboarding : Dest("onboarding")
@@ -71,7 +76,7 @@ fun AppNavHost(
   val ctx = androidx.compose.ui.platform.LocalContext.current
   val prefs = remember { ctx.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE) }
   val onboardingDone = remember { prefs.getBoolean("onboarding_done", false) }
-  val startDest = if (role == null) { if (onboardingDone) Dest.Login.route else Dest.Onboarding.route } else Dest.Home.route
+  val startDest = if (role == null) Dest.Onboarding.route else Dest.Home.route
   
   com.horsegallop.core.debug.AppLog.i("AppNavHost", "role=$role onboardingDone=$onboardingDone startDest=$startDest")
 
@@ -93,7 +98,7 @@ fun AppNavHost(
                 }
               },
               icon = { androidx.compose.material3.Icon(Icons.Filled.Home, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) },
-              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_home), color = MaterialTheme.colorScheme.onPrimaryContainer) },
+              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.core.R.string.nav_home), color = MaterialTheme.colorScheme.onPrimaryContainer) },
               alwaysShowLabel = true
             )
             NavigationBarItem(
@@ -105,7 +110,7 @@ fun AppNavHost(
                 }
               },
               icon = { androidx.compose.material3.Icon(Icons.Filled.House, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) },
-              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_barns), color = MaterialTheme.colorScheme.onPrimaryContainer) },
+              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.core.R.string.nav_barns), color = MaterialTheme.colorScheme.onPrimaryContainer) },
               alwaysShowLabel = true
             )
             NavigationBarItem(
@@ -116,8 +121,8 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(painter = painterResource(id = com.horsegallop.R.drawable.ic_horse), contentDescription = null, tint = Color.White) },
-              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_ride), color = MaterialTheme.colorScheme.onPrimaryContainer) },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.Pets, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) },
+              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.core.R.string.nav_ride), color = MaterialTheme.colorScheme.onPrimaryContainer) },
               alwaysShowLabel = true
             )
             NavigationBarItem(
@@ -129,7 +134,7 @@ fun AppNavHost(
                 }
               },
               icon = { androidx.compose.material3.Icon(Icons.Filled.Person, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) },
-              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_profile), color = MaterialTheme.colorScheme.onPrimaryContainer) },
+              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.core.R.string.nav_profile), color = MaterialTheme.colorScheme.onPrimaryContainer) },
               alwaysShowLabel = true
             )
           }
@@ -234,7 +239,7 @@ fun AppNavHost(
       ProfileScreen(
         onBack = { navController.popBackStack() },
         onLogout = {
-          navController.navigate(Dest.Login.route) {
+          navController.navigate(Dest.Onboarding.route) {
             popUpTo(Dest.Home.route) { inclusive = true }
           }
         }
@@ -243,6 +248,7 @@ fun AppNavHost(
     composable(Dest.Ride.route) {
       BackHandler { navController.popBackStack() }
       com.horsegallop.feature.ride.presentation.RideTrackingScreen(
+        viewModel = hiltViewModel(),
         onHomeClick = { navController.navigate(Dest.Home.route) },
         onBarnsClick = { navController.navigate(Dest.Barns.route) }
       )

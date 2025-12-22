@@ -43,7 +43,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -74,8 +77,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.horsegallop.feature.barn.domain.model.BarnUi
+import com.horsegallop.navigation.Dest
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BarnListScreen(
   onBarnClick: (BarnUi) -> Unit,
@@ -144,24 +149,10 @@ fun BarnListScreen(
               )
             }
           }
-<<<<<<< Updated upstream
-        },
-        modifier = Modifier.fillMaxWidth(),
-        colors = OutlinedTextFieldDefaults.colors(
-          focusedBorderColor = MaterialTheme.colorScheme.primary,
-          unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
-        )
-      )
-      if (!content.filterLabels.isNullOrEmpty()) {
-        Spacer(modifier = Modifier.height(8.dp))
-        val allLabels = content.filterLabels!!
-=======
         }
       }
       
       if (uiState.availableFilters.isNotEmpty()) {
-        Spacer(modifier = Modifier.height(12.dp))
->>>>>>> Stashed changes
         val listState = androidx.compose.foundation.lazy.rememberLazyListState()
         Box(modifier = Modifier.fillMaxWidth()) {
           LazyRow(
@@ -177,6 +168,7 @@ fun BarnListScreen(
                 onClick = { viewModel.toggleFilter(filterKey) },
                 shape = RoundedCornerShape(20.dp),
                 color = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                border = BorderStroke(1.dp, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
                 modifier = Modifier.height(36.dp)
               ) {
                 Row(
@@ -221,7 +213,7 @@ fun BarnListScreen(
           color = MaterialTheme.colorScheme.onSurface
         )
         TextButton(
-          onClick = { navController?.navigate("barnsMapView") },
+          onClick = { navController?.navigate(Dest.BarnsMapView.route) },
           shape = RoundedCornerShape(12.dp)
         ) {
           Text("View All", color = MaterialTheme.colorScheme.primary)
@@ -241,10 +233,7 @@ fun BarnListScreen(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         modifier = Modifier.fillMaxWidth().height(200.dp) // Sabit yükseklik
       ) {
-        Box(
-          modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant),
-          contentAlignment = Alignment.TopStart
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
           val primaryColor = MaterialTheme.colorScheme.primary
           val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
           val filtered = uiState.filteredBarns
@@ -321,6 +310,7 @@ fun BarnListScreen(
           )
         }
       }
+      
       if (uiState.filteredBarns.isEmpty()) {
         Spacer(modifier = Modifier.height(12.dp))
         Card(

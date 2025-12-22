@@ -31,6 +31,11 @@
 	<string name="settings">Settings</string>
 	<string name="logout">Logout</string>
     
+    <string name="nav_home">Home</string>
+    <string name="nav_barns">Barns</string>
+    <string name="nav_ride">Ride</string>
+    <string name="nav_profile">Profile</string>
+    
     <!-- Auth/Login -->
     <string name="login_title_brand">Horse Gallop</string>
     <string name="login_subtitle">Your horse riding experience starts here</string>
@@ -93,6 +98,7 @@
     <string name="ride_type_endurance">Endurance</string>
     <string name="ride_type_trail_riding">Trail Riding</string>
     <string name="stats_title">Stats</string>
+    <string name="stats_hint">Your ride statistics</string>
     <string name="ride_stats_subtitle">Your ride statistics</string>
     <string name="stats_today">Today</string>
     <string name="stats_week">Week</string>
@@ -169,7 +175,7 @@
     <string name="login_failed_default">Login failed</string>
     <string name="login_signup_prompt">Don\'t have an account? Sign up</string>
     <string name="login_verify_email_sent">Verification email sent</string>
-    <string name="forgot_password">Forgot Password?</string>
+    <string name="forgot_password">Forgot Password</string>
     <string name="forgot_password_title">Reset Password</string>
     <string name="forgot_password_subtitle">Enter your email to reset password</string>
     <string name="forgot_password_toast">Password reset email sent</string>
@@ -244,7 +250,7 @@
     <!-- Profile -->
     <string name="label_full_name">Full Name</string>
     <string name="label_phone">Phone</string>
-    <string name="label_birth_date">Birth Date</string>
+    <string name="label_birth_date">Date of Birth</string>
     <string name="label_email">Email</string>
     <string name="label_city">City</string>
     <string name="label_first_name">First Name</string>
@@ -258,4 +264,26 @@
     <string name="barn_detail_description">Description</string>
     <string name="barn_detail_amenities">Amenities</string>
     <string name="barn_detail_book_now">Book Now</string>
+
+    <!-- Enrollment -->
+    <string name="enrollment_title">Sign Up</string>
+    <string name="verify_email_title">Verify your email</string>
+    <string name="verification_sent_to_email">We sent a verification link to %1$s</string>
+    <string name="verification_sent_info">We sent a verification link to your email</string>
+    <string name="open_mail_app">Open Mail App</string>
+    <string name="verification_result_success">Email verified successfully!</string>
+    <string name="verification_result_error">Verification failed. Please try again.</string>
+    <string name="btn_close">Close</string>
+    <string name="btn_continue">Continue</string>
+    
+    <!-- Password Strength -->
+    <string name="password_needs_upper">Uppercase letter</string>
+    <string name="password_needs_lower">Lowercase letter</string>
+    <string name="password_needs_digit">Number</string>
+    <string name="password_needs_special">Special character</string>
+    <string name="strength_weak">Weak</string>
+    <string name="strength_medium">Medium</string>
+    <string name="strength_strong">Strong</string>
+    <string name="password_strength_prefix">Strength: %1$s</string>
+    <string name="password_guidance">Use at least 10 characters with mixed types</string>
 </resources>

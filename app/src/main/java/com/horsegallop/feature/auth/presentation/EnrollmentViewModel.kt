@@ -6,9 +6,12 @@ import androidx.lifecycle.viewModelScope
 import com.horsegallop.core.debug.AppLog
 import com.horsegallop.feature.auth.domain.ResendVerificationEmailUseCase
 import com.horsegallop.feature.auth.domain.SignUpWithEmailUseCase
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,13 +27,7 @@ data class EnrollmentUiState(
   val verificationSent: Boolean = false,
   val verifying: Boolean = false,
   val verificationError: String? = null,
-<<<<<<< Updated upstream
-  val verificationCode: String = "",
-  val showVerificationResult: Boolean = false,
-  val verificationSuccess: Boolean? = null,
-  val successLottieUrl: String = "",
-  val errorLottieUrl: String = ""
-=======
+
   val resendCooldownRemaining: Int = 0,
   val isNameValid: Boolean = false,
   val isEmailValid: Boolean = false,
@@ -38,31 +35,27 @@ data class EnrollmentUiState(
   val passwordMissingCriteria: List<Int> = emptyList(),
   val isFormValid: Boolean = false,
   val validationErrors: List<Int> = emptyList(),
-  val currentUserEmail: String? = null
->>>>>>> Stashed changes
+  val currentUserEmail: String? = null,
+  val showVerificationResult: Boolean = false,
+  val verificationSuccess: Boolean? = null,
+  val verificationCode: String = "",
+  val successLottieUrl: String = "",
+  val errorLottieUrl: String = ""
+
 )
 
 @HiltViewModel
 class EnrollmentViewModel @Inject constructor(
-<<<<<<< Updated upstream
-  private val auth: FirebaseAuth,
-  private val signUpWithEmail: SignUpWithEmailUseCase
-=======
+
   private val signUpWithEmail: SignUpWithEmailUseCase,
   private val resendVerificationEmail: ResendVerificationEmailUseCase,
   @ApplicationContext private val appContext: Context
->>>>>>> Stashed changes
+
 ) : ViewModel() {
   private val _ui = MutableStateFlow(EnrollmentUiState())
   val ui: StateFlow<EnrollmentUiState> = _ui
 
-<<<<<<< Updated upstream
-  fun updateFirstName(v: String) { _ui.value = _ui.value.copy(firstName = v) }
-  fun updateLastName(v: String) { _ui.value = _ui.value.copy(lastName = v) }
-  fun updateEmail(v: String) { _ui.value = _ui.value.copy(email = v) }
-  fun updatePassword(v: String) { _ui.value = _ui.value.copy(password = v) }
-  fun toggleCountryMenu(expanded: Boolean) {}
-=======
+
   fun updateFirstName(v: String) { 
     _ui.value = _ui.value.copy(firstName = v)
     validateForm()
@@ -104,7 +97,7 @@ class EnrollmentViewModel @Inject constructor(
         if (!hasLower) missing.add(com.horsegallop.R.string.password_needs_lower)
         if (!hasDigit) missing.add(com.horsegallop.R.string.password_needs_digit)
         if (!hasSpecial) missing.add(com.horsegallop.R.string.password_needs_special)
-    }
+      }
 
     _ui.value = s.copy(
         isNameValid = nameValid,
@@ -118,7 +111,7 @@ class EnrollmentViewModel @Inject constructor(
 
   fun handleDeepLink(uri: android.net.Uri?) {
       if (uri != null && uri.scheme == "horsegallop" && uri.host == "auto-enroll") {
-      AppLog.i("EnrollmentUI", "auto-enroll ${uri}")
+      // AppLog.i("EnrollmentUI", "auto-enroll ${uri}")
       val first = uri.getQueryParameter("first").orEmpty()
       val last = uri.getQueryParameter("last").orEmpty()
       val emailPrefill = uri.getQueryParameter("email").orEmpty()
@@ -140,7 +133,7 @@ class EnrollmentViewModel @Inject constructor(
     }
   }
   
->>>>>>> Stashed changes
+
   fun setBirthDate(date: String) { _ui.value = _ui.value.copy(birthDate = date) }
   fun setShowDatePicker(show: Boolean) { _ui.value = _ui.value.copy(showDatePicker = show) }
 
@@ -153,55 +146,7 @@ class EnrollmentViewModel @Inject constructor(
       return
     }
     _ui.value = s.copy(loading = true, error = null)
-<<<<<<< Updated upstream
-    signUpWithEmail.execute(
-      firstName = s.firstName,
-      lastName = s.lastName,
-      email = s.email,
-      password = s.password,
-      onSuccess = {
-        // E-posta doğrulama maili use case içinde gönderiliyor
-        _ui.value = _ui.value.copy(loading = false, verificationSent = true, verificationError = null)
-      },
-      onErrorRes = { resId -> _ui.value = _ui.value.copy(loading = false, error = resId) }
-    )
-  }
 
-  fun resendVerificationEmail() {
-    val user = auth.currentUser
-    if (user == null) {
-      _ui.value = _ui.value.copy(verificationError = "Kullanıcı oturumu bulunamadı")
-      return
-    }
-    _ui.value = _ui.value.copy(verifying = true, verificationError = null)
-    user.sendEmailVerification()
-      .addOnCompleteListener { task ->
-        _ui.value = _ui.value.copy(verifying = false)
-        if (!task.isSuccessful) {
-          _ui.value = _ui.value.copy(verificationError = task.exception?.localizedMessage ?: "Doğrulama e-postası gönderilemedi")
-        } else {
-          _ui.value = _ui.value.copy(verificationSent = true)
-        }
-      }
-  }
-
-  fun updateVerificationCode(code: String) {
-    _ui.value = _ui.value.copy(verificationCode = code)
-  }
-
-  fun applyVerificationCode(onResult: (Boolean) -> Unit) {
-    val code = _ui.value.verificationCode
-    if (code.isBlank()) {
-      _ui.value = _ui.value.copy(verificationError = "Kod boş olamaz")
-      return
-    }
-    _ui.value = _ui.value.copy(verifying = true, verificationError = null)
-    auth.applyActionCode(code)
-      .addOnCompleteListener { task ->
-        val ok = task.isSuccessful
-        _ui.value = _ui.value.copy(verifying = false, showVerificationResult = true, verificationSuccess = ok)
-        onResult(ok)
-=======
     
     viewModelScope.launch {
         signUpWithEmail.execute(
@@ -209,7 +154,20 @@ class EnrollmentViewModel @Inject constructor(
             password = s.password,
             firstName = s.firstName,
             lastName = s.lastName
-        ).collect { result ->
+        )
+        .onCompletion { cause: Throwable? ->
+            if (cause != null) {
+                // If flow failed with exception/cancellation not caught downstream
+                _ui.value = _ui.value.copy(loading = false, error = com.horsegallop.R.string.error_signup_failed)
+            } else {
+                // Flow completed normally, ensure loading is off if not already
+                // (though onSuccess/onFailure should have handled it)
+                if (_ui.value.loading) {
+                    _ui.value = _ui.value.copy(loading = false)
+                }
+            }
+        }
+        .collect { result ->
             result.onSuccess {
                 AppLog.d("AuthSignUp", "use case success; verificationSent=true")
                 _ui.value = _ui.value.copy(loading = false, verificationSent = true, verificationError = null, currentUserEmail = s.email)
@@ -236,11 +194,11 @@ class EnrollmentViewModel @Inject constructor(
         resendVerificationEmail.execute().collect { result ->
             _ui.value = _ui.value.copy(verifying = false)
             result.onSuccess {
-                AppLog.d("AuthSignUp", "resendVerificationEmail success")
+                // AppLog.d("AuthSignUp", "resendVerificationEmail success")
                 _ui.value = _ui.value.copy(verificationSent = true)
                 startResendCooldown(60)
             }.onFailure { e ->
-                AppLog.e("AuthSignUp", "resendVerificationEmail failed: ${e.localizedMessage}")
+                // AppLog.e("AuthSignUp", "resendVerificationEmail failed: ${e.localizedMessage}")
                 val msg = appContext.getString(com.horsegallop.R.string.error_verification_email_failed)
                 _ui.value = _ui.value.copy(verificationError = msg)
             }
@@ -255,8 +213,9 @@ class EnrollmentViewModel @Inject constructor(
         _ui.value = _ui.value.copy(resendCooldownRemaining = s)
         kotlinx.coroutines.delay(1000)
         s--
->>>>>>> Stashed changes
+
       }
+    }
   }
 
   fun dismissVerificationResult() {
@@ -286,36 +245,45 @@ class EnrollmentViewModel @Inject constructor(
     }
   }
 
-<<<<<<< Updated upstream
-  fun checkEmailVerified(onVerified: () -> Unit) {
-    val user = auth.currentUser
-    if (user == null) {
-      _ui.value = _ui.value.copy(verificationError = "Kullanıcı oturumu bulunamadı")
-      return
-    }
-    _ui.value = _ui.value.copy(verifying = true, verificationError = null)
-    user.reload()
-      .addOnCompleteListener { task ->
-        if (!task.isSuccessful) {
-          _ui.value = _ui.value.copy(verifying = false, verificationError = task.exception?.localizedMessage ?: "Doğrulama kontrolü başarısız")
-        } else {
-          val verified = auth.currentUser?.isEmailVerified == true
-          if (verified) {
-            _ui.value = _ui.value.copy(verifying = false)
-            onVerified()
-          } else {
-            _ui.value = _ui.value.copy(verifying = false, verificationError = "E-posta henüz doğrulanmadı. Lütfen maildeki linke tıklayın.")
-          }
-        }
-      }
-=======
+
   fun checkEmailVerified(onVerified: (Boolean) -> Unit) {
     viewModelScope.launch {
-      // Email verification check logic here
-      // For now, assume it's verified after a delay
-      kotlinx.coroutines.delay(1000)
-      onVerified(true)
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user != null) {
+            try {
+                 user.reload().addOnCompleteListener { task: com.google.android.gms.tasks.Task<Void> ->
+                     if (task.isSuccessful) {
+                         val isVerified = user.isEmailVerified
+                         if (isVerified) {
+                             try {
+                                 val s = _ui.value
+                                 val displayName = listOf(s.firstName, s.lastName).filter { it.isNotBlank() }.joinToString(" ").ifBlank { user.displayName ?: "" }
+                                 val data = mapOf(
+                                     "id" to user.uid,
+                                     "role" to com.horsegallop.domain.model.UserRole.CUSTOMER.name,
+                                     "firstName" to s.firstName,
+                                     "lastName" to s.lastName,
+                                     "name" to displayName,
+                                     "email" to (user.email ?: ""),
+                                     "createdAt" to com.google.firebase.Timestamp.now()
+                                 )
+                                 com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                                     .collection("users").document(user.uid)
+                                     .set(data, com.google.firebase.firestore.SetOptions.merge())
+                                     .addOnCompleteListener { onVerified(true) }
+                             } catch (_: Exception) {
+                                 onVerified(true)
+                             }
+                         } else {
+                             // Still not verified
+                             // AppLog.d("AuthSignUp", "Email not verified yet")
+                         }
+                     }
+                 }
+             } catch (e: Exception) {
+                // AppLog.e("AuthSignUp", "Error reloading user: ${e.localizedMessage}")
+            }
+        }
     }
->>>>>>> Stashed changes
   }
 }

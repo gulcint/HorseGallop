@@ -82,20 +82,41 @@ fun LoginScreen(
     LaunchedEffect(uiState.errorMessage) {
         val msgKey = uiState.errorMessage
         if (msgKey != null) {
+            val isDebug = (context.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
             val msg = when (msgKey) {
                 "auth_error_google" -> context.getString(com.horsegallop.core.R.string.auth_error_google)
                 "auth_error_firebase" -> context.getString(com.horsegallop.core.R.string.auth_error_firebase)
                 "auth_error_token_missing" -> context.getString(com.horsegallop.core.R.string.auth_error_token_missing)
                 "login_verify_email_sent" -> context.getString(com.horsegallop.core.R.string.login_verify_email_sent)
-                else -> context.getString(com.horsegallop.core.R.string.error_unknown)
+                "verification_email_sent" -> "Verification email sent"
+                "Email not verified" -> context.getString(com.horsegallop.R.string.error_email_not_verified)
+                else -> {
+                    if (msgKey.startsWith("google_error_code:")) {
+                        val code = msgKey.removePrefix("google_error_code:")
+                        if (isDebug) {
+                            "Google Sign-In error code: $code"
+                        } else {
+                            context.getString(com.horsegallop.core.R.string.auth_error_google)
+                        }
+                    } else if (msgKey.startsWith("auth_error_firebase: ")) {
+                        val error = msgKey.removePrefix("auth_error_firebase: ")
+                        if (isDebug) {
+                            "Authentication failed: $error"
+                        } else {
+                            context.getString(com.horsegallop.core.R.string.auth_error_firebase)
+                        }
+                    } else {
+                        context.getString(com.horsegallop.core.R.string.error_unknown)
+                    }
+                }
             }
-            showLogoToast(context, msg, true)
+            showLogoToast(context, msg, !msgKey.contains("sent"))
         }
     }
 
     LaunchedEffect(uiState.success) {
         if (uiState.success) {
-            showLogoToast(context, context.getString(com.horsegallop.core.R.string.auth_success), false)
+            // Toast removed to speed up transition
             onGoogleClick()
         }
     }
@@ -149,7 +170,8 @@ fun LoginScreen(
             Column(
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
             ) {
-                HorseLoadingOverlay(visible = uiState.loading)
+                // Keep loading overlay visible even on success to prevent form from flickering during navigation
+                HorseLoadingOverlay(visible = uiState.loading || uiState.success)
                 val focusManager = LocalFocusManager.current
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
@@ -178,13 +200,9 @@ fun LoginScreen(
                             label = { Text(stringResource(com.horsegallop.core.R.string.login_email_label), style = MaterialTheme.typography.bodySmall) },
                             placeholder = { Text(stringResource(com.horsegallop.core.R.string.login_email_placeholder), style = MaterialTheme.typography.bodySmall) },
                             leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null) },
-<<<<<<< Updated upstream
-                            textStyle = TextStyle(fontSize = 14.sp),
-                            isError = emailError != null,
-                            supportingText = { if (emailError != null) Text(emailError!!, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
-=======
+
                             textStyle = MaterialTheme.typography.bodyMedium,
->>>>>>> Stashed changes
+
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
@@ -226,7 +244,10 @@ fun LoginScreen(
                         )
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                             TextButton(onClick = onForgotPasswordClick) {
-                                Text(stringResource(com.horsegallop.core.R.string.forgot_password), style = MaterialTheme.typography.bodyMedium)
+                                Text(
+                                    text = stringResource(com.horsegallop.core.R.string.forgot_password),
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                )
                             }
                         }
                         Button(
@@ -242,12 +263,26 @@ fun LoginScreen(
                                 style = MaterialTheme.typography.labelLarge
                             )
                         }
+                        
+                        if (uiState.showResendVerification) {
+                            TextButton(
+                                onClick = vm::resendVerification,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Resend Verification Email",
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.Center
                         ) {
                             TextButton(onClick = onSignupClick) {
-                                Text(text = stringResource(com.horsegallop.core.R.string.prompt_create_account), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodyMedium)
+                                Text(text = stringResource(com.horsegallop.core.R.string.prompt_create_account), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -269,14 +304,16 @@ fun LoginScreen(
                 }
                 GoogleSignInButton(loading = uiState.loading, onClick = {
                     if (!uiState.loading) {
-                        val availability = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
-                        if (availability != ConnectionResult.SUCCESS) {
-                            scope.launch {
-                                showLogoToast(context, context.getString(com.horsegallop.core.R.string.auth_error_play_services), true)
-                            }
-                        } else {
-                            vm.trySilentSignIn { intent ->
-                                if (intent != null) launcher.launch(intent)
+                        scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                            val availability = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
+                            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                if (availability != ConnectionResult.SUCCESS) {
+                                    showLogoToast(context, context.getString(com.horsegallop.core.R.string.auth_error_play_services), true)
+                                } else {
+                                    vm.trySilentSignIn { intent ->
+                                        if (intent != null) launcher.launch(intent)
+                                    }
+                                }
                             }
                         }
                     }

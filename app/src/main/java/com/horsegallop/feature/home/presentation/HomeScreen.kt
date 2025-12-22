@@ -125,7 +125,7 @@ private fun HomeDashboard(
             distanceKm = 12.5
           )
         ) else uiState.activities
-        RecentActivitySection(activities = activities)
+        RecentActivitySection(activities = activities, onViewAllActivities = onViewAllActivities)
       }
     }
     
@@ -264,7 +264,8 @@ private fun StatsOverviewSection(totalRides: String, totalDistance: String) {
 
 
 @Composable
-private fun RecentActivitySection(activities: List<ActivityUi> = listOf(
+private fun RecentActivitySection(
+  activities: List<ActivityUi> = listOf(
   ActivityUi(
     title = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_title),
     dateLabel = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_subtitle).substringBefore(", "),
@@ -279,7 +280,9 @@ private fun RecentActivitySection(activities: List<ActivityUi> = listOf(
     durationMin = 80,
     distanceKm = 12.5
   )
-)) {
+),
+  onViewAllActivities: (() -> Unit)? = null
+) {
   Column {
     Row(
       modifier = Modifier.fillMaxWidth(),

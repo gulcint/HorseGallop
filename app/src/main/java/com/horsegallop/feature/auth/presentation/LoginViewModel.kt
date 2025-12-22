@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
+import com.horsegallop.feature.auth.domain.ResendVerificationEmailUseCase
 import com.horsegallop.feature.auth.domain.ResetPasswordUseCase
 import com.horsegallop.feature.auth.domain.SignInWithEmailUseCase
 import com.horsegallop.feature.auth.domain.SignInWithGoogleUseCase
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 data class LoginUiState(
@@ -23,7 +25,8 @@ data class LoginUiState(
     val loading: Boolean = false,
     val errorMessage: String? = null,
     val success: Boolean = false,
-    val isFormValid: Boolean = false
+    val isFormValid: Boolean = false,
+    val showResendVerification: Boolean = false
 )
 
 @HiltViewModel
@@ -31,7 +34,8 @@ class LoginViewModel @Inject constructor(
     private val googleClient: GoogleSignInClient,
     private val signInWithGoogle: SignInWithGoogleUseCase,
     private val signInWithEmail: SignInWithEmailUseCase,
-    private val resetPassword: ResetPasswordUseCase
+    private val resetPassword: ResetPasswordUseCase,
+    private val resendVerificationEmail: ResendVerificationEmailUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState
@@ -60,7 +64,7 @@ class LoginViewModel @Inject constructor(
         val s = _uiState.value
         if (!s.isFormValid) return
 
-        _uiState.value = s.copy(loading = true, errorMessage = null)
+        _uiState.value = s.copy(loading = true, errorMessage = null, showResendVerification = false)
         viewModelScope.launch {
             signInWithEmail.execute(s.email, s.password)
                 .collect { result ->
@@ -69,7 +73,7 @@ class LoginViewModel @Inject constructor(
                             _uiState.value = s.copy(loading = false, success = true)
                         } else {
                             // Email doğrulanmamış, kullanıcıya bildir ama login yapmaya izin verme
-                            _uiState.value = s.copy(loading = false, errorMessage = "login_verify_email_sent")
+                            _uiState.value = s.copy(loading = false, errorMessage = "login_verify_email_sent", showResendVerification = true)
                             // Başarı durumunu false tut ki navigation yapılmasın
                             return@collect
                         }
@@ -77,6 +81,36 @@ class LoginViewModel @Inject constructor(
                         _uiState.value = s.copy(loading = false, errorMessage = e.localizedMessage)
                     }
                 }
+        }
+    }
+
+    fun resendVerification() {
+        val s = _uiState.value
+        if (s.email.isBlank() || s.password.isBlank()) return
+        
+        _uiState.value = s.copy(loading = true, errorMessage = null)
+        viewModelScope.launch {
+            try {
+                // Use FirebaseAuth instance directly to bypass Repository's auto-signout on unverified email
+                val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+                // 1. Sign in
+                val result = auth.signInWithEmailAndPassword(s.email, s.password).await()
+                val user = result.user
+                
+                if (user != null) {
+                    // 2. Send verification email
+                    user.sendEmailVerification().await()
+                    
+                    // 3. Sign out (to keep security)
+                    auth.signOut()
+                    
+                    _uiState.value = s.copy(loading = false, errorMessage = "verification_email_sent", showResendVerification = false)
+                } else {
+                    _uiState.value = s.copy(loading = false, errorMessage = "User not found")
+                }
+            } catch (e: Exception) {
+                _uiState.value = s.copy(loading = false, errorMessage = "Error: ${e.message}")
+            }
         }
     }
 
@@ -115,10 +149,12 @@ class LoginViewModel @Inject constructor(
                     signInWithGoogle.execute(token)
                     _uiState.value = _uiState.value.copy(loading = false, success = true)
                 } catch (e: Exception) {
-                    _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_firebase")
+                    _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_firebase: ${e.message}")
                 }
+            } catch (e: ApiException) {
+                _uiState.value = _uiState.value.copy(loading = false, errorMessage = "google_error_code:${e.statusCode}")
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_firebase")
+                _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_firebase: ${e.message}")
             }
         }
     }
@@ -142,7 +178,7 @@ class LoginViewModel @Inject constructor(
                         signInWithGoogle.execute(token)
                         _uiState.value = _uiState.value.copy(loading = false, success = true)
                     } catch (e: Exception) {
-                        _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_firebase")
+                        _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_firebase: ${e.message}")
                     }
                 }
             }

@@ -1,65 +1,14 @@
 package com.horsegallop.feature.auth.domain
 
-import com.horsegallop.feature.auth.domain.model.User
-import com.horsegallop.feature.auth.domain.repository.AuthRepository
+import com.horsegallop.domain.model.User
+import com.horsegallop.domain.auth.AuthRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class SignUpWithEmailUseCase @Inject constructor(
     private val repository: AuthRepository
 ) {
-<<<<<<< Updated upstream
-  fun execute(
-    firstName: String,
-    lastName: String,
-    email: String,
-    password: String,
-    onSuccess: () -> Unit,
-    onErrorRes: (Int) -> Unit
-  ) {
-    auth.fetchSignInMethodsForEmail(email)
-      .addOnSuccessListener { methods ->
-        val exists = methods.signInMethods?.isNotEmpty() == true
-        if (exists) {
-          onErrorRes(com.horsegallop.R.string.error_email_exists)
-          return@addOnSuccessListener
-        }
-        auth.createUserWithEmailAndPassword(email, password)
-          .addOnSuccessListener { result ->
-            val user = result.user
-            val uid = user?.uid
-            if (uid == null) {
-              onErrorRes(com.horsegallop.R.string.error_user_create_failed)
-            } else {
-              val profile = UserProfileChangeRequest.Builder()
-                .setDisplayName("$firstName $lastName")
-                .build()
-              user.updateProfile(profile)
-                .addOnFailureListener { _ -> /* ignore profile name failure */ }
-
-              val userMap = mapOf(
-                "firstName" to firstName,
-                "lastName" to lastName,
-                "email" to email,
-                "createdAt" to System.currentTimeMillis()
-              )
-              firestore.collection("users").document(uid).set(userMap)
-                .addOnSuccessListener {
-                  user.sendEmailVerification()
-                  onSuccess()
-                }
-                .addOnFailureListener { _ -> onErrorRes(com.horsegallop.R.string.error_data_save_failed) }
-            }
-          }
-          .addOnFailureListener { e ->
-            onErrorRes(com.horsegallop.R.string.error_signup_failed)
-          }
-      }
-      .addOnFailureListener { _ -> onErrorRes(com.horsegallop.R.string.error_signup_check_failed) }
-  }
-=======
     fun execute(email: String, password: String, firstName: String, lastName: String): Flow<Result<User>> {
         return repository.signUpWithEmail(email, password, firstName, lastName)
     }
->>>>>>> Stashed changes
 }

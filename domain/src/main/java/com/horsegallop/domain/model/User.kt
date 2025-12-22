@@ -1,4 +1,4 @@
-package com.horsegallop.feature.auth.domain.model
+package com.horsegallop.domain.model
 
 enum class UserRole { CUSTOMER, INSTRUCTOR, ADMIN }
 
