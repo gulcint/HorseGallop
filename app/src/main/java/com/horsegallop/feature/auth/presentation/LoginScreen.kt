@@ -82,15 +82,35 @@ fun LoginScreen(
     LaunchedEffect(uiState.errorMessage) {
         val msgKey = uiState.errorMessage
         if (msgKey != null) {
+            val isDebug = (context.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
             val msg = when (msgKey) {
                 "auth_error_google" -> context.getString(com.horsegallop.core.R.string.auth_error_google)
                 "auth_error_firebase" -> context.getString(com.horsegallop.core.R.string.auth_error_firebase)
                 "auth_error_token_missing" -> context.getString(com.horsegallop.core.R.string.auth_error_token_missing)
                 "login_verify_email_sent" -> context.getString(com.horsegallop.core.R.string.login_verify_email_sent)
+                "verification_email_sent" -> "Verification email sent"
                 "Email not verified" -> context.getString(com.horsegallop.R.string.error_email_not_verified)
-                else -> context.getString(com.horsegallop.core.R.string.error_unknown)
+                else -> {
+                    if (msgKey.startsWith("google_error_code:")) {
+                        val code = msgKey.removePrefix("google_error_code:")
+                        if (isDebug) {
+                            "Google Sign-In error code: $code"
+                        } else {
+                            context.getString(com.horsegallop.core.R.string.auth_error_google)
+                        }
+                    } else if (msgKey.startsWith("auth_error_firebase: ")) {
+                        val error = msgKey.removePrefix("auth_error_firebase: ")
+                        if (isDebug) {
+                            "Authentication failed: $error"
+                        } else {
+                            context.getString(com.horsegallop.core.R.string.auth_error_firebase)
+                        }
+                    } else {
+                        context.getString(com.horsegallop.core.R.string.error_unknown)
+                    }
+                }
             }
-            showLogoToast(context, msg, true)
+            showLogoToast(context, msg, !msgKey.contains("sent"))
         }
     }
 
@@ -243,6 +263,20 @@ fun LoginScreen(
                                 style = MaterialTheme.typography.labelLarge
                             )
                         }
+                        
+                        if (uiState.showResendVerification) {
+                            TextButton(
+                                onClick = vm::resendVerification,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Resend Verification Email",
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.Center

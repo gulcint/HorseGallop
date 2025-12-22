@@ -10,6 +10,7 @@ import com.horsegallop.domain.model.UserRole
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 
 class FirebaseAuthRepository @Inject constructor(
@@ -33,27 +34,36 @@ class FirebaseAuthRepository @Inject constructor(
 
     override fun signUpWithEmail(email: String, password: String, firstName: String, lastName: String): Flow<Result<User>> = flow {
         try {
-            val result = auth.createUserWithEmailAndPassword(email, password).await()
+            val result = withTimeout(15000) { auth.createUserWithEmailAndPassword(email, password).await() }
             val createdUser = result.user ?: throw Exception("User creation failed")
             
             try {
                 val profileUpdates = UserProfileChangeRequest.Builder()
                     .setDisplayName("$firstName $lastName")
                     .build()
-                createdUser.updateProfile(profileUpdates).await()
+                withTimeout(5000) { createdUser.updateProfile(profileUpdates).await() }
             } catch (e: Exception) {
                 // Profile update failed, but user exists. Continue.
+                e.printStackTrace()
             }
 
             try {
-                // Use standard email verification to avoid ActionCodeSettings errors
-                createdUser.sendEmailVerification().await()
+                // Email doğrulamayı asenkron tetikle; akışı bekletme
+                createdUser.sendEmailVerification()
             } catch (e: Exception) {
-                // Email sending failed. Do NOT delete the user.
-                // Let the UI handle the verification step (user can resend).
+                // Email gönderimi başlatılamadı; kullanıcı yine de çekmece üzerinden yeniden gönderebilir
+                e.printStackTrace()
             }
             
-            val domainUser = createFirestoreUser(createdUser, firstName, lastName)
+            val domainUser = User(
+                id = createdUser.uid,
+                role = UserRole.CUSTOMER,
+                name = listOf(firstName, lastName).filter { it.isNotBlank() }.joinToString(" ").ifBlank { createdUser.displayName ?: "" },
+                email = createdUser.email ?: "",
+                isEmailVerified = createdUser.isEmailVerified,
+                locale = null,
+                lastVisitIso = null
+            )
             emit(Result.success(domainUser))
         } catch (e: Exception) {
             emit(Result.failure(e))

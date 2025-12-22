@@ -3,7 +3,6 @@ package com.horsegallop.feature.home.data.repository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.horsegallop.feature.home.domain.model.RideSession
-import com.horsegallop.feature.home.domain.model.SliderItem
 import com.horsegallop.feature.home.domain.model.UserStats
 import com.horsegallop.feature.home.domain.repository.HomeRepository
 import com.horsegallop.data.remote.ApiService
@@ -17,33 +16,13 @@ class HomeRepositoryImpl @Inject constructor(
   private val firestore: FirebaseFirestore
 ) : HomeRepository {
 
-  override fun getSlider(): Flow<Result<List<SliderItem>>> {
-    return flow {
-      try {
-        val response = api.getSlider()
-        val sliderItems = response.map { dto ->
-          SliderItem(
-            id = dto.id,
-            imageUrl = dto.imageUrl,
-            title = dto.title,
-            link = dto.link,
-            order = dto.order
-          )
-        }
-        emit(Result.success(sliderItems))
-      } catch (e: Exception) {
-        emit(Result.failure(e))
-      }
-    }
-  }
-
-  override fun getRecentActivities(userId: String): Flow<Result<List<RideSession>>> = flow {
+  override fun getRecentActivities(userId: String, limit: Int): Flow<Result<List<RideSession>>> = flow {
     try {
       val snapshot = firestore.collection("users")
         .document(userId)
         .collection("rides")
         .orderBy("timestamp", Query.Direction.DESCENDING)
-        .limit(2)
+        .limit(limit.toLong())
         .get()
         .await()
 

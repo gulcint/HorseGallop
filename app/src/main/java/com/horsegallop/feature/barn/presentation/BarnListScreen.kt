@@ -233,6 +233,7 @@ fun BarnListScreen(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         modifier = Modifier.fillMaxWidth().height(200.dp) // Sabit yükseklik
       ) {
+        Box(modifier = Modifier.fillMaxSize()) {
           val primaryColor = MaterialTheme.colorScheme.primary
           val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
           val filtered = uiState.filteredBarns
@@ -308,6 +309,7 @@ fun BarnListScreen(
             modifier = Modifier.align(Alignment.BottomStart).padding(8.dp)
           )
         }
+      }
       
       if (uiState.filteredBarns.isEmpty()) {
         Spacer(modifier = Modifier.height(12.dp))

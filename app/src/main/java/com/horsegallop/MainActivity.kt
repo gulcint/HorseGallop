@@ -156,10 +156,19 @@ fun AppContent(): Unit {
             val auth = FirebaseAuth.getInstance()
             val authListener = FirebaseAuth.AuthStateListener { fa ->
                 if (fa.currentUser == null) {
-                    AppLog.w("AuthState", "currentUser null navigate Login")
-                    navController.navigate(Dest.Login.route) {
-                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
-                        launchSingleTop = true
+                    val currentRoute = navController.currentDestination?.route
+                    // Allow Onboarding and Auth flows without redirect
+                    if (currentRoute != Dest.Onboarding.route && 
+                        currentRoute != Dest.Login.route && 
+                        currentRoute != Dest.EmailLogin.route &&
+                        currentRoute != Dest.Enroll.route &&
+                        currentRoute != Dest.ForgotPassword.route) {
+                        
+                        AppLog.w("AuthState", "currentUser null navigate Login")
+                        navController.navigate(Dest.Onboarding.route) {
+                            popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                            launchSingleTop = true
+                        }
                     }
                 }
             }
@@ -174,7 +183,7 @@ fun AppContent(): Unit {
                         if (ex is com.google.firebase.auth.FirebaseAuthInvalidUserException) {
                             AppLog.e("AuthState", "invalid user signOut")
                             auth.signOut()
-                            navController.navigate(Dest.Login.route) {
+                            navController.navigate(Dest.Onboarding.route) {
                                 popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
                                 launchSingleTop = true
                             }
@@ -187,7 +196,7 @@ fun AppContent(): Unit {
                     if (!hasProvider || !hasEmail) {
                         AppLog.w("AuthState", "provider or email missing, signing out")
                         auth.signOut()
-                        navController.navigate(Dest.Login.route) {
+                        navController.navigate(Dest.Onboarding.route) {
                             popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
                             launchSingleTop = true
                         }

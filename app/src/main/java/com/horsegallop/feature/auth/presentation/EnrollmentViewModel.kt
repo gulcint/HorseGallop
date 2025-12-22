@@ -11,6 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -153,7 +154,20 @@ class EnrollmentViewModel @Inject constructor(
             password = s.password,
             firstName = s.firstName,
             lastName = s.lastName
-        ).collect { result ->
+        )
+        .onCompletion { cause: Throwable? ->
+            if (cause != null) {
+                // If flow failed with exception/cancellation not caught downstream
+                _ui.value = _ui.value.copy(loading = false, error = com.horsegallop.R.string.error_signup_failed)
+            } else {
+                // Flow completed normally, ensure loading is off if not already
+                // (though onSuccess/onFailure should have handled it)
+                if (_ui.value.loading) {
+                    _ui.value = _ui.value.copy(loading = false)
+                }
+            }
+        }
+        .collect { result ->
             result.onSuccess {
                 AppLog.d("AuthSignUp", "use case success; verificationSent=true")
                 _ui.value = _ui.value.copy(loading = false, verificationSent = true, verificationError = null, currentUserEmail = s.email)
@@ -241,7 +255,25 @@ class EnrollmentViewModel @Inject constructor(
                      if (task.isSuccessful) {
                          val isVerified = user.isEmailVerified
                          if (isVerified) {
-                             onVerified(true)
+                             try {
+                                 val s = _ui.value
+                                 val displayName = listOf(s.firstName, s.lastName).filter { it.isNotBlank() }.joinToString(" ").ifBlank { user.displayName ?: "" }
+                                 val data = mapOf(
+                                     "id" to user.uid,
+                                     "role" to com.horsegallop.domain.model.UserRole.CUSTOMER.name,
+                                     "firstName" to s.firstName,
+                                     "lastName" to s.lastName,
+                                     "name" to displayName,
+                                     "email" to (user.email ?: ""),
+                                     "createdAt" to com.google.firebase.Timestamp.now()
+                                 )
+                                 com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                                     .collection("users").document(user.uid)
+                                     .set(data, com.google.firebase.firestore.SetOptions.merge())
+                                     .addOnCompleteListener { onVerified(true) }
+                             } catch (_: Exception) {
+                                 onVerified(true)
+                             }
                          } else {
                              // Still not verified
                              // AppLog.d("AuthSignUp", "Email not verified yet")

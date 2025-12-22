@@ -60,12 +60,12 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.text.input.KeyboardType
 import android.util.Patterns
-import com.horsegallop.compose.HorseLoadingOverlay
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.graphics.lerp
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import com.airbnb.lottie.compose.*
+import com.horsegallop.compose.HorseLoadingOverlay
 
 @Composable
 fun EnrollmentScreen(
@@ -110,10 +110,10 @@ fun EnrollmentScreen(
     }
   , containerColor = MaterialTheme.colorScheme.background) { padding ->
     
+    Box(modifier = Modifier.padding(padding)) {
     Column(
       modifier = Modifier
         .fillMaxSize()
-        .padding(padding)
         .windowInsetsPadding(WindowInsets.ime)
         .navigationBarsPadding()
         .padding(
@@ -276,13 +276,9 @@ fun EnrollmentScreen(
         }
       }
 
-      // Loading Overlay - only visible when loading
-      HorseLoadingOverlay(visible = ui.loading)
-
-
   
-
-  
+    }
+    HorseLoadingOverlay(visible = ui.loading)
     }
   }
 
