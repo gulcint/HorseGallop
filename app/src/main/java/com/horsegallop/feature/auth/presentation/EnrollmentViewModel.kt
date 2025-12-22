@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.horsegallop.BuildConfig
 
 data class EnrollmentUiState(
   val firstName: String = "",
@@ -40,7 +41,8 @@ data class EnrollmentUiState(
   val verificationSuccess: Boolean? = null,
   val verificationCode: String = "",
   val successLottieUrl: String = "",
-  val errorLottieUrl: String = ""
+  val errorLottieUrl: String = "",
+  val errorMessage: String? = null
 
 )
 
@@ -173,8 +175,11 @@ class EnrollmentViewModel @Inject constructor(
                 _ui.value = _ui.value.copy(loading = false, verificationSent = true, verificationError = null, currentUserEmail = s.email)
             }.onFailure { e ->
                 AppLog.e("AuthSignUp", "use case error ${e.localizedMessage}")
-                // Map to generic error for now as we lost specific error codes in Repository abstraction (unless we pass them through)
-                _ui.value = _ui.value.copy(loading = false, error = com.horsegallop.R.string.error_signup_failed)
+                if (BuildConfig.DEBUG) {
+                    _ui.value = _ui.value.copy(loading = false, errorMessage = "Debug Error: ${e.message}", error = null)
+                } else {
+                    _ui.value = _ui.value.copy(loading = false, error = com.horsegallop.R.string.error_signup_failed, errorMessage = null)
+                }
             }
         }
     }
