@@ -47,6 +47,11 @@ object AuthModule {
 
     @Provides
     @Singleton
+    fun provideAuthValidator(): com.horsegallop.domain.auth.AuthValidator =
+        com.horsegallop.domain.auth.AuthValidator()
+
+    @Provides
+    @Singleton
     fun provideFirebaseAuthRepository(
         auth: FirebaseAuth,
         firestore: FirebaseFirestore

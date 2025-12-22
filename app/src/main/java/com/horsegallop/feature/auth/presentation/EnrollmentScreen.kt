@@ -58,6 +58,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import android.util.Patterns
 import androidx.compose.ui.text.input.ImeAction
@@ -65,342 +66,261 @@ import androidx.compose.ui.graphics.lerp
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import com.airbnb.lottie.compose.*
+import com.horsegallop.R
+import com.horsegallop.navigation.Dest
 import com.horsegallop.compose.HorseLoadingOverlay
 
 @Composable
 fun EnrollmentScreen(
-  onBack: () -> Unit,
-  onSignedUp: () -> Unit
+    onBack: () -> Unit,
+    onSignedUp: () -> Unit
 ) {
-  val vm: EnrollmentViewModel = androidx.hilt.navigation.compose.hiltViewModel()
-  val ui = vm.ui.collectAsState().value
+    val vm: EnrollmentViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+    val ui by vm.ui.collectAsState()
 
-  var showVerifySheet by remember { mutableStateOf(false) }
-  val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-  
-  val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
-  var isForeground by remember { mutableStateOf(true) }
-  DisposableEffect(lifecycleOwner) {
-    val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-      isForeground = event == androidx.lifecycle.Lifecycle.Event.ON_RESUME
+    var showVerifySheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val context = LocalContext.current
+
+    // Synchronize Sheet visibility with ViewModel state
+    LaunchedEffect(ui.verificationSent) {
+        if (ui.verificationSent) {
+            showVerifySheet = true
+        }
     }
-    lifecycleOwner.lifecycle.addObserver(observer)
-    onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-  }
 
-  LaunchedEffect(ui.verificationSent) {
-      if (ui.verificationSent) {
-          showVerifySheet = true
-      }
-  }
+    // App Foreground/Background detection for verification polling
+    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    var isForeground by remember { mutableStateOf(true) }
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            isForeground = event == androidx.lifecycle.Lifecycle.Event.ON_RESUME
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
-  Scaffold(
-    topBar = {
-      CenterAlignedTopAppBar(
-        title = { Text(text = stringResource(com.horsegallop.R.string.enrollment_title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary) },
-        navigationIcon = {
-          IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary) }
+    LaunchedEffect(isForeground) {
+        if (isForeground && showVerifySheet) {
+            vm.checkEmailVerified(onVerified = {
+                vm.dismissVerificationResult()
+                onSignedUp()
+            })
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            EnrollmentTopBar(onBack = onBack)
         },
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-          containerColor = MaterialTheme.colorScheme.primary,
-          navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-          titleContentColor = MaterialTheme.colorScheme.onPrimary
-        )
-      )
-    }
-  , containerColor = MaterialTheme.colorScheme.background) { padding ->
-    
-    Box(modifier = Modifier.padding(padding)) {
-    Column(
-      modifier = Modifier
-        .fillMaxSize()
-        .windowInsetsPadding(WindowInsets.ime)
-        .navigationBarsPadding()
-        .padding(
-          horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
-          vertical = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)
-        )
-        .verticalScroll(rememberScrollState()),
-      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md))
-    ) {
-      
-
-      Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm),
-        border = androidx.compose.foundation.BorderStroke(
-          dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin),
-          MaterialTheme.colorScheme.outlineVariant
-        )
-      ) {
-        Column(
-          modifier = Modifier.padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
-          verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.list_item_spacing_md))
-        ) {
-          Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))) {
-            OutlinedTextField(
-              value = ui.firstName,
-              onValueChange = vm::updateFirstName,
-              label = { Text(stringResource(com.horsegallop.R.string.label_first_name), style = MaterialTheme.typography.bodySmall) },
-              singleLine = true,
-              modifier = Modifier.fillMaxWidth(),
-              colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
-                errorBorderColor = MaterialTheme.colorScheme.secondary,
-                focusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-              ),
-              keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+        containerColor = MaterialTheme.colorScheme.background
+    ) { padding ->
+        Box(modifier = Modifier.padding(padding)) {
+            EnrollmentContent(
+                ui = ui,
+                vm = vm
             )
-            OutlinedTextField(
-              value = ui.lastName,
-              onValueChange = vm::updateLastName,
-              label = { Text(stringResource(com.horsegallop.R.string.label_last_name), style = MaterialTheme.typography.bodySmall) },
-              placeholder = { Text(stringResource(com.horsegallop.R.string.label_last_name), style = MaterialTheme.typography.bodySmall) },
-              singleLine = true,
-              modifier = Modifier.fillMaxWidth(),
-              colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
-                errorBorderColor = MaterialTheme.colorScheme.secondary,
-                focusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-              ),
-              keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
-            )
-          }
-          
-          
-          var passwordVisible by remember { mutableStateOf(false) }
-          OutlinedTextField(
-            value = ui.email,
-            onValueChange = vm::updateEmail,
-            label = { Text(stringResource(com.horsegallop.R.string.label_email), style = MaterialTheme.typography.bodySmall) },
-            placeholder = { Text(stringResource(com.horsegallop.R.string.label_email), style = MaterialTheme.typography.bodySmall) },
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-              focusedBorderColor = MaterialTheme.colorScheme.primary,
-              unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
-              focusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-            ),
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(
-              keyboardType = KeyboardType.Email,
-              imeAction = ImeAction.Next
-            )
-          )
-          OutlinedTextField(
-            value = ui.password,
-            onValueChange = vm::updatePassword,
-            label = { Text(stringResource(com.horsegallop.R.string.label_password), style = MaterialTheme.typography.bodySmall) },
-            singleLine = true,
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            colors = OutlinedTextFieldDefaults.colors(
-              focusedBorderColor = MaterialTheme.colorScheme.primary,
-              unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
-              focusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-            ),
-            modifier = Modifier.fillMaxWidth(),
-            trailingIcon = {
-              IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                Icon(
-                  imageVector = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                  contentDescription = null
-                )
-              }
-            },
-            keyboardOptions = KeyboardOptions(
-              keyboardType = KeyboardType.Password,
-              imeAction = ImeAction.Done
-            )
-          )
-          
-          val hasLen = ui.password.length >= 10
-          val hasUpper = ui.password.any { it.isUpperCase() }
-          val hasLower = ui.password.any { it.isLowerCase() }
-          val hasDigit = ui.password.any { it.isDigit() }
-          val hasSpecial = ui.password.any { !it.isLetterOrDigit() }
-          val score = listOf(hasLen, hasUpper, hasLower, hasDigit, hasSpecial).count { it }
-          val progress = score / 5f
-          val indicatorColor = if (score >= 4) MaterialTheme.colorScheme.tertiary else lerp(
-            MaterialTheme.colorScheme.onSurfaceVariant,
-            MaterialTheme.colorScheme.primary,
-            progress.coerceIn(0f, 1f)
-          )
-          if (ui.password.isNotEmpty()) {
-              LinearProgressIndicator(progress = { progress }, color = indicatorColor, trackColor = MaterialTheme.colorScheme.surfaceVariant)
-              val strengthText = when (score) { 0,1 -> stringResource(com.horsegallop.R.string.strength_weak); 2,3 -> stringResource(com.horsegallop.R.string.strength_medium); else -> stringResource(com.horsegallop.R.string.strength_strong) }
-              Text(text = stringResource(com.horsegallop.R.string.password_strength_prefix, strengthText), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-          }
-          
-          if (ui.validationErrors.isNotEmpty()) {
-            val errorMessages = ui.validationErrors.map { stringResource(it) }
-
-            Text(
-              text = errorMessages.joinToString(" • "),
-              color = MaterialTheme.colorScheme.error,
-              style = MaterialTheme.typography.bodySmall
-            )
-          }
-          
+            HorseLoadingOverlay(visible = ui.loading)
         }
-      }
-
-      if (ui.errorMessage != null) {
-          Text(text = ui.errorMessage, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
-      } else if (ui.error != null) {
-          Text(text = stringResource(ui.error), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
-      }
-
-      Button(
-        onClick = { if (ui.isFormValid) vm.signUp() },
-        enabled = !ui.loading && ui.isFormValid,
-        modifier = Modifier
-          .fillMaxWidth()
-          .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
-        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
-        colors = ButtonDefaults.buttonColors(
-          containerColor = if (ui.isFormValid) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
-          contentColor = MaterialTheme.colorScheme.onPrimary,
-          disabledContainerColor = MaterialTheme.colorScheme.primary,
-          disabledContentColor = MaterialTheme.colorScheme.onPrimary
-        )
-      ) {
-        if (ui.loading) {
-          Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))) {
-            CircularProgressIndicator(modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_sm)), color = MaterialTheme.colorScheme.onPrimary)
-            Text(stringResource(com.horsegallop.R.string.enrollment_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-          }
-        } else {
-          Text(stringResource(com.horsegallop.R.string.enrollment_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        }
-      }
-
-  
     }
-    HorseLoadingOverlay(visible = ui.loading)
-    }
-  }
 
     if (showVerifySheet) {
-      ModalBottomSheet(
-        onDismissRequest = { showVerifySheet = false },
-        sheetState = sheetState,
-        dragHandle = {},
-        containerColor = MaterialTheme.colorScheme.surface
-      ) {
-        Column(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 24.dp, end = 24.dp, bottom = 48.dp, top = 24.dp),
-          verticalArrangement = Arrangement.spacedBy(24.dp),
-          horizontalAlignment = Alignment.CenterHorizontally
+        ModalBottomSheet(
+            onDismissRequest = { showVerifySheet = false },
+            sheetState = sheetState,
+            dragHandle = {},
+            containerColor = MaterialTheme.colorScheme.surface,
+            modifier = Modifier.testTag("verify_email_sheet")
         ) {
-          val email = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.email
-          val ctxLocal = androidx.compose.ui.platform.LocalContext.current
-
-          Spacer(modifier = Modifier.height(16.dp))
-
-          Icon(
-            painter = painterResource(id = com.horsegallop.R.mipmap.ic_launcher),
-            contentDescription = null,
-            modifier = Modifier.size(80.dp),
-            tint = Color.Unspecified
-          )
-
-          Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)
-          ) {
-            Text(
-              text = stringResource(com.horsegallop.R.string.verify_email_title),
-              style = MaterialTheme.typography.headlineSmall,
-              fontWeight = FontWeight.Bold,
-              color = MaterialTheme.colorScheme.onSurface,
-              textAlign = TextAlign.Center
+            VerificationSheetContent(
+                email = ui.currentUserEmail ?: ui.email,
+                isVerifying = ui.verifying,
+                onOpenMail = { openEmailApp(context) }
             )
-            Text(
-              text = if (email != null) stringResource(com.horsegallop.R.string.verification_sent_to_email, email) else stringResource(com.horsegallop.R.string.verification_sent_info),
-              style = MaterialTheme.typography.bodyLarge,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-              textAlign = TextAlign.Center
-            )
-          }
-          
-          if (ui.verifying) {
-            LinearProgressIndicator(color = MaterialTheme.colorScheme.tertiary)
-          }
-
-          val pm = ctxLocal.packageManager
-          val emailIntent = android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_APP_EMAIL)
-          
-          Button(
-            onClick = { 
-                runCatching { ctxLocal.startActivity(emailIntent) }
-                    .onFailure { 
-                        // Fallback to chooser if specific category fails
-                        val chooser = android.content.Intent.createChooser(
-                            android.content.Intent(android.content.Intent.ACTION_SENDTO).apply { data = android.net.Uri.parse("mailto:") }, 
-                            "Open Email"
-                        )
-                        runCatching { ctxLocal.startActivity(chooser) }
-                    }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
-          ) { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.open_mail_app)) }
-          
         }
-        LaunchedEffect(isForeground) {
-          if (isForeground) {
-            vm.checkEmailVerified(onVerified = {
-              vm.dismissVerificationResult()
-              onSignedUp()
-            })
-          }
-        }
-      val act = androidx.compose.ui.platform.LocalContext.current as? android.app.Activity
-      LaunchedEffect(Unit) {
-        val uri = act?.intent?.data
-        if (uri != null && uri.scheme == "horsegallop" && uri.host == "verify-complete") {
-          // com.horsegallop.core.debug.AppLog.i("EnrollmentUI", "verify-complete deepLink")
-          showVerifySheet = false
-          onSignedUp()
-          act?.setIntent(android.content.Intent())
-
-        }
-      }
     }
-  }
-  if (ui.showVerificationResult) {
+
+    if (ui.showVerificationResult) {
+        VerificationResultDialog(
+            ui = ui,
+            onClose = { vm.dismissVerificationResult() },
+            onContinue = {
+                vm.dismissVerificationResult()
+                onSignedUp()
+            }
+        )
+    }
+}
+
+@Composable
+private fun EnrollmentTopBar(onBack: () -> Unit) {
+    CenterAlignedTopAppBar(
+        title = {
+            Text(
+                text = stringResource(R.string.enrollment_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        navigationIcon = {
+            IconButton(onClick = onBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+            }
+        },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+            titleContentColor = MaterialTheme.colorScheme.onPrimary
+        )
+    )
+}
+
+@Composable
+private fun EnrollmentContent(
+    ui: EnrollmentUiState,
+    vm: EnrollmentViewModel
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.ime)
+            .navigationBarsPadding()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface,
+            shadowElevation = 2.dp,
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                NameFieldsSection(
+                    firstName = ui.firstName,
+                    lastName = ui.lastName,
+                    onFirstNameChange = vm::updateFirstName,
+                    onLastNameChange = vm::updateLastName
+                )
+
+                OutlinedTextField(
+                    value = ui.email,
+                    onValueChange = vm::updateEmail,
+                    label = { Text(stringResource(R.string.label_email), style = MaterialTheme.typography.bodySmall) },
+                    placeholder = { Text(stringResource(R.string.label_email), style = MaterialTheme.typography.bodySmall) },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+                    ),
+                    modifier = Modifier.fillMaxWidth().testTag("email_input"),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next)
+                )
+
+                PasswordFieldSection(
+                    password = ui.password,
+                    onPasswordChange = vm::updatePassword
+                )
+
+                if (ui.validationErrors.isNotEmpty()) {
+                    val errorMessages = ui.validationErrors.map { stringResource(it) }
+                    Text(
+                        text = errorMessages.joinToString(" • "),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        }
+
+        if (ui.errorMessage != null || ui.error != null) {
+            Text(
+                text = ui.errorMessage ?: stringResource(ui.error!!),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        Button(
+            onClick = { if (ui.isFormValid) vm.signUp() },
+            enabled = !ui.loading && ui.isFormValid,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .testTag("enroll_button"),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (ui.isFormValid) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
+                disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+            )
+        ) {
+            Text(
+                stringResource(R.string.enrollment_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+private fun VerificationResultDialog(
+    ui: EnrollmentUiState,
+    onClose: () -> Unit,
+    onContinue: () -> Unit
+) {
     val url = if (ui.verificationSuccess == true) ui.successLottieUrl else ui.errorLottieUrl
     val composition by rememberLottieComposition(LottieCompositionSpec.Url(url))
     val progress by animateLottieCompositionAsState(composition, iterations = 1)
-    androidx.compose.ui.window.Dialog(onDismissRequest = { vm.dismissVerificationResult() }) {
-      Box(
-        modifier = Modifier
-          .fillMaxSize()
-          .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)),
-        contentAlignment = Alignment.Center
-      ) {
-        Column(
-          horizontalAlignment = Alignment.CenterHorizontally,
-          verticalArrangement = Arrangement.spacedBy(16.dp)
+
+    androidx.compose.ui.window.Dialog(onDismissRequest = onClose) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)),
+            contentAlignment = Alignment.Center
         ) {
-          LottieAnimation(composition = composition, progress = { progress }, modifier = Modifier.size(220.dp))
-          Text(text = if (ui.verificationSuccess == true) stringResource(com.horsegallop.R.string.verification_result_success) else stringResource(com.horsegallop.R.string.verification_result_error), color = MaterialTheme.colorScheme.onSurface)
-          Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedButton(onClick = { vm.dismissVerificationResult() }) { Text(stringResource(com.horsegallop.R.string.btn_close)) }
-            if (ui.verificationSuccess == true) {
-              Button(onClick = { vm.dismissVerificationResult(); onSignedUp() }) { Text(stringResource(com.horsegallop.R.string.btn_continue)) }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                LottieAnimation(composition = composition, progress = { progress }, modifier = Modifier.size(220.dp))
+                Text(
+                    text = if (ui.verificationSuccess == true) 
+                        stringResource(R.string.verification_result_success) 
+                    else 
+                        stringResource(R.string.verification_result_error),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedButton(onClick = onClose) { Text(stringResource(R.string.btn_close)) }
+                    if (ui.verificationSuccess == true) {
+                        Button(onClick = onContinue) { Text(stringResource(R.string.btn_continue)) }
+                    }
+                }
             }
-          }
         }
-      }
     }
-  }
+}
+
+private fun openEmailApp(context: android.content.Context) {
+    val emailIntent = android.content.Intent(android.content.Intent.ACTION_MAIN)
+        .addCategory(android.content.Intent.CATEGORY_APP_EMAIL)
+    
+    runCatching { context.startActivity(emailIntent) }
+        .onFailure {
+            val chooser = android.content.Intent.createChooser(
+                android.content.Intent(android.content.Intent.ACTION_SENDTO).apply { 
+                    data = android.net.Uri.parse("mailto:") 
+                },
+                "Open Email"
+            )
+            runCatching { context.startActivity(chooser) }
+        }
 }
 
 

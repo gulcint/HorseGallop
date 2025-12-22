@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import com.horsegallop.theme.AppColors
@@ -205,7 +206,7 @@ fun LoginScreen(
 
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
-                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("login_email_input"),
                             colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
@@ -233,7 +234,7 @@ fun LoginScreen(
                             visualTransformation = if (uiState.isPasswordVisible) androidx.compose.ui.text.input.VisualTransformation.None else PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("login_password_input"),
                             colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
@@ -255,7 +256,8 @@ fun LoginScreen(
                             enabled = !uiState.loading && uiState.isFormValid,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
+                                .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl))
+                                .testTag("login_button"),
                             shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
                         ) {
                             Text(
@@ -281,7 +283,7 @@ fun LoginScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            TextButton(onClick = onSignupClick) {
+                            TextButton(onClick = onSignupClick, modifier = Modifier.testTag("signup_text_button")) {
                                 Text(text = stringResource(com.horsegallop.core.R.string.prompt_create_account), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                             }
                         }
@@ -384,7 +386,8 @@ fun GoogleSignInButton(loading: Boolean = false, onClick: () -> Unit) {
         onClick = if (loading) ({}) else onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
+            .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl))
+            .testTag("google_signin_button"),
         shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
         color = MaterialTheme.colorScheme.surface,
         shadowElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm),

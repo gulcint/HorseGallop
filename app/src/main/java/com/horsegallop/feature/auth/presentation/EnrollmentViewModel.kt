@@ -48,15 +48,13 @@ data class EnrollmentUiState(
 
 @HiltViewModel
 class EnrollmentViewModel @Inject constructor(
-
   private val signUpWithEmail: SignUpWithEmailUseCase,
   private val resendVerificationEmail: ResendVerificationEmailUseCase,
+  private val authValidator: com.horsegallop.domain.auth.AuthValidator,
   @ApplicationContext private val appContext: Context
-
 ) : ViewModel() {
   private val _ui = MutableStateFlow(EnrollmentUiState())
   val ui: StateFlow<EnrollmentUiState> = _ui
-
 
   fun updateFirstName(v: String) { 
     _ui.value = _ui.value.copy(firstName = v)
@@ -77,29 +75,21 @@ class EnrollmentViewModel @Inject constructor(
 
   private fun validateForm() {
     val s = _ui.value
-    val nameValid = s.firstName.trim().isNotEmpty() && s.lastName.trim().isNotEmpty()
-    val emailValid = android.util.Patterns.EMAIL_ADDRESS.matcher(s.email.trim()).matches()
-    
-    val hasLen = s.password.length >= 10
-    val hasUpper = s.password.any { it.isUpperCase() }
-    val hasLower = s.password.any { it.isLowerCase() }
-    val hasDigit = s.password.any { it.isDigit() }
-    val hasSpecial = s.password.any { !it.isLetterOrDigit() }
-    
-    val score = listOf(hasLen, hasUpper, hasLower, hasDigit, hasSpecial).count { it }
-    val strong = hasLen && hasUpper && hasLower && hasDigit // Strong enough if length + all types present
+    val nameValid = authValidator.validateName(s.firstName, s.lastName)
+    val emailValid = authValidator.validateEmail(s.email)
+    val score = authValidator.calculatePasswordStrength(s.password)
+    val strong = authValidator.isPasswordStrongEnough(s.password)
 
     val missing = mutableListOf<Int>()
     if (!nameValid) missing.add(com.horsegallop.R.string.error_name_required)
     if (!emailValid) missing.add(com.horsegallop.R.string.error_email_invalid)
     
-    if (!hasLen) missing.add(com.horsegallop.R.string.error_password_length)
-    if (!strong) {
-        if (!hasUpper) missing.add(com.horsegallop.R.string.password_needs_upper)
-        if (!hasLower) missing.add(com.horsegallop.R.string.password_needs_lower)
-        if (!hasDigit) missing.add(com.horsegallop.R.string.password_needs_digit)
-        if (!hasSpecial) missing.add(com.horsegallop.R.string.password_needs_special)
-      }
+    if (s.password.length < 10) missing.add(com.horsegallop.R.string.error_password_length)
+    if (!strong && s.password.isNotEmpty()) {
+        if (!s.password.any { it.isUpperCase() }) missing.add(com.horsegallop.R.string.password_needs_upper)
+        if (!s.password.any { it.isLowerCase() }) missing.add(com.horsegallop.R.string.password_needs_lower)
+        if (!s.password.any { it.isDigit() }) missing.add(com.horsegallop.R.string.password_needs_digit)
+    }
 
     _ui.value = s.copy(
         isNameValid = nameValid,
@@ -141,9 +131,11 @@ class EnrollmentViewModel @Inject constructor(
 
   fun signUp() {
     val s = _ui.value
-    val hasLen = s.password.length >= 10
-    val emailValid = android.util.Patterns.EMAIL_ADDRESS.matcher(s.email).matches()
-    if (s.firstName.isBlank() || s.lastName.isBlank() || !emailValid || !hasLen) {
+    val valid = authValidator.validateName(s.firstName, s.lastName) && 
+                authValidator.validateEmail(s.email) && 
+                authValidator.isPasswordStrongEnough(s.password)
+                
+    if (!valid) {
       _ui.value = s.copy(error = com.horsegallop.R.string.error_invalid_form)
       return
     }

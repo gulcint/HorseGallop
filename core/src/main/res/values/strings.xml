@@ -71,6 +71,7 @@
     
     <!-- Barn Screen -->
     <string name="barn_search_placeholder">Search barns...</string>
+    <string name="search_placeholder">Search...</string>
     <string name="barn_map_title">Map View</string>
     <string name="barn_results_prefix">Showing</string>
     <string name="barn_search_results">%1$d of %2$d barns</string>

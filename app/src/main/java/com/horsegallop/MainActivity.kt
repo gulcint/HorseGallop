@@ -51,7 +51,15 @@ class MainActivity : ComponentActivity() {
         // Enable edge-to-edge
         enableEdgeToEdge()
 		
-        // Handle Firebase verifyEmail deep link
+        // Handle Firebase verifyEmail deep link in ViewModel if needed, or keep minimal logic here
+        // For now, let's keep verifyEmail here as it requires activity context for Toast,
+        // but we can also move it to a shared AuthManager.
+        handleDeepLink(intent)
+
+        setContent { AppTheme { AppContent() } }
+    }
+
+    private fun handleDeepLink(intent: android.content.Intent?) {
         intent?.data?.let { data ->
             val mode = data.getQueryParameter("mode")
             val oobCode = data.getQueryParameter("oobCode")
@@ -66,7 +74,6 @@ class MainActivity : ComponentActivity() {
                     }
             }
         }
-        setContent { AppTheme { AppContent() } }
     }
 }
 
@@ -105,21 +112,16 @@ private fun PreviewSplashScreen() {
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppContent(): Unit {
-    var showSplash: Boolean by remember { mutableStateOf(true) }
-    var splashFinished: Boolean by remember { mutableStateOf(false) }
+fun AppContent() {
+    val mainVm: MainViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+    val ui by mainVm.ui.collectAsState()
     val navController = rememberNavController()
-    val isLoggedIn = remember { FirebaseAuth.getInstance().currentUser != null }
+    val context = LocalContext.current
     
-    LaunchedEffect(splashFinished) {
-        if (splashFinished) showSplash = false
-    }
-    
-    // Sync system bars color to app theme (Saddle Brown)
-    val activity = LocalContext.current as? ComponentActivity
+    // Sync system bars color
     val primaryColor = MaterialTheme.colorScheme.primary
     SideEffect {
-        val window = activity?.window
+        val window = (context as? android.app.Activity)?.window
         if (window != null) {
             WindowCompat.setDecorFitsSystemWindows(window, true)
             window.statusBarColor = primaryColor.toArgb()
@@ -130,98 +132,58 @@ fun AppContent(): Unit {
         }
     }
 
-    if (showSplash) {
-		// Splash ekranında geri tuşu uygulamayı kapatır
-		val activity = LocalContext.current as? ComponentActivity
-		BackHandler {
-			// Uygulamayı kapat
-			activity?.finish()
-		}
-		
-        SplashScreen(onFinished = { splashFinished = true })
+    if (ui.showSplash) {
+        val activity = context as? ComponentActivity
+        BackHandler { activity?.finish() }
+        SplashScreen(onFinished = { mainVm.onSplashFinished() })
     } else {
-        val act = LocalContext.current as? ComponentActivity
+        val activity = context as? ComponentActivity
         BackHandler {
-            val canPop = navController.popBackStack()
-            if (!canPop) {
-                act?.finish()
+            if (!navController.popBackStack()) {
+                activity?.finish()
             }
         }
+        
         AppNavHost(
             navController = navController,
-            role = if (isLoggedIn) UserRole.CUSTOMER else null
+            role = ui.userRole
         )
 
-        DisposableEffect(navController) {
-            val auth = FirebaseAuth.getInstance()
-            val authListener = FirebaseAuth.AuthStateListener { fa ->
-                if (fa.currentUser == null) {
-                    val currentRoute = navController.currentDestination?.route
-                    // Allow Onboarding and Auth flows without redirect
-                    if (currentRoute != Dest.Onboarding.route && 
-                        currentRoute != Dest.Login.route && 
-                        currentRoute != Dest.EmailLogin.route &&
-                        currentRoute != Dest.Enroll.route &&
-                        currentRoute != Dest.ForgotPassword.route) {
-                        
-                        AppLog.w("AuthState", "currentUser null navigate Login")
-                        navController.navigate(Dest.Onboarding.route) {
-                            popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
-                            launchSingleTop = true
-                        }
-                    }
+        // Session validation on Resume
+        val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+        DisposableEffect(lifecycleOwner) {
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    mainVm.reloadUser()
                 }
             }
-            auth.addAuthStateListener(authListener)
-
-            val lifecycle = act?.lifecycle
-            fun reloadAndCheck() {
-                val u = auth.currentUser ?: return
-                u.reload().addOnCompleteListener { t ->
-                    if (!t.isSuccessful) {
-                        val ex = t.exception
-                        if (ex is com.google.firebase.auth.FirebaseAuthInvalidUserException) {
-                            AppLog.e("AuthState", "invalid user signOut")
-                            auth.signOut()
-                            navController.navigate(Dest.Onboarding.route) {
-                                popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
-                                launchSingleTop = true
-                            }
-                        }
-                        return@addOnCompleteListener
-                    }
-                    val cur = auth.currentUser
-                    val hasProvider = cur?.providerData?.isNotEmpty() == true
-                    val hasEmail = cur?.email != null
-                    if (!hasProvider || !hasEmail) {
-                        AppLog.w("AuthState", "provider or email missing, signing out")
-                        auth.signOut()
-                        navController.navigate(Dest.Onboarding.route) {
-                            popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
-                            launchSingleTop = true
-                        }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+        }
+        
+        // Navigation-based Auth Protection
+        LaunchedEffect(ui.isLoggedIn) {
+            if (!ui.isLoggedIn) {
+                val currentRoute = navController.currentDestination?.route
+                if (currentRoute != null && isAuthRequired(currentRoute)) {
+                    navController.navigate(Dest.Onboarding.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                        launchSingleTop = true
                     }
                 }
-            }
-
-            val lifecycleObserver = LifecycleEventObserver { _, event ->
-                if (event == Lifecycle.Event.ON_RESUME) reloadAndCheck()
-            }
-            lifecycle?.addObserver(lifecycleObserver)
-
-            val destListener = NavController.OnDestinationChangedListener { _, destination, _ ->
-                val route = destination.route
-                if (route == Dest.Home.route || route == Dest.Profile.route) reloadAndCheck()
-            }
-            navController.addOnDestinationChangedListener(destListener)
-
-            onDispose {
-                lifecycle?.removeObserver(lifecycleObserver)
-                auth.removeAuthStateListener(authListener)
-                navController.removeOnDestinationChangedListener(destListener)
             }
         }
     }
+}
+
+private fun isAuthRequired(route: String): Boolean {
+    return route !in listOf(
+        Dest.Onboarding.route,
+        Dest.Login.route,
+        Dest.EmailLogin.route,
+        Dest.Enroll.route,
+        Dest.ForgotPassword.route
+    )
 }
 
 @Composable

@@ -92,13 +92,13 @@ fun BarnsMapViewScreen(
                 .statusBarsPadding()
                 .padding(top = 16.dp, start = 16.dp, end = 16.dp)
         ) {
-            // Search Bar & Back Button Row
+            // Original-Style Modern Search Bar & Back Button Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Back Button
+                // Circular Back Button
                 Surface(
                     onClick = { navController.navigateUp() },
                     shape = CircleShape,
@@ -115,34 +115,15 @@ fun BarnsMapViewScreen(
                     }
                 }
 
-                // Search Field Simulation
-                Surface(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    shadowElevation = 4.dp,
-                    onClick = { /* Open Search */ }
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    ) {
-                        Text(
-                            text = "Search area...",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.weight(1f))
-                        Icon(
-                            Icons.Filled.FilterList,
-                            contentDescription = "Filter",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
+                // Unified Search Field part (now matches map style exactly)
+                com.horsegallop.core.components.HorseGallopSearchBar(
+                    query = "", 
+                    onQueryChange = { /* Handle map search */ },
+                    placeholder = "Search area...",
+                    modifier = Modifier.weight(1f)
+                )
             }
+
 
             Spacer(modifier = Modifier.height(12.dp))
 

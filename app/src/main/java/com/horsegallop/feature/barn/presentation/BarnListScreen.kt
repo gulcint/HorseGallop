@@ -78,6 +78,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.horsegallop.feature.barn.domain.model.BarnUi
 import com.horsegallop.navigation.Dest
+import com.horsegallop.core.components.ViewAllButton
+import com.horsegallop.core.components.HorseGallopSearchBar
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,66 +96,13 @@ fun BarnListScreen(
 
   Column(modifier = Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 16.dp)) {
       Spacer(modifier = Modifier.height(24.dp))
-      // Modern search bar with rounded corners and better spacing
-      Surface(
+      com.horsegallop.core.components.HorseGallopSearchBar(
+        query = uiState.query,
+        onQueryChange = viewModel::updateQuery,
         modifier = Modifier
           .fillMaxWidth()
-          .padding(top = 8.dp, bottom = 16.dp),
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
-        shadowElevation = 0.dp
-      ) {
-        Row(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Icon(
-            Icons.Filled.Search,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(20.dp)
-          )
-          Spacer(modifier = Modifier.width(12.dp))
-          Box(
-            modifier = Modifier.weight(1f),
-            contentAlignment = Alignment.CenterStart
-          ) {
-            if (uiState.query.isEmpty()) {
-              Text(
-                text = stringResource(com.horsegallop.core.R.string.barn_search_placeholder),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-              )
-            }
-            androidx.compose.foundation.text.BasicTextField(
-              value = uiState.query,
-              onValueChange = viewModel::updateQuery,
-              textStyle = MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.onSurface
-              ),
-              singleLine = true,
-              modifier = Modifier.fillMaxWidth()
-            )
-          }
-          if (uiState.query.isNotBlank()) {
-            Spacer(modifier = Modifier.width(8.dp))
-            IconButton(
-              onClick = viewModel::clearQuery,
-              modifier = Modifier.size(24.dp)
-            ) {
-              Icon(
-                Icons.Filled.Remove,
-                contentDescription = "Clear",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(16.dp)
-              )
-            }
-          }
-        }
-      }
+          .padding(top = 16.dp, bottom = 12.dp)
+      )
       
       if (uiState.availableFilters.isNotEmpty()) {
         val listState = androidx.compose.foundation.lazy.rememberLazyListState()
@@ -198,24 +148,15 @@ fun BarnListScreen(
           
         }
       }
-      Spacer(modifier = Modifier.height(16.dp))
+      Spacer(modifier = Modifier.height(8.dp))
 
       Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.End
       ) {
-        TextButton(
+        com.horsegallop.core.components.ViewAllButton(
           onClick = { navController?.navigate(Dest.BarnsMapView.route) }
-        ) {
-          Text(text = "View All", color = MaterialTheme.colorScheme.primary)
-          Spacer(modifier = Modifier.width(4.dp))
-          Icon(
-            Icons.Filled.ArrowForward,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(16.dp)
-          )
-        }
+        )
       }
       
 
@@ -270,10 +211,10 @@ fun BarnListScreen(
           }
         }
       } else {
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         LazyColumn(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp, top = 8.dp)
         ) {
             items(uiState.filteredBarns) { barnWithLocation ->
@@ -305,7 +246,7 @@ fun BarnCard(barn: BarnUi, onClick: () -> Unit) {
                 // Enhanced icon with gradient background
                 Box(
                     modifier = Modifier
-                        .size(56.dp)
+                        .size(52.dp)
                         .clip(CircleShape)
                         .background(
                             Brush.linearGradient(
@@ -321,18 +262,18 @@ fun BarnCard(barn: BarnUi, onClick: () -> Unit) {
                         Icons.Filled.Home, 
                         contentDescription = null, 
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = barn.name,
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Filled.LocationOn,
