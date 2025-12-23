@@ -18,7 +18,7 @@ import javax.inject.Inject
 class ProfileRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore,
-    private val storage: FirebaseStorage
+    private val storage: com.google.firebase.storage.FirebaseStorage
 ) : ProfileRepository {
 
     override fun getUserProfile(uid: String): Flow<Result<UserProfile>> = callbackFlow {

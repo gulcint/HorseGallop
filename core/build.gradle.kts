@@ -18,6 +18,9 @@ dependencies {
 	implementation(libs.compose.icons.extended)
 	implementation(libs.coroutines)
 	implementation(libs.androidx.core.ktx)
+	implementation(libs.shimmer.compose)
+	implementation("androidx.compose.animation:animation:1.6.8")
+	implementation("androidx.compose.foundation:foundation:1.6.8")
 }
 
 android {

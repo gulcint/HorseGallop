@@ -91,6 +91,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.FieldValue
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 data class RideUiState(
   val speedKmh: Float,
@@ -107,7 +109,9 @@ data class RideUiState(
 
 data class GeoPoint(val latitude: Double, val longitude: Double)
 
-class RideTrackingViewModel : ViewModel() {
+
+@HiltViewModel
+class RideTrackingViewModel @Inject constructor() : ViewModel() {
   private val _uiState: MutableStateFlow<RideUiState> = MutableStateFlow(
     RideUiState(
       speedKmh = 0f,

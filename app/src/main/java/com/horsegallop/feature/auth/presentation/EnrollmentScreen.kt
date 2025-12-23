@@ -58,10 +58,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.input.KeyboardType
-import android.util.Patterns
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.graphics.lerp
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -128,9 +124,7 @@ fun EnrollmentScreen(
         ModalBottomSheet(
             onDismissRequest = { showVerifySheet = false },
             sheetState = sheetState,
-            dragHandle = {},
-            containerColor = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.testTag("verify_email_sheet")
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             VerificationSheetContent(
                 email = ui.currentUserEmail ?: ui.email,
@@ -217,7 +211,7 @@ private fun EnrollmentContent(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
                     ),
-                    modifier = Modifier.fillMaxWidth().testTag("email_input"),
+                    modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next)
                 )
 
@@ -250,8 +244,7 @@ private fun EnrollmentContent(
             enabled = !ui.loading && ui.isFormValid,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
-                .testTag("enroll_button"),
+                .height(56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = if (ui.isFormValid) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,

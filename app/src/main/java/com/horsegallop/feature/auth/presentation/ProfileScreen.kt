@@ -12,9 +12,7 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -29,10 +27,7 @@ import androidx.compose.foundation.border
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.stringArrayResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.text.KeyboardOptions
@@ -47,15 +42,9 @@ import android.Manifest
 import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
 import android.os.Build
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.EmailAuthProvider
-import com.google.firebase.auth.GoogleAuthProvider
-import com.horsegallop.R
-import com.google.android.gms.common.api.ApiException
-import com.horsegallop.core.theme.AppColors
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.horsegallop.core.components.HorseGallopDatePicker
+import com.horsegallop.core.components.HorseGallopDropdown
 // import com.horsegallop.core.util.DateUtils
 import java.util.Calendar
 
@@ -300,11 +289,12 @@ fun ProfileScreen(
                   horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)),
                 verticalAlignment = Alignment.CenterVertically
               ) {
-                com.horsegallop.compose.HorseGallopDropdown(
+                HorseGallopDropdown(
                     value = displayProfile.countryCode,
                     onValueChange = { viewModel.updateDraft(countryCode = it) },
                     options = countryCodes,
-                    modifier = Modifier.width(100.dp).heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md))
+                    modifier = Modifier.width(100.dp)
+                        .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md))
                 )
 
                 OutlinedTextField(
@@ -344,22 +334,24 @@ fun ProfileScreen(
             )
 
             EditableInfoRow(icon = Icons.Filled.CalendarToday, label = "Date of Birth") {
-                com.horsegallop.compose.HorseGallopDatePicker(
+                HorseGallopDatePicker(
                     value = displayProfile.birthDate,
                     onDateSelected = { datePickerDialog.show() },
-                    modifier = Modifier.fillMaxWidth().heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md))
+                    modifier = Modifier.fillMaxWidth()
+                        .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md))
                 )
             }
 
             // City
             val cities = stringArrayResource(com.horsegallop.core.R.array.city_list).toList()
             EditableInfoRow(icon = Icons.Filled.LocationOn, label = stringResource(id = com.horsegallop.core.R.string.label_city)) {
-                 com.horsegallop.compose.HorseGallopDropdown(
+                HorseGallopDropdown(
                     value = displayProfile.city,
                     onValueChange = { viewModel.updateDraft(city = it) },
                     options = cities,
-                    modifier = Modifier.fillMaxWidth().heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md))
-                 )
+                    modifier = Modifier.fillMaxWidth()
+                        .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_md))
+                )
             }
 
 

@@ -1,6 +1,5 @@
 package com.horsegallop.feature.auth.presentation
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.horsegallop.core.debug.AppLog
@@ -15,6 +14,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.horsegallop.BuildConfig
+import com.horsegallop.domain.auth.AuthValidator
 
 data class EnrollmentUiState(
   val firstName: String = "",
@@ -50,8 +50,7 @@ data class EnrollmentUiState(
 class EnrollmentViewModel @Inject constructor(
   private val signUpWithEmail: SignUpWithEmailUseCase,
   private val resendVerificationEmail: ResendVerificationEmailUseCase,
-  private val authValidator: com.horsegallop.domain.auth.AuthValidator,
-  @ApplicationContext private val appContext: Context
+  private val authValidator: AuthValidator
 ) : ViewModel() {
   private val _ui = MutableStateFlow(EnrollmentUiState())
   val ui: StateFlow<EnrollmentUiState> = _ui
@@ -196,7 +195,7 @@ class EnrollmentViewModel @Inject constructor(
                 startResendCooldown(60)
             }.onFailure { e ->
                 // AppLog.e("AuthSignUp", "resendVerificationEmail failed: ${e.localizedMessage}")
-                val msg = appContext.getString(com.horsegallop.R.string.error_verification_email_failed)
+                val msg = "Could not send verification email. Please try again."
                 _ui.value = _ui.value.copy(verificationError = msg)
             }
         }

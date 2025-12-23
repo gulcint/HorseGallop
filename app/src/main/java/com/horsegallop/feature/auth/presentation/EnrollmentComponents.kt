@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -41,7 +40,7 @@ fun NameFieldsSection(
             onValueChange = onFirstNameChange,
             label = { Text(stringResource(R.string.label_first_name), style = MaterialTheme.typography.bodySmall) },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth().testTag("first_name_input"),
+            modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
@@ -54,7 +53,7 @@ fun NameFieldsSection(
             label = { Text(stringResource(R.string.label_last_name), style = MaterialTheme.typography.bodySmall) },
             placeholder = { Text(stringResource(R.string.label_last_name), style = MaterialTheme.typography.bodySmall) },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth().testTag("last_name_input"),
+            modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
@@ -83,7 +82,7 @@ fun PasswordFieldSection(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
             ),
-            modifier = Modifier.fillMaxWidth().testTag("password_input"),
+            modifier = Modifier.fillMaxWidth(),
             trailingIcon = {
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
                     Icon(
@@ -188,7 +187,7 @@ fun VerificationSheetContent(
 
         Button(
             onClick = onOpenMail,
-            modifier = Modifier.fillMaxWidth().testTag("open_mail_app_button"),
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
         ) {
             Text(text = stringResource(R.string.open_mail_app))
