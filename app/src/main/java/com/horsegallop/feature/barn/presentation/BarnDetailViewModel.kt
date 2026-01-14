@@ -3,8 +3,8 @@ package com.horsegallop.feature.barn.presentation
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.horsegallop.feature.barn.domain.model.BarnWithLocation
-import com.horsegallop.feature.barn.domain.usecase.GetBarnDetailUseCase
+import com.horsegallop.domain.barn.model.BarnWithLocation
+import com.horsegallop.domain.barn.usecase.GetBarnDetailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

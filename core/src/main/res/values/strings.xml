@@ -34,6 +34,7 @@
     <string name="nav_home">Home</string>
     <string name="nav_barns">Barns</string>
     <string name="nav_ride">Ride</string>
+    <string name="nav_schedule">Schedule</string>
     <string name="nav_profile">Profile</string>
     
     <!-- Auth/Login -->
@@ -241,9 +242,9 @@
     <string name="password_reset_success_login">Password reset successful. You can now login with your new password.</string>
     <string name="enter_new_password">Enter your new password</string>
     <string name="new_password">New Password</string>
-    <string name="confirm_password">Confirm Password</string>
-    <string name="passwords_do_not_match">Passwords do not match</string>
-    <string name="change_password">Change Password</string>
+243→    <string name="confirm_password">Confirm Password</string>
+244→    <string name="passwords_do_not_match">Passwords do not match</string>
+245→    <string name="change_password">Change Password</string>
     
     <!-- Login -->
     <string name="continue_with_email">Continue with Email</string>
@@ -284,7 +285,34 @@
     <string name="password_needs_special">Special character</string>
     <string name="strength_weak">Weak</string>
     <string name="strength_medium">Medium</string>
-    <string name="strength_strong">Strong</string>
-    <string name="password_strength_prefix">Strength: %1$s</string>
-    <string name="password_guidance">Use at least 10 characters with mixed types</string>
-</resources>
+287→    <string name="strength_strong">Strong</string>
+288→    <string name="password_strength_prefix">Strength: %1$s</string>
+289→    <string name="password_guidance">Use at least 10 characters with mixed types</string>
+290→    <string name="onboarding_lorem">Discover the joy of horse riding with guided lessons and tracking.</string>
+291→    <string name="onboarding_callout_title">Your Riding Journey Starts</string>
+292→    <string name="onboarding_callout_subtitle">Expert instructors, safe facilities, and a delightful experience</string>
+293→    <string name="onboarding_learn_more">Learn More</string>
+295→    <string name="activity_duration_45m">45 min</string>
+296→    <string name="activity_distance_8_2km">8.2 km</string>
+297→    <string name="activity_duration_1h20m">1h 20m</string>
+298→    <string name="activity_distance_12_5km">12.5 km</string>
+299→    <string name="lesson_detail">Detail</string>
+300→    <string name="lesson_sample_title">Beginner Riding</string>
+301→    <string name="lesson_sample_instructor">John Doe</string>
+302→    <string name="lesson_sample_date">Oct 1, 2:00 PM</string>
+303→    <string name="upcoming_lessons_title">Upcoming Lessons</string>
+304→    <string name="continue_with_apple">Continue with Apple</string>
+305→    <string name="metric_speed">Speed</string>
+306→    <string name="metric_distance">Distance</string>
+307→    <string name="metric_time">Time</string>
+308→    <string name="metric_calories">Calories Burned</string>
+309→    <string name="auto_ride_detection">Auto Ride Detection</string>
+310→    <string name="stop_ride">Stop Ride</string>
+311→    <string name="hero_track_title">Track your next ride</string>
+312→    <string name="hero_track_subtitle">See your route, speed, and duration in real time.</string>
+313→    <string name="reset_password">Reset Password</string>
+314→    <string name="error_too_many_requests">Too many requests. Please try again later.</string>
+315→    <string name="error_quota_exceeded">Quota exceeded.</string>
+316→    <string name="lesson_with_instructor">with %1$s</string>
+317→    <string name="lesson_time">%1$s - %2$s</string>
+314→</resources>

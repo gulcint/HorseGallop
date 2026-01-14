@@ -19,12 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.horsegallop.feature.barn.domain.model.BarnWithLocation
+import android.widget.Toast
+import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.core.R
 import com.valentinilk.shimmer.shimmer
 
@@ -71,11 +73,11 @@ fun BarnDetailScreen(
 
 @Composable
 fun BarnDetailContent(barn: BarnWithLocation) {
+    val context = LocalContext.current
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 80.dp) // Space for bottom button
+        contentPadding = PaddingValues(bottom = 80.dp)
     ) {
-        // Header Image
         item {
             AsyncImage(
                 model = "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=1200", // Placeholder or from barn object
@@ -104,11 +106,6 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    // TODO: Add rating and review count from data model when available
-                    /* Text(
-                        text = "4.8 (120 reviews)", // Placeholder
-                        style = MaterialTheme.typography.bodyMedium
-                    ) */
                 }
             }
         }
@@ -182,7 +179,15 @@ fun BarnDetailContent(barn: BarnWithLocation) {
         contentAlignment = Alignment.BottomCenter
     ) {
         Button(
-            onClick = { /* TODO: Book */ },
+            onClick = {
+                Toast
+                    .makeText(
+                        context,
+                        context.getString(R.string.reserve),
+                        Toast.LENGTH_SHORT
+                    )
+                    .show()
+            },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp)
         ) {

@@ -18,6 +18,7 @@
 	
 	<!-- Neutral Colors -->
 	<color name="background">#FAFAFA</color> <!-- Light Gray -->
+    <color name="ic_launcher_background">#643c1e</color>
 	<color name="surface">#FFFFFF</color> <!-- White -->
 	<color name="surface_variant">#F5F5F5</color> <!-- Light Gray -->
 	<color name="surface_dark">#E8E8E8</color> <!-- Medium Gray -->

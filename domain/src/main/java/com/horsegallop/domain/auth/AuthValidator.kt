@@ -1,13 +1,13 @@
 package com.horsegallop.domain.auth
 
-import android.util.Patterns
+import javax.inject.Inject
 
 sealed class ValidationResult {
     data object Valid : ValidationResult()
     data class Invalid(val errorIds: List<Int>) : ValidationResult()
 }
 
-class AuthValidator {
+class AuthValidator @Inject constructor() {
 
     fun validateName(firstName: String, lastName: String): Boolean {
         return firstName.trim().isNotEmpty() && lastName.trim().isNotEmpty()

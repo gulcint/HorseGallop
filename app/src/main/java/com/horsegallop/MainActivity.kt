@@ -32,7 +32,6 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.airbnb.lottie.compose.*
 import com.horsegallop.navigation.AppNavHost
 import com.horsegallop.navigation.Dest
-import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -48,12 +47,7 @@ class MainActivity : ComponentActivity() {
      override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 		
-        // Enable edge-to-edge
         enableEdgeToEdge()
-		
-        // Handle Firebase verifyEmail deep link in ViewModel if needed, or keep minimal logic here
-        // For now, let's keep verifyEmail here as it requires activity context for Toast,
-        // but we can also move it to a shared AuthManager.
         handleDeepLink(intent)
 
         setContent { AppTheme { AppContent() } }
@@ -64,14 +58,7 @@ class MainActivity : ComponentActivity() {
             val mode = data.getQueryParameter("mode")
             val oobCode = data.getQueryParameter("oobCode")
             if (mode == "verifyEmail" && !oobCode.isNullOrBlank()) {
-                FirebaseAuth.getInstance().applyActionCode(oobCode)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Toast.makeText(this, "E-posta doğrulandı", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(this, task.exception?.localizedMessage ?: "Doğrulama başarısız", Toast.LENGTH_SHORT).show()
-                        }
-                    }
+                Toast.makeText(this, "E-posta doğrulama bağlantısı algılandı", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -149,7 +136,6 @@ fun AppContent() {
             role = ui.userRole
         )
 
-        // Session validation on Resume
         val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
         DisposableEffect(lifecycleOwner) {
             val observer = LifecycleEventObserver { _, event ->
@@ -161,7 +147,6 @@ fun AppContent() {
             onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
         }
         
-        // Navigation-based Auth Protection
         LaunchedEffect(ui.isLoggedIn) {
             if (!ui.isLoggedIn) {
                 val currentRoute = navController.currentDestination?.route
@@ -213,7 +198,7 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
         val subtitleText: String = stringResource(com.horsegallop.core.R.string.welcome_subtitle)
         
         val composition by rememberLottieComposition(
-            LottieCompositionSpec.RawRes(R.raw.horse)
+            LottieCompositionSpec.RawRes(com.horsegallop.core.R.raw.horse)
         )
         // Use LottieAnimatable to control playback precisely
         val lottieAnimatable = rememberLottieAnimatable()
@@ -225,7 +210,7 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
         LaunchedEffect(Unit) {
             withContext(Dispatchers.IO) {
                 try {
-                    val mp = MediaPlayer.create(ctx, R.raw.horse_gallop)
+                    val mp = MediaPlayer.create(ctx, com.horsegallop.core.R.raw.horse_gallop)
                     if (mp != null) {
                         mp.setVolume(1.0f, 1.0f)
                         mediaPlayer = mp

@@ -2,9 +2,9 @@ package com.horsegallop
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
 import com.horsegallop.core.debug.AppLog
 import com.horsegallop.domain.model.UserRole
+import com.horsegallop.domain.auth.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,27 +12,25 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class MainUiState(
-    val isLoggedIn: Boolean = FirebaseAuth.getInstance().currentUser != null,
-    val userRole: UserRole? = if (FirebaseAuth.getInstance().currentUser != null) UserRole.CUSTOMER else null,
+    val isLoggedIn: Boolean = false,
+    val userRole: UserRole? = null,
     val showSplash: Boolean = true,
     val isInitialized: Boolean = false
 )
 
 @HiltViewModel
-class MainViewModel @Inject constructor() : ViewModel() {
+class MainViewModel @Inject constructor(
+    private val authRepository: AuthRepository
+) : ViewModel() {
     private val _ui = MutableStateFlow(MainUiState())
     val ui: StateFlow<MainUiState> = _ui
 
-    private val authListener = FirebaseAuth.AuthStateListener { auth ->
-        val currentUser = auth.currentUser
-        _ui.value = _ui.value.copy(
-            isLoggedIn = currentUser != null,
-            userRole = if (currentUser != null) UserRole.CUSTOMER else null
-        )
-    }
-
     init {
-        FirebaseAuth.getInstance().addAuthStateListener(authListener)
+        val loggedIn = authRepository.isSignedIn()
+        _ui.value = _ui.value.copy(
+            isLoggedIn = loggedIn,
+            userRole = if (loggedIn) UserRole.CUSTOMER else null
+        )
     }
 
     fun onSplashFinished() {
@@ -40,19 +38,14 @@ class MainViewModel @Inject constructor() : ViewModel() {
     }
 
     fun reloadUser() {
-        val user = FirebaseAuth.getInstance().currentUser ?: return
-        user.reload().addOnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                if (task.exception is com.google.firebase.auth.FirebaseAuthInvalidUserException) {
-                    AppLog.e("MainVM", "User invalid, signing out")
-                    FirebaseAuth.getInstance().signOut()
-                }
-            }
-        }
+        val loggedIn = authRepository.isSignedIn()
+        _ui.value = _ui.value.copy(
+            isLoggedIn = loggedIn,
+            userRole = if (loggedIn) UserRole.CUSTOMER else null
+        )
     }
 
     override fun onCleared() {
         super.onCleared()
-        FirebaseAuth.getInstance().removeAuthStateListener(authListener)
     }
 }

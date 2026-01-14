@@ -39,6 +39,7 @@ firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "fir
 firebase-auth = { module = "com.google.firebase:firebase-auth-ktx" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging-ktx" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore-ktx" }
+firebase-storage = { module = "com.google.firebase:firebase-storage-ktx" }
 google-auth = "com.google.android.gms:play-services-auth:21.2.0"
 lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie" }
 shimmer-compose = { module = "com.valentinilk.shimmer:compose-shimmer", version.ref = "shimmer" }

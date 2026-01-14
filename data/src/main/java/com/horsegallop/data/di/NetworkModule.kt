@@ -37,7 +37,7 @@ object NetworkModule {
   @Provides @Singleton
   fun provideRetrofit(okHttpClient: OkHttpClient, moshi: Moshi): Retrofit {
     return Retrofit.Builder()
-      .baseUrl("https://api.example.com/") // TODO change per env
+      .baseUrl(com.horsegallop.data.BuildConfig.BASE_URL)
       .addConverterFactory(MoshiConverterFactory.create(moshi))
       .client(okHttpClient)
       .build()

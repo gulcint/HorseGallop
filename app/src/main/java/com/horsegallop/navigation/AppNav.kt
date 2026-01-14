@@ -42,26 +42,29 @@ import com.horsegallop.feature.auth.presentation.ProfileScreen
 import com.horsegallop.feature.barn.presentation.BarnDetailScreen
 import com.horsegallop.feature.home.presentation.HomeScreen
 import com.horsegallop.feature.onboarding.presentation.OnboardingScreen
+import com.horsegallop.feature.schedule.presentation.ScheduleRoute
 
 import androidx.navigation.navDeepLink
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.horsegallop.feature.ride.presentation.RideTrackingRoute
 import com.horsegallop.feature.ride.presentation.RideTrackingViewModel
 
 sealed class Dest(val route: String) {
-  data object Onboarding : Dest("onboarding")
-  data object Login : Dest("login")
-  data object Home : Dest("home")
-  data object Ride : Dest("ride")
-  data object Barns : Dest("barns")
-  data object EmailLogin : Dest("emailLogin")
-  data object ForgotPassword : Dest("forgotPassword")
-  data object Enroll : Dest("enroll")
-  data object Profile : Dest("profile")
-  data object BarnDetail : Dest("barnDetail/{id}") {
+  object Onboarding : Dest("onboarding")
+  object Login : Dest("login")
+  object Home : Dest("home")
+  object Ride : Dest("ride")
+  object Schedule : Dest("schedule")
+  object Barns : Dest("barns")
+  object EmailLogin : Dest("emailLogin")
+  object ForgotPassword : Dest("forgotPassword")
+  object Enroll : Dest("enroll")
+  object Profile : Dest("profile")
+  object BarnDetail : Dest("barnDetail/{id}") {
     fun routeWithId(id: String): String = "barnDetail/$id"
   }
-  data object RecentActivityDetail : Dest("recentActivityDetail")
-  data object BarnsMapView : Dest("barnsMapView")
+  object RecentActivityDetail : Dest("recentActivityDetail")
+  object BarnsMapView : Dest("barnsMapView")
 }
 
 @Composable
@@ -246,11 +249,22 @@ fun AppNavHost(
       )
     }
     composable(Dest.Ride.route) {
-      BackHandler { navController.popBackStack() }
-      com.horsegallop.feature.ride.presentation.RideTrackingScreen(
-        viewModel = hiltViewModel(),
+      com.horsegallop.feature.ride.presentation.RideTrackingRoute(
         onHomeClick = { navController.navigate(Dest.Home.route) },
         onBarnsClick = { navController.navigate(Dest.Barns.route) }
+      )
+    }
+    composable(Dest.Schedule.route) {
+      ScheduleRoute(
+        onLessonClick = { lessonId ->
+          android.widget.Toast
+            .makeText(
+              ctx,
+              ctx.getString(com.horsegallop.core.R.string.lesson_detail) + ": " + lessonId,
+              android.widget.Toast.LENGTH_SHORT
+            )
+            .show()
+        }
       )
     }
     composable(Dest.Barns.route) {

@@ -33,9 +33,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.horsegallop.core.R
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Close
 
 @Composable
 fun AutoRideDetectionSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
@@ -167,4 +172,76 @@ fun HorseGallopDatePicker(
                 .clickable { onDateSelected() }
         )
     }
+}
+
+@Composable
+fun HorseGallopSearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit = {},
+    placeholder: String? = null,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        singleLine = true,
+        label = null,
+        placeholder = if (placeholder != null) {
+            { Text(placeholder, style = MaterialTheme.typography.bodySmall) }
+        } else null,
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Filled.Search,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.clickable { onQueryChange("") }
+                )
+            }
+        },
+        modifier = modifier,
+        shape = RoundedCornerShape(24.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+        ),
+        keyboardActions = KeyboardActions(onSearch = { onSearch() }),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search)
+    )
+}
+
+@Composable
+fun HorseGallopTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    isError: Boolean = false,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    singleLine: Boolean = true
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label, style = MaterialTheme.typography.bodySmall) },
+        modifier = modifier,
+        isError = isError,
+        singleLine = singleLine,
+        shape = RoundedCornerShape(12.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+        ),
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions
+    )
 }

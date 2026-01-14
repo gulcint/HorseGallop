@@ -2,8 +2,8 @@ package com.horsegallop.feature.auth.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.horsegallop.feature.auth.domain.ConfirmPasswordResetUseCase
-import com.horsegallop.feature.auth.domain.SendPasswordResetEmailUseCase
+import com.horsegallop.domain.auth.usecase.ConfirmPasswordResetUseCase
+import com.horsegallop.domain.auth.usecase.SendPasswordResetEmailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

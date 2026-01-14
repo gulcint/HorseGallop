@@ -3,42 +3,32 @@ package com.horsegallop.feature.auth.presentation
 import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.common.api.ApiException
-import com.horsegallop.feature.auth.domain.ResendVerificationEmailUseCase
-import com.horsegallop.feature.auth.domain.ResetPasswordUseCase
-import com.horsegallop.feature.auth.domain.SignInWithEmailUseCase
-import com.horsegallop.feature.auth.domain.SignInWithGoogleUseCase
+import com.horsegallop.domain.auth.usecase.ResendVerificationEmailUseCase
+import com.horsegallop.domain.auth.usecase.ResetPasswordUseCase
+import com.horsegallop.domain.auth.usecase.SignInWithEmailUseCase
+import com.horsegallop.domain.auth.usecase.SignInWithGoogleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
-
-data class LoginUiState(
-    val email: String = "",
-    val password: String = "",
-    val isPasswordVisible: Boolean = false,
-    val loading: Boolean = false,
-    val errorMessage: String? = null,
-    val success: Boolean = false,
-    val isFormValid: Boolean = false,
-    val showResendVerification: Boolean = false
-)
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val googleClient: GoogleSignInClient,
     private val signInWithGoogle: SignInWithGoogleUseCase,
     private val signInWithEmail: SignInWithEmailUseCase,
     private val resetPassword: ResetPasswordUseCase,
     private val resendVerificationEmail: ResendVerificationEmailUseCase
 ) : ViewModel() {
+
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState
+
+    private val _effect = Channel<LoginEffect>()
+    val effect = _effect.receiveAsFlow()
+
 
     fun updateEmail(email: String) {
         _uiState.value = _uiState.value.copy(email = email)
@@ -64,21 +54,21 @@ class LoginViewModel @Inject constructor(
         val s = _uiState.value
         if (!s.isFormValid) return
 
-        _uiState.value = s.copy(loading = true, errorMessage = null, showResendVerification = false)
+        _uiState.value = s.copy(isLoading = true, errorMessage = null, showResendVerification = false)
         viewModelScope.launch {
             signInWithEmail.execute(s.email, s.password)
                 .collect { result ->
                     result.onSuccess { user ->
                         if (user.isEmailVerified) {
-                            _uiState.value = s.copy(loading = false, success = true)
+                            _uiState.value = s.copy(isLoading = false)
+                            _effect.send(LoginEffect.NavigateToHome)
                         } else {
                             // Email doğrulanmamış, kullanıcıya bildir ama login yapmaya izin verme
-                            _uiState.value = s.copy(loading = false, errorMessage = "login_verify_email_sent", showResendVerification = true)
-                            // Başarı durumunu false tut ki navigation yapılmasın
-                            return@collect
+                            _uiState.value = s.copy(isLoading = false, showResendVerification = true)
+                            _effect.send(LoginEffect.ShowSnackbarError("login_verify_email_sent"))
                         }
                     }.onFailure { e ->
-                        _uiState.value = s.copy(loading = false, errorMessage = e.localizedMessage)
+                        _uiState.value = s.copy(isLoading = false, errorMessage = e.localizedMessage)
                     }
                 }
         }
@@ -88,29 +78,18 @@ class LoginViewModel @Inject constructor(
         val s = _uiState.value
         if (s.email.isBlank() || s.password.isBlank()) return
         
-        _uiState.value = s.copy(loading = true, errorMessage = null)
+        _uiState.value = s.copy(isLoading = true, errorMessage = null)
         viewModelScope.launch {
-            try {
-                // Use FirebaseAuth instance directly to bypass Repository's auto-signout on unverified email
-                val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
-                // 1. Sign in
-                val result = auth.signInWithEmailAndPassword(s.email, s.password).await()
-                val user = result.user
-                
-                if (user != null) {
-                    // 2. Send verification email
-                    user.sendEmailVerification().await()
-                    
-                    // 3. Sign out (to keep security)
-                    auth.signOut()
-                    
-                    _uiState.value = s.copy(loading = false, errorMessage = "verification_email_sent", showResendVerification = false)
-                } else {
-                    _uiState.value = s.copy(loading = false, errorMessage = "User not found")
+            resendVerificationEmail.execute(s.email, s.password)
+                .collect { result ->
+                    result.onSuccess {
+                        _uiState.value = s.copy(isLoading = false)
+                        _effect.send(LoginEffect.ShowVerificationEmailSent)
+                        _effect.send(LoginEffect.ShowSnackbarError("verification_email_sent"))
+                    }.onFailure { e ->
+                        _uiState.value = s.copy(isLoading = false, errorMessage = e.localizedMessage)
+                    }
                 }
-            } catch (e: Exception) {
-                _uiState.value = s.copy(loading = false, errorMessage = "Error: ${e.message}")
-            }
         }
     }
 
@@ -130,58 +109,53 @@ class LoginViewModel @Inject constructor(
     }
 
     fun onSignInCancelled() {
-        _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_cancelled")
+        _uiState.value = _uiState.value.copy(isLoading = false)
+        viewModelScope.launch {
+            _effect.send(LoginEffect.ShowSnackbarError("auth_error_cancelled"))
+        }
     }
 
-    fun onGoogleResult(data: Intent?) {
-        if (data == null) return
+    fun loginWithGoogle(token: String) {
+        if (token.isEmpty()) {
+            _uiState.value = _uiState.value.copy(isLoading = false)
+            viewModelScope.launch {
+                _effect.send(LoginEffect.ShowSnackbarError("auth_error_token_missing"))
+            }
+            return
+        }
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(loading = true, errorMessage = null, success = false)
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             try {
-                val account = task.getResult(ApiException::class.java)
-                val token = account.idToken
-                if (token.isNullOrEmpty()) {
-                    _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_token_missing")
-                    return@launch
-                }
-                try {
-                    signInWithGoogle.execute(token)
-                    _uiState.value = _uiState.value.copy(loading = false, success = true)
-                } catch (e: Exception) {
-                    _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_firebase: ${e.message}")
-                }
-            } catch (e: ApiException) {
-                _uiState.value = _uiState.value.copy(loading = false, errorMessage = "google_error_code:${e.statusCode}")
+                signInWithGoogle.execute(token)
+                _uiState.value = _uiState.value.copy(isLoading = false)
+                _effect.send(LoginEffect.NavigateToHome)
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_firebase: ${e.message}")
+                _uiState.value = _uiState.value.copy(isLoading = false)
+                _effect.send(LoginEffect.ShowSnackbarError("auth_error_firebase: ${e.message}"))
             }
         }
     }
 
-    fun trySilentSignIn(onSignInRequired: (Intent) -> Unit) {
+    fun onGoogleSignInError(message: String) {
+        _uiState.value = _uiState.value.copy(isLoading = false)
         viewModelScope.launch {
-            val account = GoogleSignIn.getLastSignedInAccount(googleClient.applicationContext)
-            if (account == null) {
-                // No cached account, trigger sign-in flow
-                onSignInRequired(googleClient.signInIntent)
-            } else {
-                // Account exists, try to get ID token
-                val token = account.idToken
-                if (token.isNullOrEmpty()) {
-                    // Token is missing or expired, trigger sign-in flow
-                    onSignInRequired(googleClient.signInIntent)
-                } else {
-                    // Token exists, attempt sign-in with it
-                    _uiState.value = _uiState.value.copy(loading = true, errorMessage = null, success = false)
-                    try {
-                        signInWithGoogle.execute(token)
-                        _uiState.value = _uiState.value.copy(loading = false, success = true)
-                    } catch (e: Exception) {
-                        _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_firebase: ${e.message}")
-                    }
-                }
-            }
+            _effect.send(LoginEffect.ShowSnackbarError(message))
         }
     }
+}
+
+data class LoginUiState(
+    val email: String = "",
+    val password: String = "",
+    val isPasswordVisible: Boolean = false,
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
+    val isFormValid: Boolean = false,
+    val showResendVerification: Boolean = false
+)
+
+sealed class LoginEffect {
+    object NavigateToHome : LoginEffect()
+    data class ShowSnackbarError(val message: String) : LoginEffect()
+    object ShowVerificationEmailSent : LoginEffect()
 }
