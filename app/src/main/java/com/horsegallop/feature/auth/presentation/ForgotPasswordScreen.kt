@@ -18,7 +18,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.horsegallop.compose.HorseLoadingOverlay
+import com.horsegallop.core.components.HorseLoadingOverlay
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.core.R
 

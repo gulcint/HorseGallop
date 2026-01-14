@@ -13,6 +13,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.horsegallop.core.R
+import com.horsegallop.core.R as CoreR
+import com.horsegallop.R as AppR
 
 @Composable
 fun EmailLoginScreen(
@@ -25,26 +27,32 @@ fun EmailLoginScreen(
   val snackbarHostState = remember { SnackbarHostState() }
   val uiState by viewModel.uiState.collectAsState()
 
-  LaunchedEffect(uiState.success) {
-    if (uiState.success) {
-      snackbarHostState.showSnackbar(context.getString(R.string.auth_success))
-      onSignedIn()
+  LaunchedEffect(Unit) {
+    viewModel.effect.collect { effect ->
+      when (effect) {
+        is LoginEffect.NavigateToHome -> {
+          snackbarHostState.showSnackbar(context.getString(CoreR.string.auth_success))
+          onSignedIn()
+        }
+        is LoginEffect.ShowSnackbarError -> {
+             val message = when (effect.message) {
+                 "login_verify_email_sent" -> context.getString(CoreR.string.login_verify_email_sent)
+                 "auth_error_cancelled" -> context.getString(CoreR.string.auth_error_cancelled)
+                 "auth_error_token_missing" -> context.getString(CoreR.string.auth_error_token_missing)
+                 "auth_error_firebase" -> context.getString(CoreR.string.auth_error_firebase)
+                 "Email not verified" -> context.getString(AppR.string.error_email_not_verified)
+                 else -> effect.message
+             }
+             snackbarHostState.showSnackbar(message)
+         }
+         is LoginEffect.ShowVerificationEmailSent -> {
+              snackbarHostState.showSnackbar(context.getString(CoreR.string.login_verify_email_sent))
+         }
+      }
     }
   }
 
-  LaunchedEffect(uiState.errorMessage) {
-    uiState.errorMessage?.let { errorKey ->
-      val message = when (errorKey) {
-        "login_verify_email_sent" -> context.getString(R.string.login_verify_email_sent)
-        "auth_error_cancelled" -> context.getString(com.horsegallop.core.R.string.auth_error_cancelled)
-        "auth_error_token_missing" -> context.getString(com.horsegallop.core.R.string.auth_error_token_missing)
-        "auth_error_firebase" -> context.getString(com.horsegallop.core.R.string.auth_error_firebase)
-        "Email not verified" -> context.getString(com.horsegallop.R.string.error_email_not_verified)
-        else -> errorKey
-      }
-      snackbarHostState.showSnackbar(message)
-    }
-  }
+  // Removed redundant LaunchedEffect(uiState.errorMessage) as errors are handled by LoginEffect
 
   EmailLoginContent(
     uiState = uiState,
@@ -100,10 +108,10 @@ fun EmailLoginContent(
       
       Button(
         onClick = onLoginClick,
-        enabled = !uiState.loading,
+        enabled = !uiState.isLoading,
         modifier = Modifier.fillMaxWidth()
       ) { 
-        if (uiState.loading) {
+        if (uiState.isLoading) {
           CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
 
         } else {

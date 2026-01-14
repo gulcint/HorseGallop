@@ -76,10 +76,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.horsegallop.feature.barn.domain.model.BarnUi
 import com.horsegallop.navigation.Dest
 import com.horsegallop.core.components.ViewAllButton
 import com.horsegallop.core.components.HorseGallopSearchBar
+import com.horsegallop.domain.barn.model.BarnUi
+import com.horsegallop.domain.barn.model.BarnWithLocation
 
 
 

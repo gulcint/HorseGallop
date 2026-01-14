@@ -20,6 +20,5 @@ include(
 	":app",
 	":core",
 	":data",
-	":compose",
 	":domain"
 )

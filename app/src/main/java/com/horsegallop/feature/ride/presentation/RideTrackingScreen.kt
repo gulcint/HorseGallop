@@ -87,10 +87,17 @@ import kotlinx.coroutines.Dispatchers
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.FieldValue
+import dagger.hilt.android.lifecycle.HiltViewModel
+import com.horsegallop.domain.ride.model.GeoPoint
+import com.horsegallop.domain.ride.usecase.ObserveIsRidingUseCase
+import com.horsegallop.domain.ride.usecase.ObserveRideMetricsUseCase
+import com.horsegallop.domain.ride.usecase.SetAutoDetectUseCase
+import com.horsegallop.domain.ride.usecase.StartRideUseCase
+import com.horsegallop.domain.ride.usecase.StopRideUseCase
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import javax.inject.Inject
 
 data class RideUiState(
   val speedKmh: Float,
@@ -105,9 +112,14 @@ data class RideUiState(
   val pathPoints: List<GeoPoint>
 )
 
-data class GeoPoint(val latitude: Double, val longitude: Double)
-
-class RideTrackingViewModel : ViewModel() {
+@HiltViewModel
+class RideTrackingViewModel @Inject constructor(
+    private val startRideUseCase: StartRideUseCase,
+    private val stopRideUseCase: StopRideUseCase,
+    private val observeRideMetricsUseCase: ObserveRideMetricsUseCase,
+    private val observeIsRidingUseCase: ObserveIsRidingUseCase,
+    private val setAutoDetectUseCase: SetAutoDetectUseCase
+) : ViewModel() {
   private val _uiState: MutableStateFlow<RideUiState> = MutableStateFlow(
     RideUiState(
       speedKmh = 0f,
@@ -123,61 +135,54 @@ class RideTrackingViewModel : ViewModel() {
     )
   )
   val uiState: StateFlow<RideUiState> = _uiState
-  fun toggleRide() {
-    val now: RideUiState = _uiState.value
-    _uiState.value = now.copy(isRiding = !now.isRiding)
-    if (_uiState.value.isRiding) startMockLoop() else stopRide()
-  }
-  fun setAutoDetect(enabled: Boolean) { _uiState.value = _uiState.value.copy(autoDetect = enabled) }
-  private fun startMockLoop() {
-    viewModelScope.launch(Dispatchers.Default) {
-      while (_uiState.value.isRiding) {
-        delay(1000)
-        val cur: RideUiState = _uiState.value
-        val newDuration: Int = cur.durationSec + 1
-        val newSpeed: Float = ((10..22).random()) / 2f
-        val newDistance: Float = cur.distanceKm + (newSpeed / 3600f)
-        val weightKg: Float = 75f
-        val met: Float = 5.5f
-        val kcal: Int = (weightKg * (newDuration / 60f) * met / 60f).toInt()
-        // advance mock position slightly
-        val last: GeoPoint = cur.pathPoints.lastOrNull() ?: GeoPoint(41.0, 29.0)
-        val jitterLat: Double = (listOf(-0.0005, -0.0003, 0.0, 0.0003, 0.0005)).random()
-        val jitterLng: Double = (listOf(-0.0005, -0.0003, 0.0, 0.0003, 0.0005)).random()
-        val next: GeoPoint = GeoPoint(last.latitude + jitterLat, last.longitude + jitterLng)
-        val updatedPath: List<GeoPoint> = (cur.pathPoints + next).takeLast(200)
-        _uiState.value = cur.copy(
-          speedKmh = newSpeed,
-          distanceKm = newDistance,
-          durationSec = newDuration,
-          calories = kcal,
-          pathPoints = updatedPath
-        )
-      }
-    }
-  }
-  private fun saveRideToFirestore() {
-    val cur: RideUiState = _uiState.value
-    viewModelScope.launch(Dispatchers.IO) {
-      try {
-        val uid: String? = FirebaseAuth.getInstance().currentUser?.uid
-        if (uid != null) {
-          val data: MutableMap<String, Any> = hashMapOf(
-            "title" to "Ride",
-            "durationMin" to (cur.durationSec / 60),
-            "distanceKm" to cur.distanceKm.toDouble(),
-            "timestamp" to FieldValue.serverTimestamp()
+
+  init {
+      combine(
+          observeIsRidingUseCase(),
+          observeRideMetricsUseCase()
+      ) { isRiding, metrics ->
+          _uiState.value.copy(
+              isRiding = isRiding,
+              speedKmh = metrics.speedKmh,
+              distanceKm = metrics.distanceKm,
+              durationSec = metrics.durationSec,
+              calories = metrics.calories,
+              pathPoints = metrics.pathPoints
           )
-          Firebase.firestore.collection("users").document(uid).collection("rides").add(data)
+      }.onEach { newState ->
+          _uiState.value = newState
+      }.launchIn(viewModelScope)
+  }
+
+  fun toggleRide() {
+    viewModelScope.launch {
+        if (_uiState.value.isRiding) {
+            stopRideUseCase()
+        } else {
+            startRideUseCase()
         }
-      } catch (_: Throwable) { }
     }
   }
-  private fun stopRide() {
-    val cur: RideUiState = _uiState.value
-    _uiState.value = cur.copy(speedKmh = 0f, isRiding = false)
-    saveRideToFirestore()
+
+  fun setAutoDetect(enabled: Boolean) {
+      viewModelScope.launch {
+          setAutoDetectUseCase(enabled)
+          _uiState.value = _uiState.value.copy(autoDetect = enabled)
+      }
   }
+}
+
+@Composable
+fun RideTrackingRoute(
+    viewModel: RideTrackingViewModel = androidx.hilt.navigation.compose.hiltViewModel(),
+    onHomeClick: () -> Unit = {},
+    onBarnsClick: () -> Unit = {}
+) {
+    RideTrackingScreen(
+        viewModel = viewModel,
+        onHomeClick = onHomeClick,
+        onBarnsClick = onBarnsClick
+    )
 }
 
 @Composable
@@ -188,9 +193,26 @@ fun RideTrackingScreen(
   onBarnsClick: () -> Unit = {}
 ) {
   val state: RideUiState by viewModel.uiState.collectAsState()
-  val context = LocalContext.current
+  
+  RideTrackingContent(
+    state = state,
+    onToggleRide = { viewModel.toggleRide() },
+    onSetAutoDetect = { viewModel.setAutoDetect(it) },
+    onHomeClick = onHomeClick,
+    onBarnsClick = onBarnsClick
+  )
+}
+
+@Composable
+@androidx.compose.material3.ExperimentalMaterial3Api
+fun RideTrackingContent(
+  state: RideUiState,
+  onToggleRide: () -> Unit,
+  onSetAutoDetect: (Boolean) -> Unit,
+  onHomeClick: () -> Unit = {},
+  onBarnsClick: () -> Unit = {}
+) {
   var selectedRideType: RideType? by remember { mutableStateOf<RideType?>(null) }
-  // Location tracking service removed - using mock data for now
   Scaffold(
     containerColor = MaterialTheme.colorScheme.background,
     topBar = { /* No title - greeting moved into content */ }
@@ -199,9 +221,7 @@ fun RideTrackingScreen(
       modifier = Modifier
         .fillMaxSize()
         .padding(innerPadding)
-        
-        .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal))
-        ,
+        .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal)),
       verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
     ) {
       WeatherTopRow(modifier = Modifier.padding(top = 24.dp))
@@ -214,11 +234,10 @@ fun RideTrackingScreen(
         StatsOverviewCard()
         Spacer(modifier = Modifier.weight(1f))
         Button(
-          onClick = { viewModel.toggleRide() },
+          onClick = onToggleRide,
           modifier = Modifier
             .fillMaxWidth()
-            .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl))
-            ,
+            .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
           colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
           shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
           elevation = ButtonDefaults.buttonElevation(defaultElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm))
@@ -238,9 +257,9 @@ fun RideTrackingScreen(
           elapsedSec = state.durationSec
         )
         Spacer(Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
-      StatsRow(speedKmh = state.speedKmh, distanceKm = state.distanceKm, durationSec = state.durationSec)
+        StatsRow(speedKmh = state.speedKmh, distanceKm = state.distanceKm, durationSec = state.durationSec)
         Spacer(Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
-        ControlsRow(isRiding = state.isRiding, onStop = { viewModel.toggleRide() }, autoDetect = state.autoDetect, onToggleAuto = { viewModel.setAutoDetect(it) })
+        ControlsRow(isRiding = state.isRiding, onStop = onToggleRide, autoDetect = state.autoDetect, onToggleAuto = onSetAutoDetect)
       }
     }
   }
@@ -853,6 +872,22 @@ private fun ControlsRow(isRiding: Boolean, onStop: () -> Unit, autoDetect: Boole
 
 @Preview(showBackground = true)
 @Composable
+@androidx.compose.material3.ExperimentalMaterial3Api
 private fun PreviewRideTracking() {
-  RideTrackingScreen(viewModel = RideTrackingViewModel())
+  RideTrackingContent(
+    state = RideUiState(
+        speedKmh = 0f,
+        distanceKm = 0f,
+        durationSec = 0,
+        calories = 0,
+        isRiding = false,
+        autoDetect = false,
+        nextGoalText = "Next Goal: 100 km Club",
+        dailyTrend = listOf(0.2f, 0.4f, 0.1f, 0.6f, 0.3f, 0.7f, 0.5f),
+        weeklyTrend = listOf(1.2f, 2.4f, 3.1f, 2.7f),
+        pathPoints = listOf(GeoPoint(41.0, 29.0))
+    ),
+    onToggleRide = {},
+    onSetAutoDetect = {}
+  )
 }

@@ -14,10 +14,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
-import okhttp3.OkHttpClient as Ok3
-import okhttp3.logging.HttpLoggingInterceptor as Ok3Logger
-import retrofit2.Retrofit as Rt
-import retrofit2.converter.moshi.MoshiConverterFactory as RtMoshi
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -29,26 +25,26 @@ object NetworkModule {
   }
 
   @Provides @Singleton
-  fun provideOkHttpClient(@ApplicationContext context: Context): Ok3 {
-    val logger: Ok3Logger = Ok3Logger().apply { level = Ok3Logger.Level.BODY }
+  fun provideOkHttpClient(@ApplicationContext context: Context): OkHttpClient {
+    val logger: HttpLoggingInterceptor = HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
     val languageInterceptor = LanguageInterceptor(context)
-    return Ok3.Builder()
+    return OkHttpClient.Builder()
       .addInterceptor(languageInterceptor)
       .addInterceptor(logger)
       .build()
   }
 
   @Provides @Singleton
-  fun provideRetrofit(okHttpClient: Ok3, moshi: Moshi): Rt {
-    return Rt.Builder()
-      .baseUrl("https://api.example.com/") // TODO change per env
-      .addConverterFactory(RtMoshi.create(moshi))
+  fun provideRetrofit(okHttpClient: OkHttpClient, moshi: Moshi): Retrofit {
+    return Retrofit.Builder()
+      .baseUrl(com.horsegallop.data.BuildConfig.BASE_URL)
+      .addConverterFactory(MoshiConverterFactory.create(moshi))
       .client(okHttpClient)
       .build()
   }
 
   @Provides @Singleton
-  fun provideApiService(retrofit: Rt): com.horsegallop.data.remote.ApiService {
+  fun provideApiService(retrofit: Retrofit): com.horsegallop.data.remote.ApiService {
     return retrofit.create(com.horsegallop.data.remote.ApiService::class.java)
   }
 }

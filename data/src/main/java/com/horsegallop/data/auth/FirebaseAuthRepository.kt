@@ -5,6 +5,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.horsegallop.domain.auth.AuthRepository
+import com.horsegallop.domain.auth.model.UserProfile
 import com.horsegallop.domain.model.User
 import com.horsegallop.domain.model.UserRole
 import kotlinx.coroutines.flow.Flow
@@ -110,14 +111,60 @@ class FirebaseAuthRepository @Inject constructor(
         }
     }
 
-    override fun resendVerificationEmail(): Flow<Result<Unit>> = flow {
+    override fun resendVerificationEmail(email: String?, password: String?): Flow<Result<Unit>> = flow {
         try {
+            // If email/password provided, sign in first (re-authentication)
+            if (!email.isNullOrBlank() && !password.isNullOrBlank()) {
+                 auth.signInWithEmailAndPassword(email, password).await()
+            }
+            
             val user = auth.currentUser ?: throw Exception("No user signed in")
             user.sendEmailVerification().await()
             emit(Result.success(Unit))
         } catch (e: Exception) {
             emit(Result.failure(e))
         }
+    }
+
+    override fun checkEmailVerified(): Flow<Result<Boolean>> = flow {
+        val user = auth.currentUser ?: throw Exception("No user signed in")
+        try {
+            user.reload().await()
+            val isVerified = user.isEmailVerified
+            emit(Result.success(isVerified))
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
+
+    override fun saveUserToRemote(user: UserProfile): Flow<Result<Unit>> = flow {
+        val uid = auth.currentUser?.uid ?: throw Exception("No user signed in")
+        try {
+             val data = mapOf(
+                 "id" to uid,
+                 "role" to UserRole.CUSTOMER.name,
+                 "firstName" to user.firstName,
+                 "lastName" to user.lastName,
+                 "name" to listOf(user.firstName, user.lastName).filter { it.isNotBlank() }.joinToString(" "),
+                 "email" to (auth.currentUser?.email ?: ""),
+                 "createdAt" to com.google.firebase.Timestamp.now()
+             )
+             firestore.collection("users").document(uid)
+                 .set(data, com.google.firebase.firestore.SetOptions.merge())
+                 .await()
+             emit(Result.success(Unit))
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
+
+    override fun getLottieConfig(): Flow<Result<Pair<String, String>>> = flow {
+        // Mock implementation since Lottie config usually comes from Remote Config
+        emit(Result.success("https://assets9.lottiefiles.com/packages/lf20_jbrw3hcz.json" to "https://assets9.lottiefiles.com/packages/lf20_yYdx1X.json"))
+    }
+
+    override fun getCurrentUserId(): String? {
+        return auth.currentUser?.uid
     }
 
     private suspend fun fetchOrCreateUser(firebaseUser: com.google.firebase.auth.FirebaseUser): User {

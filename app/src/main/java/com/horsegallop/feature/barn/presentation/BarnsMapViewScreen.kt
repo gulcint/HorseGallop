@@ -40,7 +40,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.FilterList
 import com.horsegallop.core.R
-import com.horsegallop.feature.barn.domain.model.BarnUi
+import com.horsegallop.domain.barn.model.BarnUi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

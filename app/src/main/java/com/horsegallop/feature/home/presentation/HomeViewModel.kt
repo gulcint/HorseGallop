@@ -2,9 +2,9 @@ package com.horsegallop.feature.home.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.horsegallop.feature.auth.domain.usecase.GetCurrentUserIdUseCase
-import com.horsegallop.feature.home.domain.usecase.GetRecentActivitiesUseCase
-import com.horsegallop.feature.home.domain.usecase.GetUserStatsUseCase
+import com.horsegallop.domain.auth.usecase.GetCurrentUserIdUseCase
+import com.horsegallop.domain.home.usecase.GetRecentActivitiesUseCase
+import com.horsegallop.domain.home.usecase.GetUserStatsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -3,12 +3,12 @@ package com.horsegallop.feature.auth.presentation
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.horsegallop.feature.auth.domain.model.UserProfile
-import com.horsegallop.feature.auth.domain.usecase.GetCurrentUserIdUseCase
-import com.horsegallop.feature.auth.domain.usecase.GetUserProfileUseCase
-import com.horsegallop.feature.auth.domain.usecase.SignOutUseCase
-import com.horsegallop.feature.auth.domain.usecase.UpdateProfileImageUseCase
-import com.horsegallop.feature.auth.domain.usecase.UpdateUserProfileUseCase
+import com.horsegallop.domain.auth.model.UserProfile
+import com.horsegallop.domain.auth.usecase.GetCurrentUserIdUseCase
+import com.horsegallop.domain.auth.usecase.GetUserProfileUseCase
+import com.horsegallop.domain.auth.usecase.SignOutUseCase
+import com.horsegallop.domain.auth.usecase.UpdateProfileImageUseCase
+import com.horsegallop.domain.auth.usecase.UpdateUserProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -132,7 +132,10 @@ class ProfileViewModel @Inject constructor(
 
 
     fun signOut(onSignOut: () -> Unit) {
-        signOutUseCase()
-        onSignOut()
+        viewModelScope.launch {
+            signOutUseCase.execute().collect {
+                onSignOut()
+            }
+        }
     }
 }

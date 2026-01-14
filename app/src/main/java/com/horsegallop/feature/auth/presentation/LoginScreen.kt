@@ -9,7 +9,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import com.horsegallop.theme.AppColors
@@ -27,6 +26,7 @@ import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -40,7 +40,6 @@ import androidx.compose.material.icons.filled.CheckCircle
 import kotlinx.coroutines.delay
 import androidx.compose.ui.res.dimensionResource
 import com.valentinilk.shimmer.shimmer
-import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
@@ -62,7 +61,7 @@ import android.widget.TextView
 import android.view.Gravity
 import android.graphics.drawable.GradientDrawable
 import android.util.TypedValue
-import com.horsegallop.compose.HorseLoadingOverlay
+import com.horsegallop.core.components.HorseLoadingOverlay
  
 
 @Composable
@@ -76,51 +75,92 @@ fun LoginScreen(
     val vm: LoginViewModel = hiltViewModel()
     val uiState by vm.uiState.collectAsState()
     val scope = rememberCoroutineScope()
+
+    val gso = remember {
+        GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(context.getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+    }
+    val googleClient = remember { GoogleSignIn.getClient(context, gso) }
+
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
-        if (res.resultCode == Activity.RESULT_OK) vm.onGoogleResult(res.data) else vm.onSignInCancelled()
+        val data = res.data
+        if (data == null) {
+            if (res.resultCode == Activity.RESULT_OK) {
+                vm.onGoogleSignInError("auth_error_google")
+            } else {
+                vm.onSignInCancelled()
+            }
+            return@rememberLauncherForActivityResult
+        }
+
+        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            val token = account.idToken
+            if (!token.isNullOrEmpty()) {
+                vm.loginWithGoogle(token)
+            } else {
+                vm.onGoogleSignInError("auth_error_token_missing")
+            }
+        } catch (e: ApiException) {
+            vm.onGoogleSignInError("google_error_code:${e.statusCode},resultCode:${res.resultCode}")
+        } catch (_: Throwable) {
+            vm.onGoogleSignInError("auth_error_google")
+        }
+    }
+
+    LaunchedEffect(vm.effect) {
+        vm.effect.collect { effect ->
+            when (effect) {
+                is LoginEffect.NavigateToHome -> onGoogleClick() // Using onGoogleClick as the "success/home" navigation for now as per original code behavior
+                is LoginEffect.ShowSnackbarError -> {
+                     val msgKey = effect.message
+                     val isDebug = (context.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
+                     val msg = when (msgKey) {
+                        "auth_error_google" -> context.getString(com.horsegallop.core.R.string.auth_error_google)
+                        "auth_error_firebase" -> context.getString(com.horsegallop.core.R.string.auth_error_firebase)
+                        "auth_error_cancelled" -> context.getString(com.horsegallop.core.R.string.auth_error_cancelled)
+                        "auth_error_token_missing" -> context.getString(com.horsegallop.core.R.string.auth_error_token_missing)
+                        "login_verify_email_sent" -> context.getString(com.horsegallop.core.R.string.login_verify_email_sent)
+                        "verification_email_sent" -> "Verification email sent"
+                        "Email not verified" -> context.getString(com.horsegallop.R.string.error_email_not_verified)
+                        else -> {
+                            if (msgKey.startsWith("google_error_code:")) {
+                                val code = msgKey.removePrefix("google_error_code:")
+                                if (isDebug) {
+                                    "Google Sign-In error code: $code"
+                                } else {
+                                    context.getString(com.horsegallop.core.R.string.auth_error_google)
+                                }
+                            } else if (msgKey.startsWith("auth_error_firebase: ")) {
+                                val error = msgKey.removePrefix("auth_error_firebase: ")
+                                if (isDebug) {
+                                    "Authentication failed: $error"
+                                } else {
+                                    context.getString(com.horsegallop.core.R.string.auth_error_firebase)
+                                }
+                            } else {
+                                context.getString(com.horsegallop.core.R.string.error_unknown)
+                            }
+                        }
+                    }
+                    showLogoToast(context, msg, !msgKey.contains("sent"))
+                }
+                is LoginEffect.ShowVerificationEmailSent -> {
+                    showLogoToast(context, "Verification email sent", false)
+                }
+            }
+        }
     }
 
     LaunchedEffect(uiState.errorMessage) {
         val msgKey = uiState.errorMessage
         if (msgKey != null) {
-            val isDebug = (context.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
-            val msg = when (msgKey) {
-                "auth_error_google" -> context.getString(com.horsegallop.core.R.string.auth_error_google)
-                "auth_error_firebase" -> context.getString(com.horsegallop.core.R.string.auth_error_firebase)
-                "auth_error_token_missing" -> context.getString(com.horsegallop.core.R.string.auth_error_token_missing)
-                "login_verify_email_sent" -> context.getString(com.horsegallop.core.R.string.login_verify_email_sent)
-                "verification_email_sent" -> "Verification email sent"
-                "Email not verified" -> context.getString(com.horsegallop.R.string.error_email_not_verified)
-                else -> {
-                    if (msgKey.startsWith("google_error_code:")) {
-                        val code = msgKey.removePrefix("google_error_code:")
-                        if (isDebug) {
-                            "Google Sign-In error code: $code"
-                        } else {
-                            context.getString(com.horsegallop.core.R.string.auth_error_google)
-                        }
-                    } else if (msgKey.startsWith("auth_error_firebase: ")) {
-                        val error = msgKey.removePrefix("auth_error_firebase: ")
-                        if (isDebug) {
-                            "Authentication failed: $error"
-                        } else {
-                            context.getString(com.horsegallop.core.R.string.auth_error_firebase)
-                        }
-                    } else {
-                        context.getString(com.horsegallop.core.R.string.error_unknown)
-                    }
-                }
-            }
-            showLogoToast(context, msg, !msgKey.contains("sent"))
         }
     }
 
-    LaunchedEffect(uiState.success) {
-        if (uiState.success) {
-            // Toast removed to speed up transition
-            onGoogleClick()
-        }
-    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -149,7 +189,7 @@ fun LoginScreen(
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
             ) {
                 Image(
-                    painter = painterResource(id = R.mipmap.ic_launcher),
+                    painter = painterResource(id = R.drawable.ic_horse),
                     contentDescription = stringResource(com.horsegallop.core.R.string.app_name),
                     modifier = Modifier
                         .size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_xxxl))
@@ -171,8 +211,7 @@ fun LoginScreen(
             Column(
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
             ) {
-                // Keep loading overlay visible even on success to prevent form from flickering during navigation
-                HorseLoadingOverlay(visible = uiState.loading || uiState.success)
+                HorseLoadingOverlay(visible = uiState.isLoading)
                 val focusManager = LocalFocusManager.current
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
@@ -206,7 +245,7 @@ fun LoginScreen(
 
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
-                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("login_email_input"),
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                             colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
@@ -234,7 +273,7 @@ fun LoginScreen(
                             visualTransformation = if (uiState.isPasswordVisible) androidx.compose.ui.text.input.VisualTransformation.None else PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("login_password_input"),
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                             colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
@@ -253,15 +292,14 @@ fun LoginScreen(
                         }
                         Button(
                             onClick = vm::login,
-                            enabled = !uiState.loading && uiState.isFormValid,
+                            enabled = !uiState.isLoading && uiState.isFormValid,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl))
-                                .testTag("login_button"),
+                                .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
                             shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
                         ) {
                             Text(
-                                text = if (uiState.loading) stringResource(com.horsegallop.core.R.string.login_button_loading) else stringResource(com.horsegallop.core.R.string.login_button),
+                                text = if (uiState.isLoading) stringResource(com.horsegallop.core.R.string.login_button_loading) else stringResource(com.horsegallop.core.R.string.login_button),
                                 style = MaterialTheme.typography.labelLarge
                             )
                         }
@@ -283,7 +321,7 @@ fun LoginScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            TextButton(onClick = onSignupClick, modifier = Modifier.testTag("signup_text_button")) {
+                            TextButton(onClick = onSignupClick) {
                                 Text(text = stringResource(com.horsegallop.core.R.string.prompt_create_account), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                             }
                         }
@@ -304,16 +342,20 @@ fun LoginScreen(
                     )
                     HorizontalDivider(modifier = Modifier.weight(1f), color = AppColors.Divider)
                 }
-                GoogleSignInButton(loading = uiState.loading, onClick = {
-                    if (!uiState.loading) {
+                GoogleSignInButton(loading = uiState.isLoading, onClick = {
+                    if (!uiState.isLoading) {
                         scope.launch(kotlinx.coroutines.Dispatchers.IO) {
                             val availability = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
                             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
                                 if (availability != ConnectionResult.SUCCESS) {
                                     showLogoToast(context, context.getString(com.horsegallop.core.R.string.auth_error_play_services), true)
                                 } else {
-                                    vm.trySilentSignIn { intent ->
-                                        if (intent != null) launcher.launch(intent)
+                                    // Try to get cached account first for silent sign-in
+                                    val account = GoogleSignIn.getLastSignedInAccount(context)
+                                    if (account != null && !account.idToken.isNullOrEmpty()) {
+                                        vm.loginWithGoogle(account.idToken!!)
+                                    } else {
+                                        launcher.launch(googleClient.signInIntent)
                                     }
                                 }
                             }
@@ -333,8 +375,6 @@ fun LoginScreen(
             Spacer(modifier = Modifier.weight(1f))
         }
     }
-
-    
 }
 
 private fun showLogoToast(context: Context, text: String, isError: Boolean) {
@@ -386,8 +426,7 @@ fun GoogleSignInButton(loading: Boolean = false, onClick: () -> Unit) {
         onClick = if (loading) ({}) else onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl))
-            .testTag("google_signin_button"),
+            .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
         shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
         color = MaterialTheme.colorScheme.surface,
         shadowElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm),
@@ -421,7 +460,6 @@ fun GoogleSignInButton(loading: Boolean = false, onClick: () -> Unit) {
 }
 
  
-
 
 @Composable
 fun EmailSignInButton(onClick: () -> Unit) {

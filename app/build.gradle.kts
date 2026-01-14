@@ -40,6 +40,11 @@ android {
 	}
 }
 
+kapt {
+    correctErrorTypes = true
+    showProcessorStats = true
+}
+
 dependencies {
 	implementation(platform(libs.compose.bom))
 	implementation(libs.compose.ui)
@@ -71,7 +76,6 @@ dependencies {
     implementation(libs.okhttp.logging)
     implementation(libs.moshi.kotlin)
     implementation(project(":core"))
-    implementation(project(":compose"))
     implementation(project(":data"))
     implementation(project(":domain"))
 	debugImplementation(libs.compose.tooling)

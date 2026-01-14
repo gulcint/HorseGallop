@@ -9,6 +9,17 @@ android {
 	namespace = "com.horsegallop.data"
 	compileSdk = 34
 	defaultConfig { minSdk = 24 }
+	buildFeatures {
+		buildConfig = true
+	}
+	buildTypes {
+		getByName("debug") {
+			buildConfigField("String", "BASE_URL", "\"https://api.example.com/\"")
+		}
+		getByName("release") {
+			buildConfigField("String", "BASE_URL", "\"https://api.example.com/\"")
+		}
+	}
 	compileOptions {
 		sourceCompatibility = JavaVersion.VERSION_17
 		targetCompatibility = JavaVersion.VERSION_17
@@ -27,13 +38,11 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.moshi.kotlin)
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
-    kapt(libs.room.compiler)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
     implementation(libs.google.auth)
 }

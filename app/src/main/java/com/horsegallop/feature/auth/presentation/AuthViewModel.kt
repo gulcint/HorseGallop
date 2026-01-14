@@ -10,9 +10,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed class AuthUiState {
-    data object Idle : AuthUiState()
-    data object Loading : AuthUiState()
-    data object Success : AuthUiState()
+    object Idle : AuthUiState()
+    object Loading : AuthUiState()
+    object Success : AuthUiState()
     data class Error(val message: String) : AuthUiState()
 }
 
@@ -38,4 +38,3 @@ class AuthViewModel @Inject constructor(
     fun isSignedIn(): Boolean = repo.isSignedIn()
     fun signOut() = repo.signOut()
 }
-

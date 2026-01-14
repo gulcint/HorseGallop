@@ -4,16 +4,12 @@ package com.horsegallop.feature.home.presentation
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.material.icons.Icons
@@ -26,21 +22,20 @@ import com.horsegallop.core.components.HorseGallopSearchBar
 import com.horsegallop.navigation.Dest
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.horsegallop.feature.barn.presentation.BarnListScreen
-import com.horsegallop.feature.barn.domain.model.BarnUi
-import com.horsegallop.feature.ride.presentation.RideTrackingScreen
-import com.valentinilk.shimmer.shimmer
-import com.horsegallop.compose.QuickActionCard
-import com.horsegallop.compose.StatCard
-import com.horsegallop.compose.ActivityItem
+import com.horsegallop.core.components.QuickActionCard
+import com.horsegallop.core.components.StatCard
+import com.horsegallop.core.components.ActivityItem
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.horsegallop.core.R
+import com.horsegallop.core.components.HomeDashboardSkeleton
+import com.horsegallop.core.components.QuickActionsSkeleton
+import com.horsegallop.core.components.RecentActivitySkeleton
+import com.horsegallop.core.components.StatsOverviewSkeleton
+import com.horsegallop.core.components.TipsSkeleton
+import com.horsegallop.core.components.WelcomeHeaderSkeleton
 
 @Composable
 fun HomeScreen(
@@ -216,16 +211,16 @@ private fun QuickActionsSection(onStartRide: () -> Unit, onViewBarns: () -> Unit
       horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
     ) {
       QuickActionCard(
-        title = stringResource(id = com.horsegallop.core.R.string.qa_start_ride_title),
-        subtitle = stringResource(id = com.horsegallop.core.R.string.qa_start_ride_subtitle),
+        title = stringResource(id = R.string.qa_start_ride_title),
+        subtitle = stringResource(id = R.string.qa_start_ride_subtitle),
         icon = Icons.Filled.PlayArrow,
         color = MaterialTheme.colorScheme.primary,
         onClick = onStartRide,
         modifier = Modifier.weight(1f)
       )
       QuickActionCard(
-        title = stringResource(id = com.horsegallop.core.R.string.qa_view_barns_title),
-        subtitle = stringResource(id = com.horsegallop.core.R.string.qa_view_barns_subtitle),
+        title = stringResource(id = R.string.qa_view_barns_title),
+        subtitle = stringResource(id = R.string.qa_view_barns_subtitle),
         icon = Icons.Filled.LocationOn,
         color = MaterialTheme.colorScheme.secondary,
         onClick = onViewBarns,
@@ -251,18 +246,18 @@ private fun StatsOverviewSection(totalRides: String, totalDistance: String) {
       horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
     ) {
       StatCard(
-        title = stringResource(id = com.horsegallop.core.R.string.stats_total_rides),
+        title = stringResource(id = R.string.stats_total_rides),
         value = totalRides,
-        subtitle = stringResource(id = com.horsegallop.core.R.string.stats_hours_suffix),
+        subtitle = stringResource(id = R.string.stats_hours_suffix),
         icon = Icons.Filled.Timer,
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.weight(1f),
         onClick = { /* Navigate to detailed stats */ }
       )
       StatCard(
-        title = stringResource(id = com.horsegallop.core.R.string.stats_distance),
+        title = stringResource(id = R.string.stats_distance),
         value = totalDistance,
-        subtitle = stringResource(id = com.horsegallop.core.R.string.stats_km_suffix),
+        subtitle = stringResource(id = R.string.stats_km_suffix),
         icon = Icons.Filled.Speed,
         color = MaterialTheme.colorScheme.secondary,
         modifier = Modifier.weight(1f),
@@ -324,9 +319,9 @@ private fun RecentActivitySection(
         if (a1 != null) {
           ActivityItem(
             title = a1.title,
-            subtitle = stringResource(id = com.horsegallop.core.R.string.activity_subtitle_format, a1.dateLabel, a1.timeLabel),
-            duration = stringResource(id = com.horsegallop.core.R.string.activity_duration_minutes, a1.durationMin),
-            distance = stringResource(id = com.horsegallop.core.R.string.activity_distance_km, a1.distanceKm),
+            subtitle = stringResource(id = R.string.activity_subtitle_format, a1.dateLabel, a1.timeLabel),
+            duration = stringResource(id = R.string.activity_duration_minutes, a1.durationMin),
+            distance = stringResource(id = R.string.activity_distance_km, a1.distanceKm),
             icon = Icons.AutoMirrored.Filled.DirectionsRun
           )
         }
@@ -339,9 +334,9 @@ private fun RecentActivitySection(
         if (a2 != null) {
           ActivityItem(
             title = a2.title,
-            subtitle = stringResource(id = com.horsegallop.core.R.string.activity_subtitle_format, a2.dateLabel, a2.timeLabel),
-            duration = stringResource(id = com.horsegallop.core.R.string.activity_duration_minutes, a2.durationMin),
-            distance = stringResource(id = com.horsegallop.core.R.string.activity_distance_km, a2.distanceKm),
+            subtitle = stringResource(id = R.string.activity_subtitle_format, a2.dateLabel, a2.timeLabel),
+            duration = stringResource(id = R.string.activity_duration_minutes, a2.durationMin),
+            distance = stringResource(id = R.string.activity_distance_km, a2.distanceKm),
             icon = Icons.AutoMirrored.Filled.DirectionsRun
           )
         }
@@ -403,32 +398,32 @@ private data class TabItem(val label: String, val icon: ImageVector)
 // Shimmer Skeleton Components
 @Composable
 private fun HomeDashboardSkeleton() {
-  com.horsegallop.compose.HomeDashboardSkeleton()
+  HomeDashboardSkeleton()
 }
 
 @Composable
 private fun WelcomeHeaderSkeleton() {
-  com.horsegallop.compose.WelcomeHeaderSkeleton()
+  WelcomeHeaderSkeleton()
 }
 
 @Composable
 private fun QuickActionsSkeleton() {
-  com.horsegallop.compose.QuickActionsSkeleton()
+  QuickActionsSkeleton()
 }
 
 @Composable
 private fun StatsOverviewSkeleton() {
-  com.horsegallop.compose.StatsOverviewSkeleton()
+  StatsOverviewSkeleton()
 }
 
 @Composable
 private fun RecentActivitySkeleton() {
-  com.horsegallop.compose.RecentActivitySkeleton()
+  RecentActivitySkeleton()
 }
 
 @Composable
 private fun TipsSkeleton() {
-  com.horsegallop.compose.TipsSkeleton()
+  TipsSkeleton()
 }
 
 // Preview Components
@@ -448,7 +443,7 @@ private fun HomeDashboardPreview() {
 @Composable
 private fun HomeDashboardSkeletonPreview() {
   MaterialTheme {
-    com.horsegallop.compose.HomeDashboardSkeleton()
+    HomeDashboardSkeleton()
   }
 }
 

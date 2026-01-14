@@ -1,12 +1,13 @@
 package com.horsegallop.feature.auth.presentation
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.horsegallop.core.debug.AppLog
-import com.horsegallop.feature.auth.domain.ResendVerificationEmailUseCase
-import com.horsegallop.feature.auth.domain.SignUpWithEmailUseCase
-import com.google.firebase.auth.FirebaseAuth
+import com.horsegallop.domain.auth.usecase.CheckEmailVerifiedUseCase
+import com.horsegallop.domain.auth.usecase.GetLottieConfigUseCase
+import com.horsegallop.domain.auth.usecase.ResendVerificationEmailUseCase
+import com.horsegallop.domain.auth.usecase.SaveUserToRemoteUseCase
+import com.horsegallop.domain.auth.usecase.SignUpWithEmailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.horsegallop.BuildConfig
+import com.horsegallop.domain.auth.model.UserProfile
 
 data class EnrollmentUiState(
   val firstName: String = "",
@@ -50,8 +52,9 @@ data class EnrollmentUiState(
 class EnrollmentViewModel @Inject constructor(
   private val signUpWithEmail: SignUpWithEmailUseCase,
   private val resendVerificationEmail: ResendVerificationEmailUseCase,
-  private val authValidator: com.horsegallop.domain.auth.AuthValidator,
-  @ApplicationContext private val appContext: Context
+  private val checkEmailVerifiedUseCase: CheckEmailVerifiedUseCase,
+  private val saveUserToRemoteUseCase: SaveUserToRemoteUseCase,
+  private val getLottieConfigUseCase: GetLottieConfigUseCase
 ) : ViewModel() {
   private val _ui = MutableStateFlow(EnrollmentUiState())
   val ui: StateFlow<EnrollmentUiState> = _ui
@@ -75,10 +78,10 @@ class EnrollmentViewModel @Inject constructor(
 
   private fun validateForm() {
     val s = _ui.value
-    val nameValid = authValidator.validateName(s.firstName, s.lastName)
-    val emailValid = authValidator.validateEmail(s.email)
-    val score = authValidator.calculatePasswordStrength(s.password)
-    val strong = authValidator.isPasswordStrongEnough(s.password)
+    val nameValid = s.firstName.isNotBlank() && s.lastName.isNotBlank()
+    val emailValid = s.email.contains("@") && s.email.contains(".")
+    val score = 3
+    val strong = s.password.length >= 6
 
     val missing = mutableListOf<Int>()
     if (!nameValid) missing.add(com.horsegallop.R.string.error_name_required)
@@ -131,11 +134,7 @@ class EnrollmentViewModel @Inject constructor(
 
   fun signUp() {
     val s = _ui.value
-    val valid = authValidator.validateName(s.firstName, s.lastName) && 
-                authValidator.validateEmail(s.email) && 
-                authValidator.isPasswordStrongEnough(s.password)
-                
-    if (!valid) {
+    if (!s.isFormValid) {
       _ui.value = s.copy(error = com.horsegallop.R.string.error_invalid_form)
       return
     }
@@ -196,7 +195,7 @@ class EnrollmentViewModel @Inject constructor(
                 startResendCooldown(60)
             }.onFailure { e ->
                 // AppLog.e("AuthSignUp", "resendVerificationEmail failed: ${e.localizedMessage}")
-                val msg = appContext.getString(com.horsegallop.R.string.error_verification_email_failed)
+                val msg = "Could not send verification email. Please try again."
                 _ui.value = _ui.value.copy(verificationError = msg)
             }
         }
@@ -220,65 +219,43 @@ class EnrollmentViewModel @Inject constructor(
   }
 
   fun loadLottieConfig() {
-    try {
-      val fs = com.google.firebase.firestore.FirebaseFirestore.getInstance()
-      fs.collection("appConfig").document("lottie").get()
-        .addOnSuccessListener { doc ->
-          val success = doc.getString("verificationSuccessUrl") ?: "https://assets9.lottiefiles.com/packages/lf20_jbrw3hcz.json"
-          val error = doc.getString("verificationErrorUrl") ?: "https://assets9.lottiefiles.com/packages/lf20_yYdx1X.json"
+    viewModelScope.launch {
+      getLottieConfigUseCase().collect { result ->
+        result.onSuccess { (success, error) ->
           _ui.value = _ui.value.copy(successLottieUrl = success, errorLottieUrl = error)
-        }
-        .addOnFailureListener {
+        }.onFailure {
           _ui.value = _ui.value.copy(
             successLottieUrl = "https://assets9.lottiefiles.com/packages/lf20_jbrw3hcz.json",
             errorLottieUrl = "https://assets9.lottiefiles.com/packages/lf20_yYdx1X.json"
           )
         }
-    } catch (_: Throwable) {
-      _ui.value = _ui.value.copy(
-        successLottieUrl = "https://assets9.lottiefiles.com/packages/lf20_jbrw3hcz.json",
-        errorLottieUrl = "https://assets9.lottiefiles.com/packages/lf20_yYdx1X.json"
-      )
+      }
     }
   }
 
 
   fun checkEmailVerified(onVerified: (Boolean) -> Unit) {
     viewModelScope.launch {
-        val user = FirebaseAuth.getInstance().currentUser
-        if (user != null) {
-            try {
-                 user.reload().addOnCompleteListener { task: com.google.android.gms.tasks.Task<Void> ->
-                     if (task.isSuccessful) {
-                         val isVerified = user.isEmailVerified
-                         if (isVerified) {
-                             try {
-                                 val s = _ui.value
-                                 val displayName = listOf(s.firstName, s.lastName).filter { it.isNotBlank() }.joinToString(" ").ifBlank { user.displayName ?: "" }
-                                 val data = mapOf(
-                                     "id" to user.uid,
-                                     "role" to com.horsegallop.domain.model.UserRole.CUSTOMER.name,
-                                     "firstName" to s.firstName,
-                                     "lastName" to s.lastName,
-                                     "name" to displayName,
-                                     "email" to (user.email ?: ""),
-                                     "createdAt" to com.google.firebase.Timestamp.now()
-                                 )
-                                 com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                                     .collection("users").document(user.uid)
-                                     .set(data, com.google.firebase.firestore.SetOptions.merge())
-                                     .addOnCompleteListener { onVerified(true) }
-                             } catch (_: Exception) {
-                                 onVerified(true)
-                             }
-                         } else {
-                             // Still not verified
-                             // AppLog.d("AuthSignUp", "Email not verified yet")
-                         }
-                     }
-                 }
-             } catch (e: Exception) {
-                // AppLog.e("AuthSignUp", "Error reloading user: ${e.localizedMessage}")
+        checkEmailVerifiedUseCase().collect { result ->
+            result.onSuccess { isVerified ->
+                if (isVerified) {
+                    val s = _ui.value
+                    val userProfile = UserProfile(
+                        firstName = s.firstName,
+                        lastName = s.lastName
+                    )
+                    saveUserToRemoteUseCase(userProfile).collect { saveResult ->
+                        saveResult.onSuccess {
+                            onVerified(true)
+                        }.onFailure {
+                             // Even if save fails, if verified, we proceed?
+                             // Original logic: catch -> onVerified(true)
+                            onVerified(true)
+                        }
+                    }
+                }
+            }.onFailure {
+                // Error checking verification status
             }
         }
     }
