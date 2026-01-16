@@ -189,7 +189,7 @@ fun LoginScreen(
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_horse),
+                    painter = painterResource(id = R.mipmap.ic_launcher_foreground),
                     contentDescription = stringResource(com.horsegallop.core.R.string.app_name),
                     modifier = Modifier
                         .size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_xxxl))

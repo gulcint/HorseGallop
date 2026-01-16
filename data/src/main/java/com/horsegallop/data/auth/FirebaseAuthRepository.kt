@@ -140,13 +140,26 @@ class FirebaseAuthRepository @Inject constructor(
     override fun saveUserToRemote(user: UserProfile): Flow<Result<Unit>> = flow {
         val uid = auth.currentUser?.uid ?: throw Exception("No user signed in")
         try {
+            val birthDateTimestamp = if (user.birthDate.isNotBlank()) {
+                try {
+                    val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                    val date = sdf.parse(user.birthDate)
+                    if (date != null) com.google.firebase.Timestamp(date) else null
+                } catch (e: Exception) { null }
+            } else null
+
              val data = mapOf(
                  "id" to uid,
                  "role" to UserRole.CUSTOMER.name,
                  "firstName" to user.firstName,
                  "lastName" to user.lastName,
                  "name" to listOf(user.firstName, user.lastName).filter { it.isNotBlank() }.joinToString(" "),
-                 "email" to (auth.currentUser?.email ?: ""),
+                 "email" to (auth.currentUser?.email ?: user.email),
+                 "phone" to user.phone,
+                 "city" to user.city,
+                 "birthDate" to birthDateTimestamp,
+                 "photoUrl" to user.photoUrl,
+                 "countryCode" to user.countryCode,
                  "createdAt" to com.google.firebase.Timestamp.now()
              )
              firestore.collection("users").document(uid)

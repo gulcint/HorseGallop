@@ -74,124 +74,272 @@ fun BarnDetailScreen(
 @Composable
 fun BarnDetailContent(barn: BarnWithLocation) {
     val context = LocalContext.current
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 80.dp)
-    ) {
-        item {
-            AsyncImage(
-                model = "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=1200", // Placeholder or from barn object
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(250.dp),
-                contentScale = ContentScale.Crop
-            )
-        }
-
-        // Title and Rating
-        item {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = barn.barn.name,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
+    var showReservationSheet by remember { mutableStateOf(false) }
+    
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 100.dp)
+        ) {
+            item {
+                Box {
+                    AsyncImage(
+                        model = "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=1200",
                         contentDescription = null,
-                        tint = Color(0xFFFFC107),
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(280.dp),
+                        contentScale = ContentScale.Crop
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                }
-            }
-        }
-
-        // Location
-        item {
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                Text(
-                    text = stringResource(R.string.barn_detail_location),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.LocationOn,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = barn.barn.location.ifEmpty { "Unknown Location" },
-                        style = MaterialTheme.typography.bodyLarge
+                    // Gradient overlay for text visibility if needed, or just style
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(
+                                androidx.compose.ui.graphics.Brush.verticalGradient(
+                                    colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.4f))
+                                )
+                            )
                     )
                 }
             }
-        }
 
-        // Description
-        item {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = stringResource(R.string.barn_detail_description),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = barn.barn.description,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
-
-        // Amenities / Tags
-        item {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = stringResource(R.string.barn_detail_amenities),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(barn.barn.tags) { tag ->
-                        AssistChip(
-                            onClick = { },
-                            label = { Text(text = tag.replace("_", " ").replaceFirstChar { it.uppercase() }) }
+            // Title and Rating
+            item {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Text(
+                            text = barn.barn.name,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "4.8",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = barn.barn.location.ifEmpty { "Unknown Location" },
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
             }
+
+            // Description
+            item {
+                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                    Text(
+                        text = "About",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = barn.barn.description.ifEmpty { "Experience the joy of riding with our professional instructors and well-trained horses. Perfect for beginners and advanced riders alike." },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                    )
+                }
+            }
+
+            item { Spacer(modifier = Modifier.height(24.dp)) }
+
+            // Amenities / Tags
+            item {
+                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                    Text(
+                        text = "Amenities",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(barn.barn.tags.ifEmpty { listOf("Parking", "Cafe", "Lessons", "Trail") }) { tag ->
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.secondaryContainer)
+                            ) {
+                                Text(
+                                    text = tag.replace("_", " ").replaceFirstChar { it.uppercase() },
+                                    style = MaterialTheme.typography.labelMedium,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Bottom Action Bar
+        Surface(
+            modifier = Modifier.align(Alignment.BottomCenter),
+            shadowElevation = 16.dp,
+            color = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
+                    .navigationBarsPadding(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                OutlinedButton(
+                    onClick = { /* Call action */ },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text("Contact")
+                }
+                Button(
+                    onClick = { showReservationSheet = true },
+                    modifier = Modifier
+                        .weight(2f)
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text("Book Lesson")
+                }
+            }
+        }
+
+        if (showReservationSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showReservationSheet = false },
+                containerColor = MaterialTheme.colorScheme.surface,
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            ) {
+                ReservationContent(
+                    onConfirm = {
+                        showReservationSheet = false
+                        Toast.makeText(context, "Reservation Request Sent!", Toast.LENGTH_LONG).show()
+                    }
+                )
+            }
         }
     }
-    
-    // Bottom Action Button
-    Box(
+}
+
+@Composable
+fun ReservationContent(onConfirm: () -> Unit) {
+    Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.BottomCenter
+            .fillMaxWidth()
+            .padding(24.dp)
+            .padding(bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        Button(
-            onClick = {
-                Toast
-                    .makeText(
-                        context,
-                        context.getString(R.string.reserve),
-                        Toast.LENGTH_SHORT
+        Text(
+            "Select Date & Time",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+        
+        // Mock Date Selection
+        Column {
+            Text("Date", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(modifier = Modifier.height(8.dp))
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(7) { index ->
+                    val isSelected = index == 0
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.size(width = 60.dp, height = 70.dp)
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                "Oct",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                "${25 + index}",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Mock Time Selection
+        Column {
+            Text("Time", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("09:00", "11:00", "14:00", "16:00").forEachIndexed { index, time ->
+                    val isSelected = index == 1
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { },
+                        label = { Text(time) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     )
-                    .show()
-            },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Button(
+            onClick = onConfirm,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(16.dp)
         ) {
-            Text(text = stringResource(R.string.barn_detail_book_now))
+            Text("Confirm Booking")
         }
     }
 }

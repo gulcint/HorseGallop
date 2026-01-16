@@ -56,28 +56,53 @@ class ProfileRepositoryImpl @Inject constructor(
                     countryCode = snapshot.getString("countryCode") ?: "+90"
                 )
                 
-                // Handle Timestamp if present
-                val ts = snapshot.getTimestamp("birthDate")
-                val finalProfile = if (ts != null) {
-                    val cal = java.util.Calendar.getInstance()
-                    cal.time = ts.toDate()
-                    val y = cal.get(java.util.Calendar.YEAR)
-                    val m = cal.get(java.util.Calendar.MONTH) + 1
-                    val d = cal.get(java.util.Calendar.DAY_OF_MONTH)
-                    profile.copy(birthDate = String.format("%04d-%02d-%02d", y, m, d))
-                } else {
+                // Handle Timestamp or Long if present safely
+                val finalProfile = try {
+                    // Try Timestamp first
+                    val ts = snapshot.getTimestamp("birthDate")
+                    if (ts != null) {
+                        val cal = java.util.Calendar.getInstance()
+                        cal.time = ts.toDate()
+                        val y = cal.get(java.util.Calendar.YEAR)
+                        val m = cal.get(java.util.Calendar.MONTH) + 1
+                        val d = cal.get(java.util.Calendar.DAY_OF_MONTH)
+                        profile.copy(birthDate = String.format("%04d-%02d-%02d", y, m, d))
+                    } else {
+                        // Try Long (milliseconds)
+                        val millis = snapshot.getLong("birthDate")
+                        if (millis != null) {
+                            val cal = java.util.Calendar.getInstance()
+                            cal.timeInMillis = millis
+                            val y = cal.get(java.util.Calendar.YEAR)
+                            val m = cal.get(java.util.Calendar.MONTH) + 1
+                            val d = cal.get(java.util.Calendar.DAY_OF_MONTH)
+                            profile.copy(birthDate = String.format("%04d-%02d-%02d", y, m, d))
+                        } else {
+                            profile
+                        }
+                    }
+                } catch (e: Exception) {
+                    // birthDate is likely a String, which is already set in profile
                     profile
                 }
 
                 if (!snapshot.exists()) {
                     // Try initialize if doesn't exist (non-blocking)
+                    val birthDateTimestamp = if (finalProfile.birthDate.isNotBlank()) {
+                        try {
+                            val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                            val date = sdf.parse(finalProfile.birthDate)
+                            if (date != null) com.google.firebase.Timestamp(date) else null
+                        } catch (e: Exception) { null }
+                    } else null
+
                     val init = hashMapOf(
                         "firstName" to finalProfile.firstName,
                         "lastName" to finalProfile.lastName,
                         "email" to finalProfile.email,
                         "phone" to finalProfile.phone,
                         "city" to finalProfile.city,
-                        "birthDate" to finalProfile.birthDate,
+                        "birthDate" to birthDateTimestamp,
                         "photoUrl" to finalProfile.photoUrl,
                         "countryCode" to finalProfile.countryCode
                     )
@@ -93,12 +118,20 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override fun updateUserProfile(uid: String, profile: UserProfile): Flow<Result<Unit>> = flow {
         try {
+            val birthDateTimestamp = if (profile.birthDate.isNotBlank()) {
+                try {
+                    val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                    val date = sdf.parse(profile.birthDate)
+                    if (date != null) com.google.firebase.Timestamp(date) else null
+                } catch (e: Exception) { null }
+            } else null
+
             val updates = mapOf(
                 "firstName" to profile.firstName,
                 "lastName" to profile.lastName,
                 "phone" to profile.phone,
                 "city" to profile.city,
-                "birthDate" to profile.birthDate,
+                "birthDate" to birthDateTimestamp,
                 "countryCode" to profile.countryCode
             )
             firestore.collection("users").document(uid).set(updates, com.google.firebase.firestore.SetOptions.merge()).await()

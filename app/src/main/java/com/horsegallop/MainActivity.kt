@@ -33,8 +33,6 @@ import com.airbnb.lottie.compose.*
 import com.horsegallop.navigation.AppNavHost
 import com.horsegallop.navigation.Dest
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.material3.ExperimentalMaterial3Api
 import android.widget.Toast
@@ -205,37 +203,51 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
         
         var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
         var isSoundReady by remember { mutableStateOf(false) }
+        var soundDurationMs by remember { mutableStateOf(0) }
         
-        // 1. Preload Sound in parallel
         LaunchedEffect(Unit) {
-            withContext(Dispatchers.IO) {
-                try {
-                    val mp = MediaPlayer.create(ctx, com.horsegallop.core.R.raw.horse_gallop)
-                    if (mp != null) {
-                        mp.setVolume(1.0f, 1.0f)
-                        mediaPlayer = mp
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
+            try {
+                val mp = MediaPlayer.create(ctx, com.horsegallop.core.R.raw.horse_gallop)
+                if (mp != null) {
+                    mp.setVolume(1.0f, 1.0f)
+                    soundDurationMs = mp.duration
+                    mediaPlayer = mp
                 }
-                isSoundReady = true
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
+            isSoundReady = true
         }
         
-        // 2. Sync Logic: Wait for BOTH composition and sound -> Start -> Animate -> Finish
         LaunchedEffect(composition, isSoundReady) {
             if (composition == null || !isSoundReady) return@LaunchedEffect
             
-            // Start Sound
-            mediaPlayer?.start()
+            val player = mediaPlayer
+            if (player == null) {
+                lottieAnimatable.animate(
+                    composition = composition,
+                    iterations = 1
+                )
+                onFinished()
+                return@LaunchedEffect
+            }
             
-            // Play Animation (suspend until finished)
+            val durationToWait = soundDurationMs
+                .takeIf { it > 0 }
+                ?: 1200
+            
+            val clampedDuration = durationToWait.coerceIn(500, 5000).toLong()
+            
+            player.seekTo(0)
+            player.start()
+            
+            kotlinx.coroutines.delay(clampedDuration)
+            
             lottieAnimatable.animate(
-                composition = composition!!,
+                composition = composition,
                 iterations = 1
             )
-            
-            // Finish
+
             onFinished()
         }
 

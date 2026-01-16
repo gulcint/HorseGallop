@@ -530,4 +530,3 @@ private fun AnimatedDistanceBarChart(activities: List<ActivityUi>) {
         }
     }
 }
-

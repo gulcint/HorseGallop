@@ -89,6 +89,17 @@ class BarnViewModel @Inject constructor(
             matchesQuery && matchesFilters
         }
 
-        _uiState.update { it.copy(filteredBarns = filtered) }
+        // Sort: If query exists, prioritize exact matches or startsWith. Otherwise, sort by name.
+        val sorted = filtered.sortedWith(compareByDescending<BarnWithLocation> { 
+            if (query.isNotBlank()) {
+                if (it.barn.name.equals(query, ignoreCase = true)) 2
+                else if (it.barn.name.startsWith(query, ignoreCase = true)) 1
+                else 0
+            } else {
+                0
+            }
+        }.thenBy { it.barn.name })
+
+        _uiState.update { it.copy(filteredBarns = sorted) }
     }
 }

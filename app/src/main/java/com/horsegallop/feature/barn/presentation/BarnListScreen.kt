@@ -100,6 +100,7 @@ fun BarnListScreen(
       com.horsegallop.core.components.HorseGallopSearchBar(
         query = uiState.query,
         onQueryChange = viewModel::updateQuery,
+        placeholder = stringResource(com.horsegallop.core.R.string.barn_search_placeholder),
         modifier = Modifier
           .fillMaxWidth()
           .padding(top = 16.dp, bottom = 12.dp)
