@@ -61,9 +61,14 @@ fun BarnsMapViewScreen(
         groupBarnsByProximity(barns.map { it.barn }, zoomLevel)
     }
 
-    // Filters state
-    val filters = listOf("Open Now", "Lessons", "Boarding", "Competition", "Clinics")
-    val selectedFilters = remember { mutableStateListOf<String>() }
+    // Filters state (label to amenity key)
+    val filters = listOf(
+        "Open Now" to "open_now",
+        "Lessons" to "lessons",
+        "Boarding" to "boarding",
+        "Indoor Arena" to "indoor_arena",
+        "Trail" to "trail"
+    )
     
     Box(
         modifier = Modifier
@@ -115,11 +120,10 @@ fun BarnsMapViewScreen(
                     }
                 }
 
-                // Unified Search Field part (now matches map style exactly)
                 com.horsegallop.core.components.HorseGallopSearchBar(
-                    query = "", 
-                    onQueryChange = { /* Handle map search */ },
-                    placeholder = "Search area...",
+                    query = uiState.query,
+                    onQueryChange = { viewModel.updateQuery(it) },
+                    placeholder = stringResource(R.string.barn_search_placeholder),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -127,20 +131,17 @@ fun BarnsMapViewScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Filter Chips Carousel
+            // Filter Chips Carousel (hooked into ViewModel filters)
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(horizontal = 4.dp)
             ) {
-                items(filters) { filter ->
-                    val isSelected = selectedFilters.contains(filter)
+                items(filters) { (label, key) ->
+                    val isSelected = uiState.selectedFilters.contains(key)
                     FilterChip(
                         selected = isSelected,
-                        onClick = { 
-                            if (isSelected) selectedFilters.remove(filter) 
-                            else selectedFilters.add(filter)
-                        },
-                        label = { Text(filter) },
+                        onClick = { viewModel.toggleFilter(key) },
+                        label = { Text(label) },
                         leadingIcon = if (isSelected) {
                             { Icon(Icons.Filled.LocationOn, contentDescription = null, modifier = Modifier.size(16.dp)) }
                         } else null,
@@ -170,8 +171,13 @@ fun BarnsMapViewScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // My Location Button
+            val context = androidx.compose.ui.platform.LocalContext.current
             FloatingActionButton(
-                onClick = { /* Center on user */ },
+                onClick = { 
+                    android.widget.Toast.makeText(context, "Centering on your location...", android.widget.Toast.LENGTH_SHORT).show()
+                    // Here we would normally use a LocationProvider to get user coords
+                    // For now, just reset zoom or center on the first barn group
+                },
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.primary,
                 shape = CircleShape,

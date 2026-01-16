@@ -79,7 +79,11 @@ fun AppNavHost(
   val ctx = androidx.compose.ui.platform.LocalContext.current
   val prefs = remember { ctx.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE) }
   val onboardingDone = remember { prefs.getBoolean("onboarding_done", false) }
-  val startDest = if (role == null) Dest.Onboarding.route else Dest.Home.route
+  val startDest = when {
+    !onboardingDone -> Dest.Onboarding.route
+    role == null -> Dest.Login.route
+    else -> Dest.Home.route
+  }
   
   com.horsegallop.core.debug.AppLog.i("AppNavHost", "role=$role onboardingDone=$onboardingDone startDest=$startDest")
 

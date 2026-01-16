@@ -242,7 +242,8 @@ class EnrollmentViewModel @Inject constructor(
                     val s = _ui.value
                     val userProfile = UserProfile(
                         firstName = s.firstName,
-                        lastName = s.lastName
+                        lastName = s.lastName,
+                        email = s.email
                     )
                     saveUserToRemoteUseCase(userProfile).collect { saveResult ->
                         saveResult.onSuccess {

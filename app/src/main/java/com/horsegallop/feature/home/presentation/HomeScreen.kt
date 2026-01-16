@@ -92,17 +92,6 @@ private fun HomeDashboard(
     }
 
     item {
-      var searchQuery by remember { mutableStateOf("") }
-      HorseGallopSearchBar(
-        query = searchQuery,
-        onQueryChange = { searchQuery = it },
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
-      )
-    }
-    
-    item {
       QuickActionsSection(onStartRide = onStartRide, onViewBarns = onViewBarns)
     }
     
