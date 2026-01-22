@@ -6,5 +6,5 @@ import javax.inject.Inject
 class StartRideUseCase @Inject constructor(
     private val rideRepository: RideRepository
 ) {
-    suspend operator fun invoke() = rideRepository.startRide()
+    suspend operator fun invoke(weightKg: Float = 70f) = rideRepository.startRide(weightKg)
 }

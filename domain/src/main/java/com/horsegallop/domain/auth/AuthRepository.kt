@@ -17,5 +17,6 @@ interface AuthRepository {
     fun checkEmailVerified(): Flow<Result<Boolean>>
     fun saveUserToRemote(user: UserProfile): Flow<Result<Unit>>
     fun getLottieConfig(): Flow<Result<Pair<String, String>>>
+    fun getSplashTexts(locale: String): Flow<Result<Pair<String, String>>>
     fun getCurrentUserId(): String?
 }

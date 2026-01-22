@@ -7,5 +7,10 @@ data class BarnUi(
     val location: String = "",
     val tags: List<String> = emptyList(),
     val lat: Double = 0.0,
-    val lng: Double = 0.0
+    val lng: Double = 0.0,
+    val rating: Double = 0.0,
+    val reviewCount: Int = 0,
+    val heroImageUrl: String? = null,
+    val ownerUserId: String? = null,
+    val isFavorite: Boolean = false
 )

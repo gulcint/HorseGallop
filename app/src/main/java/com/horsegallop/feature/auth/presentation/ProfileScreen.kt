@@ -45,6 +45,7 @@ import android.os.Build
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.core.components.HorseGallopDatePicker
 import com.horsegallop.core.components.HorseGallopDropdown
+import com.horsegallop.core.components.HorseLoadingOverlay
 // import com.horsegallop.core.util.DateUtils
 import java.util.Calendar
 
@@ -84,7 +85,16 @@ fun ProfileScreen(
       }
   }
 
+  // Success Toast
+  if (state.successMessage != null) {
+      LaunchedEffect(state.successMessage) {
+          android.widget.Toast.makeText(ctx, state.successMessage, android.widget.Toast.LENGTH_SHORT).show()
+          viewModel.clearMessages()
+      }
+  }
 
+
+  Box(modifier = Modifier.fillMaxSize()) {
   Scaffold(
       contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
       topBar = {
@@ -208,7 +218,7 @@ fun ProfileScreen(
             )
           ) {
             Text(
-              text = if (nameDisplay.isNotBlank()) nameDisplay else "User",
+              text = if (nameDisplay.isNotBlank()) nameDisplay else stringResource(id = com.horsegallop.core.R.string.default_user_name),
               style = MaterialTheme.typography.titleLarge,
               fontWeight = FontWeight.Bold,
               color = MaterialTheme.colorScheme.primary
@@ -343,7 +353,14 @@ fun ProfileScreen(
             }
 
             // City
-            val cities = stringArrayResource(com.horsegallop.core.R.array.city_list).toList()
+            val cities = remember(context) {
+                try {
+                    context.resources.getStringArray(com.horsegallop.core.R.array.city_list).toList()
+                } catch (e: Exception) {
+                    com.horsegallop.core.debug.AppLog.e("ProfileScreen", "Error loading city list: ${e.message}")
+                    emptyList()
+                }
+            }
             EditableInfoRow(icon = Icons.Filled.LocationOn, label = stringResource(id = com.horsegallop.core.R.string.label_city)) {
                 HorseGallopDropdown(
                     value = displayProfile.city,
@@ -364,7 +381,7 @@ fun ProfileScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = androidx.compose.foundation.layout.WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 64.dp),
+                .padding(bottom = androidx.compose.foundation.layout.WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 120.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             OutlinedButton(
@@ -380,11 +397,7 @@ fun ProfileScreen(
                 shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
                 enabled = !state.isLoading
             ) {
-                if (state.isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp), color = MaterialTheme.colorScheme.onPrimary)
-                } else {
-                    Text(text = stringResource(id = com.horsegallop.core.R.string.button_save))
-                }
+                Text(text = stringResource(id = com.horsegallop.core.R.string.button_save))
             }
         }
       } else {
@@ -403,6 +416,8 @@ fun ProfileScreen(
       }
       Spacer(modifier = Modifier.height(140.dp))
     }
+  }
+  HorseLoadingOverlay(visible = state.isLoading)
   }
 
 

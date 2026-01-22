@@ -6,4 +6,5 @@ import kotlinx.coroutines.flow.Flow
 interface BarnRepository {
     fun getBarns(): Flow<List<BarnWithLocation>>
     fun getBarnById(barnId: String): Flow<BarnWithLocation?>
+    suspend fun toggleFavorite(barnId: String)
 }

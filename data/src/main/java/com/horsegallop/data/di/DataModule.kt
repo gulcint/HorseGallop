@@ -4,9 +4,11 @@ import com.horsegallop.data.auth.FirebaseAuthRepository
 import com.horsegallop.data.auth.repository.ProfileRepositoryImpl
 import com.horsegallop.data.barn.repository.BarnRepositoryImpl
 import com.horsegallop.data.ride.repository.RideRepositoryImpl
+import com.horsegallop.data.ride.repository.RideHistoryRepositoryImpl
 import com.horsegallop.data.schedule.repository.ScheduleRepositoryImpl
 import com.horsegallop.domain.barn.repository.BarnRepository
 import com.horsegallop.domain.ride.repository.RideRepository
+import com.horsegallop.domain.ride.repository.RideHistoryRepository
 import com.horsegallop.domain.schedule.repository.ScheduleRepository
 import com.horsegallop.data.home.repository.HomeRepositoryImpl
 import com.horsegallop.domain.auth.repository.ProfileRepository
@@ -51,6 +53,12 @@ abstract class DataModule {
     abstract fun bindRideRepository(
         rideRepositoryImpl: RideRepositoryImpl
     ): RideRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindRideHistoryRepository(
+        rideHistoryRepositoryImpl: RideHistoryRepositoryImpl
+    ): RideHistoryRepository
 
     @Binds
     @Singleton

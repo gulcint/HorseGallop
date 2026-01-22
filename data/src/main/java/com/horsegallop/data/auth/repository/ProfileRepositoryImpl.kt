@@ -45,20 +45,7 @@ class ProfileRepositoryImpl @Inject constructor(
                     }
                 }
 
-                val profile = UserProfile(
-                    firstName = fName,
-                    lastName = lName,
-                    email = snapshot.getString("email") ?: (currentUser?.email ?: ""),
-                    phone = snapshot.getString("phone") ?: "",
-                    city = snapshot.getString("city") ?: "",
-                    birthDate = snapshot.getString("birthDate") ?: "",
-                    photoUrl = snapshot.getString("photoUrl"),
-                    countryCode = snapshot.getString("countryCode") ?: "+90"
-                )
-                
-                // Handle Timestamp or Long if present safely
-                val finalProfile = try {
-                    // Try Timestamp first
+                val birthDateStr = try {
                     val ts = snapshot.getTimestamp("birthDate")
                     if (ts != null) {
                         val cal = java.util.Calendar.getInstance()
@@ -66,9 +53,8 @@ class ProfileRepositoryImpl @Inject constructor(
                         val y = cal.get(java.util.Calendar.YEAR)
                         val m = cal.get(java.util.Calendar.MONTH) + 1
                         val d = cal.get(java.util.Calendar.DAY_OF_MONTH)
-                        profile.copy(birthDate = String.format("%04d-%02d-%02d", y, m, d))
+                        String.format("%04d-%02d-%02d", y, m, d)
                     } else {
-                        // Try Long (milliseconds)
                         val millis = snapshot.getLong("birthDate")
                         if (millis != null) {
                             val cal = java.util.Calendar.getInstance()
@@ -76,40 +62,52 @@ class ProfileRepositoryImpl @Inject constructor(
                             val y = cal.get(java.util.Calendar.YEAR)
                             val m = cal.get(java.util.Calendar.MONTH) + 1
                             val d = cal.get(java.util.Calendar.DAY_OF_MONTH)
-                            profile.copy(birthDate = String.format("%04d-%02d-%02d", y, m, d))
+                            String.format("%04d-%02d-%02d", y, m, d)
                         } else {
-                            profile
+                            snapshot.getString("birthDate") ?: ""
                         }
                     }
                 } catch (e: Exception) {
-                    // birthDate is likely a String, which is already set in profile
-                    profile
+                    ""
                 }
+
+                val profile = UserProfile(
+                    firstName = fName,
+                    lastName = lName,
+                    email = snapshot.getString("email") ?: (currentUser?.email ?: ""),
+                    phone = snapshot.getString("phone") ?: "",
+                    city = snapshot.getString("city") ?: "",
+                    birthDate = birthDateStr,
+                    photoUrl = snapshot.getString("photoUrl"),
+                    countryCode = snapshot.getString("countryCode") ?: "+90",
+                    weight = snapshot.getDouble("weight")?.toFloat()
+                )
 
                 if (!snapshot.exists()) {
                     // Try initialize if doesn't exist (non-blocking)
-                    val birthDateTimestamp = if (finalProfile.birthDate.isNotBlank()) {
+                    val birthDateTimestamp = if (profile.birthDate.isNotBlank()) {
                         try {
                             val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                            val date = sdf.parse(finalProfile.birthDate)
+                            val date = sdf.parse(profile.birthDate)
                             if (date != null) com.google.firebase.Timestamp(date) else null
                         } catch (e: Exception) { null }
                     } else null
 
                     val init = hashMapOf(
-                        "firstName" to finalProfile.firstName,
-                        "lastName" to finalProfile.lastName,
-                        "email" to finalProfile.email,
-                        "phone" to finalProfile.phone,
-                        "city" to finalProfile.city,
+                        "firstName" to profile.firstName,
+                        "lastName" to profile.lastName,
+                        "email" to profile.email,
+                        "phone" to profile.phone,
+                        "city" to profile.city,
                         "birthDate" to birthDateTimestamp,
-                        "photoUrl" to finalProfile.photoUrl,
-                        "countryCode" to finalProfile.countryCode
+                        "photoUrl" to profile.photoUrl,
+                        "countryCode" to profile.countryCode,
+                        "weight" to profile.weight
                     )
                     docRef.set(init, com.google.firebase.firestore.SetOptions.merge())
                 }
                 
-                trySend(Result.success(finalProfile))
+                trySend(Result.success(profile))
             }
         }
         
@@ -132,7 +130,8 @@ class ProfileRepositoryImpl @Inject constructor(
                 "phone" to profile.phone,
                 "city" to profile.city,
                 "birthDate" to birthDateTimestamp,
-                "countryCode" to profile.countryCode
+                "countryCode" to profile.countryCode,
+                "weight" to profile.weight
             )
             firestore.collection("users").document(uid).set(updates, com.google.firebase.firestore.SetOptions.merge()).await()
             emit(Result.success(Unit))

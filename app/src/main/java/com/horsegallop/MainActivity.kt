@@ -40,6 +40,13 @@ import com.horsegallop.domain.model.UserRole
 import androidx.compose.ui.graphics.toArgb
 import com.horsegallop.core.debug.AppLog
 
+import com.horsegallop.feature.common.presentation.NoInternetScreen
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
      override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,13 +88,13 @@ private fun PreviewSplashScreen() {
     ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = stringResource(com.horsegallop.core.R.string.welcome_title),
+                    text = "Welcome",
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.size(6.dp))
                 Text(
-                    text = stringResource(com.horsegallop.core.R.string.welcome_subtitle),
+                    text = "Your horse riding experience starts here",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -102,8 +109,45 @@ fun AppContent() {
     val ui by mainVm.ui.collectAsState()
     val navController = rememberNavController()
     val context = LocalContext.current
+    val isOnlineState = remember { mutableStateOf(true) }
+    var showNoInternet by remember { mutableStateOf(false) }
     
-    // Sync system bars color
+    DisposableEffect(context) {
+        val connectivityManager = context.getSystemService(android.content.Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+        val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO)
+        
+        fun updateConnectionState() {
+            scope.launch {
+                try {
+                    val network = connectivityManager.activeNetwork
+                    val capabilities = connectivityManager.getNetworkCapabilities(network)
+                    val isOnline = capabilities?.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+                    withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        isOnlineState.value = isOnline
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+        
+        updateConnectionState()
+        
+        val callback = object : android.net.ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: android.net.Network) {
+                updateConnectionState()
+            }
+            override fun onLost(network: android.net.Network) {
+                updateConnectionState()
+            }
+        }
+        connectivityManager.registerDefaultNetworkCallback(callback)
+        onDispose {
+            connectivityManager.unregisterNetworkCallback(callback)
+            scope.cancel()
+        }
+    }
+    
     val primaryColor = MaterialTheme.colorScheme.primary
     SideEffect {
         val window = (context as? android.app.Activity)?.window
@@ -117,47 +161,82 @@ fun AppContent() {
         }
     }
 
-    if (ui.showSplash) {
-        val activity = context as? ComponentActivity
-        BackHandler { activity?.finish() }
-        SplashScreen(onFinished = { mainVm.onSplashFinished() })
-    } else {
-        val activity = context as? ComponentActivity
-        BackHandler {
-            if (!navController.popBackStack()) {
-                activity?.finish()
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (showNoInternet) {
+            NoInternetScreen(
+                onRetry = {
+                    if (isOnlineState.value) {
+                        showNoInternet = false
+                        if (ui.showSplash) mainVm.onSplashFinished()
+                    }
+                }
+            )
+        } else if (ui.showSplash) {
+            val activity = context as? ComponentActivity
+            BackHandler { activity?.finish() }
+            val isOnline = isOnlineState.value
+            val hasError = ui.hasSplashError
+            val splashTitle = when {
+                hasError && !isOnline -> stringResource(com.horsegallop.core.R.string.splash_error_title)
+                !ui.splashTitle.isNullOrBlank() -> ui.splashTitle
+                else -> "Welcome"
             }
-        }
-        
-        AppNavHost(
-            navController = navController,
-            role = ui.userRole
-        )
-
-        val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-        DisposableEffect(lifecycleOwner) {
-            val observer = LifecycleEventObserver { _, event ->
-                if (event == Lifecycle.Event.ON_RESUME) {
-                    mainVm.reloadUser()
+            val splashSubtitle = when {
+                hasError && !isOnline -> stringResource(com.horsegallop.core.R.string.splash_error_subtitle)
+                !ui.splashSubtitle.isNullOrBlank() -> ui.splashSubtitle
+                else -> "Your horse riding experience starts here"
+            }
+            SplashScreen(
+                title = splashTitle,
+                subtitle = splashSubtitle,
+                isOnline = isOnline,
+                onFinished = { 
+                    if (isOnlineState.value) {
+                        mainVm.onSplashFinished() 
+                    } else {
+                        showNoInternet = true
+                    }
+                }
+            )
+        } else {
+            val activity = context as? ComponentActivity
+            BackHandler {
+                if (!navController.popBackStack()) {
+                    activity?.finish()
                 }
             }
-            lifecycleOwner.lifecycle.addObserver(observer)
-            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-        }
-        
-        LaunchedEffect(ui.isLoggedIn) {
-            if (!ui.isLoggedIn) {
-                val currentRoute = navController.currentDestination?.route
-                if (currentRoute != null && isAuthRequired(currentRoute)) {
-                    navController.navigate(Dest.Onboarding.route) {
-                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
-                        launchSingleTop = true
+            
+            AppNavHost(
+                navController = navController,
+                role = ui.userRole
+            )
+
+            val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+            DisposableEffect(lifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_RESUME) {
+                        mainVm.reloadUser()
+                    }
+                }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+            }
+            
+            LaunchedEffect(ui.isLoggedIn) {
+                if (!ui.isLoggedIn) {
+                    val currentRoute = navController.currentDestination?.route
+                    if (currentRoute != null && isAuthRequired(currentRoute)) {
+                        navController.navigate(Dest.Onboarding.route) {
+                            popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                            launchSingleTop = true
+                        }
                     }
                 }
             }
         }
     }
 }
+
 
 private fun isAuthRequired(route: String): Boolean {
     return route !in listOf(
@@ -184,7 +263,12 @@ private fun AppTheme(content: @Composable () -> Unit) {
 }
 
 @Composable
-fun SplashScreen(onFinished: () -> Unit): Unit {
+fun SplashScreen(
+    title: String? = null,
+    subtitle: String? = null,
+    isOnline: Boolean = true,
+    onFinished: () -> Unit
+): Unit {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -192,8 +276,8 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
         contentAlignment = Alignment.Center
     ) {
         val ctx = LocalContext.current
-        val titleText: String = stringResource(com.horsegallop.core.R.string.welcome_title)
-        val subtitleText: String = stringResource(com.horsegallop.core.R.string.welcome_subtitle)
+        val titleText: String = title ?: ""
+        val subtitleText: String = subtitle ?: ""
         
         val composition by rememberLottieComposition(
             LottieCompositionSpec.RawRes(com.horsegallop.core.R.raw.horse)
@@ -205,18 +289,46 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
         var isSoundReady by remember { mutableStateOf(false) }
         var soundDurationMs by remember { mutableStateOf(0) }
         
-        LaunchedEffect(Unit) {
-            try {
-                val mp = MediaPlayer.create(ctx, com.horsegallop.core.R.raw.horse_gallop)
-                if (mp != null) {
-                    mp.setVolume(1.0f, 1.0f)
-                    soundDurationMs = mp.duration
-                    mediaPlayer = mp
+        DisposableEffect(Unit) {
+            val mp = MediaPlayer()
+            val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO)
+            
+            val job = scope.launch {
+                try {
+                    val afd = ctx.resources.openRawResourceFd(com.horsegallop.core.R.raw.horse_gallop)
+                    if (afd != null) {
+                        mp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                        afd.close()
+                        withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            mp.setOnPreparedListener { player ->
+                                player.setVolume(1.0f, 1.0f)
+                                soundDurationMs = player.duration
+                                mediaPlayer = player
+                                isSoundReady = true
+                            }
+                            mp.prepareAsync()
+                        }
+                    } else {
+                        isSoundReady = true
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    isSoundReady = true
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
             }
-            isSoundReady = true
+
+            onDispose {
+                scope.cancel()
+                try {
+                    if (mp.isPlaying) {
+                        mp.stop()
+                    }
+                    mp.release()
+                    mediaPlayer = null
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
         }
         
         LaunchedEffect(composition, isSoundReady) {
@@ -250,33 +362,30 @@ fun SplashScreen(onFinished: () -> Unit): Unit {
 
             onFinished()
         }
-
-        // Cleanup sound on exit
-        DisposableEffect(Unit) {
-            onDispose {
-                try {
-                    if (mediaPlayer?.isPlaying == true) {
-                        mediaPlayer?.stop()
-                    }
-                    mediaPlayer?.release()
-                    mediaPlayer = null
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
         
         LottieAnimation(
             composition = composition,
             progress = { lottieAnimatable.progress },
             modifier = Modifier.size(220.dp)
         )
-		
-		// Localized welcome texts over splash (auto-resolved by app locales/device locale)
-		Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 64.dp)) {
-			Text(text = titleText, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.primary)
-			Spacer(modifier = Modifier.size(6.dp))
-			Text(text = subtitleText, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-		}
-	}
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 64.dp)
+        ) {
+            Text(
+                text = titleText,
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.size(6.dp))
+            Text(
+                text = subtitleText,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
 }

@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">horsegallop</string>
-	<string name="welcome_title">Welcome</string>
 	<string name="signin_google">Sign in with Google</string>
 	<string name="signin_apple">Sign in with Apple</string>
 	<string name="signin_email">Sign in with Email</string>
@@ -12,7 +11,10 @@
 	<string name="date_time">Date &amp; Time</string>
 	<string name="loading">Loading...</string>
 	<string name="error_unknown">Unknown error occurred</string>
-	<string name="error_network">Network error</string>
+    <string name="error_network">Network error</string>
+    <string name="offline_mode">No internet connection. Please check your connection and try again.</string>
+    <string name="splash_error_title">Connection problem</string>
+    <string name="splash_error_subtitle">We could not load the content. Please check your connection.</string>
 	<string name="retry">Retry</string>
 	<string name="cancel">Cancel</string>
 	<string name="ok">OK</string>
@@ -45,7 +47,6 @@
     <string name="continue_with_google">Continue with Google</string>
     <string name="auto_detect_ride">Auto detect ride</string>
     <string name="prompt_create_account">Create Account</string>
-    <string name="welcome_subtitle">Your horse riding experience starts here</string>
     
     <!-- Home Screen -->
     <string name="quick_actions_title">Quick Actions</string>
@@ -95,6 +96,7 @@
     <string name="start_ride">Start Ride</string>
     <string name="ride_type_title">Ride Type</string>
     <string name="ride_type_hint">Select ride type</string>
+    <string name="ride_default_title">Horse Riding</string>
     <string name="ride_type_dressage">Dressage</string>
     <string name="ride_type_show_jumping">Show Jumping</string>
     <string name="ride_type_endurance">Endurance</string>
@@ -111,10 +113,10 @@
     <string name="stat_distance">Distance</string>
     <string name="stat_duration">Duration</string>
     <string name="setting_auto_detect">Auto-detect rides</string>
-    <string name="action_finish_ride">Finish Ride</string>
-    <string name="stop_ride_confirmation_title">Stop Ride?</string>
-    <string name="stop_ride_confirmation_message">Are you sure you want to stop this ride?</string>
-    <string name="action_confirm_stop">Stop</string>
+    <string name="finish_ride">Finish Ride</string>
+    <string name="stop_ride_confirmation_title">Finish Ride?</string>
+    <string name="stop_ride_confirmation_message">Are you sure you want to finish this ride and save the data?</string>
+    <string name="action_confirm_stop">Finish</string>
     <string name="action_cancel">Cancel</string>
     
     <!-- Onboarding -->
@@ -150,6 +152,36 @@
     <string name="onboarding_skip">Skip</string>
     <string name="onboarding_start">Start</string>
     <string name="onboarding_next">Next</string>
+    
+    <string name="contact">Contact</string>
+    <string name="book_lesson">Book Lesson</string>
+    <string name="reservation_request_sent">Reservation Request Sent!</string>
+    <string name="select_date_time">Select Date &amp; Time</string>
+    <string name="label_date">Date</string>
+    <string name="label_time">Time</string>
+    <string name="label_instructor">Instructor</string>
+    <string name="confirm_booking">Confirm Booking</string>
+    <string name="barn_description_fallback">Experience the joy of riding with our professional instructors and well-trained horses. Perfect for beginners and advanced riders alike.</string>
+    
+    <!-- Ride Detail -->
+    <string name="ride_details_title">Ride Details</string>
+    <string name="ride_not_found">Ride not found</string>
+    <string name="no_route_data">No route data available</string>
+    <string name="map_start">Start</string>
+    <string name="map_end">End</string>
+    <string name="label_energy">Energy</string>
+    <string name="riding_at">Riding at %1$s</string>
+    <string name="select_barn">Select Barn</string>
+    <string name="select_barn_hint">Select a barn...</string>
+    <string name="auto_ride_detection">Auto Ride Detection</string>
+    <string name="daily_ride_trend">Daily Ride Trend</string>
+    <string name="weekly_progress">Weekly Progress</string>
+    <string name="calories_burned">Calories Burned</string>
+    <string name="label_speed">Speed</string>
+    <string name="label_distance">Distance</string>
+    
+    <!-- Ride Tracking -->
+    <string name="next_goal_text">Next Goal: 100 km Club</string>
     
     <!-- Auth Errors -->
     <string name="auth_error_cancelled">Sign in cancelled</string>
@@ -266,6 +298,8 @@
     <string name="barn_detail_description">Description</string>
     <string name="barn_detail_amenities">Amenities</string>
     <string name="barn_detail_book_now">Book Now</string>
+    <string name="unknown_location">Unknown Location</string>
+    <string name="label_location">Location</string>
 
     <!-- Enrollment -->
     <string name="enrollment_title">Sign Up</string>
@@ -305,14 +339,27 @@
 305→    <string name="metric_speed">Speed</string>
 306→    <string name="metric_distance">Distance</string>
 307→    <string name="metric_time">Time</string>
-308→    <string name="metric_calories">Calories Burned</string>
-309→    <string name="auto_ride_detection">Auto Ride Detection</string>
-310→    <string name="stop_ride">Stop Ride</string>
-311→    <string name="hero_track_title">Track your next ride</string>
-312→    <string name="hero_track_subtitle">See your route, speed, and duration in real time.</string>
-313→    <string name="reset_password">Reset Password</string>
+    <string name="metric_calories">Calories Burned</string>
+    <string name="stop_ride">Stop Ride</string>
+    <string name="hero_track_title">Track your next ride</string>
+    <string name="hero_track_subtitle">See your route, speed and time in real-time.</string>
+    <string name="reset_password">Reset Password</string>
 314→    <string name="error_too_many_requests">Too many requests. Please try again later.</string>
 315→    <string name="error_quota_exceeded">Quota exceeded.</string>
 316→    <string name="lesson_with_instructor">with %1$s</string>
 317→    <string name="lesson_time">%1$s - %2$s</string>
-314→</resources>
+    
+    <!-- Performance Board -->
+    <string name="unit_time">time</string>
+    <string name="performance_board_title">Performance Board</string>
+    <string name="activity_distribution_title">Activity Distribution</string>
+    <string name="history_title">History</string>
+    <string name="stats_total_time">Total Time</string>
+    <string name="stats_calories">Calories</string>
+    <string name="favorite_stable_title">Favorite Stable</string>
+    <string name="no_activity_data">No activity data available</string>
+    <string name="activity_type_trail">Trail</string>
+    <string name="activity_type_training">Training</string>
+    <string name="chart_total_label">Total</string>
+    <string name="default_user_name">User</string>
+</resources>

@@ -49,6 +49,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.feature.ride.presentation.RideTrackingRoute
 import com.horsegallop.feature.ride.presentation.RideTrackingViewModel
 
+import com.horsegallop.feature.ride.presentation.RideDetailScreen
+
 sealed class Dest(val route: String) {
   object Onboarding : Dest("onboarding")
   object Login : Dest("login")

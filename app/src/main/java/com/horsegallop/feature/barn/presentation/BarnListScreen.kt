@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -220,7 +221,11 @@ fun BarnListScreen(
             contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp, top = 8.dp)
         ) {
             items(uiState.filteredBarns) { barnWithLocation ->
-                BarnCard(barn = barnWithLocation.barn, onClick = { onBarnClick(barnWithLocation.barn) })
+                BarnCard(
+                    barn = barnWithLocation.barn,
+                    onClick = { onBarnClick(barnWithLocation.barn) },
+                    onFavoriteClick = { viewModel.toggleFavorite(barnWithLocation.barn.id) }
+                )
             }
         }
       }
@@ -228,7 +233,7 @@ fun BarnListScreen(
 }
 
 @Composable
-fun BarnCard(barn: BarnUi, onClick: () -> Unit) {
+fun BarnCard(barn: BarnUi, onClick: () -> Unit, onFavoriteClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -291,6 +296,16 @@ fun BarnCard(barn: BarnUi, onClick: () -> Unit) {
                         )
                     }
                 }
+                
+                IconButton(onClick = onFavoriteClick) {
+                    Icon(
+                        imageVector = if (barn.isFavorite) Icons.Filled.Star else Icons.Filled.StarBorder,
+                        contentDescription = if (barn.isFavorite) "Remove from favorites" else "Add to favorites",
+                        tint = if (barn.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+                
                 Surface(
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),

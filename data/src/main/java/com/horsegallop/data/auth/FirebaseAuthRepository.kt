@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeout
+import java.util.Locale
 import javax.inject.Inject
 
 class FirebaseAuthRepository @Inject constructor(
@@ -174,6 +175,30 @@ class FirebaseAuthRepository @Inject constructor(
     override fun getLottieConfig(): Flow<Result<Pair<String, String>>> = flow {
         // Mock implementation since Lottie config usually comes from Remote Config
         emit(Result.success("https://assets9.lottiefiles.com/packages/lf20_jbrw3hcz.json" to "https://assets9.lottiefiles.com/packages/lf20_yYdx1X.json"))
+    }
+
+    override fun getSplashTexts(locale: String): Flow<Result<Pair<String, String>>> = flow {
+        try {
+            val lang = locale.lowercase(Locale.getDefault())
+            val snapshot = firestore.collection("app_content").document("splash").get().await()
+            if (!snapshot.exists()) {
+                emit(Result.failure(Exception("Splash content not found")))
+                return@flow
+            }
+
+            fun resolveField(base: String): String {
+                val localized = snapshot.getString("${base}_$lang")
+                val fallbackEn = snapshot.getString("${base}_en")
+                val defaultField = snapshot.getString(base)
+                return localized ?: fallbackEn ?: defaultField ?: ""
+            }
+
+            val title = resolveField("title")
+            val subtitle = resolveField("subtitle")
+            emit(Result.success(title to subtitle))
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
     }
 
     override fun getCurrentUserId(): String? {

@@ -4,6 +4,17 @@ data class AuthRequestDto(
   val idToken: String
 )
 
+data class LoginRequestDto(
+  val email: String,
+  val password: String
+)
+
+data class RegisterRequestDto(
+  val name: String,
+  val email: String,
+  val password: String
+)
+
 data class UserDto(
   val id: String,
   val role: String,

@@ -8,5 +8,6 @@ data class UserProfile(
     val city: String = "",
     val birthDate: String = "",
     val photoUrl: String? = null,
-    val countryCode: String = "+90"
+    val countryCode: String = "+90",
+    val weight: Float? = null
 )

@@ -13,6 +13,9 @@
     <string name="loading">Yükleniyor…</string>
     <string name="error_unknown">Bilinmeyen bir hata oluştu</string>
     <string name="error_network">Ağ hatası</string>
+    <string name="offline_mode">İnternet bağlantınız yok. Lütfen bağlantınızı kontrol edip tekrar deneyin.</string>
+    <string name="splash_error_title">Bağlantı sorunu</string>
+    <string name="splash_error_subtitle">İçeriği yükleyemedik. Lütfen internet bağlantınızı kontrol edin.</string>
     <string name="retry">Tekrar dene</string>
     <string name="cancel">İptal</string>
     <string name="ok">Tamam</string>
@@ -141,6 +144,11 @@
     <string name="ride_headline">Biniş için harika bir gün!</string>
     <string name="ride_type_title">Biniş türü</string>
     <string name="ride_type_hint">Biniş türünü seç; istatistikler ve içgörüler binişine göre şekillensin.</string>
+    <string name="finish_ride">Binişi Bitir</string>
+    <string name="stop_ride_confirmation_title">Binişi Bitir?</string>
+    <string name="stop_ride_confirmation_message">Binişi bitirmek ve verileri kaydetmek istediğinize emin misiniz?</string>
+    <string name="action_confirm_stop">Bitir</string>
+    <string name="action_cancel">İptal</string>
     <!-- Home localized additions -->
     <string name="qa_start_ride_title">Sürüşe Başla</string>
     <string name="qa_start_ride_subtitle">Yeni bir binicilik deneyimi</string>

@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.horsegallop.core.components.ActivityItem
@@ -51,7 +52,7 @@ fun RecentActivityDetailScreen(
             CenterAlignedTopAppBar(
                 title = { 
                     Text(
-                        "Performance Board",
+                        stringResource(id = com.horsegallop.core.R.string.performance_board_title),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     ) 
@@ -80,26 +81,26 @@ fun RecentActivityDetailScreen(
             }
 
             item {
-                SectionHeader("Weekly Progress")
+                SectionHeader(stringResource(id = com.horsegallop.core.R.string.weekly_progress))
                 Spacer(modifier = Modifier.height(12.dp))
-                AnimatedDistanceBarChart(activities = uiState.activities)
+                AnimatedDistanceBarChart(dailyDistance = uiState.dailyDistance)
             }
             
             item {
-                SectionHeader("Activity Distribution")
+                SectionHeader(stringResource(id = com.horsegallop.core.R.string.activity_distribution_title))
                 Spacer(modifier = Modifier.height(12.dp))
-                AnimatedActivityPieChart()
+                AnimatedActivityPieChart(uiState.activityDistribution)
             }
 
             item {
-                SectionHeader("History")
+                SectionHeader(stringResource(id = com.horsegallop.core.R.string.history_title))
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
             items(uiState.activities) { activity ->
-                ActivityItem(
-                    title = activity.title,
-                    subtitle = "${activity.dateLabel} • ${activity.timeLabel}",
+                        ActivityItem(
+                            title = activity.title ?: stringResource(id = com.horsegallop.core.R.string.ride_default_title),
+                            subtitle = "${activity.dateLabel} • ${activity.timeLabel}",
                     duration = "${activity.durationMin} min",
                     distance = "${activity.distanceKm} km",
                     icon = Icons.AutoMirrored.Filled.DirectionsRun
@@ -126,10 +127,6 @@ private fun SectionHeader(title: String) {
 
 @Composable
 private fun AnimatedStatsSection(uiState: HomeUiState) {
-    val totalDurationMin = uiState.activities.sumOf { it.durationMin }
-    val totalCalories = totalDurationMin * 6 // Avg 6 kcal/min for riding
-    val mostVisited = "Sunrise Stables" // Mock
-
     // Staggered animation state
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
@@ -164,7 +161,7 @@ private fun AnimatedStatsSection(uiState: HomeUiState) {
              AnimatedMetricCard(
                  modifier = Modifier.weight(1f),
                  title = "Total Time",
-                 value = "${totalDurationMin / 60}h ${totalDurationMin % 60}m",
+                 value = uiState.totalDuration,
                  unit = "",
                  color = MaterialTheme.colorScheme.tertiary,
                  delayMillis = 200,
@@ -173,7 +170,7 @@ private fun AnimatedStatsSection(uiState: HomeUiState) {
              AnimatedMetricCard(
                  modifier = Modifier.weight(1f),
                  title = "Calories",
-                 value = "$totalCalories",
+                 value = uiState.totalCalories,
                  unit = "kcal",
                  color = MaterialTheme.colorScheme.error,
                  delayMillis = 300,
@@ -191,47 +188,49 @@ private fun AnimatedStatsSection(uiState: HomeUiState) {
             animationSpec = tween(500, delayMillis = 400)
         )
         
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-            ),
-            shape = RoundedCornerShape(24.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .scale(scale)
-                .alpha(alpha)
-        ) {
-            Row(
+        if (uiState.favoriteBarn != "Unknown") {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                ),
+                shape = RoundedCornerShape(24.dp),
                 modifier = Modifier
-                    .padding(20.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxWidth()
+                    .scale(scale)
+                    .alpha(alpha)
             ) {
-                Box(
+                Row(
                     modifier = Modifier
-                        .size(48.dp)
-                        .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-                    contentAlignment = Alignment.Center
+                        .padding(20.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        Icons.Filled.Star, 
-                        null, 
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-                Spacer(Modifier.width(16.dp))
-                Column {
-                    Text(
-                        "Favorite Stable", 
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        mostVisited, 
-                        style = MaterialTheme.typography.titleLarge, 
-                        fontWeight = FontWeight.Bold
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Filled.Star, 
+                            null, 
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    Spacer(Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            "Favorite Stable", 
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            uiState.favoriteBarn, 
+                            style = MaterialTheme.typography.titleLarge, 
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
@@ -296,16 +295,35 @@ private fun AnimatedMetricCard(
 }
 
 @Composable
-private fun AnimatedActivityPieChart() {
-    val data = listOf(
-        Pair("Trail", 0.4f),
-        Pair("Lesson", 0.35f),
-        Pair("Training", 0.25f)
-    )
+private fun AnimatedActivityPieChart(activityDistribution: List<Pair<String?, Float>>) {
+    val data = if (activityDistribution.isNotEmpty()) {
+        activityDistribution.map { (name, value) -> 
+            Pair(name ?: "Unknown", value) 
+        }
+    } else {
+        // Fallback or empty state could be better, but for now keeping some default or empty
+        emptyList()
+    }
+    
+    if (data.isEmpty()) {
+         Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(stringResource(id = com.horsegallop.core.R.string.no_activity_data), style = MaterialTheme.typography.bodyMedium)
+        }
+        return
+    }
+
     val colors = listOf(
         Color(0xFF5D4037), // Saddle Brown dark
         Color(0xFF8B4513), // Saddle Brown
-        Color(0xFFD2691E)  // Chocolate
+        Color(0xFFD2691E), // Chocolate
+        Color(0xFFA0522D), // Sienna
+        Color(0xFFCD853F)  // Peru
     )
     
     var selectedIndex by remember { mutableStateOf(-1) }
@@ -350,9 +368,10 @@ private fun AnimatedActivityPieChart() {
                         val sweepAngle = pair.second * totalSweep
                         val isSelected = index == selectedIndex
                         val scale = if (isSelected) 1.1f else 1.0f
+                        val color = colors[index % colors.size]
                         
                         drawArc(
-                            color = colors[index],
+                            color = color,
                             startAngle = startAngle,
                             sweepAngle = sweepAngle,
                             useCenter = false,
@@ -365,11 +384,6 @@ private fun AnimatedActivityPieChart() {
                         )
                         startAngle += sweepAngle
                     }
-                    
-                    // Center Text
-                    if (selectedIndex != -1) {
-                        // Draw text logic if needed, omitted for simplicity
-                    }
                 }
                 
                 // Inner info
@@ -377,7 +391,7 @@ private fun AnimatedActivityPieChart() {
                     modifier = Modifier.align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    val label = if (selectedIndex != -1) data[selectedIndex].first else "Total"
+                    val label = if (selectedIndex != -1) data[selectedIndex].first else stringResource(id = com.horsegallop.core.R.string.chart_total_label)
                     val value = if (selectedIndex != -1) "${(data[selectedIndex].second * 100).toInt()}%" else "100%"
                     
                     Text(
@@ -389,15 +403,17 @@ private fun AnimatedActivityPieChart() {
                     Text(
                         text = label,
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1
                     )
                 }
             }
             
             // Legend
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                data.forEachIndexed { index, pair ->
+                data.take(3).forEachIndexed { index, pair ->
                     val isSelected = index == selectedIndex
+                    val color = colors[index % colors.size]
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -407,14 +423,15 @@ private fun AnimatedActivityPieChart() {
                         Box(
                             modifier = Modifier
                                 .size(12.dp)
-                                .background(colors[index], CircleShape)
+                                .background(color, CircleShape)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
                                 text = pair.first,
                                 style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                maxLines = 1
                             )
                             Text(
                                 text = "${(pair.second * 100).toInt()}%",
@@ -430,11 +447,11 @@ private fun AnimatedActivityPieChart() {
 }
 
 @Composable
-private fun AnimatedDistanceBarChart(activities: List<ActivityUi>) {
-    // Show last 7 activities
-    val chartData = remember(activities) { activities.take(7).reversed() }
+private fun AnimatedDistanceBarChart(dailyDistance: List<Float>) {
+    // Show last 7 days
+    val chartData = dailyDistance.takeLast(7)
     
-    if (chartData.isEmpty()) {
+    if (chartData.all { it == 0f }) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -442,12 +459,12 @@ private fun AnimatedDistanceBarChart(activities: List<ActivityUi>) {
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Text("No activity data available", style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(id = com.horsegallop.core.R.string.no_activity_data), style = MaterialTheme.typography.bodyMedium)
         }
         return
     }
 
-    val maxDistance = remember(chartData) { chartData.maxOfOrNull { it.distanceKm } ?: 10.0 }
+    val maxDistance = remember(chartData) { (chartData.maxOrNull() ?: 10f).toDouble() }
     val barColor = MaterialTheme.colorScheme.primary
     
     var animationPlayed by remember { mutableStateOf(false) }
@@ -486,8 +503,8 @@ private fun AnimatedDistanceBarChart(activities: List<ActivityUi>) {
                         )
                     }
 
-                    chartData.forEachIndexed { index, activity ->
-                        val targetHeight = (activity.distanceKm / maxDistance * size.height).toFloat()
+                    chartData.forEachIndexed { index, distance ->
+                        val targetHeight = (distance / maxDistance * size.height).toFloat()
                         val currentBarHeight = targetHeight * heightProgress
                         val x = index * space + (space - barWidth) / 2
                         val y = size.height - currentBarHeight
@@ -502,9 +519,7 @@ private fun AnimatedDistanceBarChart(activities: List<ActivityUi>) {
                         
                         // Actual bar
                         drawRoundRect(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(barColor, barColor.copy(alpha = 0.7f))
-                            ),
+                            color = barColor,
                             topLeft = Offset(x, y),
                             size = Size(barWidth, currentBarHeight),
                             cornerRadius = CornerRadius(8f, 8f)
@@ -512,17 +527,23 @@ private fun AnimatedDistanceBarChart(activities: List<ActivityUi>) {
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            
+            // X-Axis Labels (Day names)
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                horizontalArrangement = Arrangement.SpaceAround
             ) {
-                chartData.forEach { activity ->
+                val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+                // Adjust to show last 7 days ending today
+                val today = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_WEEK) // Sun=1, Mon=2...
+                // Map to 0-6 index where 0=Mon
+                val todayIndex = if (today == 1) 6 else today - 2
+                
+                for (i in 0..6) {
+                    val dayIndex = (todayIndex - (6 - i) + 7) % 7
                     Text(
-                        text = activity.dateLabel.take(3),
+                        text = days[dayIndex],
                         style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier.width(30.dp),
-                        textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
