@@ -9,13 +9,17 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.util.Locale
 import javax.inject.Inject
 
 data class MainUiState(
     val isLoggedIn: Boolean = false,
     val userRole: UserRole? = null,
     val showSplash: Boolean = true,
-    val isInitialized: Boolean = false
+    val isInitialized: Boolean = false,
+    val splashTitle: String? = null,
+    val splashSubtitle: String? = null,
+    val hasSplashError: Boolean = false
 )
 
 @HiltViewModel
@@ -26,11 +30,17 @@ class MainViewModel @Inject constructor(
     val ui: StateFlow<MainUiState> = _ui
 
     init {
-        val loggedIn = authRepository.isSignedIn()
-        _ui.value = _ui.value.copy(
-            isLoggedIn = loggedIn,
-            userRole = if (loggedIn) UserRole.CUSTOMER else null
-        )
+        viewModelScope.launch {
+            // MAD Best Practice: Move data checks to background/coroutine to ensure Main Thread is free
+            val loggedIn = authRepository.isSignedIn()
+            _ui.value = _ui.value.copy(
+                isLoggedIn = loggedIn,
+                userRole = if (loggedIn) UserRole.CUSTOMER else null,
+                hasSplashError = false
+            )
+        }
+        val locale = Locale.getDefault().language
+        loadSplashTexts(locale)
     }
 
     fun onSplashFinished() {
@@ -38,11 +48,35 @@ class MainViewModel @Inject constructor(
     }
 
     fun reloadUser() {
-        val loggedIn = authRepository.isSignedIn()
-        _ui.value = _ui.value.copy(
-            isLoggedIn = loggedIn,
-            userRole = if (loggedIn) UserRole.CUSTOMER else null
-        )
+        viewModelScope.launch {
+            val loggedIn = authRepository.isSignedIn()
+            _ui.value = _ui.value.copy(
+                isLoggedIn = loggedIn,
+                userRole = if (loggedIn) UserRole.CUSTOMER else null
+            )
+        }
+    }
+
+    private fun loadSplashTexts(locale: String) {
+        viewModelScope.launch {
+            authRepository.getSplashTexts(locale).collect { result ->
+                result
+                    .onSuccess { pair ->
+                        _ui.value = _ui.value.copy(
+                            splashTitle = pair.first,
+                            splashSubtitle = pair.second,
+                            hasSplashError = false
+                        )
+                    }
+                    .onFailure {
+                        _ui.value = _ui.value.copy(
+                            splashTitle = null,
+                            splashSubtitle = null,
+                            hasSplashError = true
+                        )
+                    }
+            }
+        }
     }
 
     override fun onCleared() {

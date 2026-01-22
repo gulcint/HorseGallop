@@ -76,35 +76,38 @@ private fun HomeDashboard(
   onViewAllActivities: (() -> Unit)? = null,
   uiState: HomeUiState = HomeUiState(loading = false)
 ) {
-  LazyColumn(
-    modifier = Modifier
-      .fillMaxSize(),
-    contentPadding = PaddingValues(
-      start = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
-      end = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
-      top = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical),
-      bottom = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)
-    ),
-    verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md))
-  ) {
-    item {
-      WelcomeHeader(onProfileClick = onProfileClick)
-    }
+  if (uiState.loading) {
+    HomeDashboardSkeleton()
+  } else {
+    LazyColumn(
+      modifier = Modifier
+        .fillMaxSize(),
+      contentPadding = PaddingValues(
+        start = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
+        end = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
+        top = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical),
+        bottom = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)
+      ),
+      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md))
+    ) {
+      item {
+        WelcomeHeader(onProfileClick = onProfileClick)
+      }
 
-    item {
-      QuickActionsSection(onStartRide = onStartRide, onViewBarns = onViewBarns)
-    }
-    
-    item {
-      StatsOverviewSection(totalRides = uiState.totalRides, totalDistance = uiState.totalDistance)
-    }
-    
-    item {
-      if (uiState.loading) {
-        RecentActivitySkeleton()
-      } else {
+
+      
+      item {
+        QuickActionsSection(onStartRide = onStartRide, onViewBarns = onViewBarns)
+      }
+      
+      item {
+        StatsOverviewSection(totalRides = uiState.totalRides, totalDistance = uiState.totalDistance)
+      }
+      
+      item {
         val activities = if (uiState.activities.isEmpty()) listOf(
           ActivityUi(
+            id = "mock1",
             title = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_title),
             dateLabel = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_subtitle).substringBefore(", "),
             timeLabel = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_subtitle).substringAfter(", "),
@@ -112,6 +115,7 @@ private fun HomeDashboard(
             distanceKm = 8.2
           ),
           ActivityUi(
+            id = "mock2",
             title = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_title),
             dateLabel = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_subtitle).substringBefore(", "),
             timeLabel = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_subtitle).substringAfter(", "),
@@ -121,13 +125,11 @@ private fun HomeDashboard(
         ) else uiState.activities
         RecentActivitySection(activities = activities, onViewAllActivities = onViewAllActivities)
       }
+      
+      item {
+        TipsSection()
+      }
     }
-    
-    item {
-      TipsSection()
-    }
-    
-    // Removed manual bottom spacer to avoid double padding with Scaffold's innerPadding
   }
 }
 
@@ -160,14 +162,14 @@ private fun WelcomeHeader(onProfileClick: () -> Unit) {
       ) {
         Column {
           Text(
-            text = stringResource(id = com.horsegallop.core.R.string.welcome_title),
+            text = "Welcome",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onPrimaryContainer
           )
           Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
           Text(
-            text = stringResource(id = com.horsegallop.core.R.string.welcome_subtitle),
+            text = "Your horse riding experience starts here",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
           )
@@ -261,6 +263,7 @@ private fun StatsOverviewSection(totalRides: String, totalDistance: String) {
 private fun RecentActivitySection(
   activities: List<ActivityUi> = listOf(
   ActivityUi(
+    id = "mock1",
     title = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_title),
     dateLabel = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_subtitle).substringBefore(", "),
     timeLabel = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_subtitle).substringAfter(", "),
@@ -268,6 +271,7 @@ private fun RecentActivitySection(
     distanceKm = 8.2
   ),
   ActivityUi(
+    id = "mock2",
     title = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_title),
     dateLabel = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_subtitle).substringBefore(", "),
     timeLabel = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_subtitle).substringAfter(", "),
@@ -307,7 +311,7 @@ private fun RecentActivitySection(
         val a1 = activities.getOrNull(0)
         if (a1 != null) {
           ActivityItem(
-            title = a1.title,
+            title = a1.title ?: stringResource(id = R.string.ride_default_title),
             subtitle = stringResource(id = R.string.activity_subtitle_format, a1.dateLabel, a1.timeLabel),
             duration = stringResource(id = R.string.activity_duration_minutes, a1.durationMin),
             distance = stringResource(id = R.string.activity_distance_km, a1.distanceKm),
@@ -322,7 +326,7 @@ private fun RecentActivitySection(
         val a2 = activities.getOrNull(1)
         if (a2 != null) {
           ActivityItem(
-            title = a2.title,
+            title = a2.title ?: stringResource(id = R.string.ride_default_title),
             subtitle = stringResource(id = R.string.activity_subtitle_format, a2.dateLabel, a2.timeLabel),
             duration = stringResource(id = R.string.activity_duration_minutes, a2.durationMin),
             distance = stringResource(id = R.string.activity_distance_km, a2.distanceKm),
@@ -383,37 +387,6 @@ private fun TipsSection() {
 }
 
 private data class TabItem(val label: String, val icon: ImageVector)
-
-// Shimmer Skeleton Components
-@Composable
-private fun HomeDashboardSkeleton() {
-  HomeDashboardSkeleton()
-}
-
-@Composable
-private fun WelcomeHeaderSkeleton() {
-  WelcomeHeaderSkeleton()
-}
-
-@Composable
-private fun QuickActionsSkeleton() {
-  QuickActionsSkeleton()
-}
-
-@Composable
-private fun StatsOverviewSkeleton() {
-  StatsOverviewSkeleton()
-}
-
-@Composable
-private fun RecentActivitySkeleton() {
-  RecentActivitySkeleton()
-}
-
-@Composable
-private fun TipsSkeleton() {
-  TipsSkeleton()
-}
 
 // Preview Components
 @Preview(showBackground = true, backgroundColor = 0xFFF5F5F5)

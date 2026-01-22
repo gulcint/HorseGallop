@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     kotlin("android")
@@ -17,6 +19,18 @@ android {
 		versionName = "0.1.0"
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 		vectorDrawables.useSupportLibrary = true
+        
+        val properties = Properties()
+        val localPropertiesFile = project.rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(localPropertiesFile.inputStream())
+        }
+        
+        // Önce local.properties'den, yoksa ortam değişkenlerinden (CI/CD için) okumayı dene
+        val googleMapsApiKey = properties.getProperty("GOOGLE_MAPS_API_KEY") 
+            ?: System.getenv("GOOGLE_MAPS_API_KEY")
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = googleMapsApiKey
+        buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"$googleMapsApiKey\"")
 	}
 	buildFeatures {
 		compose = true
@@ -58,14 +72,19 @@ dependencies {
 	implementation(libs.lifecycle.compose)
 	implementation(libs.coroutines)
 	implementation(libs.hilt.android)
-	implementation(libs.hilt.navigation.compose)
-	kapt(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
+    kapt(libs.hilt.compiler)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.firestore)
     implementation("com.google.firebase:firebase-storage-ktx")
-	implementation(libs.google.auth)
+    implementation(libs.firebase.appcheck.playintegrity)
+    implementation(libs.firebase.appcheck.debug)
+    implementation(libs.google.auth)
+    implementation(libs.google.maps)
+    implementation(libs.google.location)
+    implementation(libs.maps.compose)
 	implementation("androidx.core:core-splashscreen:1.0.1")
 	implementation(libs.lottie.compose)
     implementation(libs.coil.compose)

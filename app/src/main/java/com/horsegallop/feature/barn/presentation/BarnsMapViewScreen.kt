@@ -270,6 +270,8 @@ private fun BarnsMapCanvas(
         
         val w = this.size.width
         val h = this.size.height
+        val centerXNorm = 0.5f
+        val centerYNorm = 0.5f
         
         // Draw Grid
         drawGrid(this, w, h, gridColor)
@@ -277,9 +279,13 @@ private fun BarnsMapCanvas(
         groups.forEach { group ->
             val nx = if (maxLng != minLng) ((group.centerLng - minLng) / (maxLng - minLng)).toFloat() else 0.5f
             val ny = if (maxLat != minLat) (1f - ((group.centerLat - minLat) / (maxLat - minLat)).toFloat()) else 0.5f
-            val x = nx * w
-            val y = ny * h
-            
+
+            val zoomedNx = ((nx - centerXNorm) * zoomLevel + centerXNorm).coerceIn(0f, 1f)
+            val zoomedNy = ((ny - centerYNorm) * zoomLevel + centerYNorm).coerceIn(0f, 1f)
+
+            val x = zoomedNx * w
+            val y = zoomedNy * h
+
             if (group.barns.size == 1) {
                 drawPin(
                     scope = this,
@@ -287,7 +293,7 @@ private fun BarnsMapCanvas(
                     y = y,
                     color = primaryColor,
                     centerColor = onPrimaryColor,
-                    size = 14.dp.toPx() * zoomLevel // Slightly larger pins
+                    size = 14.dp.toPx()
                 )
             } else {
                 drawClusterPin(
@@ -297,7 +303,7 @@ private fun BarnsMapCanvas(
                     count = group.barns.size,
                     color = clusterColor,
                     textColor = onPrimaryColor,
-                    size = 18.dp.toPx() * zoomLevel,
+                    size = 18.dp.toPx(),
                     textMeasurer = textMeasurer,
                     textStyle = textStyle
                 )

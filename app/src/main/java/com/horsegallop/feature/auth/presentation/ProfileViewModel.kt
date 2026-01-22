@@ -21,6 +21,7 @@ data class ProfileUiState(
     val userProfile: UserProfile = UserProfile(),
     val draftProfile: UserProfile = UserProfile(),
     val error: String? = null,
+    val successMessage: String? = null,
     val isEditing: Boolean = false,
     val countryCodes: List<String> = listOf("+90", "+1", "+44", "+49", "+33", "+34", "+39", "+61", "+81", "+86", "+971", "+7")
 )
@@ -101,16 +102,25 @@ class ProfileViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(isLoading = true)
 
         viewModelScope.launch {
-            updateUserProfileUseCase(uid, draft).collect { result ->
-                result.onSuccess {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        isEditing = false,
-                        userProfile = draft
-                    )
-                }.onFailure { e ->
-                    _uiState.value = _uiState.value.copy(isLoading = false, error = e.localizedMessage)
+            try {
+                kotlinx.coroutines.withTimeout(15000L) {
+                    updateUserProfileUseCase(uid, draft).collect { result ->
+                        result.onSuccess {
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                isEditing = false,
+                                userProfile = draft,
+                                successMessage = "Profile saved successfully"
+                            )
+                        }.onFailure { e ->
+                            _uiState.value = _uiState.value.copy(isLoading = false, error = e.localizedMessage ?: "Unknown error")
+                        }
+                    }
                 }
+            } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = "Request timed out. Please check your connection.")
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.localizedMessage ?: "An unexpected error occurred")
             }
         }
     }
@@ -130,6 +140,10 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+
+    fun clearMessages() {
+        _uiState.value = _uiState.value.copy(error = null, successMessage = null)
+    }
 
     fun signOut(onSignOut: () -> Unit) {
         viewModelScope.launch {

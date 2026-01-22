@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.barn.usecase.GetBarnsUseCase
+import com.horsegallop.domain.barn.usecase.ToggleBarnFavoriteUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +27,8 @@ data class BarnUiState(
 
 @HiltViewModel
 class BarnViewModel @Inject constructor(
-    private val getBarnsUseCase: GetBarnsUseCase
+    private val getBarnsUseCase: GetBarnsUseCase,
+    private val toggleBarnFavoriteUseCase: ToggleBarnFavoriteUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BarnUiState())
@@ -41,6 +43,13 @@ class BarnViewModel @Inject constructor(
             getBarnsUseCase().collect { barns ->
                 _uiState.update { it.copy(allBarns = barns, filteredBarns = barns) }
             }
+        }
+    }
+
+    fun toggleFavorite(barnId: String) {
+        viewModelScope.launch {
+            toggleBarnFavoriteUseCase(barnId)
+            // The list will automatically update via the flow from getBarnsUseCase
         }
     }
 

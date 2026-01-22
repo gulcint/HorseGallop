@@ -15,6 +15,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,10 +38,10 @@ import androidx.compose.material.icons.filled.DirectionsRun
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Explore
-import androidx.compose.material.icons.filled.ShowChart
+import androidx.compose.material.icons.filled.Stop
  
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -64,6 +65,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -78,7 +80,16 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-  import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -87,17 +98,40 @@ import kotlinx.coroutines.Dispatchers
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.horsegallop.domain.ride.model.GeoPoint
+import com.horsegallop.domain.ride.model.RideSession
+import com.horsegallop.domain.ride.repository.RideHistoryRepository
 import com.horsegallop.domain.ride.usecase.ObserveIsRidingUseCase
 import com.horsegallop.domain.ride.usecase.ObserveRideMetricsUseCase
 import com.horsegallop.domain.ride.usecase.SetAutoDetectUseCase
 import com.horsegallop.domain.ride.usecase.StartRideUseCase
 import com.horsegallop.domain.ride.usecase.StopRideUseCase
+import com.horsegallop.domain.barn.repository.BarnRepository
+import com.horsegallop.domain.barn.model.BarnWithLocation
+import com.horsegallop.domain.auth.usecase.GetUserProfileUseCase
+import com.horsegallop.domain.auth.usecase.GetCurrentUserIdUseCase
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
+import java.util.UUID
 import javax.inject.Inject
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.TextField
+import androidx.compose.material3.OutlinedTextField
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.Manifest
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingActionButtonDefaults
 
 data class RideUiState(
   val speedKmh: Float,
@@ -106,10 +140,12 @@ data class RideUiState(
   val calories: Int,
   val isRiding: Boolean,
   val autoDetect: Boolean,
-  val nextGoalText: String,
   val dailyTrend: List<Float>,
   val weeklyTrend: List<Float>,
-  val pathPoints: List<GeoPoint>
+  val totalCareerDistance: Float = 0f,
+  val pathPoints: List<GeoPoint>,
+  val barns: List<BarnWithLocation> = emptyList(),
+  val selectedBarn: BarnWithLocation? = null
 )
 
 @HiltViewModel
@@ -118,7 +154,11 @@ class RideTrackingViewModel @Inject constructor(
     private val stopRideUseCase: StopRideUseCase,
     private val observeRideMetricsUseCase: ObserveRideMetricsUseCase,
     private val observeIsRidingUseCase: ObserveIsRidingUseCase,
-    private val setAutoDetectUseCase: SetAutoDetectUseCase
+    private val setAutoDetectUseCase: SetAutoDetectUseCase,
+    private val rideHistoryRepository: RideHistoryRepository,
+    private val barnRepository: BarnRepository,
+    private val getUserProfileUseCase: GetUserProfileUseCase,
+    private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase
 ) : ViewModel() {
   private val _uiState: MutableStateFlow<RideUiState> = MutableStateFlow(
     RideUiState(
@@ -128,13 +168,13 @@ class RideTrackingViewModel @Inject constructor(
       calories = 0,
       isRiding = false,
       autoDetect = false,
-      nextGoalText = "Next Goal: 100 km Club",
-      dailyTrend = listOf(0.2f, 0.4f, 0.1f, 0.6f, 0.3f, 0.7f, 0.5f),
-      weeklyTrend = listOf(1.2f, 2.4f, 3.1f, 2.7f),
+      dailyTrend = listOf(0f, 0f, 0f, 0f, 0f, 0f, 0f),
+      weeklyTrend = listOf(0f, 0f, 0f, 0f),
       pathPoints = listOf(GeoPoint(41.0, 29.0))
     )
   )
   val uiState: StateFlow<RideUiState> = _uiState
+  private var userWeightKg: Float = 70f
 
   init {
       combine(
@@ -152,14 +192,106 @@ class RideTrackingViewModel @Inject constructor(
       }.onEach { newState ->
           _uiState.value = newState
       }.launchIn(viewModelScope)
+
+      barnRepository.getBarns().onEach { barns ->
+          _uiState.update { it.copy(barns = barns) }
+      }.launchIn(viewModelScope)
+
+      loadUserProfile()
+
+      rideHistoryRepository.getRideHistory().onEach { history ->
+          val daily = calculateDailyTrend(history)
+          val weekly = calculateWeeklyTrend(history)
+          val total = history.sumOf { it.distanceKm.toDouble() }.toFloat()
+          _uiState.update { it.copy(
+              dailyTrend = daily, 
+              weeklyTrend = weekly,
+              totalCareerDistance = total
+          ) }
+      }.launchIn(viewModelScope)
+  }
+
+  private fun calculateDailyTrend(history: List<RideSession>): List<Float> {
+      val cal = java.util.Calendar.getInstance()
+      cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+      cal.set(java.util.Calendar.MINUTE, 0)
+      cal.set(java.util.Calendar.SECOND, 0)
+      cal.set(java.util.Calendar.MILLISECOND, 0)
+      val todayMillis = cal.timeInMillis
+      val oneDayMillis = 24 * 60 * 60 * 1000L
+      
+      val days = FloatArray(7)
+      
+      history.forEach { ride ->
+          val rideCal = java.util.Calendar.getInstance()
+          rideCal.timeInMillis = ride.dateMillis
+          rideCal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+          rideCal.set(java.util.Calendar.MINUTE, 0)
+          rideCal.set(java.util.Calendar.SECOND, 0)
+          rideCal.set(java.util.Calendar.MILLISECOND, 0)
+          
+          val diff = todayMillis - rideCal.timeInMillis
+          if (diff >= 0) {
+              val dayDiff = (diff / oneDayMillis).toInt()
+              if (dayDiff in 0..6) {
+                  days[6 - dayDiff] += ride.distanceKm
+              }
+          }
+      }
+      return days.toList()
+  }
+
+  private fun calculateWeeklyTrend(history: List<RideSession>): List<Float> {
+      val cal = java.util.Calendar.getInstance()
+      cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+      cal.set(java.util.Calendar.MINUTE, 0)
+      cal.set(java.util.Calendar.SECOND, 0)
+      cal.set(java.util.Calendar.MILLISECOND, 0)
+      val todayMillis = cal.timeInMillis
+      val oneWeekMillis = 7 * 24 * 60 * 60 * 1000L
+      
+      val weeks = FloatArray(4)
+      
+      history.forEach { ride ->
+          val rideCal = java.util.Calendar.getInstance()
+          rideCal.timeInMillis = ride.dateMillis
+          rideCal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+          rideCal.set(java.util.Calendar.MINUTE, 0)
+          rideCal.set(java.util.Calendar.SECOND, 0)
+          rideCal.set(java.util.Calendar.MILLISECOND, 0)
+          
+          val diff = todayMillis - rideCal.timeInMillis
+          if (diff >= 0) {
+              val weekDiff = (diff / oneWeekMillis).toInt()
+              if (weekDiff in 0..3) {
+                  weeks[3 - weekDiff] += ride.distanceKm
+              }
+          }
+      }
+      return weeks.toList()
+  }
+
+  private fun loadUserProfile() {
+      val uid = getCurrentUserIdUseCase() ?: return
+      viewModelScope.launch {
+          getUserProfileUseCase(uid).collect { result ->
+             result.onSuccess { profile ->
+                 userWeightKg = profile.weight ?: 70f
+             }
+          }
+      }
+  }
+
+  fun selectBarn(barn: BarnWithLocation) {
+      _uiState.update { it.copy(selectedBarn = barn) }
   }
 
   fun toggleRide() {
     viewModelScope.launch {
         if (_uiState.value.isRiding) {
-            stopRideUseCase()
+            stopRideUseCase(_uiState.value.selectedBarn?.barn?.name)
         } else {
-            startRideUseCase()
+            startRideUseCase(userWeightKg)
         }
     }
   }
@@ -194,10 +326,27 @@ fun RideTrackingScreen(
 ) {
   val state: RideUiState by viewModel.uiState.collectAsState()
   
+  // Permission Handling
+  val locationPermissions = arrayOf(
+      Manifest.permission.ACCESS_FINE_LOCATION,
+      Manifest.permission.ACCESS_COARSE_LOCATION
+  )
+  
+  val launcher = rememberLauncherForActivityResult(
+      contract = ActivityResultContracts.RequestMultiplePermissions()
+  ) { permissions ->
+      // Permissions handled
+  }
+
+  LaunchedEffect(Unit) {
+      launcher.launch(locationPermissions)
+  }
+  
   RideTrackingContent(
     state = state,
     onToggleRide = { viewModel.toggleRide() },
     onSetAutoDetect = { viewModel.setAutoDetect(it) },
+    onBarnSelected = { viewModel.selectBarn(it) },
     onHomeClick = onHomeClick,
     onBarnsClick = onBarnsClick
   )
@@ -209,13 +358,33 @@ fun RideTrackingContent(
   state: RideUiState,
   onToggleRide: () -> Unit,
   onSetAutoDetect: (Boolean) -> Unit,
+  onBarnSelected: (BarnWithLocation) -> Unit,
   onHomeClick: () -> Unit = {},
   onBarnsClick: () -> Unit = {}
 ) {
   var selectedRideType: RideType? by remember { mutableStateOf<RideType?>(null) }
   Scaffold(
     containerColor = MaterialTheme.colorScheme.background,
-    topBar = { /* No title - greeting moved into content */ }
+    topBar = { /* No title - greeting moved into content */ },
+    floatingActionButton = {
+        if (!state.isRiding) {
+            ExtendedFloatingActionButton(
+                onClick = onToggleRide,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                elevation = FloatingActionButtonDefaults.elevation(8.dp),
+                icon = { Icon(Icons.Default.PlayArrow, contentDescription = null) },
+                text = { 
+                    Text(
+                        text = stringResource(id = com.horsegallop.core.R.string.start_ride),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    ) 
+                }
+            )
+        }
+    },
+    floatingActionButtonPosition = FabPosition.Center
   ) { innerPadding ->
     Column(
       modifier = Modifier
@@ -226,31 +395,23 @@ fun RideTrackingContent(
     ) {
       WeatherTopRow(modifier = Modifier.padding(top = 24.dp))
       if (!state.isRiding) {
+        BarnSelection(
+            barns = state.barns,
+            selectedBarn = state.selectedBarn,
+            onBarnSelected = onBarnSelected
+        )
         RideTypeCard(
           selectedRideType = selectedRideType,
           onRideTypeSelected = { selectedRideType = it }
         )
         Spacer(Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md)))
-        StatsOverviewCard()
+        StatsOverviewCard(
+          dailyDistance = state.dailyTrend.lastOrNull() ?: 0f,
+          weeklyDistance = state.weeklyTrend.lastOrNull() ?: 0f,
+          totalDistance = state.totalCareerDistance
+        )
         Spacer(modifier = Modifier.weight(1f))
-        Button(
-          onClick = onToggleRide,
-          modifier = Modifier
-            .fillMaxWidth()
-            .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
-          colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-          shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
-          elevation = ButtonDefaults.buttonElevation(defaultElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm))
-        ) {
-          Text(
-            text = stringResource(id = com.horsegallop.core.R.string.start_ride),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onPrimary,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-          )
-        }
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(80.dp))
       } else {
         RideMapWithTimer(
           path = state.pathPoints,
@@ -258,6 +419,8 @@ fun RideTrackingContent(
         )
         Spacer(Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
         StatsRow(speedKmh = state.speedKmh, distanceKm = state.distanceKm, durationSec = state.durationSec)
+        Spacer(Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
+        CaloriesCard(calories = state.calories)
         Spacer(Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
         ControlsRow(isRiding = state.isRiding, onStop = onToggleRide, autoDetect = state.autoDetect, onToggleAuto = onSetAutoDetect)
       }
@@ -332,7 +495,11 @@ private fun RideTypeCard(
 }
 
 @Composable
-private fun StatsOverviewCard() {
+private fun StatsOverviewCard(
+  dailyDistance: Float,
+  weeklyDistance: Float,
+  totalDistance: Float
+) {
   Card(
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xxl)),
@@ -365,25 +532,25 @@ private fun StatsOverviewCard() {
         StatPill(
           modifier = Modifier.weight(1f),
           icon = { Icon(Icons.Filled.Speed, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-          value = "0",
+          value = String.format("%.1f", dailyDistance),
           label = stringResource(id = com.horsegallop.core.R.string.stats_today),
-          progress = 0f,
+          progress = 0.5f,
           accent = MaterialTheme.colorScheme.primary
         )
         StatPill(
           modifier = Modifier.weight(1f),
           icon = { Icon(Icons.Filled.Explore, contentDescription = null, tint = MaterialTheme.colorScheme.secondary) },
-          value = "0",
+          value = String.format("%.1f", weeklyDistance),
           label = stringResource(id = com.horsegallop.core.R.string.stats_week),
-          progress = 0f,
+          progress = 0.5f,
           accent = MaterialTheme.colorScheme.secondary
         )
         StatPill(
           modifier = Modifier.weight(1f),
           icon = { Icon(Icons.Filled.ShowChart, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary) },
-          value = "0",
+          value = String.format("%.1f", totalDistance),
           label = stringResource(id = com.horsegallop.core.R.string.stats_total),
-          progress = 0f,
+          progress = 0.5f,
           accent = MaterialTheme.colorScheme.tertiary
         )
       }
@@ -587,7 +754,7 @@ private fun StartRideHero(onStart: () -> Unit) {
           horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
         ) {
           Icon(Icons.Default.PlayArrow, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
-          Text("Start Ride", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
+          Text(stringResource(id = com.horsegallop.core.R.string.start_ride), color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
         }
       }
     }
@@ -596,6 +763,24 @@ private fun StartRideHero(onStart: () -> Unit) {
 
 @Composable
 private fun RideMapWithTimer(path: List<GeoPoint>, elapsedSec: Int) {
+  val context = LocalContext.current
+  var isMyLocationEnabled by remember { mutableStateOf(false) }
+  val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+    contract = androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
+  ) { permissions ->
+    isMyLocationEnabled = permissions[android.Manifest.permission.ACCESS_FINE_LOCATION] == true || 
+                          permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true
+  }
+  
+  LaunchedEffect(Unit) {
+      if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED ||
+          androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+          isMyLocationEnabled = true
+      } else {
+          permissionLauncher.launch(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION))
+      }
+  }
+
   Card(
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), 
     shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xxl))
@@ -604,7 +789,6 @@ private fun RideMapWithTimer(path: List<GeoPoint>, elapsedSec: Int) {
       modifier = Modifier.fillMaxWidth().padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_sm)), 
       verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
     ) {
-      // Map-like canvas
       Box(
         modifier = Modifier
           .fillMaxWidth()
@@ -612,75 +796,83 @@ private fun RideMapWithTimer(path: List<GeoPoint>, elapsedSec: Int) {
           .clip(RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)))
           .background(MaterialTheme.colorScheme.surfaceVariant)
       ) {
-        // capture colors outside draw scope
-        val primaryColor = MaterialTheme.colorScheme.primary
-        val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
-        Canvas(modifier = Modifier.matchParentSize()) {
-          // draw subtle grid
-          val step = 40f
-          for (x in 0..(size.width / step).toInt()) {
-            drawLine(color = Color.Black.copy(alpha = 0.06f), start = Offset(x * step, 0f), end = Offset(x * step, size.height), strokeWidth = 1f)
-          }
-          for (y in 0..(size.height / step).toInt()) {
-            drawLine(color = Color.Black.copy(alpha = 0.06f), start = Offset(0f, y * step), end = Offset(size.width, y * step), strokeWidth = 1f)
-          }
-          // normalize geo points to canvas bounds
-          val xs = path.map { it.longitude }
-          val ys = path.map { it.latitude }
-          if (xs.isNotEmpty() && ys.isNotEmpty()) {
-            val minX = xs.minOrNull() ?: 0.0
-            val maxX = xs.maxOrNull() ?: 1.0
-            val minY = ys.minOrNull() ?: 0.0
-            val maxY = ys.maxOrNull() ?: 1.0
-            val pad = 24f
-            var lastPoint: Offset? = null
-            path.forEachIndexed { idx, p ->
-              val nx = if (maxX == minX) 0.5f else ((p.longitude - minX) / (maxX - minX)).toFloat()
-              val ny = if (maxY == minY) 0.5f else ((p.latitude - minY) / (maxY - minY)).toFloat()
-              val x = pad + nx * (size.width - 2 * pad)
-              val y = pad + (1f - ny) * (size.height - 2 * pad)
-              val current = Offset(x, y)
-              if (lastPoint != null) {
-                drawLine(color = primaryColor, start = lastPoint!!, end = current, strokeWidth = 6f, cap = StrokeCap.Round)
-              }
-              lastPoint = current
-              if (idx == path.lastIndex) {
-                // current position marker
-                drawCircle(color = primaryColor, radius = 10f, center = current)
-                drawCircle(color = onPrimaryColor, radius = 4f, center = current)
-              }
-            }
-            // start flag
-            val start = path.first()
-            val sx = if (maxX == minX) 0.5f else ((start.longitude - minX) / (maxX - minX)).toFloat()
-            val sy = if (maxY == minY) 0.5f else ((start.latitude - minY) / (maxY - minY)).toFloat()
-            val sPt = Offset(pad + sx * (size.width - 2 * pad), pad + (1f - sy) * (size.height - 2 * pad))
-            drawCircle(color = Color.Black.copy(alpha = 0.15f), radius = 8f, center = sPt)
-          }
-          // border
-          drawRoundRect(color = Color.Black.copy(alpha = 0.08f), style = Stroke(width = 2f))
+        // Filter out invalid (0,0) points which might come from emulator or bad GPS
+        val validPath = remember(path) { path.filter { it.latitude != 0.0 || it.longitude != 0.0 } }
+        
+        // Default to Istanbul if path is empty, or last known point
+        val defaultLocation = LatLng(41.0082, 28.9784)
+        val initialPoint = validPath.lastOrNull()?.let { LatLng(it.latitude, it.longitude) } ?: defaultLocation
+        
+        val cameraPositionState = rememberCameraPositionState {
+          position = CameraPosition.fromLatLngZoom(initialPoint, 15f)
         }
-        // decorative corner label
-        Row(
-          modifier = Modifier
-            .align(Alignment.TopStart)
-            .padding(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)), 
-          verticalAlignment = Alignment.CenterVertically
+        
+        // Auto-zoom logic - optimized to not freeze on every update
+        LaunchedEffect(validPath) {
+            if (validPath.size > 1) {
+                val boundsBuilder = com.google.android.gms.maps.model.LatLngBounds.Builder()
+                validPath.forEach { boundsBuilder.include(LatLng(it.latitude, it.longitude)) }
+                try {
+                    val bounds = boundsBuilder.build()
+                    cameraPositionState.animate(com.google.android.gms.maps.CameraUpdateFactory.newLatLngBounds(bounds, 100))
+                } catch (e: Exception) {
+                    // Handle single point or invalid bounds
+                }
+            } else if (validPath.isNotEmpty()) {
+                val p = validPath.last()
+                cameraPositionState.animate(com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(LatLng(p.latitude, p.longitude), 15f))
+            }
+        }
+
+        GoogleMap(
+          modifier = Modifier.matchParentSize(),
+          cameraPositionState = cameraPositionState,
+          properties = MapProperties(isMyLocationEnabled = isMyLocationEnabled),
+          uiSettings = MapUiSettings(zoomControlsEnabled = false, myLocationButtonEnabled = isMyLocationEnabled)
         ) {
-          Icon(Icons.Default.Flag, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-          Spacer(Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_xs)))
-          Text("Live Route", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+          if (validPath.size >= 2) {
+            val points = validPath.map { LatLng(it.latitude, it.longitude) }
+            Polyline(
+                points = points, 
+                color = MaterialTheme.colorScheme.primary, 
+                width = 12f,
+                geodesic = true,
+                jointType = com.google.android.gms.maps.model.JointType.ROUND
+            )
+          }
+          val lastPoint = validPath.lastOrNull()
+          if (lastPoint != null) {
+            Marker(state = MarkerState(LatLng(lastPoint.latitude, lastPoint.longitude)))
+          }
+          val startPoint = validPath.firstOrNull()
+          if (startPoint != null && startPoint != lastPoint) {
+            Marker(
+                state = MarkerState(LatLng(startPoint.latitude, startPoint.longitude)),
+                icon = com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_GREEN)
+            )
+          }
+        }
+        
+        // Timer Overlay
+        Box(
+          modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .padding(bottom = 16.dp)
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f), CircleShape)
+            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+          val mm: Int = elapsedSec / 60
+          val ss: Int = elapsedSec % 60
+          Text(
+            text = String.format("%02d:%02d", mm, ss),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+          )
         }
       }
-      // Timer
-      val mm: Int = elapsedSec / 60
-      val ss: Int = elapsedSec % 60
-      Text(
-        text = String.format("%02d:%02d", mm, ss), 
-        style = MaterialTheme.typography.headlineSmall, 
-        fontWeight = FontWeight.Bold, 
-        modifier = Modifier.align(Alignment.CenterHorizontally)
-      )
     }
   }
 }
@@ -690,11 +882,11 @@ private fun StatsRow(speedKmh: Float, distanceKm: Float, durationSec: Int) {
     modifier = Modifier.fillMaxWidth(), 
     horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
   ) {
-    MetricCard(title = "Speed", value = String.format("%d", speedKmh.toInt()), unit = "km/h", accent = MaterialTheme.colorScheme.primary)
-    MetricCard(title = "Distance", value = String.format("%.2f", distanceKm), unit = "km", accent = MaterialTheme.colorScheme.secondary)
+    MetricCard(title = stringResource(id = com.horsegallop.core.R.string.label_speed), value = String.format("%d", speedKmh.toInt()), unit = stringResource(id = com.horsegallop.core.R.string.unit_kmh), accent = MaterialTheme.colorScheme.primary)
+    MetricCard(title = stringResource(id = com.horsegallop.core.R.string.label_distance), value = String.format("%.2f", distanceKm), unit = stringResource(id = com.horsegallop.core.R.string.unit_km), accent = MaterialTheme.colorScheme.secondary)
     val mm: Int = durationSec / 60
     val ss: Int = durationSec % 60
-    MetricCard(title = "Time", value = String.format("%02d:%02d", mm, ss), unit = "", accent = MaterialTheme.colorScheme.tertiary)
+    MetricCard(title = stringResource(id = com.horsegallop.core.R.string.label_time), value = String.format("%02d:%02d", mm, ss), unit = "", accent = MaterialTheme.colorScheme.tertiary)
   }
 }
 
@@ -742,7 +934,7 @@ private fun CaloriesCard(calories: Int) {
       verticalAlignment = Alignment.CenterVertically
     ) {
       Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_xs))) {
-        Text("Calories Burned", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(stringResource(id = com.horsegallop.core.R.string.calories_burned), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text("$calories kcal", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
       }
       // decorative marker
@@ -766,10 +958,10 @@ private fun TrendsSection(daily: List<Float>, weekly: List<Float>) {
       modifier = Modifier.fillMaxWidth().padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)), 
       verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
     ) {
-      Text("Daily Ride Trend", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+      Text(stringResource(id = com.horsegallop.core.R.string.daily_ride_trend), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
       SimpleBars(values = daily, barColor = MaterialTheme.colorScheme.primary)
       HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-      Text("Weekly Progress", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+      Text(stringResource(id = com.horsegallop.core.R.string.weekly_progress), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
       SimpleBars(values = weekly, barColor = MaterialTheme.colorScheme.secondary)
     }
   }
@@ -831,13 +1023,44 @@ private fun AchievementCard(text: String) {
 
 @Composable
 private fun ControlsRow(isRiding: Boolean, onStop: () -> Unit, autoDetect: Boolean, onToggleAuto: (Boolean) -> Unit) {
+  var showStopDialog by remember { mutableStateOf(false) }
+
+  if (showStopDialog) {
+      AlertDialog(
+          onDismissRequest = { showStopDialog = false },
+          title = { Text(stringResource(id = com.horsegallop.core.R.string.stop_ride_confirmation_title)) },
+          text = { Text(stringResource(id = com.horsegallop.core.R.string.stop_ride_confirmation_message)) },
+          confirmButton = {
+              TextButton(
+                  onClick = {
+                      showStopDialog = false
+                      onStop()
+                  }
+              ) {
+                  Text(stringResource(id = com.horsegallop.core.R.string.action_confirm_stop))
+              }
+          },
+          dismissButton = {
+              TextButton(onClick = { showStopDialog = false }) {
+                  Text(stringResource(id = com.horsegallop.core.R.string.action_cancel))
+              }
+          }
+      )
+  }
+
   Row(
     modifier = Modifier.fillMaxWidth(), 
     horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)), 
     verticalAlignment = Alignment.CenterVertically
   ) {
     Card(
-      modifier = Modifier.weight(1f).clickable { if (isRiding) onStop() }, 
+      modifier = Modifier.weight(1f).clickable { 
+          if (isRiding) {
+              showStopDialog = true
+          } else {
+              onStop()
+          }
+      }, 
       colors = CardDefaults.cardColors(containerColor = if (isRiding) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary), 
       shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xl))
     ) {
@@ -848,7 +1071,11 @@ private fun ControlsRow(isRiding: Boolean, onStop: () -> Unit, autoDetect: Boole
       ) {
         if (!isRiding) Icon(Icons.Default.PlayArrow, contentDescription = null, tint = if (isRiding) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary)
         Spacer(Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
-        Text(if (isRiding) "Stop Ride" else "Start Ride", color = if (isRiding) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
+        Text(
+          if (isRiding) stringResource(id = com.horsegallop.core.R.string.finish_ride) else stringResource(id = com.horsegallop.core.R.string.start_ride),
+          color = if (isRiding) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary,
+          fontWeight = FontWeight.Bold
+        )
       }
     }
     Card(
@@ -863,11 +1090,66 @@ private fun ControlsRow(isRiding: Boolean, onStop: () -> Unit, autoDetect: Boole
         verticalAlignment = Alignment.CenterVertically, 
         horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
       ) {
-        Text("Auto Ride Detection", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
+        Text(stringResource(id = com.horsegallop.core.R.string.auto_ride_detection), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
         Switch(checked = autoDetect, onCheckedChange = onToggleAuto, colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.primary))
       }
     }
   }
+}
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun BarnSelection(
+    barns: List<BarnWithLocation>,
+    selectedBarn: BarnWithLocation?,
+    onBarnSelected: (BarnWithLocation) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xxl)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = stringResource(id = com.horsegallop.core.R.string.select_barn),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                OutlinedTextField(
+                    value = selectedBarn?.barn?.name ?: stringResource(id = com.horsegallop.core.R.string.select_barn_hint),
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+                )
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    barns.forEach { barn ->
+                        DropdownMenuItem(
+                            text = { Text(barn.barn.name) },
+                            onClick = {
+                                onBarnSelected(barn)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Preview(showBackground = true)
@@ -882,12 +1164,12 @@ private fun PreviewRideTracking() {
         calories = 0,
         isRiding = false,
         autoDetect = false,
-        nextGoalText = "Next Goal: 100 km Club",
         dailyTrend = listOf(0.2f, 0.4f, 0.1f, 0.6f, 0.3f, 0.7f, 0.5f),
         weeklyTrend = listOf(1.2f, 2.4f, 3.1f, 2.7f),
         pathPoints = listOf(GeoPoint(41.0, 29.0))
     ),
     onToggleRide = {},
-    onSetAutoDetect = {}
+    onSetAutoDetect = {},
+    onBarnSelected = {}
   )
 }

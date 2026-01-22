@@ -33,6 +33,7 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":domain"))
     implementation(libs.coroutines)
+    implementation(libs.google.location)
     implementation(libs.retrofit)
     implementation(libs.retrofit.moshi)
     implementation(libs.okhttp)

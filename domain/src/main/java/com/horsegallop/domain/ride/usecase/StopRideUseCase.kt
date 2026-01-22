@@ -6,5 +6,5 @@ import javax.inject.Inject
 class StopRideUseCase @Inject constructor(
     private val rideRepository: RideRepository
 ) {
-    suspend operator fun invoke() = rideRepository.stopRide()
+    suspend operator fun invoke(barnName: String? = null) = rideRepository.stopRide(barnName)
 }

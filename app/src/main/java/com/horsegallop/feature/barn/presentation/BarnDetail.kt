@@ -29,6 +29,14 @@ import android.widget.Toast
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.core.R
 import com.valentinilk.shimmer.shimmer
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.GoogleMapOptions
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
 fun BarnDetailScreen(
@@ -82,16 +90,34 @@ fun BarnDetailContent(barn: BarnWithLocation) {
             contentPadding = PaddingValues(bottom = 100.dp)
         ) {
             item {
-                Box {
-                    AsyncImage(
-                        model = "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=1200",
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(280.dp),
-                        contentScale = ContentScale.Crop
-                    )
-                    // Gradient overlay for text visibility if needed, or just style
+                val barnLocation = LatLng(barn.lat, barn.lng)
+                val cameraPositionState = rememberCameraPositionState {
+                    position = CameraPosition.fromLatLngZoom(barnLocation, 15f)
+                }
+                
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(280.dp)
+                ) {
+                    GoogleMap(
+                        modifier = Modifier.fillMaxSize(),
+                        cameraPositionState = cameraPositionState,
+                        uiSettings = MapUiSettings(
+                            zoomControlsEnabled = false,
+                            scrollGesturesEnabled = false,
+                            zoomGesturesEnabled = false,
+                            tiltGesturesEnabled = false,
+                            rotationGesturesEnabled = false,
+                            mapToolbarEnabled = false
+                        )
+                    ) {
+                        Marker(
+                            state = MarkerState(position = barnLocation),
+                            title = barn.barn.name
+                        )
+                    }
+                    // Gradient overlay for text visibility
                     Box(
                         modifier = Modifier
                             .matchParentSize()
@@ -154,7 +180,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = barn.barn.location.ifEmpty { "Unknown Location" },
+                            text = barn.barn.location.ifEmpty { stringResource(id = com.horsegallop.core.R.string.unknown_location) },
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -166,16 +192,60 @@ fun BarnDetailContent(barn: BarnWithLocation) {
             item {
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                     Text(
-                        text = "About",
+                        text = stringResource(id = com.horsegallop.core.R.string.barn_detail_description),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = barn.barn.description.ifEmpty { "Experience the joy of riding with our professional instructors and well-trained horses. Perfect for beginners and advanced riders alike." },
+                        text = barn.barn.description.ifEmpty { stringResource(id = com.horsegallop.core.R.string.barn_description_fallback) },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                     )
+                }
+            }
+            
+            // Map Location
+            item {
+                val barnLocation = LatLng(barn.lat, barn.lng)
+                val cameraPositionState = rememberCameraPositionState {
+                    position = CameraPosition.fromLatLngZoom(barnLocation, 14f)
+                }
+                
+                Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
+                    Text(
+                        text = stringResource(id = com.horsegallop.core.R.string.label_location),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.LightGray)
+                    ) {
+                        GoogleMap(
+                            modifier = Modifier.fillMaxSize(),
+                            cameraPositionState = cameraPositionState,
+                            googleMapOptionsFactory = {
+                                GoogleMapOptions().liteMode(true)
+                            },
+                            uiSettings = MapUiSettings(
+                                zoomControlsEnabled = false,
+                                scrollGesturesEnabled = false,
+                                zoomGesturesEnabled = false,
+                                tiltGesturesEnabled = false,
+                                rotationGesturesEnabled = false
+                            )
+                        ) {
+                            Marker(
+                                state = MarkerState(position = barnLocation),
+                                title = barn.barn.name
+                            )
+                        }
+                    }
                 }
             }
 
@@ -185,7 +255,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
             item {
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                     Text(
-                        text = "Amenities",
+                        text = stringResource(id = com.horsegallop.core.R.string.barn_detail_amenities),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -231,7 +301,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                         .height(56.dp),
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Text("Contact")
+                    Text(stringResource(id = com.horsegallop.core.R.string.contact))
                 }
                 Button(
                     onClick = { showReservationSheet = true },
@@ -240,12 +310,13 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                         .height(56.dp),
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Text("Book Lesson")
+                    Text(stringResource(id = com.horsegallop.core.R.string.book_lesson))
                 }
             }
         }
 
         if (showReservationSheet) {
+            val toastMessage = stringResource(id = com.horsegallop.core.R.string.reservation_request_sent)
             ModalBottomSheet(
                 onDismissRequest = { showReservationSheet = false },
                 containerColor = MaterialTheme.colorScheme.surface,
@@ -254,7 +325,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                 ReservationContent(
                     onConfirm = {
                         showReservationSheet = false
-                        Toast.makeText(context, "Reservation Request Sent!", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, toastMessage, Toast.LENGTH_LONG).show()
                     }
                 )
             }
@@ -264,6 +335,17 @@ fun BarnDetailContent(barn: BarnWithLocation) {
 
 @Composable
 fun ReservationContent(onConfirm: () -> Unit) {
+    var selectedDateIndex by remember { mutableStateOf(0) }
+    var selectedTimeIndex by remember { mutableStateOf<Int?>(null) }
+    var selectedInstructorIndex by remember { mutableStateOf<Int?>(null) }
+
+    // Mock Instructors - TODO: Fetch from backend
+    val instructors = listOf(
+        "Ahmet Yilmaz" to "Dressage",
+        "Ayse Kaya" to "Show Jumping",
+        "Mehmet Demir" to "Beginner Basics"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -272,32 +354,37 @@ fun ReservationContent(onConfirm: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         Text(
-            "Select Date & Time",
+            stringResource(id = com.horsegallop.core.R.string.select_date_time),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
         
         // Mock Date Selection
+        // TODO: Fetch from backend (This data will be fetched from backend)
+        val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
         Column {
-            Text("Date", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(modifier = Modifier.height(8.dp))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(id = com.horsegallop.core.R.string.label_date), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(modifier = Modifier.height(12.dp))
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(7) { index ->
-                    val isSelected = index == 0
+                    val isSelected = selectedDateIndex == index
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        modifier = Modifier.size(width = 60.dp, height = 70.dp)
+                        onClick = { selectedDateIndex = index },
+                        shape = RoundedCornerShape(16.dp),
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainer,
+                        border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                        modifier = Modifier.size(width = 64.dp, height = 76.dp)
                     ) {
                         Column(
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                "Oct",
-                                style = MaterialTheme.typography.labelSmall,
+                                days[index % 7],
+                                style = MaterialTheme.typography.labelMedium,
                                 color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 "${25 + index}",
                                 style = MaterialTheme.typography.titleLarge,
@@ -312,14 +399,15 @@ fun ReservationContent(onConfirm: () -> Unit) {
 
         // Mock Time Selection
         Column {
-            Text("Time", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(id = com.horsegallop.core.R.string.label_time), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // TODO: Fetch from backend (This data will be fetched from backend)
                 listOf("09:00", "11:00", "14:00", "16:00").forEachIndexed { index, time ->
-                    val isSelected = index == 1
+                    val isSelected = selectedTimeIndex == index
                     FilterChip(
                         selected = isSelected,
-                        onClick = { },
+                        onClick = { selectedTimeIndex = index },
                         label = { Text(time) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -329,17 +417,69 @@ fun ReservationContent(onConfirm: () -> Unit) {
                 }
             }
         }
+
+        // Mock Instructor Selection
+        Column {
+            Text(stringResource(id = com.horsegallop.core.R.string.label_instructor), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(modifier = Modifier.height(8.dp))
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(instructors.size) { index ->
+                    val (name, specialty) = instructors[index]
+                    val isSelected = selectedInstructorIndex == index
+                    
+                    Surface(
+                        onClick = { selectedInstructorIndex = index },
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface,
+                        border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                        modifier = Modifier.width(140.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp)
+                        ) {
+                            // Avatar placeholder
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(androidx.compose.foundation.shape.CircleShape)
+                                    .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = name.first().toString(),
+                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = name,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = specialty,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+        }
         
         Spacer(modifier = Modifier.height(16.dp))
         
         Button(
             onClick = onConfirm,
+            enabled = selectedTimeIndex != null && selectedInstructorIndex != null,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(16.dp)
         ) {
-            Text("Confirm Booking")
+            Text(stringResource(id = com.horsegallop.core.R.string.confirm_booking))
         }
     }
 }

@@ -47,7 +47,10 @@ class HomeViewModel @Inject constructor(
           _ui.update {
             it.copy(
               totalRides = stats.totalRides.toString(),
-              totalDistance = String.format(Locale.US, "%.1f", stats.totalDistance)
+              totalDistance = String.format(Locale.US, "%.1f", stats.totalDistance),
+              totalDuration = "${stats.totalDurationMin / 60}h ${stats.totalDurationMin % 60}m",
+              totalCalories = stats.totalCalories.toInt().toString(),
+              favoriteBarn = stats.favoriteBarn ?: "Unknown"
             )
           }
         }.onFailure {
@@ -65,6 +68,7 @@ class HomeViewModel @Inject constructor(
         result.onSuccess { activities ->
           val items = activities.map { activity ->
             ActivityUi(
+              id = activity.id,
               title = activity.title,
               dateLabel = formatDate(activity.timestamp),
               timeLabel = formatTime(activity.timestamp),
@@ -72,7 +76,28 @@ class HomeViewModel @Inject constructor(
               distanceKm = activity.distanceKm
             )
           }
-          _ui.update { it.copy(activities = items, loading = false) }
+          val totalCount = activities.size
+          val distribution = if (totalCount > 0) {
+            items.groupingBy { it.title ?: "Other" }
+              .eachCount()
+              .map { (title, count) ->
+                title to (count.toFloat() / totalCount)
+              }
+              .sortedByDescending { it.second }
+          } else {
+            emptyList()
+          }
+
+          val dailyDistance = calculateDailyDistance(activities)
+
+          _ui.update {
+            it.copy(
+              activities = items,
+              loading = false,
+              activityDistribution = distribution,
+              dailyDistance = dailyDistance
+            )
+          }
         }.onFailure { e ->
           _ui.update { it.copy(loading = false, error = e.localizedMessage) }
         }
@@ -91,6 +116,37 @@ class HomeViewModel @Inject constructor(
     val locale = Locale.getDefault()
     return SimpleDateFormat("HH:mm", locale).format(date)
   }
+
+  private fun calculateDailyDistance(activities: List<com.horsegallop.domain.home.model.RideSession>): List<Float> {
+    val cal = java.util.Calendar.getInstance()
+    cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+    cal.set(java.util.Calendar.MINUTE, 0)
+    cal.set(java.util.Calendar.SECOND, 0)
+    cal.set(java.util.Calendar.MILLISECOND, 0)
+    val todayMillis = cal.timeInMillis
+    val oneDayMillis = 24 * 60 * 60 * 1000L
+    
+    val days = FloatArray(7)
+    
+    activities.forEach { activity ->
+        if (activity.timestamp == null) return@forEach
+        val rideCal = java.util.Calendar.getInstance()
+        rideCal.time = activity.timestamp!!
+        rideCal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+        rideCal.set(java.util.Calendar.MINUTE, 0)
+        rideCal.set(java.util.Calendar.SECOND, 0)
+        rideCal.set(java.util.Calendar.MILLISECOND, 0)
+        
+        val diff = todayMillis - rideCal.timeInMillis
+        if (diff >= 0) {
+            val dayDiff = (diff / oneDayMillis).toInt()
+            if (dayDiff in 0..6) {
+                days[6 - dayDiff] += activity.distanceKm.toFloat()
+            }
+        }
+    }
+    return days.toList()
+  }
 }
 
 data class HomeUiState(
@@ -98,11 +154,17 @@ data class HomeUiState(
   val loading: Boolean = true,
   val error: String? = null,
   val totalRides: String = "0",
-  val totalDistance: String = "0.0"
+  val totalDistance: String = "0.0",
+  val totalDuration: String = "0h 0m",
+  val totalCalories: String = "0",
+  val favoriteBarn: String = "Unknown",
+  val activityDistribution: List<Pair<String?, Float>> = emptyList(),
+  val dailyDistance: List<Float> = emptyList()
 )
 
 data class ActivityUi(
-  val title: String,
+  val id: String,
+  val title: String?,
   val dateLabel: String,
   val timeLabel: String,
   val durationMin: Int,
