@@ -1,21 +1,23 @@
 import java.util.Properties
 
 plugins {
-    id("com.android.application")
-    kotlin("android")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.compose.compiler)
     kotlin("kapt")
-    id("com.google.dagger.hilt.android")
+    alias(libs.plugins.hilt.android)
     id("com.google.gms.google-services")
+    alias(libs.plugins.skydoves.stability.analyzer)
 }
 
 android {
     namespace = "com.horsegallop"
-	compileSdk = 34
-	defaultConfig {
+    compileSdk = 34
+    defaultConfig {
         applicationId = "com.horsegallop"
-		minSdk = 24
-		targetSdk = 34
-		versionCode = 1
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 1
 		versionName = "0.1.0"
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 		vectorDrawables.useSupportLibrary = true
@@ -36,7 +38,6 @@ android {
 		compose = true
 		buildConfig = true
 	}
-	composeOptions { kotlinCompilerExtensionVersion = "1.5.15" }
 	packaging.resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
 	buildTypes {
 		getByName("debug") { isMinifyEnabled = false }
@@ -49,9 +50,12 @@ android {
 		sourceCompatibility = JavaVersion.VERSION_17
 		targetCompatibility = JavaVersion.VERSION_17
 	}
-	kotlinOptions {
-		jvmTarget = "17"
-	}
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
 }
 
 kapt {

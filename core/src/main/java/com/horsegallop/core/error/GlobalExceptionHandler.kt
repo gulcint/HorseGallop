@@ -15,7 +15,7 @@ class GlobalExceptionHandler private constructor(
             Log.e(TAG, "═══════════════════════════════════════════════════════════════")
             Log.e(TAG, "UNCAUGHT EXCEPTION IN THREAD: ${thread.name}")
             Log.e(TAG, "═══════════════════════════════════════════════════════════════")
-            Log.e(TAG, "Exception: ${throwable.javaClass.simpleName}")
+            Log.e(TAG, "Exception: ${throwable::class.simpleName}")
             Log.e(TAG, "Message: ${throwable.message}")
             Log.e(TAG, "───────────────────────────────────────────────────────────────")
             Log.e(TAG, "Stack trace:")
