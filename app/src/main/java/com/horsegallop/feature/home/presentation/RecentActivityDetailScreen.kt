@@ -28,7 +28,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -98,9 +97,9 @@ fun RecentActivityDetailScreen(
             }
 
             items(uiState.activities) { activity ->
-                        ActivityItem(
-                            title = activity.title ?: stringResource(id = com.horsegallop.core.R.string.ride_default_title),
-                            subtitle = "${activity.dateLabel} • ${activity.timeLabel}",
+                ActivityItem(
+                    title = activity.title ?: stringResource(id = com.horsegallop.core.R.string.ride_default_title),
+                    subtitle = "${activity.dateLabel} • ${activity.timeLabel}",
                     duration = "${activity.durationMin} min",
                     distance = "${activity.distanceKm} km",
                     icon = Icons.AutoMirrored.Filled.DirectionsRun
@@ -127,19 +126,17 @@ private fun SectionHeader(title: String) {
 
 @Composable
 private fun AnimatedStatsSection(uiState: HomeUiState) {
-    // Staggered animation state
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         visible = true
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        // Top Row
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
              AnimatedMetricCard(
                  modifier = Modifier.weight(1f),
                  title = "Total Rides",
-                 value = uiState.totalRides,
+                 value = uiState.totalRides.toString(),
                  unit = "",
                  color = MaterialTheme.colorScheme.primary,
                  delayMillis = 0,
@@ -148,7 +145,7 @@ private fun AnimatedStatsSection(uiState: HomeUiState) {
              AnimatedMetricCard(
                  modifier = Modifier.weight(1f),
                  title = "Distance",
-                 value = uiState.totalDistance,
+                 value = "%.1f".format(uiState.totalDistance),
                  unit = "km",
                  color = MaterialTheme.colorScheme.secondary,
                  delayMillis = 100,
@@ -156,13 +153,12 @@ private fun AnimatedStatsSection(uiState: HomeUiState) {
              )
         }
         
-        // Second Row
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
              AnimatedMetricCard(
                  modifier = Modifier.weight(1f),
                  title = "Total Time",
-                 value = uiState.totalDuration,
-                 unit = "",
+                 value = uiState.totalDuration.toString(),
+                 unit = "min",
                  color = MaterialTheme.colorScheme.tertiary,
                  delayMillis = 200,
                  visible = visible
@@ -170,7 +166,7 @@ private fun AnimatedStatsSection(uiState: HomeUiState) {
              AnimatedMetricCard(
                  modifier = Modifier.weight(1f),
                  title = "Calories",
-                 value = uiState.totalCalories,
+                 value = uiState.totalCalories.toString(),
                  unit = "kcal",
                  color = MaterialTheme.colorScheme.error,
                  delayMillis = 300,
@@ -178,7 +174,6 @@ private fun AnimatedStatsSection(uiState: HomeUiState) {
              )
         }
 
-        // Most Visited Barn Card
         val scale by animateFloatAsState(
             targetValue = if (visible) 1f else 0.8f,
             animationSpec = tween(500, delayMillis = 400)
@@ -296,13 +291,8 @@ private fun AnimatedMetricCard(
 
 @Composable
 private fun AnimatedActivityPieChart(activityDistribution: List<Pair<String?, Float>>) {
-    val data = if (activityDistribution.isNotEmpty()) {
-        activityDistribution.map { (name, value) -> 
-            Pair(name ?: "Unknown", value) 
-        }
-    } else {
-        // Fallback or empty state could be better, but for now keeping some default or empty
-        emptyList()
+    val data = activityDistribution.map { (name, value) -> 
+        Pair(name ?: "Unknown", value) 
     }
     
     if (data.isEmpty()) {
@@ -319,11 +309,11 @@ private fun AnimatedActivityPieChart(activityDistribution: List<Pair<String?, Fl
     }
 
     val colors = listOf(
-        Color(0xFF5D4037), // Saddle Brown dark
-        Color(0xFF8B4513), // Saddle Brown
-        Color(0xFFD2691E), // Chocolate
-        Color(0xFFA0522D), // Sienna
-        Color(0xFFCD853F)  // Peru
+        Color(0xFF5D4037), 
+        Color(0xFF8B4513), 
+        Color(0xFFD2691E), 
+        Color(0xFFA0522D), 
+        Color(0xFFCD853F)
     )
     
     var selectedIndex by remember { mutableStateOf(-1) }
@@ -351,7 +341,6 @@ private fun AnimatedActivityPieChart(activityDistribution: List<Pair<String?, Fl
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-            // Chart
             Box(
                 modifier = Modifier
                     .size(160.dp)
@@ -386,7 +375,6 @@ private fun AnimatedActivityPieChart(activityDistribution: List<Pair<String?, Fl
                     }
                 }
                 
-                // Inner info
                 Column(
                     modifier = Modifier.align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -409,7 +397,6 @@ private fun AnimatedActivityPieChart(activityDistribution: List<Pair<String?, Fl
                 }
             }
             
-            // Legend
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 data.take(3).forEachIndexed { index, pair ->
                     val isSelected = index == selectedIndex
@@ -448,7 +435,6 @@ private fun AnimatedActivityPieChart(activityDistribution: List<Pair<String?, Fl
 
 @Composable
 private fun AnimatedDistanceBarChart(dailyDistance: List<Float>) {
-    // Show last 7 days
     val chartData = dailyDistance.takeLast(7)
     
     if (chartData.all { it == 0f }) {
@@ -464,7 +450,7 @@ private fun AnimatedDistanceBarChart(dailyDistance: List<Float>) {
         return
     }
 
-    val maxDistance = remember(chartData) { (chartData.maxOrNull() ?: 10f).toDouble() }
+    val maxDistance = (chartData.maxOrNull() ?: 10f).toDouble()
     val barColor = MaterialTheme.colorScheme.primary
     
     var animationPlayed by remember { mutableStateOf(false) }
@@ -491,7 +477,6 @@ private fun AnimatedDistanceBarChart(dailyDistance: List<Float>) {
                     val barWidth = size.width / (chartData.size * 2f + 1)
                     val space = size.width / chartData.size
                     
-                    // Draw grid lines
                     val gridLines = 4
                     for (i in 0..gridLines) {
                         val y = size.height * (i.toFloat() / gridLines)
@@ -509,7 +494,6 @@ private fun AnimatedDistanceBarChart(dailyDistance: List<Float>) {
                         val x = index * space + (space - barWidth) / 2
                         val y = size.height - currentBarHeight
                         
-                        // Bar shadow
                         drawRoundRect(
                             color = barColor.copy(alpha = 0.2f),
                             topLeft = Offset(x + 4f, y + 4f),
@@ -517,7 +501,6 @@ private fun AnimatedDistanceBarChart(dailyDistance: List<Float>) {
                             cornerRadius = CornerRadius(8f, 8f)
                         )
                         
-                        // Actual bar
                         drawRoundRect(
                             color = barColor,
                             topLeft = Offset(x, y),
@@ -528,15 +511,12 @@ private fun AnimatedDistanceBarChart(dailyDistance: List<Float>) {
                 }
             }
             
-            // X-Axis Labels (Day names)
             Row(
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
                 val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-                // Adjust to show last 7 days ending today
-                val today = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_WEEK) // Sun=1, Mon=2...
-                // Map to 0-6 index where 0=Mon
+                val today = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_WEEK)
                 val todayIndex = if (today == 1) 6 else today - 2
                 
                 for (i in 0..6) {

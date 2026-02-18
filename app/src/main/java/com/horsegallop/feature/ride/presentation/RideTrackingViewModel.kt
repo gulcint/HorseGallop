@@ -10,6 +10,8 @@ import com.horsegallop.domain.ride.usecase.ObserveRideMetricsUseCase
 import com.horsegallop.domain.ride.usecase.SetAutoDetectUseCase
 import com.horsegallop.domain.ride.usecase.StartRideUseCase
 import com.horsegallop.domain.ride.usecase.StopRideUseCase
+import com.horsegallop.domain.ride.usecase.CalculateAverageCaloriesUseCase
+import com.horsegallop.domain.ride.usecase.CalculateAverageSpeedUseCase
 import com.horsegallop.domain.barn.repository.BarnRepository
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.auth.usecase.GetUserProfileUseCase
@@ -51,7 +53,9 @@ class RideTrackingViewModel @Inject constructor(
     private val rideHistoryRepository: RideHistoryRepository,
     private val barnRepository: BarnRepository,
     private val getUserProfileUseCase: GetUserProfileUseCase,
-    private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase
+    private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase,
+    private val calculateAverageCaloriesUseCase: CalculateAverageCaloriesUseCase,
+    private val calculateAverageSpeedUseCase: CalculateAverageSpeedUseCase
 ) : ViewModel() {
   private val _uiState: MutableStateFlow<RideUiState> = MutableStateFlow(
     RideUiState(
@@ -200,6 +204,36 @@ class RideTrackingViewModel @Inject constructor(
       viewModelScope.launch {
           setAutoDetectUseCase(enabled)
           _uiState.update { it.copy(autoDetect = enabled) }
+      }
+  }
+
+  fun getAverageCalories(): Float {
+      // This will be populated when history is loaded
+      return 0f
+  }
+
+  fun getAverageCaloriesForRide(durationSec: Int, calories: Int): Float {
+      return calculateAverageCaloriesUseCase(
+          listOf(
+              com.horsegallop.domain.ride.model.RideSession(
+                  id = "current",
+                  dateMillis = System.currentTimeMillis(),
+                  durationSec = durationSec,
+                  distanceKm = 0f,
+                  calories = calories,
+                  pathPoints = emptyList()
+              )
+          )
+      )
+  }
+  
+  fun getAverageSpeed(): Float {
+      return calculateAverageSpeedUseCase(emptyList())
+  }
+  
+  fun saveCurrentRide(barnName: String? = null) {
+      viewModelScope.launch {
+          stopRideUseCase(barnName)
       }
   }
 }

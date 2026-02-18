@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,7 +33,6 @@ import java.util.*
 
 import com.horsegallop.core.R
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RideDetailScreen(
     onBack: () -> Unit,
@@ -40,6 +40,12 @@ fun RideDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val ride = uiState.ride
+    val context = androidx.compose.ui.platform.LocalContext.current
+    
+    // Share functions with context
+    fun shareRouteOnly() = viewModel.shareRouteOnly(context)
+    fun shareRouteWithStats() = viewModel.shareRouteWithStats(context)
+    fun shareFullReport() = viewModel.shareFullReport(context)
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -237,8 +243,70 @@ fun RideDetailScreen(
                                     }
                                 }
                             }
-                            
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Average Speed & Calories Per Hour Stats
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                DetailStatItem(
+                                    value = String.format("%.1f", ride.avgSpeedKmh),
+                                    label = "AVG SPEED",
+                                    unit = "km/h",
+                                    icon = Icons.Default.Speed,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                
+                                Box(modifier = Modifier.width(1.dp).height(40.dp).background(MaterialTheme.colorScheme.outlineVariant))
+
+                                DetailStatItem(
+                                    value = "${ride.caloriesPerHour.toInt()}",
+                                    label = "CAL/HOUR",
+                                    unit = "kcal",
+                                    icon = Icons.Default.LocalFireDepartment,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+
                             Spacer(modifier = Modifier.height(24.dp))
+
+                            // Share Button
+                            ShareButton(
+                                onClick = { shareFullReport() },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Share Options
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                ShareOptionButton(
+                                    icon = Icons.Default.LocationOn,
+                                    label = "Route",
+                                    onClick = { shareRouteOnly() },
+                                    modifier = Modifier.weight(1f)
+                                )
+                                
+                                ShareOptionButton(
+                                    icon = Icons.Default.Speed,
+                                    label = "Stats",
+                                    onClick = { shareRouteWithStats() },
+                                    modifier = Modifier.weight(1f)
+                                )
+                                
+                                ShareOptionButton(
+                                    icon = Icons.Default.Share,
+                                    label = "Full Report",
+                                    onClick = { shareFullReport() },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
                         }
                     }
                 }
@@ -369,6 +437,81 @@ fun RideDetailMap(points: List<LatLng>) {
             title = stringResource(R.string.map_end),
             icon = com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_RED)
         )
+    }
+}
+
+@Composable
+fun ShareButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primary
+        ),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Share,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Share Full Report",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+fun ShareOptionButton(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 

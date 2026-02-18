@@ -1,35 +1,39 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(
+    androidx.compose.material3.ExperimentalMaterial3Api::class,
+    androidx.compose.foundation.layout.ExperimentalLayoutApi::class
+)
 package com.horsegallop.feature.ride.presentation
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.materialIcons
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
-import com.horsegallop.core.components.HorseGallopButton
-import com.horsegallop.domain.ride.model.GeoPoint
-import com.horsegallop.core.R as CoreR
+import com.horsegallop.core.R
 
 @Composable
 fun RideTrackingRoute(
@@ -42,15 +46,19 @@ fun RideTrackingRoute(
     RideTrackingScreen(
         uiState = uiState,
         onToggleRide = viewModel::toggleRide,
-        onBack = onHomeClick
+        onSaveRide = { viewModel.saveCurrentRide(it) },
+        onBack = onHomeClick,
+        onViewBarns = onBarnsClick
     )
 }
 
 @Composable
 fun RideTrackingScreen(
-    uiState: RideUiState,
+    uiState: com.horsegallop.feature.ride.presentation.RideUiState,
     onToggleRide: () -> Unit,
-    onBack: () -> Unit
+    onSaveRide: (String?) -> Unit,
+    onBack: () -> Unit,
+    onViewBarns: () -> Unit
 ) {
     val cameraPositionState = rememberCameraPositionState()
     
@@ -69,31 +77,69 @@ fun RideTrackingScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            // Transparent Top Bar
+            // Modern Top Bar with Horse Theme
             CenterAlignedTopAppBar(
-                title = { },
+                title = { 
+                    Text(
+                        "RIDE TRACKING",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                },
                 navigationIcon = {
                     Surface(
                         shape = CircleShape,
-                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
-                        modifier = Modifier.padding(8.dp)
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        modifier = Modifier.padding(8.dp).clickable(onClick = onBack)
                     ) {
-                        IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+                },
+                actions = {
+                    if (uiState.isRiding) {
+                        // Save Ride Button
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            modifier = Modifier.padding(8.dp).clickable {
+                                onSaveRide(uiState.selectedBarn?.barn?.name)
+                            }
+                        ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(CoreR.string.back)
+                                imageVector = Icons.Filled.Save,
+                                contentDescription = "Save Ride",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(8.dp)
                             )
                         }
                     }
+                    
+                    // Barn Selector
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f),
+                        modifier = Modifier.padding(8.dp).clickable(onClick = onViewBarns)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.LocationOn,
+                            contentDescription = "Select Barn",
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Transparent
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         }
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize()) {
-            // Full Screen Map
+            // Full Screen Map with Path
             GoogleMap(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = cameraPositionState,
@@ -105,119 +151,259 @@ fun RideTrackingScreen(
                     isMyLocationEnabled = true
                 )
             ) {
-                // Draw Path
+                // Draw Path with Horse Theme Colors
                 if (uiState.pathPoints.size > 1) {
+                    val points = uiState.pathPoints.map { LatLng(it.latitude, it.longitude) }
+                    
+                    // Gradient path
+                    val gradientColors = listOf(
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.secondary
+                    )
+                    
                     Polyline(
-                        points = uiState.pathPoints.map { LatLng(it.latitude, it.longitude) },
-                        color = MaterialTheme.colorScheme.primary,
-                        width = 12f,
+                        points = points,
+                        color = Brush.sweepGradient(
+                            center = androidx.compose.ui.geometry.Center,
+                            colors = gradientColors
+                        ),
+                        width = 14f,
                         geodesic = true
                     )
+                    
+                    // Start marker
                     val start = uiState.pathPoints.first()
+                    Marker(
+                        state = MarkerState(LatLng(start.latitude, start.longitude)),
+                        title = "Start",
+                        snippet = "Start of ride"
+                    )
+                    
+                    // End marker
                     val end = uiState.pathPoints.last()
-                    Marker(state = MarkerState(LatLng(start.latitude, start.longitude)))
-                    Marker(state = MarkerState(LatLng(end.latitude, end.longitude)))
+                    Marker(
+                        state = MarkerState(LatLng(end.latitude, end.longitude)),
+                        title = "End",
+                        snippet = "End of ride"
+                    )
+                    
+                    // Current position marker if riding
+                    if (uiState.isRiding && uiState.pathPoints.isNotEmpty()) {
+                        val current = uiState.pathPoints.last()
+                        Marker(
+                            state = MarkerState(LatLng(current.latitude, current.longitude)),
+                            icon = BitmapDescriptorFactory.defaultMarker()
+                        )
+                    }
                 }
             }
             
-            // Bottom Control Panel (CarPlay Style)
+            // Floating Speedometer (Top Center) - Modern Glassmorphism
+            if (uiState.isRiding) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = paddingValues.calculateTopPadding() + 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = Color(0xE61C1C1E), // Dark with transparency
+                        elevation = CardDefaults.cardElevation(8.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = formatSpeed(uiState.speedKmh),
+                                style = MaterialTheme.typography.displaySmall.copy(
+                                    fontSize = 72.sp,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = Color.White
+                            )
+                            Text(
+                                text = "CURRENT SPEED",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color.Gray,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+                }
+            }
+            
+            // Bottom Control Panel - Modern Equine Style with Glassmorphism
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                // Dashboard Card
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(28.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFF1C1C1E).copy(alpha = 0.95f) // Apple dark gray
-                    ),
-                    elevation = CardDefaults.cardElevation(12.dp)
+                // Dashboard Card - Modern with Gradient Overlay
+                Surface(
+                    shape = RoundedCornerShape(32.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    elevation = CardDefaults.cardElevation(16.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(24.dp),
+                        modifier = Modifier
+                            .padding(24.dp)
+                            .fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Main Timer (Hero)
-                        Text(
-                            text = formatDuration(uiState.durationSec),
-                            style = MaterialTheme.typography.displayLarge.copy(
-                                fontSize = 64.sp,
-                                letterSpacing = (-2).sp
-                            ),
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Text(
-                            text = "DURATION",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = Color.Gray,
-                            letterSpacing = 2.sp
-                        )
+                        // Timer Display (Hero Section)
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = formatDuration(uiState.durationSec),
+                                    style = MaterialTheme.typography.displaySmall.copy(
+                                        fontSize = 60.sp,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "DURATION",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
 
                         Spacer(modifier = Modifier.height(32.dp))
 
-                        // Grid Stats
+                        // Metrics Grid - Modern 3-column layout
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            DashboardStat(
+                            // Distance Card - Modern with gradient card
+                            MetricCard(
                                 value = "%.1f".format(uiState.distanceKm),
                                 unit = "km",
                                 label = "DISTANCE",
-                                modifier = Modifier.weight(1f)
+                                icon = Icons.Filled.Directions,
+                                color = MaterialTheme.colorScheme.primary
                             )
-                            // Divider
-                            Box(modifier = Modifier.width(1.dp).height(40.dp).background(Color.DarkGray))
                             
-                            DashboardStat(
-                                value = "%.1f".format(uiState.speedKmh),
+                            // Speed Card - Using Car/Transport icon for speed
+                            MetricCard(
+                                value = formatSpeed(uiState.speedKmh),
                                 unit = "km/h",
-                                label = "SPEED",
-                                modifier = Modifier.weight(1f)
+                                label = "AVG SPEED",
+                                icon = androidx.compose.material.icons.filled.AirplanemodeActive,
+                                color = MaterialTheme.colorScheme.secondary
                             )
                             
-                            // Divider
-                            Box(modifier = Modifier.width(1.dp).height(40.dp).background(Color.DarkGray))
-
-                            DashboardStat(
+                            // Calories Card - Using Fire/Health icon
+                            MetricCard(
                                 value = "${uiState.calories}",
                                 unit = "kcal",
                                 label = "CALORIES",
-                                modifier = Modifier.weight(1f)
+                                icon = androidx.compose.material.icons.filled.FitnessCenter,
+                                color = MaterialTheme.colorScheme.error
                             )
                         }
 
                         Spacer(modifier = Modifier.height(32.dp))
 
-                        // Action Button
+                        // Active Ride Status Indicator with Glassmorphism
+                        if (uiState.isRiding) {
+                            Surface(
+                                shape = RoundedCornerShape(24.dp),
+                                color = MaterialTheme.colorScheme.error.copy(alpha = 0.1f),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Surface(
+                                            shape = CircleShape,
+                                            color = MaterialTheme.colorScheme.error
+                                        ) {
+                                            Box(
+                                                modifier = Modifier.size(12.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier.size(8.dp).background(MaterialTheme.colorScheme.error)
+                                                )
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Text(
+                                            text = "LIVE TRACKING",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = MaterialTheme.colorScheme.error,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        // Main Action Button
+                        val playIcon = if (uiState.isRiding) Icons.Filled.Stop else Icons.Filled.PlayCircle
                         Button(
                             onClick = onToggleRide,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(60.dp),
-                            shape = RoundedCornerShape(30.dp),
+                                .height(72.dp),
+                            shape = RoundedCornerShape(36.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (uiState.isRiding) Color(0xFFFF3B30) else Color(0xFF34C759) // Apple Red/Green
+                                containerColor = if (uiState.isRiding) {
+                                    MaterialTheme.colorScheme.error
+                                } else {
+                                    MaterialTheme.colorScheme.primary
+                                },
+                                contentColor = Color.White
                             )
                         ) {
                             Icon(
-                                imageVector = if (uiState.isRiding) Icons.Filled.Stop else Icons.Filled.PlayArrow,
+                                imageVector = playIcon,
                                 contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(28.dp)
+                                modifier = Modifier.size(32.dp)
                             )
-                            Spacer(modifier = Modifier.width(12.dp))
+                            Spacer(modifier = Modifier.width(16.dp))
                             Text(
                                 text = if (uiState.isRiding) "STOP RIDE" else "START RIDE",
                                 style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                fontWeight = FontWeight.Bold
                             )
+                        }
+                        
+                        // Secondary Action - View Route Map
+                        if (uiState.pathPoints.size > 1) {
+                            TextButton(
+                                onClick = {}, // Open full route map
+                                modifier = Modifier.padding(top = 12.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Map,
+                                    contentDescription = "View Route",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "VIEW COMPLETE ROUTE",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
                         }
                     }
                 }
@@ -227,41 +413,53 @@ fun RideTrackingScreen(
 }
 
 @Composable
-fun DashboardStat(
+fun MetricCard(
     value: String,
     unit: String,
     label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    color: Color,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.background,
+        modifier = modifier
     ) {
-        Row(verticalAlignment = Alignment.Bottom) {
-            Text(
-                text = value,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = color,
+                modifier = Modifier.size(32.dp)
             )
-            Spacer(modifier = Modifier.width(2.dp))
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            
+            Spacer(modifier = Modifier.height(6.dp))
+            
             Text(
-                text = unit,
-                style = MaterialTheme.typography.bodyMedium,
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
                 color = Color.Gray,
-                modifier = Modifier.padding(bottom = 4.dp)
+                fontSize = 10.sp
             )
         }
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = Color.Gray,
-            fontWeight = FontWeight.Medium
-        )
     }
 }
 
-private fun formatDuration(seconds: Int): String {
+@Composable
+fun formatDuration(seconds: Int): String {
     val h = seconds / 3600
     val m = (seconds % 3600) / 60
     val s = seconds % 60
@@ -269,5 +467,14 @@ private fun formatDuration(seconds: Int): String {
         "%02d:%02d:%02d".format(h, m, s)
     } else {
         "%02d:%02d".format(m, s)
+    }
+}
+
+@Composable
+fun formatSpeed(speed: Float): String {
+    return if (speed >= 0) {
+        "%.1f".format(speed)
+    } else {
+        "0.0"
     }
 }

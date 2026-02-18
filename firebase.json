@@ -1,0 +1,1 @@
+{"functions":[{"source":"functions","codebase":"horsesgallop-api"}],"hosting":{"public":"app/build/outputs/apk/debug","ignore":["firebase.json","**/.*","**/node_modules/**"],"frameworksBackend":{"backend":"cloudfunctions"}},"database":{"rules":"database.rules.json"},"firestore":{"rules":"firestore.rules","indexes":"firestore.indexes.json"}}

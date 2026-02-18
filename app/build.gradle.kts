@@ -7,7 +7,6 @@ plugins {
     kotlin("kapt")
     alias(libs.plugins.hilt.android)
     id("com.google.gms.google-services")
-alias(libs.plugins.skydoves.stability.analyzer)
 }
 
 android {
@@ -28,7 +27,6 @@ android {
             properties.load(localPropertiesFile.inputStream())
         }
         
-        // Önce local.properties'den, yoksa ortam değişkenlerinden (CI/CD için) okumayı dene
         val googleMapsApiKey = properties.getProperty("GOOGLE_MAPS_API_KEY") 
             ?: System.getenv("GOOGLE_MAPS_API_KEY")
         manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = googleMapsApiKey
@@ -38,6 +36,9 @@ android {
 		compose = true
 		buildConfig = true
 	}
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
+    }
 	packaging.resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
 	buildTypes {
 		getByName("debug") { isMinifyEnabled = false }
@@ -65,6 +66,8 @@ kapt {
 
 dependencies {
 	implementation(platform(libs.compose.bom))
+	implementation(libs.activity.compose)
+	implementation(libs.compose.ui.graphics)
 	implementation(libs.compose.ui)
 	implementation(libs.compose.material3)
 	implementation(libs.compose.tooling)
@@ -82,6 +85,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.firestore)
+    implementation("com.google.firebase:firebase-functions-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
     implementation(libs.firebase.appcheck.playintegrity)
     implementation(libs.firebase.appcheck.debug)
@@ -98,6 +102,11 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.moshi.kotlin)
+    
+    // Chucker for debug HTTP interceptor
+    debugImplementation("com.github.chuckerteam.chucker:library:4.0.0")
+    releaseImplementation("com.github.chuckerteam.chucker:library-no-op:4.0.0")
+    
     implementation(project(":core"))
     implementation(project(":data"))
     implementation(project(":domain"))

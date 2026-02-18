@@ -1,5 +1,23 @@
 <resources>
-    <string name="app_name">horsegallop</string>
+    <string name="app_name">HorseGallop</string>
+    
+    <!-- Stats Suffixes -->
+    <string name="stats_rides_suffix">rides</string>
+    <string name="stats_calories_suffix">kcal</string>
+    
+    <!-- Bottom Navigation Labels -->
+    <string name="bottom_nav_home">Home</string>
+    <string name="bottom_nav_barns">Barns</string>
+    <string name="bottom_nav_ride">Ride</string>
+    <string name="bottom_nav_horse">My Horse</string>
+    <string name="bottom_nav_profile">Profile</string>
+    
+    <!-- Empty States -->
+    <string name="no_activities">No activities yet</string>
+    
+    <!-- Stats Suffixes -->
+    <string name="stats_rides_suffix">rides</string>
+    <string name="stats_calories_suffix">kcal</string>
 	<string name="signin_google">Sign in with Google</string>
 	<string name="signin_apple">Sign in with Apple</string>
 	<string name="signin_email">Sign in with Email</string>
@@ -292,6 +310,20 @@
     <string name="button_cancel">Cancel</string>
     <string name="button_save">Save</string>
     <string name="button_edit">Edit</string>
+    
+    <!-- Ride Start Screen -->
+    <string name="live_metrics_title">Live Metrics</string>
+    <string name="distance_label">Distance</string>
+    <string name="speed_label">Speed</string>
+    <string name="calories_label">Calories</string>
+    <string name="duration_label">Duration</string>
+    <string name="select_barn_label">Select Barn</string>
+    <string name="tap_to_select_barn">Tap to select barn</string>
+    <string name="start_ride_label">Start Ride</string>
+    <string name="stop_ride_label">Stop Ride</string>
+    <string name="live_tracking_active">Live Tracking Active</string>
+    <string name="tap_start_to_begin">Tap START to begin your ride</string>
+    <string name="save_and_end_ride">Save &amp; End Ride</string>
     
     <!-- Barn Detail -->
     <string name="barn_detail_location">Location</string>
