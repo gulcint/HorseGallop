@@ -2,8 +2,6 @@ const { https, functions } = require('firebase-functions');
 const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
-+++++++
-```
 
 // Initialize Firebase Admin
 admin.initializeApp();
