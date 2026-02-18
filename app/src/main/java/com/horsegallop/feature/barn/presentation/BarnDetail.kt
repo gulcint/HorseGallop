@@ -90,40 +90,26 @@ fun BarnDetailContent(barn: BarnWithLocation) {
             contentPadding = PaddingValues(bottom = 100.dp)
         ) {
             item {
-                val barnLocation = LatLng(barn.lat, barn.lng)
-                val cameraPositionState = rememberCameraPositionState {
-                    position = CameraPosition.fromLatLngZoom(barnLocation, 15f)
-                }
-                
+                // Hero Image (Unsplash - Horse Barn theme)
+                val heroImage = "https://images.unsplash.com/photo-1534448177492-6d6c629f5f92?auto=format&fit=crop&w=1200&q=80"
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(280.dp)
+                        .height(300.dp)
                 ) {
-                    GoogleMap(
+                    AsyncImage(
+                        model = heroImage,
+                        contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
-                        cameraPositionState = cameraPositionState,
-                        uiSettings = MapUiSettings(
-                            zoomControlsEnabled = false,
-                            scrollGesturesEnabled = false,
-                            zoomGesturesEnabled = false,
-                            tiltGesturesEnabled = false,
-                            rotationGesturesEnabled = false,
-                            mapToolbarEnabled = false
-                        )
-                    ) {
-                        Marker(
-                            state = MarkerState(position = barnLocation),
-                            title = barn.barn.name
-                        )
-                    }
+                        contentScale = ContentScale.Crop
+                    )
                     // Gradient overlay for text visibility
                     Box(
                         modifier = Modifier
                             .matchParentSize()
                             .background(
                                 androidx.compose.ui.graphics.Brush.verticalGradient(
-                                    colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.4f))
+                                    colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f))
                                 )
                             )
                     )

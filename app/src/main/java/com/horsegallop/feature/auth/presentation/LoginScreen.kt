@@ -296,7 +296,13 @@ fun LoginScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
-                            shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
+                            shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+                            colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                        )
                         ) {
                             Text(
                                 text = if (uiState.isLoading) stringResource(com.horsegallop.core.R.string.login_button_loading) else stringResource(com.horsegallop.core.R.string.login_button),

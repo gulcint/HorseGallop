@@ -41,14 +41,14 @@ class FirebaseAuthRepository @Inject constructor(
 
     override fun signUpWithEmail(email: String, password: String, firstName: String, lastName: String): Flow<Result<User>> = flow {
         try {
-            val result = withTimeout(15000) { auth.createUserWithEmailAndPassword(email, password).await() }
+            val result = withTimeout(30000) { auth.createUserWithEmailAndPassword(email, password).await() }
             val createdUser = result.user ?: throw Exception("User creation failed")
             
             try {
                 val profileUpdates = UserProfileChangeRequest.Builder()
                     .setDisplayName("$firstName $lastName")
                     .build()
-                withTimeout(5000) { createdUser.updateProfile(profileUpdates).await() }
+                withTimeout(10000) { createdUser.updateProfile(profileUpdates).await() }
             } catch (e: Exception) {
                 // Profile update failed, but user exists. Continue.
                 e.printStackTrace()

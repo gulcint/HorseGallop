@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.horsegallop.core.R
 import com.horsegallop.core.R as CoreR
 import com.horsegallop.R as AppR
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun EmailLoginScreen(
@@ -109,7 +110,13 @@ fun EmailLoginContent(
       Button(
         onClick = onLoginClick,
         enabled = !uiState.isLoading,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+        )
       ) { 
         if (uiState.isLoading) {
           CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)

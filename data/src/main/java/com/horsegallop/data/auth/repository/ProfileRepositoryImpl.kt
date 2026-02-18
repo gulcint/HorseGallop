@@ -124,10 +124,13 @@ class ProfileRepositoryImpl @Inject constructor(
                 } catch (e: Exception) { null }
             } else null
 
-            val updates = mapOf(
+            val sanitizedPhone = profile.phone.filter { it.isDigit() }
+            val displayName = listOf(profile.firstName, profile.lastName).filter { it.isNotBlank() }.joinToString(" ")
+            val updates = hashMapOf<String, Any?>(
                 "firstName" to profile.firstName,
                 "lastName" to profile.lastName,
-                "phone" to profile.phone,
+                "name" to displayName,
+                "phone" to sanitizedPhone,
                 "city" to profile.city,
                 "birthDate" to birthDateTimestamp,
                 "countryCode" to profile.countryCode,

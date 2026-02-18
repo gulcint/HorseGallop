@@ -62,6 +62,9 @@ sealed class Dest(val route: String) {
   object ForgotPassword : Dest("forgotPassword")
   object Enroll : Dest("enroll")
   object Profile : Dest("profile")
+  object RideDetail : Dest("rideDetail/{id}") {
+      fun createRoute(id: String) = "rideDetail/$id"
+  }
   object BarnDetail : Dest("barnDetail/{id}") {
     fun routeWithId(id: String): String = "barnDetail/$id"
   }
@@ -248,8 +251,9 @@ fun AppNavHost(
       ProfileScreen(
         onBack = { navController.popBackStack() },
         onLogout = {
-          navController.navigate(Dest.Onboarding.route) {
-            popUpTo(Dest.Home.route) { inclusive = true }
+          navController.navigate(Dest.Login.route) {
+            popUpTo(0) { inclusive = true }
+            launchSingleTop = true
           }
         }
       )
@@ -284,11 +288,18 @@ fun AppNavHost(
       )
     }
     composable(
-      route = Dest.BarnDetail.route,
-      arguments = listOf(navArgument("id") { type = NavType.StringType })
+        route = Dest.BarnDetail.route,
+        arguments = listOf(navArgument("id") { type = NavType.StringType })
     ) { backStackEntry ->
       BackHandler { navController.popBackStack() }
       BarnDetailScreen(onBack = { navController.popBackStack() })
+    }
+    composable(
+        route = Dest.RideDetail.route,
+        arguments = listOf(navArgument("id") { type = NavType.StringType })
+    ) { backStackEntry ->
+      BackHandler { navController.popBackStack() }
+      RideDetailScreen(onBack = { navController.popBackStack() })
     }
     composable(Dest.RecentActivityDetail.route) {
       BackHandler { navController.popBackStack() }

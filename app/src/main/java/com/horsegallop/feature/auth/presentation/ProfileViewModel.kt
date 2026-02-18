@@ -103,7 +103,7 @@ class ProfileViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                kotlinx.coroutines.withTimeout(15000L) {
+                kotlinx.coroutines.withTimeout(30000L) {
                     updateUserProfileUseCase(uid, draft).collect { result ->
                         result.onSuccess {
                             _uiState.value = _uiState.value.copy(

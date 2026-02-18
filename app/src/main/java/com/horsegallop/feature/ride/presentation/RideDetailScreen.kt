@@ -2,6 +2,7 @@ package com.horsegallop.feature.ride.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -9,16 +10,19 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -38,96 +42,203 @@ fun RideDetailScreen(
     val ride = uiState.ride
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.ride_details_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-                    }
-                }
-            )
-        }
+        modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        Box(modifier = Modifier.padding(padding).fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize()) {
             if (ride != null) {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    // Map Section
+                // 1. Full Screen Map Background (Top Half)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(400.dp) // Taller map
+                ) {
+                    RideDetailMap(ride.pathPoints.map { LatLng(it.latitude, it.longitude) })
+                    
+                    // Gradient overlay for seamless transition
                     Box(
                         modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
-                    ) {
-                        RideDetailMap(ride.pathPoints.map { LatLng(it.latitude, it.longitude) })
-                    }
-
-                    // Stats Section
-                    Column(
-                        modifier = Modifier
-                            .padding(20.dp)
-                            .fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        // Date Header
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Default.CalendarToday,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
+                            .fillMaxSize()
+                            .background(
+                                androidx.compose.ui.graphics.Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        MaterialTheme.colorScheme.surface.copy(alpha = 0.1f),
+                                        MaterialTheme.colorScheme.surface
+                                    ),
+                                    startY = 0f,
+                                    endY = Float.POSITIVE_INFINITY
+                                )
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                    )
+                }
+
+                // 2. Back Button (Floating)
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier
+                        .padding(top = 48.dp, start = 16.dp)
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.back),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                // 3. Bottom Sheet / Details Panel
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 320.dp) // Start overlapping the map
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)),
+                        color = MaterialTheme.colorScheme.surface,
+                        tonalElevation = 4.dp,
+                        shadowElevation = 8.dp
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            // Drag Handle (Visual cue)
+                            Box(
+                                modifier = Modifier
+                                    .width(40.dp)
+                                    .height(4.dp)
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f))
+                            )
+                            
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            // Date & Time
                             val date = Date(ride.dateMillis)
-                            val format = SimpleDateFormat("EEEE, MMM d • HH:mm", Locale.getDefault())
+                            val dateFormat = SimpleDateFormat("EEEE, MMM d", Locale.getDefault())
+                            val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+                            
+                            // Dynamic Title Logic
+                            val calendar = Calendar.getInstance().apply { time = date }
+                            val hourOfDay = calendar.get(Calendar.HOUR_OF_DAY)
+                            val rideTitle = when (hourOfDay) {
+                                in 5..11 -> "Morning Ride"
+                                in 12..16 -> "Afternoon Ride"
+                                in 17..20 -> "Evening Ride"
+                                else -> "Night Ride"
+                            }
+                            
                             Text(
-                                text = format.format(date),
-                                style = MaterialTheme.typography.titleMedium,
+                                text = dateFormat.format(date).uppercase(),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                letterSpacing = 1.sp,
                                 fontWeight = FontWeight.Bold
                             )
-                        }
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            Text(
+                                text = rideTitle,
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
 
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                            Spacer(modifier = Modifier.height(32.dp))
 
-                        // Metrics Grid
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            StatItem(
-                                modifier = Modifier.weight(1f),
-                                icon = Icons.Default.Speed,
-                                value = String.format("%.2f", ride.distanceKm),
-                                unit = stringResource(R.string.unit_km),
-                                label = stringResource(R.string.stat_distance)
-                            )
-                            StatItem(
-                                modifier = Modifier.weight(1f),
-                                icon = Icons.Default.AccessTime,
-                                value = formatDuration(ride.durationSec),
-                                unit = stringResource(R.string.unit_time),
-                                label = stringResource(R.string.stat_duration)
-                            )
-                            StatItem(
-                                modifier = Modifier.weight(1f),
-                                icon = Icons.Default.LocalFireDepartment,
-                                value = "${ride.calories}",
-                                unit = stringResource(R.string.unit_kcal),
-                                label = stringResource(R.string.label_energy)
-                            )
-                        }
-                        
-                        if (!ride.barnName.isNullOrEmpty()) {
-                            Card(
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            // Hero Metric: Distance
+                            Text(
+                                text = String.format("%.2f", ride.distanceKm),
+                                style = MaterialTheme.typography.displayLarge.copy(
+                                    fontSize = 64.sp,
+                                    letterSpacing = (-2).sp
                                 ),
-                                modifier = Modifier.fillMaxWidth()
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = stringResource(R.string.unit_km).uppercase(),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = FontWeight.Medium
+                            )
+
+                            Spacer(modifier = Modifier.height(40.dp))
+
+                            // Stats Grid
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = stringResource(R.string.riding_at, ride.barnName ?: ""),
-                                    modifier = Modifier.padding(16.dp),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                DetailStatItem(
+                                    value = formatDuration(ride.durationSec),
+                                    label = "DURATION",
+                                    icon = Icons.Default.AccessTime,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                
+                                Box(modifier = Modifier.width(1.dp).height(40.dp).background(MaterialTheme.colorScheme.outlineVariant))
+
+                                DetailStatItem(
+                                    value = String.format("%.1f", ride.distanceKm / (ride.durationSec / 3600f).coerceAtLeast(0.001f)), // Calc avg speed roughly
+                                    label = "AVG SPEED",
+                                    unit = "km/h",
+                                    icon = Icons.Default.Speed,
+                                    modifier = Modifier.weight(1f)
+                                )
+
+                                Box(modifier = Modifier.width(1.dp).height(40.dp).background(MaterialTheme.colorScheme.outlineVariant))
+
+                                DetailStatItem(
+                                    value = "${ride.calories}",
+                                    label = "CALORIES",
+                                    unit = "kcal",
+                                    icon = Icons.Default.LocalFireDepartment,
+                                    modifier = Modifier.weight(1f)
                                 )
                             }
+                            
+                            Spacer(modifier = Modifier.weight(1f))
+                            
+                            // Barn Chip
+                            if (!ride.barnName.isNullOrEmpty()) {
+                                Surface(
+                                    shape = RoundedCornerShape(16.dp),
+                                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        Icon(
+                                            Icons.Default.LocationOn, // Assuming LocationOn is available or use another
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = ride.barnName ?: "",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(24.dp))
                         }
                     }
                 }
@@ -141,6 +252,51 @@ fun RideDetailScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun DetailStatItem(
+    value: String,
+    label: String,
+    unit: String? = null,
+    icon: ImageVector,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            if (unit != null) {
+                Spacer(modifier = Modifier.width(2.dp))
+                Text(
+                    text = unit,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 2.dp)
+                )
+            }
+        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 
@@ -212,38 +368,6 @@ fun RideDetailMap(points: List<LatLng>) {
             state = MarkerState(position = displayedPoints.last()),
             title = stringResource(R.string.map_end),
             icon = com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_RED)
-        )
-    }
-}
-
-@Composable
-fun StatItem(
-    modifier: Modifier = Modifier,
-    icon: ImageVector,
-    value: String,
-    unit: String,
-    label: String
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            icon, 
-            contentDescription = null, 
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(24.dp)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = unit,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

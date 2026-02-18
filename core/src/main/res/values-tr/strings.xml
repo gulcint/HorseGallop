@@ -72,7 +72,7 @@
     <string name="login_error_invalid_form">Geçerli email ve 6+ karakter şifre girin</string>
     <string name="login_verify_email_sent">Lütfen e-postanı doğrula. Doğrulama maili gönderildi.</string>
     <string name="login_failed_default">Giriş başarısız</string>
-    <string name="signup_prompt">Hesap açmak ister misin?</string>
+    <string name="signup_prompt">Hesap Oluştur</string>
     <!-- Theme -->
     <string name="theme_system">Sistem</string>
     <string name="theme_light">Açık</string>

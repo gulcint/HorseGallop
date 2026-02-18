@@ -7,7 +7,7 @@ plugins {
     kotlin("kapt")
     alias(libs.plugins.hilt.android)
     id("com.google.gms.google-services")
-    alias(libs.plugins.skydoves.stability.analyzer)
+alias(libs.plugins.skydoves.stability.analyzer)
 }
 
 android {

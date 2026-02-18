@@ -69,6 +69,7 @@ class LoginViewModel @Inject constructor(
                         }
                     }.onFailure { e ->
                         _uiState.value = s.copy(isLoading = false, errorMessage = e.localizedMessage)
+                        _effect.send(LoginEffect.ShowSnackbarError(e.localizedMessage ?: "Unknown error"))
                     }
                 }
         }

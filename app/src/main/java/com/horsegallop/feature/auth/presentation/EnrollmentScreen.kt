@@ -18,6 +18,9 @@ import com.horsegallop.core.components.HorseGallopButton
 import com.horsegallop.core.components.HorseGallopTextField
 import com.horsegallop.core.R as CoreR
 import com.horsegallop.R as AppR
+import android.content.Intent
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,8 +38,14 @@ fun EnrollmentScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { },
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(CoreR.string.signup_prompt),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -45,8 +54,10 @@ fun EnrollmentScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -75,12 +86,7 @@ fun EnrollmentScreen(
                         .padding(horizontal = dimensionResource(CoreR.dimen.padding_screen_horizontal)),
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(CoreR.dimen.spacing_lg))
                 ) {
-                    Text(
-                        text = stringResource(CoreR.string.signup_prompt),
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+                    Spacer(modifier = Modifier.height(dimensionResource(CoreR.dimen.spacing_sm)))
 
                     NameFieldsSection(
                         firstName = uiState.firstName,
@@ -118,7 +124,7 @@ fun EnrollmentScreen(
                     }
 
                     HorseGallopButton(
-                        text = stringResource(AppR.string.enrollment_title),
+                        text = stringResource(CoreR.string.signup_prompt),
                         onClick = viewModel::signUp,
                         enabled = uiState.isFormValid && !uiState.loading,
                         isLoading = uiState.loading,
@@ -139,6 +145,8 @@ fun VerificationSentContent(
     onVerifiedCheck: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -146,11 +154,20 @@ fun VerificationSentContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Icon(
+            painter = painterResource(id = AppR.drawable.ic_email_icon),
+            contentDescription = null,
+            modifier = Modifier.size(80.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         Text(
-            text = stringResource(CoreR.string.login_verify_email_sent),
+            text = stringResource(AppR.string.verify_email_title),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colorScheme.onSurface
         )
         
         Spacer(modifier = Modifier.height(16.dp))
@@ -158,10 +175,36 @@ fun VerificationSentContent(
         Text(
             text = stringResource(AppR.string.verification_sent_to_email, uiState.email),
             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(32.dp))
+
+        HorseGallopButton(
+            text = stringResource(AppR.string.open_mail_app),
+            onClick = {
+                val intent = Intent(Intent.ACTION_MAIN).apply {
+                    addCategory(Intent.CATEGORY_APP_EMAIL)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                try {
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                     val gmailIntent = context.packageManager.getLaunchIntentForPackage("com.google.android.gm")
+                     if (gmailIntent != null) {
+                         context.startActivity(gmailIntent)
+                     } else {
+                         android.widget.Toast.makeText(context, "Email app not found", android.widget.Toast.LENGTH_SHORT).show()
+                     }
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            containerColor = MaterialTheme.colorScheme.secondary,
+            contentColor = MaterialTheme.colorScheme.onSecondary
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
 
         HorseGallopButton(
             text = stringResource(AppR.string.btn_confirm_verified),
@@ -176,24 +219,29 @@ fun VerificationSentContent(
             enabled = uiState.resendCooldownRemaining == 0 && !uiState.verifying
         ) {
             if (uiState.verifying) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.primary
+                )
             } else {
                 Text(
-                    text = if (uiState.resendCooldownRemaining > 0) 
-                        "${stringResource(AppR.string.btn_resend_verification)} (${uiState.resendCooldownRemaining}s)" 
-                    else 
-                        stringResource(AppR.string.btn_resend_verification)
+                     text = if (uiState.resendCooldownRemaining > 0) 
+                         "${stringResource(AppR.string.btn_resend_verification)} (${uiState.resendCooldownRemaining})"
+                     else 
+                         stringResource(AppR.string.btn_resend_verification),
+                     color = if (uiState.resendCooldownRemaining > 0) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary
                 )
             }
         }
         
         if (uiState.verificationError != null) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = uiState.verificationError!!,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
+             Spacer(modifier = Modifier.height(8.dp))
+             Text(
+                 text = uiState.verificationError,
+                 color = MaterialTheme.colorScheme.error,
+                 style = MaterialTheme.typography.bodySmall,
+                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
+             )
         }
     }
 }

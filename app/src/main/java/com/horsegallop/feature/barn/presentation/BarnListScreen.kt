@@ -155,8 +155,15 @@ fun BarnListScreen(
 
       Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.End
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
       ) {
+        Text(
+            text = stringResource(com.horsegallop.core.R.string.nav_barns),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
         com.horsegallop.core.components.ViewAllButton(
           onClick = { navController?.navigate(Dest.BarnsMapView.route) }
         )
