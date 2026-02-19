@@ -1,13 +1,17 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.horsegallop">
 	<application
-		android:name=".AdInCountryApp"
+		android:name=".HorseGallopApp"
 		android:allowBackup="true"
-		android:label="adincountry"
-		android:theme="@style/Theme.adincountry.Splash">
+		android:label="Horse Gallop"
+		android:theme="@style/Theme.horsegallop.Splash">
+		<meta-data
+			android:name="com.google.android.maps.v2.API_KEY"
+			android:value="@string/google_maps_api_key" />
 		<activity
 			android:name=".MainActivity"
 			android:exported="true"
-			android:theme="@style/Theme.adincountry.Splash">
+			android:theme="@style/Theme.horsegallop.Splash">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />

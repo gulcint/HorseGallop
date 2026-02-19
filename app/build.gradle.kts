@@ -7,10 +7,10 @@ plugins {
 }
 
 android {
-	namespace = "com.example.adincountry"
+	namespace = "com.horsegallop"
 	compileSdk = 34
 	defaultConfig {
-		applicationId = "com.example.adincountry"
+		applicationId = "com.horsegallop"
 		minSdk = 24
 		targetSdk = 34
 		versionCode = 1
