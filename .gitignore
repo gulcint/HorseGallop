@@ -32,3 +32,12 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Node.js / MCP Server files
+node_modules/
+mcp-server-*/
+**/node_modules/
+
+# Firebase Functions (backend)
+/functions
+horsegallop-backend/
