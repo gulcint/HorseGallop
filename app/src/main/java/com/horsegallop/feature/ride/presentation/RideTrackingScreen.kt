@@ -1048,50 +1048,73 @@ private fun ControlsRow(isRiding: Boolean, onStop: () -> Unit, autoDetect: Boole
       )
   }
 
-  Row(
-    modifier = Modifier.fillMaxWidth(), 
-    horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)), 
-    verticalAlignment = Alignment.CenterVertically
+  Card(
+    modifier = Modifier.fillMaxWidth(),
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xxl))
   ) {
-    Card(
-      modifier = Modifier.weight(1f).clickable { 
-          if (isRiding) {
-              showStopDialog = true
-          } else {
-              onStop()
-          }
-      }, 
-      colors = CardDefaults.cardColors(containerColor = if (isRiding) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary), 
-      shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xl))
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
+      horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)),
+      verticalAlignment = Alignment.CenterVertically
     ) {
-      Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)), 
-        horizontalArrangement = Arrangement.Center, 
-        verticalAlignment = Alignment.CenterVertically
+      Card(
+        modifier = Modifier.weight(1f).clickable { 
+            if (isRiding) {
+                showStopDialog = true
+            } else {
+                onStop()
+            }
+        }, 
+        colors = CardDefaults.cardColors(containerColor = if (isRiding) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary), 
+        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
       ) {
-        if (!isRiding) Icon(Icons.Default.PlayArrow, contentDescription = null, tint = if (isRiding) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary)
-        Spacer(Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
-        Text(
-          if (isRiding) stringResource(id = com.horsegallop.core.R.string.finish_ride) else stringResource(id = com.horsegallop.core.R.string.start_ride),
-          color = if (isRiding) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary,
-          fontWeight = FontWeight.Bold
-        )
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_sm)),
+          horizontalArrangement = Arrangement.Center, 
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Icon(
+            if (isRiding) Icons.Default.Stop else Icons.Default.PlayArrow, 
+            contentDescription = null, 
+            tint = if (isRiding) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary
+          )
+          Spacer(Modifier.width(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
+          Text(
+            if (isRiding) stringResource(id = com.horsegallop.core.R.string.finish_ride) else stringResource(id = com.horsegallop.core.R.string.start_ride),
+            color = if (isRiding) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary,
+            fontWeight = FontWeight.Bold
+          )
+        }
       }
-    }
-    Card(
-      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), 
-      shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xl))
-    ) {
-      Row(
-        modifier = Modifier.padding(
-          horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md), 
-          vertical = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)
-        ), 
-        verticalAlignment = Alignment.CenterVertically, 
-        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
+      
+      Card(
+        modifier = Modifier.width(120.dp),
+        colors = CardDefaults.cardColors(containerColor = if (autoDetect) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+        border = androidx.compose.foundation.BorderStroke(
+          dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin), 
+          if (autoDetect) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+        )
       ) {
-        Text(stringResource(id = com.horsegallop.core.R.string.auto_ride_detection), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
-        Switch(checked = autoDetect, onCheckedChange = onToggleAuto, colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.primary))
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_sm)),
+          horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text(stringResource(id = com.horsegallop.core.R.string.auto_ride_detection), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
+          Switch(
+            checked = autoDetect, 
+            onCheckedChange = onToggleAuto, 
+            colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.primary)
+          )
+        }
       }
     }
   }
