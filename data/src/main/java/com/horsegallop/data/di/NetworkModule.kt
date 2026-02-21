@@ -2,6 +2,8 @@ package com.horsegallop.data.di
 
 import android.content.Context
 import com.horsegallop.data.remote.LanguageInterceptor
+import com.horsegallop.data.remote.AuthTokenInterceptor
+import com.google.firebase.auth.FirebaseAuth
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient
@@ -28,8 +30,10 @@ object NetworkModule {
   fun provideOkHttpClient(@ApplicationContext context: Context): OkHttpClient {
     val logger: HttpLoggingInterceptor = HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
     val languageInterceptor = LanguageInterceptor(context)
+    val authInterceptor = AuthTokenInterceptor(FirebaseAuth.getInstance())
     return OkHttpClient.Builder()
       .addInterceptor(languageInterceptor)
+      .addInterceptor(authInterceptor)
       .addInterceptor(logger)
       .build()
   }
@@ -37,7 +41,7 @@ object NetworkModule {
   @Provides @Singleton
   fun provideRetrofit(okHttpClient: OkHttpClient, moshi: Moshi): Retrofit {
     return Retrofit.Builder()
-      .baseUrl(com.horsegallop.data.BuildConfig.BASE_URL)
+      .baseUrl(com.horsegallop.BuildConfig.BASE_URL)
       .addConverterFactory(MoshiConverterFactory.create(moshi))
       .client(okHttpClient)
       .build()

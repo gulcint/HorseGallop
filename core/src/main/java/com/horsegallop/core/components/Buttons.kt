@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 fun ViewAllButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    text: String = androidx.compose.ui.res.stringResource(id = com.horsegallop.core.R.string.view_all)
+    text: String = androidx.compose.ui.res.stringResource(id = com.horsegallop.R.string.view_all)
 ) {
     Surface(
         shape = RoundedCornerShape(12.dp),

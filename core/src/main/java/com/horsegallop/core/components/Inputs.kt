@@ -38,7 +38,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.horsegallop.core.R
+import com.horsegallop.R
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Close
 

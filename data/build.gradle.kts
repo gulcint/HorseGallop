@@ -14,10 +14,10 @@ android {
 	}
 	buildTypes {
 		getByName("debug") {
-			buildConfigField("String", "BASE_URL", "\"https://api.example.com/\"")
+			buildConfigField("String", "BASE_URL", "\"https://api-5cmhzb3wtq-ew.a.run.app/\"")
 		}
 		getByName("release") {
-			buildConfigField("String", "BASE_URL", "\"https://api.example.com/\"")
+			buildConfigField("String", "BASE_URL", "\"https://api-5cmhzb3wtq-ew.a.run.app/\"")
 		}
 	}
 	compileOptions {

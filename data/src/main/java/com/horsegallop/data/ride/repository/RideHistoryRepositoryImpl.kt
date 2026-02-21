@@ -1,6 +1,8 @@
 package com.horsegallop.data.ride.repository
 
 import android.content.Context
+import com.horsegallop.data.remote.ApiService
+import com.horsegallop.domain.ride.model.GeoPoint
 import com.horsegallop.domain.ride.model.RideSession
 import com.horsegallop.domain.ride.repository.RideHistoryRepository
 import com.squareup.moshi.Moshi
@@ -20,7 +22,8 @@ import javax.inject.Singleton
 
 @Singleton
 class RideHistoryRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val apiService: ApiService
 ) : RideHistoryRepository {
     
     private val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
@@ -40,6 +43,25 @@ class RideHistoryRepositoryImpl @Inject constructor(
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
+            }
+
+            try {
+                val remote = apiService.getMyRidesV2().map { dto ->
+                    val seconds = (dto.startedAt?.get("_seconds") as? Number)?.toLong() ?: 0L
+                    RideSession(
+                        id = dto.id,
+                        dateMillis = seconds * 1000L,
+                        durationSec = ((dto.durationMin ?: 0.0) * 60).toInt(),
+                        distanceKm = (dto.distanceKm ?: 0.0).toFloat(),
+                        calories = (dto.calories ?: 0.0).toInt(),
+                        pathPoints = emptyList<GeoPoint>(),
+                        barnName = dto.barnName
+                    )
+                }
+                _history.value = remote
+            } catch (e: Exception) {
+                // Keep local cache on failure
+                e.printStackTrace()
             }
         }
     }

@@ -38,6 +38,7 @@
     <string name="nav_ride">Ride</string>
     <string name="nav_schedule">Schedule</string>
     <string name="nav_profile">Profile</string>
+    <string name="nav_settings">Settings</string>
     
     <!-- Auth/Login -->
     <string name="login_title_brand">Horse Gallop</string>
@@ -47,6 +48,21 @@
     <string name="continue_with_google">Continue with Google</string>
     <string name="auto_detect_ride">Auto detect ride</string>
     <string name="prompt_create_account">Create Account</string>
+
+    <!-- Settings -->
+    <string name="setting_theme_title">Theme</string>
+    <string name="setting_language_title">Language</string>
+    <string name="setting_language_system">System default</string>
+    <string name="setting_language_english">English</string>
+    <string name="setting_language_turkish">Turkish</string>
+    <string name="setting_notifications_title">Notifications</string>
+    <string name="setting_notifications_subtitle">Enable app notifications</string>
+    <string name="setting_privacy_title">Privacy &amp; Data</string>
+    <string name="privacy_export_title">Export your data</string>
+    <string name="privacy_export_subtitle">Get a JSON copy of your account data for KVKK compliance.</string>
+    <string name="privacy_export_action">Export</string>
+    <string name="privacy_export_ready">Your data export is ready and copied to the clipboard.</string>
+    <string name="privacy_delete_subtitle">Permanently delete your account and all data.</string>
     
     <!-- Home Screen -->
     <string name="quick_actions_title">Quick Actions</string>
@@ -140,14 +156,22 @@
     <string name="onboarding_feature_sharing">Ride Sharing</string>
     <string name="onboarding_feature_leaderboard">Leaderboards</string>
     <string name="onboarding_feature_nearby">Find Nearby Riders</string>
-    <string name="onboarding_title_ranch">Discover Ranches</string>
-    <string name="onboarding_subtitle_ranch">Find the perfect place for your horse</string>
-    <string name="onboarding_title_packages">Riding Packages</string>
-    <string name="onboarding_subtitle_packages">Choose from various riding experiences</string>
-    <string name="onboarding_title_boarding">Horse Boarding</string>
-    <string name="onboarding_subtitle_boarding">Premium boarding services</string>
-    <string name="onboarding_title_cafe">Rider\'s Cafe</string>
-    <string name="onboarding_subtitle_cafe">Relax and socialize with fellow riders</string>
+    <string name="onboarding_title_ranch">Safe Riding Experience</string>
+    <string name="onboarding_subtitle_ranch">Verified stables, expert instructors, and clear safety rules.</string>
+    <string name="onboarding_title_packages">How It Works</string>
+    <string name="onboarding_subtitle_packages">Sign up, pick a stable, plan a lesson, and reserve instantly.</string>
+    <string name="onboarding_title_boarding">Rules &amp; Responsibilities</string>
+    <string name="onboarding_subtitle_boarding">Helmet required, fair cancellations, and animal welfare.</string>
+    <string name="onboarding_title_cafe">Community &amp; Progress</string>
+    <string name="onboarding_subtitle_cafe">Reviews, ratings, and progress tracking for every ride.</string>
+    <string name="onboarding_feature_signup">Quick membership</string>
+    <string name="onboarding_feature_barn_select">Choose verified stables</string>
+    <string name="onboarding_feature_reserve">Instant reservations</string>
+    <string name="onboarding_feature_safety">Safety-first rules</string>
+    <string name="onboarding_feature_kvkk">KVKK data controls</string>
+    <string name="onboarding_feature_reviews">Real community reviews</string>
+    <string name="onboarding_feature_support">Support &amp; guidance</string>
+    <string name="onboarding_feature_progress">Track your progress</string>
     <string name="onboarding_progress">%1$d of %2$d</string>
     <string name="onboarding_skip">Skip</string>
     <string name="onboarding_start">Start</string>

@@ -17,8 +17,5 @@ dependencyResolutionManagement {
 rootProject.name = "horsegallop"
 
 include(
-	":app",
-	":core",
-	":data",
-	":domain"
+	":app"
 )

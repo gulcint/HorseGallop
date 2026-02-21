@@ -119,11 +119,11 @@ fun LoginScreen(
                      val msgKey = effect.message
                      val isDebug = (context.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
                      val msg = when (msgKey) {
-                        "auth_error_google" -> context.getString(com.horsegallop.core.R.string.auth_error_google)
-                        "auth_error_firebase" -> context.getString(com.horsegallop.core.R.string.auth_error_firebase)
-                        "auth_error_cancelled" -> context.getString(com.horsegallop.core.R.string.auth_error_cancelled)
-                        "auth_error_token_missing" -> context.getString(com.horsegallop.core.R.string.auth_error_token_missing)
-                        "login_verify_email_sent" -> context.getString(com.horsegallop.core.R.string.login_verify_email_sent)
+                        "auth_error_google" -> context.getString(com.horsegallop.R.string.auth_error_google)
+                        "auth_error_firebase" -> context.getString(com.horsegallop.R.string.auth_error_firebase)
+                        "auth_error_cancelled" -> context.getString(com.horsegallop.R.string.auth_error_cancelled)
+                        "auth_error_token_missing" -> context.getString(com.horsegallop.R.string.auth_error_token_missing)
+                        "login_verify_email_sent" -> context.getString(com.horsegallop.R.string.login_verify_email_sent)
                         "verification_email_sent" -> "Verification email sent"
                         "Email not verified" -> context.getString(com.horsegallop.R.string.error_email_not_verified)
                         else -> {
@@ -132,17 +132,17 @@ fun LoginScreen(
                                 if (isDebug) {
                                     "Google Sign-In error code: $code"
                                 } else {
-                                    context.getString(com.horsegallop.core.R.string.auth_error_google)
+                                    context.getString(com.horsegallop.R.string.auth_error_google)
                                 }
                             } else if (msgKey.startsWith("auth_error_firebase: ")) {
                                 val error = msgKey.removePrefix("auth_error_firebase: ")
                                 if (isDebug) {
                                     "Authentication failed: $error"
                                 } else {
-                                    context.getString(com.horsegallop.core.R.string.auth_error_firebase)
+                                    context.getString(com.horsegallop.R.string.auth_error_firebase)
                                 }
                             } else {
-                                context.getString(com.horsegallop.core.R.string.error_unknown)
+                                context.getString(com.horsegallop.R.string.error_unknown)
                             }
                         }
                     }
@@ -178,48 +178,48 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(
-                    horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
-                    vertical = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)
+                    horizontal = dimensionResource(id = com.horsegallop.R.dimen.padding_screen_horizontal),
+                    vertical = dimensionResource(id = com.horsegallop.R.dimen.padding_screen_vertical)
                 ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.weight(1f))
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm))
             ) {
                 Image(
                     painter = painterResource(id = R.mipmap.ic_launcher_foreground),
-                    contentDescription = stringResource(com.horsegallop.core.R.string.app_name),
+                    contentDescription = stringResource(com.horsegallop.R.string.app_name),
                     modifier = Modifier
-                        .size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_xxxl))
+                        .size(dimensionResource(id = com.horsegallop.R.dimen.icon_xxxl))
                 )
                 Text(
-                    text = stringResource(com.horsegallop.core.R.string.login_title_brand),
+                    text = stringResource(com.horsegallop.R.string.login_title_brand),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = com.horsegallop.core.theme.LocalTextColors.current.titlePrimary
                 )
                 Text(
-                    text = stringResource(com.horsegallop.core.R.string.login_subtitle),
+                    text = stringResource(com.horsegallop.R.string.login_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = com.horsegallop.core.theme.LocalTextColors.current.bodySecondary,
                     textAlign = TextAlign.Center
                 )
             }
-            Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
+            Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.R.dimen.spacing_md)))
             Column(
-                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
             ) {
                 HorseLoadingOverlay(visible = uiState.isLoading)
                 val focusManager = LocalFocusManager.current
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+                    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg)),
                     color = MaterialTheme.colorScheme.surface,
-                    shadowElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm),
+                    shadowElevation = dimensionResource(id = com.horsegallop.R.dimen.elevation_sm),
                     border = androidx.compose.foundation.BorderStroke(
-                        dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin),
+                        dimensionResource(id = com.horsegallop.R.dimen.width_divider_thin),
                         MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
                     )
                 ) {
@@ -227,18 +227,18 @@ fun LoginScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(
-                                horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_content_horizontal),
-                                vertical = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)
+                                horizontal = dimensionResource(id = com.horsegallop.R.dimen.padding_content_horizontal),
+                                vertical = dimensionResource(id = com.horsegallop.R.dimen.spacing_sm)
                             ),
-                        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
+                        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm))
                     ) {
-                        Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_xs)))
+                        Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.R.dimen.spacing_xs)))
                         OutlinedTextField(
                             value = uiState.email,
                             onValueChange = vm::updateEmail,
                             singleLine = true,
-                            label = { Text(stringResource(com.horsegallop.core.R.string.login_email_label), style = MaterialTheme.typography.bodySmall) },
-                            placeholder = { Text(stringResource(com.horsegallop.core.R.string.login_email_placeholder), style = MaterialTheme.typography.bodySmall) },
+                            label = { Text(stringResource(com.horsegallop.R.string.login_email_label), style = MaterialTheme.typography.bodySmall) },
+                            placeholder = { Text(stringResource(com.horsegallop.R.string.login_email_placeholder), style = MaterialTheme.typography.bodySmall) },
                             leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null) },
 
                             textStyle = MaterialTheme.typography.bodyMedium,
@@ -258,8 +258,8 @@ fun LoginScreen(
                             value = uiState.password,
                             onValueChange = vm::updatePassword,
                             singleLine = true,
-                            label = { Text(stringResource(com.horsegallop.core.R.string.login_password_label), style = MaterialTheme.typography.bodySmall) },
-                            placeholder = { Text(stringResource(com.horsegallop.core.R.string.login_password_placeholder), style = MaterialTheme.typography.bodySmall) },
+                            label = { Text(stringResource(com.horsegallop.R.string.login_password_label), style = MaterialTheme.typography.bodySmall) },
+                            placeholder = { Text(stringResource(com.horsegallop.R.string.login_password_placeholder), style = MaterialTheme.typography.bodySmall) },
                             leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
                             trailingIcon = {
                                 IconButton(onClick = vm::togglePasswordVisibility) {
@@ -285,7 +285,7 @@ fun LoginScreen(
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                             TextButton(onClick = onForgotPasswordClick) {
                                 Text(
-                                    text = stringResource(com.horsegallop.core.R.string.forgot_password),
+                                    text = stringResource(com.horsegallop.R.string.forgot_password),
                                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                                 )
                             }
@@ -295,11 +295,11 @@ fun LoginScreen(
                             enabled = !uiState.isLoading && uiState.isFormValid,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
-                            shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
+                                .height(dimensionResource(id = com.horsegallop.R.dimen.height_button_xl)),
+                            shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg))
                         ) {
                             Text(
-                                text = if (uiState.isLoading) stringResource(com.horsegallop.core.R.string.login_button_loading) else stringResource(com.horsegallop.core.R.string.login_button),
+                                text = if (uiState.isLoading) stringResource(com.horsegallop.R.string.login_button_loading) else stringResource(com.horsegallop.R.string.login_button),
                                 style = MaterialTheme.typography.labelLarge
                             )
                         }
@@ -322,7 +322,7 @@ fun LoginScreen(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             TextButton(onClick = onSignupClick) {
-                                Text(text = stringResource(com.horsegallop.core.R.string.prompt_create_account), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                                Text(text = stringResource(com.horsegallop.R.string.prompt_create_account), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -330,13 +330,13 @@ fun LoginScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)),
+                        .padding(vertical = dimensionResource(id = com.horsegallop.R.dimen.spacing_sm)),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     HorizontalDivider(modifier = Modifier.weight(1f), color = AppColors.Divider)
                     Text(
-                        text = stringResource(com.horsegallop.core.R.string.or_label),
-                        modifier = Modifier.padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)),
+                        text = stringResource(com.horsegallop.R.string.or_label),
+                        modifier = Modifier.padding(horizontal = dimensionResource(id = com.horsegallop.R.dimen.spacing_md)),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -348,7 +348,7 @@ fun LoginScreen(
                             val availability = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
                             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
                                 if (availability != ConnectionResult.SUCCESS) {
-                                    showLogoToast(context, context.getString(com.horsegallop.core.R.string.auth_error_play_services), true)
+                                    showLogoToast(context, context.getString(com.horsegallop.R.string.auth_error_play_services), true)
                                 } else {
                                     // Try to get cached account first for silent sign-in
                                     val account = GoogleSignIn.getLastSignedInAccount(context)
@@ -363,13 +363,13 @@ fun LoginScreen(
                     }
                 })
                 Text(
-                    text = stringResource(com.horsegallop.core.R.string.terms_consent),
+                    text = stringResource(com.horsegallop.R.string.terms_consent),
                     style = MaterialTheme.typography.bodySmall,
                     color = com.horsegallop.core.theme.LocalTextColors.current.bodyTertiary,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
-                        .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_content_horizontal))
-                        .padding(top = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
+                        .padding(horizontal = dimensionResource(id = com.horsegallop.R.dimen.padding_content_horizontal))
+                        .padding(top = dimensionResource(id = com.horsegallop.R.dimen.spacing_sm))
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -426,12 +426,12 @@ fun GoogleSignInButton(loading: Boolean = false, onClick: () -> Unit) {
         onClick = if (loading) ({}) else onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
-        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+            .height(dimensionResource(id = com.horsegallop.R.dimen.height_button_xl)),
+        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg)),
         color = MaterialTheme.colorScheme.surface,
-        shadowElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm),
+        shadowElevation = dimensionResource(id = com.horsegallop.R.dimen.elevation_sm),
         border = androidx.compose.foundation.BorderStroke(
-            dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin),
+            dimensionResource(id = com.horsegallop.R.dimen.width_divider_thin),
             MaterialTheme.colorScheme.primary
         )
     ) {
@@ -440,17 +440,17 @@ fun GoogleSignInButton(loading: Boolean = false, onClick: () -> Unit) {
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_content_horizontal))
+                .padding(horizontal = dimensionResource(id = com.horsegallop.R.dimen.padding_content_horizontal))
                 .let { m -> if (loading) m.shimmer() else m }
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_google_logo),
-                contentDescription = stringResource(com.horsegallop.core.R.string.cd_google_logo),
-                modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_md))
+                contentDescription = stringResource(com.horsegallop.R.string.cd_google_logo),
+                modifier = Modifier.size(dimensionResource(id = com.horsegallop.R.dimen.icon_md))
             )
-            Spacer(modifier = Modifier.width(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
+            Spacer(modifier = Modifier.width(dimensionResource(id = com.horsegallop.R.dimen.spacing_md)))
             Text(
-                text = stringResource(com.horsegallop.core.R.string.signin_google),
+                text = stringResource(com.horsegallop.R.string.signin_google),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -467,26 +467,26 @@ fun EmailSignInButton(onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(dimensionResource(id = com.horsegallop.core.R.dimen.height_button_xl)),
-        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+            .height(dimensionResource(id = com.horsegallop.R.dimen.height_button_xl)),
+        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg)),
         color = MaterialTheme.colorScheme.primary,
-        shadowElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm)
+        shadowElevation = dimensionResource(id = com.horsegallop.R.dimen.elevation_sm)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_content_horizontal))
+                .padding(horizontal = dimensionResource(id = com.horsegallop.R.dimen.padding_content_horizontal))
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_email_icon),
-                contentDescription = stringResource(com.horsegallop.core.R.string.cd_email_icon),
-                modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_md))
+                contentDescription = stringResource(com.horsegallop.R.string.cd_email_icon),
+                modifier = Modifier.size(dimensionResource(id = com.horsegallop.R.dimen.icon_md))
             )
-            Spacer(modifier = Modifier.width(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
+            Spacer(modifier = Modifier.width(dimensionResource(id = com.horsegallop.R.dimen.spacing_md)))
             Text(
-                text = stringResource(com.horsegallop.core.R.string.continue_with_email),
+                text = stringResource(com.horsegallop.R.string.continue_with_email),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onPrimary

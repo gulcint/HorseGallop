@@ -27,7 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import android.widget.Toast
 import com.horsegallop.domain.barn.model.BarnWithLocation
-import com.horsegallop.core.R
+import com.horsegallop.R
 import com.valentinilk.shimmer.shimmer
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -180,7 +180,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = barn.barn.location.ifEmpty { stringResource(id = com.horsegallop.core.R.string.unknown_location) },
+                            text = barn.barn.location.ifEmpty { stringResource(id = com.horsegallop.R.string.unknown_location) },
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -192,13 +192,13 @@ fun BarnDetailContent(barn: BarnWithLocation) {
             item {
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                     Text(
-                        text = stringResource(id = com.horsegallop.core.R.string.barn_detail_description),
+                        text = stringResource(id = com.horsegallop.R.string.barn_detail_description),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = barn.barn.description.ifEmpty { stringResource(id = com.horsegallop.core.R.string.barn_description_fallback) },
+                        text = barn.barn.description.ifEmpty { stringResource(id = com.horsegallop.R.string.barn_description_fallback) },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                     )
@@ -214,7 +214,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                 
                 Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
                     Text(
-                        text = stringResource(id = com.horsegallop.core.R.string.label_location),
+                        text = stringResource(id = com.horsegallop.R.string.label_location),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -255,7 +255,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
             item {
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                     Text(
-                        text = stringResource(id = com.horsegallop.core.R.string.barn_detail_amenities),
+                        text = stringResource(id = com.horsegallop.R.string.barn_detail_amenities),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -301,7 +301,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                         .height(56.dp),
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Text(stringResource(id = com.horsegallop.core.R.string.contact))
+                    Text(stringResource(id = com.horsegallop.R.string.contact))
                 }
                 Button(
                     onClick = { showReservationSheet = true },
@@ -310,13 +310,13 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                         .height(56.dp),
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Text(stringResource(id = com.horsegallop.core.R.string.book_lesson))
+                    Text(stringResource(id = com.horsegallop.R.string.book_lesson))
                 }
             }
         }
 
         if (showReservationSheet) {
-            val toastMessage = stringResource(id = com.horsegallop.core.R.string.reservation_request_sent)
+            val toastMessage = stringResource(id = com.horsegallop.R.string.reservation_request_sent)
             ModalBottomSheet(
                 onDismissRequest = { showReservationSheet = false },
                 containerColor = MaterialTheme.colorScheme.surface,
@@ -354,7 +354,7 @@ fun ReservationContent(onConfirm: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         Text(
-            stringResource(id = com.horsegallop.core.R.string.select_date_time),
+            stringResource(id = com.horsegallop.R.string.select_date_time),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
@@ -363,7 +363,7 @@ fun ReservationContent(onConfirm: () -> Unit) {
         // TODO: Fetch from backend (This data will be fetched from backend)
         val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
         Column {
-            Text(stringResource(id = com.horsegallop.core.R.string.label_date), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(id = com.horsegallop.R.string.label_date), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.height(12.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(7) { index ->
@@ -399,7 +399,7 @@ fun ReservationContent(onConfirm: () -> Unit) {
 
         // Mock Time Selection
         Column {
-            Text(stringResource(id = com.horsegallop.core.R.string.label_time), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(id = com.horsegallop.R.string.label_time), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 // TODO: Fetch from backend (This data will be fetched from backend)
@@ -420,7 +420,7 @@ fun ReservationContent(onConfirm: () -> Unit) {
 
         // Mock Instructor Selection
         Column {
-            Text(stringResource(id = com.horsegallop.core.R.string.label_instructor), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(id = com.horsegallop.R.string.label_instructor), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.height(8.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(instructors.size) { index ->
@@ -479,7 +479,7 @@ fun ReservationContent(onConfirm: () -> Unit) {
                 .height(56.dp),
             shape = RoundedCornerShape(16.dp)
         ) {
-            Text(stringResource(id = com.horsegallop.core.R.string.confirm_booking))
+            Text(stringResource(id = com.horsegallop.R.string.confirm_booking))
         }
     }
 }

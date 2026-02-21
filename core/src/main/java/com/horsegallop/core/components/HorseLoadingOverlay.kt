@@ -34,7 +34,7 @@ fun HorseLoadingOverlay(visible: Boolean) {
         .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.20f)),
       contentAlignment = Alignment.Center
     ) {
-      val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(com.horsegallop.core.R.raw.horse))
+      val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(com.horsegallop.R.raw.horse))
       val progress by animateLottieCompositionAsState(composition, iterations = LottieConstants.IterateForever)
       LottieAnimation(composition = composition, progress = { progress }, modifier = Modifier.fillMaxSize(fraction = 0.3f))
     }

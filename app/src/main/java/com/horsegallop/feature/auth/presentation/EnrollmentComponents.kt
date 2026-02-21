@@ -34,7 +34,7 @@ fun NameFieldsSection(
     onLastNameChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md))) {
         OutlinedTextField(
             value = firstName,
             onValueChange = onFirstNameChange,
@@ -188,7 +188,7 @@ fun VerificationSheetContent(
         Button(
             onClick = onOpenMail,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
+            shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg))
         ) {
             Text(text = stringResource(R.string.open_mail_app))
         }

@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.horsegallop.core.components.HorseLoadingOverlay
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.horsegallop.core.R
+import com.horsegallop.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

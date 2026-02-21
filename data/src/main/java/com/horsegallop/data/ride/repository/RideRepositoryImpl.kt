@@ -24,7 +24,8 @@ import kotlin.math.sqrt
 @Singleton
 class RideRepositoryImpl @Inject constructor(
     private val fusedLocationClient: FusedLocationProviderClient,
-    private val rideHistoryRepository: RideHistoryRepository
+    private val rideHistoryRepository: RideHistoryRepository,
+    private val apiService: com.horsegallop.data.remote.ApiService
 ) : RideRepository {
 
     private val _isRiding = MutableStateFlow(false)
@@ -44,6 +45,10 @@ class RideRepositoryImpl @Inject constructor(
     private var accumulatedCalories: Double = 0.0
     private var startTimeMillis: Long = 0L
     private var userWeightKg: Float = 70f
+    private var currentRideId: String? = null
+    private var speedSamples: Int = 0
+    private var speedSum: Double = 0.0
+    private var maxSpeed: Double = 0.0
 
     override suspend fun startRide(weightKg: Float) {
         if (_isRiding.value) return
@@ -52,8 +57,21 @@ class RideRepositoryImpl @Inject constructor(
         startTimeMillis = System.currentTimeMillis()
         lastLocationTimeMillis = null
         accumulatedCalories = 0.0
+        speedSamples = 0
+        speedSum = 0.0
+        maxSpeed = 0.0
         // Clear previous path
         _rideMetrics.value = RideMetrics(pathPoints = emptyList())
+        currentRideId = try {
+            apiService.startRide(
+                com.horsegallop.data.remote.dto.StartRideRequestDto(
+                    rideType = null,
+                    startLocation = null
+                )
+            ).id
+        } catch (e: Exception) {
+            null
+        }
         startLocationUpdates()
     }
 
@@ -73,10 +91,34 @@ class RideRepositoryImpl @Inject constructor(
                 )
                 rideHistoryRepository.saveRide(session)
             }
+            val rideId = currentRideId
+            if (rideId != null) {
+                val avgSpeedKmh = if (speedSamples > 0) speedSum / speedSamples else 0.0
+                val durationMin = metrics.durationSec / 60.0
+                val points = downsamplePath(metrics.pathPoints, 500).map {
+                    com.horsegallop.data.remote.dto.GeoPointDto(it.latitude, it.longitude, null)
+                }
+                try {
+                    apiService.stopRide(
+                        rideId,
+                        com.horsegallop.data.remote.dto.StopRideRequestDto(
+                            distanceKm = metrics.distanceKm.toDouble(),
+                            durationMin = durationMin,
+                            calories = metrics.calories.toDouble(),
+                            avgSpeedKmh = avgSpeedKmh,
+                            maxSpeedKmh = maxSpeed,
+                            pathPoints = points
+                        )
+                    )
+                } catch (e: Exception) {
+                    // Ignore backend sync failures; local history is still saved
+                }
+            }
         }
         _isRiding.value = false
         stopLocationUpdates()
         _rideMetrics.update { it.copy(speedKmh = 0f) }
+        currentRideId = null
     }
 
     override suspend fun setAutoDetect(enabled: Boolean) {
@@ -139,6 +181,13 @@ class RideRepositoryImpl @Inject constructor(
                         ((distanceDeltaKm / secondsDelta.toDouble()) * 3600.0).toFloat()
                     } else {
                         0f
+                    }
+                    if (currentSpeedKmh > 0f) {
+                        speedSamples += 1
+                        speedSum += currentSpeedKmh
+                        if (currentSpeedKmh > maxSpeed) {
+                            maxSpeed = currentSpeedKmh.toDouble()
+                        }
                     }
 
                     // Dynamic MET Calculation based on Speed
@@ -205,5 +254,17 @@ class RideRepositoryImpl @Inject constructor(
             sin(dLon / 2) * sin(dLon / 2)
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
         return radius * c
+    }
+
+    private fun downsamplePath(points: List<GeoPoint>, maxPoints: Int): List<GeoPoint> {
+        if (points.size <= maxPoints) return points
+        val step = (points.size.toDouble() / maxPoints).coerceAtLeast(1.0)
+        val result = ArrayList<GeoPoint>(maxPoints)
+        var idx = 0.0
+        while (idx < points.size) {
+            result.add(points[idx.toInt()])
+            idx += step
+        }
+        return result
     }
 }

@@ -12,8 +12,8 @@ import com.horsegallop.feature.auth.presentation.LoginViewModel
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.horsegallop.core.R
-import com.horsegallop.core.R as CoreR
+import com.horsegallop.R
+import com.horsegallop.R as CoreR
 import com.horsegallop.R as AppR
 
 @Composable

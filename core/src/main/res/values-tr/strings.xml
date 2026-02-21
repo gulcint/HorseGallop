@@ -32,6 +32,12 @@
     <string name="profile">Profil</string>
     <string name="settings">Ayarlar</string>
     <string name="logout">Çıkış yap</string>
+    <string name="nav_home">Ana Sayfa</string>
+    <string name="nav_barns">Ahırlar</string>
+    <string name="nav_ride">Sürüş</string>
+    <string name="nav_schedule">Program</string>
+    <string name="nav_profile">Profil</string>
+    <string name="nav_settings">Ayarlar</string>
 
     <!-- Auth/Login -->
     <string name="login_title_brand">Horse Gallop</string>
@@ -117,6 +123,22 @@
     <string name="onboarding_subtitle_dashboard">Hedefler, ata göre istatistikler ve ilerleme grafikleri.</string>
     <string name="onboarding_title_community">Binici Topluluğu</string>
     <string name="onboarding_subtitle_community">Paylaşın, beğenin, yorum yapın ve liderlik tablosuna katılın.</string>
+    <string name="onboarding_title_ranch">Güvenli Binicilik Deneyimi</string>
+    <string name="onboarding_subtitle_ranch">Onaylı ahırlar, uzman eğitmenler ve net güvenlik kuralları.</string>
+    <string name="onboarding_title_packages">Nasıl Kullanılır?</string>
+    <string name="onboarding_subtitle_packages">Üye ol, ahır seç, dersi planla ve anında rezervasyon yap.</string>
+    <string name="onboarding_title_boarding">Kurallar &amp; Sorumluluklar</string>
+    <string name="onboarding_subtitle_boarding">Kask zorunluluğu, iptal koşulları ve hayvan refahı.</string>
+    <string name="onboarding_title_cafe">Topluluk &amp; Gelişim</string>
+    <string name="onboarding_subtitle_cafe">Yorumlar, puanlar ve biniş gelişim takibi.</string>
+    <string name="onboarding_feature_signup">Hızlı üyelik</string>
+    <string name="onboarding_feature_barn_select">Onaylı ahır seçimi</string>
+    <string name="onboarding_feature_reserve">Anında rezervasyon</string>
+    <string name="onboarding_feature_safety">Öncelik güvenlik</string>
+    <string name="onboarding_feature_kvkk">KVKK veri kontrolleri</string>
+    <string name="onboarding_feature_reviews">Topluluk yorumları</string>
+    <string name="onboarding_feature_support">Destek ve yönlendirme</string>
+    <string name="onboarding_feature_progress">Gelişim takibi</string>
     <string name="onboarding_feature_gps">Rota takibi (GPS)</string>
     <string name="onboarding_feature_calorie">Kalori ve tempo</string>
     <string name="onboarding_feature_trends">Günlük/Haftalık eğilimler</string>
@@ -237,4 +259,19 @@
     <string name="stop_ride">Binişi Bitir</string>
     <string name="hero_track_title">Bir sonraki binişini takip et</string>
     <string name="hero_track_subtitle">Rotanı, hızını ve süreni anlık gör.</string>
+    
+    <!-- Settings -->
+    <string name="setting_theme_title">Tema</string>
+    <string name="setting_language_title">Dil</string>
+    <string name="setting_language_system">Sistem dili</string>
+    <string name="setting_language_english">İngilizce</string>
+    <string name="setting_language_turkish">Türkçe</string>
+    <string name="setting_notifications_title">Bildirimler</string>
+    <string name="setting_notifications_subtitle">Uygulama bildirimlerini etkinleştir</string>
+    <string name="setting_privacy_title">Gizlilik &amp; Veri</string>
+    <string name="privacy_export_title">Verilerini dışa aktar</string>
+    <string name="privacy_export_subtitle">KVKK için hesabınızın JSON kopyasını alın.</string>
+    <string name="privacy_export_action">Dışa aktar</string>
+    <string name="privacy_export_ready">Veri dışa aktarma hazır, panoya kopyalandı.</string>
+    <string name="privacy_delete_subtitle">Hesabınızı ve tüm verilerinizi kalıcı olarak silin.</string>
 </resources>

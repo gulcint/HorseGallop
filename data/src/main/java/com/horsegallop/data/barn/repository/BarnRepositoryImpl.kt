@@ -1,17 +1,21 @@
 package com.horsegallop.data.barn.repository
 
+import com.horsegallop.data.remote.ApiService
 import com.horsegallop.domain.barn.model.BarnUi
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.barn.repository.BarnRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class BarnRepositoryImpl @Inject constructor() : BarnRepository {
+class BarnRepositoryImpl @Inject constructor(
+    private val apiService: ApiService
+) : BarnRepository {
 
     private val _barns = MutableStateFlow(
         listOf(
@@ -51,10 +55,56 @@ class BarnRepositoryImpl @Inject constructor() : BarnRepository {
         )
     )
 
-    override fun getBarns(): Flow<List<BarnWithLocation>> = _barns
+    override fun getBarns(): Flow<List<BarnWithLocation>> = flow {
+        try {
+            val remote = apiService.getBarnsV2().map { dto ->
+                BarnWithLocation(
+                    barn = BarnUi(
+                        id = dto.id,
+                        name = dto.name,
+                        description = dto.description ?: "",
+                        location = dto.location ?: "",
+                        tags = dto.tags ?: emptyList(),
+                        lat = dto.lat ?: 0.0,
+                        lng = dto.lng ?: 0.0,
+                        rating = dto.rating ?: 0.0,
+                        reviewCount = dto.reviewCount ?: 0
+                    ),
+                    lat = dto.lat ?: 0.0,
+                    lng = dto.lng ?: 0.0,
+                    amenities = (dto.amenities ?: emptyList()).toSet()
+                )
+            }
+            emit(remote)
+        } catch (_: Exception) {
+            emit(_barns.value)
+        }
+    }
 
-    override fun getBarnById(barnId: String): Flow<BarnWithLocation?> = _barns.map { list ->
-        list.find { it.barn.id == barnId }
+    override fun getBarnById(barnId: String): Flow<BarnWithLocation?> = flow {
+        try {
+            val dto = apiService.getBarnDetailV2(barnId)
+            emit(
+                BarnWithLocation(
+                    barn = BarnUi(
+                        id = dto.id,
+                        name = dto.name,
+                        description = dto.description ?: "",
+                        location = dto.location ?: "",
+                        tags = dto.tags ?: emptyList(),
+                        lat = dto.lat ?: 0.0,
+                        lng = dto.lng ?: 0.0,
+                        rating = dto.rating ?: 0.0,
+                        reviewCount = dto.reviewCount ?: 0
+                    ),
+                    lat = dto.lat ?: 0.0,
+                    lng = dto.lng ?: 0.0,
+                    amenities = (dto.amenities ?: emptyList()).toSet()
+                )
+            )
+        } catch (_: Exception) {
+            emit(_barns.value.find { it.barn.id == barnId })
+        }
     }
 
     override suspend fun toggleFavorite(barnId: String) {

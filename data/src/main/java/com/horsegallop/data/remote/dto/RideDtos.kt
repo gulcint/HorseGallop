@@ -30,3 +30,26 @@ data class CreateRideRequestDto(
     val calories: Double,
     val pathPoints: List<GeoPointDto>
 )
+
+data class StartRideRequestDto(
+    val rideType: String? = null,
+    val startLocation: GeoPointDto? = null
+)
+
+data class StartRideResponseDto(
+    val ok: Boolean,
+    val id: String
+)
+
+data class StopRideRequestDto(
+    val distanceKm: Double?,
+    val durationMin: Double?,
+    val calories: Double?,
+    val avgSpeedKmh: Double?,
+    val maxSpeedKmh: Double?,
+    val pathPoints: List<GeoPointDto>?
+)
+
+data class StopRideResponseDto(
+    val ok: Boolean
+)

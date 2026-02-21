@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
     kotlin("kapt")
-    alias(libs.plugins.skydoves.stability.analyzer)
 }
 
 android {

@@ -1,8 +1,10 @@
 package com.horsegallop.feature.auth.presentation
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -12,11 +14,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.core.components.HorseGallopButton
 import com.horsegallop.core.components.HorseGallopTextField
-import com.horsegallop.core.R as CoreR
+import com.horsegallop.R as CoreR
 import com.horsegallop.R as AppR
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,58 +81,115 @@ fun EnrollmentScreen(
                         .padding(horizontal = dimensionResource(CoreR.dimen.padding_screen_horizontal)),
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(CoreR.dimen.spacing_lg))
                 ) {
-                    Text(
-                        text = stringResource(CoreR.string.signup_prompt),
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+                    AuthHeader()
 
-                    NameFieldsSection(
-                        firstName = uiState.firstName,
-                        lastName = uiState.lastName,
-                        onFirstNameChange = viewModel::updateFirstName,
-                        onLastNameChange = viewModel::updateLastName
-                    )
-
-                    HorseGallopTextField(
-                        value = uiState.email,
-                        onValueChange = viewModel::updateEmail,
-                        label = stringResource(AppR.string.label_email),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    PasswordFieldSection(
-                        password = uiState.password,
-                        onPasswordChange = viewModel::updatePassword
-                    )
-
-                    if (uiState.error != null) {
-                        Text(
-                            text = stringResource(uiState.error!!),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
+                    Surface(
+                        shape = RoundedCornerShape(24.dp),
+                        tonalElevation = 2.dp,
+                        shadowElevation = 6.dp,
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.outlineVariant
                         )
-                    }
-                    
-                    if (uiState.errorMessage != null) {
-                         Text(
-                            text = uiState.errorMessage!!,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
-                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            NameFieldsSection(
+                                firstName = uiState.firstName,
+                                lastName = uiState.lastName,
+                                onFirstNameChange = viewModel::updateFirstName,
+                                onLastNameChange = viewModel::updateLastName
+                            )
+
+                            HorseGallopTextField(
+                                value = uiState.email,
+                                onValueChange = viewModel::updateEmail,
+                                label = stringResource(AppR.string.label_email),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            PasswordFieldSection(
+                                password = uiState.password,
+                                onPasswordChange = viewModel::updatePassword
+                            )
+
+                            if (uiState.error != null) {
+                                Text(
+                                    text = stringResource(uiState.error!!),
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+
+                            if (uiState.errorMessage != null) {
+                                Text(
+                                    text = uiState.errorMessage!!,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+
+                            HorseGallopButton(
+                                text = stringResource(AppR.string.enrollment_title),
+                                onClick = viewModel::signUp,
+                                enabled = uiState.isFormValid && !uiState.loading,
+                                isLoading = uiState.loading,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
 
-                    HorseGallopButton(
-                        text = stringResource(AppR.string.enrollment_title),
-                        onClick = viewModel::signUp,
-                        enabled = uiState.isFormValid && !uiState.loading,
-                        isLoading = uiState.loading,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    
                     Spacer(modifier = Modifier.height(dimensionResource(CoreR.dimen.spacing_xl)))
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AuthHeader() {
+    val primary = MaterialTheme.colorScheme.primary
+    val secondary = MaterialTheme.colorScheme.secondary
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(primary.copy(alpha = 0.95f), secondary.copy(alpha = 0.85f))
+                )
+            )
+            .padding(20.dp)
+    ) {
+        Column(horizontalAlignment = Alignment.Start) {
+            Text(
+                text = stringResource(CoreR.string.login_title_brand),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = stringResource(CoreR.string.signup_prompt),
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.White.copy(alpha = 0.9f)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Surface(
+                color = Color.White.copy(alpha = 0.15f),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = stringResource(CoreR.string.terms_consent),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                )
             }
         }
     }

@@ -26,7 +26,7 @@ import com.google.maps.android.compose.*
 import java.text.SimpleDateFormat
 import java.util.*
 
-import com.horsegallop.core.R
+import com.horsegallop.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

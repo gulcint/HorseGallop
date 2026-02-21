@@ -5,6 +5,9 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Path
+import retrofit2.http.Query
+import okhttp3.ResponseBody
 
 interface ApiService {
   @POST("auth/google")
@@ -33,6 +36,13 @@ interface ApiService {
   @GET("users/me/stats")
   suspend fun getUserStats(): UserStatsDto
 
+  // KVKK
+  @GET("users/export")
+  suspend fun exportUserData(): ResponseBody
+
+  @POST("users/delete")
+  suspend fun deleteUserData(): ResponseBody
+
   // Barns
   @GET("barns")
   suspend fun getBarns(
@@ -54,10 +64,33 @@ interface ApiService {
   @POST("rides")
   suspend fun createRide(@Body body: CreateRideRequestDto): RideSessionDto
 
+  // Ride tracking (backend v2)
+  @POST("rides/start")
+  suspend fun startRide(@Body body: StartRideRequestDto): StartRideResponseDto
+
+  @POST("rides/{id}/stop")
+  suspend fun stopRide(
+      @Path("id") id: String,
+      @Body body: StopRideRequestDto
+  ): StopRideResponseDto
+
   // Schedule
   @GET("lessons")
   suspend fun getLessons(
       @retrofit2.http.Query("from") fromDate: String?, // ISO 8601
       @retrofit2.http.Query("to") toDate: String? // ISO 8601
   ): List<LessonDto>
+
+  // Backend v2 endpoints
+  @GET("barns")
+  suspend fun getBarnsV2(): List<BackendBarnDto>
+
+  @GET("barns/{id}")
+  suspend fun getBarnDetailV2(@Path("id") id: String): BackendBarnDto
+
+  @GET("lessons")
+  suspend fun getLessonsV2(): List<BackendLessonDto>
+
+  @GET("rides/me")
+  suspend fun getMyRidesV2(): List<BackendRideDto>
 }

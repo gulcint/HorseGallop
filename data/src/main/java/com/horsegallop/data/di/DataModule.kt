@@ -6,6 +6,7 @@ import com.horsegallop.data.barn.repository.BarnRepositoryImpl
 import com.horsegallop.data.ride.repository.RideRepositoryImpl
 import com.horsegallop.data.ride.repository.RideHistoryRepositoryImpl
 import com.horsegallop.data.schedule.repository.ScheduleRepositoryImpl
+import com.horsegallop.data.privacy.repository.PrivacyRepositoryImpl
 import com.horsegallop.domain.barn.repository.BarnRepository
 import com.horsegallop.domain.ride.repository.RideRepository
 import com.horsegallop.domain.ride.repository.RideHistoryRepository
@@ -14,6 +15,7 @@ import com.horsegallop.data.home.repository.HomeRepositoryImpl
 import com.horsegallop.domain.auth.repository.ProfileRepository
 import com.horsegallop.domain.auth.AuthRepository
 import com.horsegallop.domain.home.repository.HomeRepository
+import com.horsegallop.domain.privacy.repository.PrivacyRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -65,4 +67,10 @@ abstract class DataModule {
     abstract fun bindScheduleRepository(
         scheduleRepositoryImpl: ScheduleRepositoryImpl
     ): ScheduleRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPrivacyRepository(
+        privacyRepositoryImpl: PrivacyRepositoryImpl
+    ): PrivacyRepository
 }
