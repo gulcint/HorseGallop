@@ -6,10 +6,16 @@ on:
   pull_request:
     branches: ["main"]
     types: [opened, reopened, synchronize, ready_for_review]
+  workflow_dispatch:
 
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    env:
+      GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      FTL_RESULTS_BUCKET: ${{ secrets.FTL_RESULTS_BUCKET }}
 
     steps:
       - name: Checkout
@@ -40,10 +46,11 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Setup google-services.json
-        if: ${{ secrets.GOOGLE_SERVICES_JSON != '' }}
-        env:
-          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
+          if [ -z "${GOOGLE_SERVICES_JSON:-}" ]; then
+            echo "::error::GOOGLE_SERVICES_JSON secret is required for Android build."
+            exit 1
+          fi
           mkdir -p app
           printf "%s" "$GOOGLE_SERVICES_JSON" > app/google-services.json
           test -s app/google-services.json && echo "google-services.json written" || (echo "google-services.json missing" && exit 1)
@@ -61,23 +68,26 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
 
       - name: Authenticate to Google Cloud
-        if: ${{ secrets.GCP_SA_KEY != '' }}
+        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' }}
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          credentials_json: ${{ env.GCP_SA_KEY }}
 
       - name: Set up gcloud CLI
-        if: ${{ secrets.GCP_SA_KEY != '' }}
+        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' }}
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Verify Firebase Test Lab prerequisites
+        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' }}
+        run: |
+          set -euo pipefail
+          gcloud services enable testing.googleapis.com toolresults.googleapis.com firebase.googleapis.com --project "${GCP_PROJECT_ID}"
 
       - name: Run Firebase Test Lab (Robo Test)
-        if: ${{ secrets.GCP_SA_KEY != '' }}
+        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' }}
         id: ftl
-        env:
-          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          FTL_RESULTS_BUCKET: ${{ secrets.FTL_RESULTS_BUCKET }}
         run: |
           set -euo pipefail
           PROJECT_NUMBER="$(gcloud projects describe "${GCP_PROJECT_ID}" --format='value(projectNumber)')"
@@ -97,7 +107,7 @@ jobs:
             --results-dir "${RESULTS_DIR}"
 
       - name: Download Firebase Test Lab Results
-        if: ${{ always() && secrets.GCP_SA_KEY != '' }}
+        if: ${{ always() && steps.ftl.outputs.results_bucket != '' && steps.ftl.outputs.results_dir != '' }}
         run: |
           set -euo pipefail
           mkdir -p firebase_test_results
@@ -106,7 +116,7 @@ jobs:
             firebase_test_results || true
 
       - name: Upload Test Results
-        if: ${{ always() && secrets.GCP_SA_KEY != '' }}
+        if: ${{ always() && steps.ftl.outputs.results_bucket != '' && steps.ftl.outputs.results_dir != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: firebase-test-results
@@ -114,11 +124,11 @@ jobs:
           if-no-files-found: warn
 
       - name: Publish Firebase Test Lab Links
-        if: ${{ always() && secrets.GCP_SA_KEY != '' }}
+        if: ${{ always() && steps.ftl.outputs.results_bucket != '' && steps.ftl.outputs.results_dir != '' }}
         run: |
           {
             echo "## Firebase Test Lab"
             echo ""
-            echo "- Console: https://console.firebase.google.com/project/${{ secrets.GCP_PROJECT_ID }}/testlab/histories"
+            echo "- Console: https://console.firebase.google.com/project/${{ env.GCP_PROJECT_ID }}/testlab/histories"
             echo "- GCS Path: gs://${{ steps.ftl.outputs.results_bucket }}/${{ steps.ftl.outputs.results_dir }}"
           } >> "${GITHUB_STEP_SUMMARY}"
