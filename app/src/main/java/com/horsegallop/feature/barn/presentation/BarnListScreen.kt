@@ -101,7 +101,7 @@ fun BarnListScreen(
       com.horsegallop.core.components.HorseGallopSearchBar(
         query = uiState.query,
         onQueryChange = viewModel::updateQuery,
-        placeholder = stringResource(com.horsegallop.core.R.string.barn_search_placeholder),
+        placeholder = stringResource(com.horsegallop.R.string.barn_search_placeholder),
         modifier = Modifier
           .fillMaxWidth()
           .padding(top = 16.dp, bottom = 12.dp)
@@ -194,21 +194,21 @@ fun BarnListScreen(
               }
             }
             Text(
-              text = stringResource(com.horsegallop.core.R.string.barn_empty_title),
+              text = stringResource(com.horsegallop.R.string.barn_empty_title),
               style = MaterialTheme.typography.titleMedium,
               color = MaterialTheme.colorScheme.primary,
               fontWeight = FontWeight.Bold,
               textAlign = TextAlign.Center
             )
             Text(
-              text = stringResource(com.horsegallop.core.R.string.barn_empty_subtitle),
+              text = stringResource(com.horsegallop.R.string.barn_empty_subtitle),
               style = MaterialTheme.typography.bodyMedium,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
               textAlign = TextAlign.Center
             )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
               OutlinedButton(onClick = viewModel::clearFilters) {
-                Text(text = stringResource(com.horsegallop.core.R.string.barn_clear_filters), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                Text(text = stringResource(com.horsegallop.R.string.barn_clear_filters), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
               }
             }
           }
@@ -358,17 +358,17 @@ fun BarnCard(barn: BarnUi, onClick: () -> Unit, onFavoriteClick: () -> Unit) {
 @Composable
 fun getFilterLabel(key: String): String {
     return when(key) {
-        "cafe" -> stringResource(com.horsegallop.core.R.string.barn_filter_cafe)
-        "indoor_arena" -> stringResource(com.horsegallop.core.R.string.barn_filter_indoor_arena)
-        "outdoor_arena" -> stringResource(com.horsegallop.core.R.string.barn_filter_outdoor_arena)
-        "parking" -> stringResource(com.horsegallop.core.R.string.barn_filter_parking)
-        "lessons" -> stringResource(com.horsegallop.core.R.string.barn_filter_lessons)
-        "boarding" -> stringResource(com.horsegallop.core.R.string.barn_filter_boarding)
-        "vet" -> stringResource(com.horsegallop.core.R.string.barn_filter_vet)
-        "farrier" -> stringResource(com.horsegallop.core.R.string.barn_filter_farrier)
-        "lighting" -> stringResource(com.horsegallop.core.R.string.barn_filter_lighting)
-        "trail" -> stringResource(com.horsegallop.core.R.string.barn_filter_trail)
-        "open_now" -> stringResource(com.horsegallop.core.R.string.barn_filter_open_now)
+        "cafe" -> stringResource(com.horsegallop.R.string.barn_filter_cafe)
+        "indoor_arena" -> stringResource(com.horsegallop.R.string.barn_filter_indoor_arena)
+        "outdoor_arena" -> stringResource(com.horsegallop.R.string.barn_filter_outdoor_arena)
+        "parking" -> stringResource(com.horsegallop.R.string.barn_filter_parking)
+        "lessons" -> stringResource(com.horsegallop.R.string.barn_filter_lessons)
+        "boarding" -> stringResource(com.horsegallop.R.string.barn_filter_boarding)
+        "vet" -> stringResource(com.horsegallop.R.string.barn_filter_vet)
+        "farrier" -> stringResource(com.horsegallop.R.string.barn_filter_farrier)
+        "lighting" -> stringResource(com.horsegallop.R.string.barn_filter_lighting)
+        "trail" -> stringResource(com.horsegallop.R.string.barn_filter_trail)
+        "open_now" -> stringResource(com.horsegallop.R.string.barn_filter_open_now)
         else -> key
     }
 }

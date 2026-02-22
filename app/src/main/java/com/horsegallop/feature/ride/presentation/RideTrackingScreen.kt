@@ -135,6 +135,8 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 
 data class RideUiState(
   val speedKmh: Float,
+  val avgSpeedKmh: Float,
+  val maxSpeedKmh: Float,
   val distanceKm: Float,
   val durationSec: Int,
   val calories: Int,
@@ -163,6 +165,8 @@ class RideTrackingViewModel @Inject constructor(
   private val _uiState: MutableStateFlow<RideUiState> = MutableStateFlow(
     RideUiState(
       speedKmh = 0f,
+      avgSpeedKmh = 0f,
+      maxSpeedKmh = 0f,
       distanceKm = 0f,
       durationSec = 0,
       calories = 0,
@@ -181,9 +185,17 @@ class RideTrackingViewModel @Inject constructor(
           observeIsRidingUseCase(),
           observeRideMetricsUseCase()
       ) { isRiding, metrics ->
+          val avgSpeed = if (metrics.durationSec > 0) {
+              val hours = metrics.durationSec / 3600.0
+              if (hours > 0.0) (metrics.distanceKm / hours).toFloat() else 0f
+          } else 0f
+          val prevMax = _uiState.value.maxSpeedKmh
+          val newMax = if (isRiding) maxOf(prevMax, metrics.speedKmh) else prevMax
           _uiState.value.copy(
               isRiding = isRiding,
               speedKmh = metrics.speedKmh,
+              avgSpeedKmh = avgSpeed,
+              maxSpeedKmh = newMax,
               distanceKm = metrics.distanceKm,
               durationSec = metrics.durationSec,
               calories = metrics.calories,
@@ -291,6 +303,7 @@ class RideTrackingViewModel @Inject constructor(
         if (_uiState.value.isRiding) {
             stopRideUseCase(_uiState.value.selectedBarn?.barn?.name)
         } else {
+            _uiState.update { it.copy(maxSpeedKmh = 0f, avgSpeedKmh = 0f) }
             startRideUseCase(userWeightKg)
         }
     }
@@ -376,7 +389,7 @@ fun RideTrackingContent(
                 icon = { Icon(Icons.Default.PlayArrow, contentDescription = null) },
                 text = { 
                     Text(
-                        text = stringResource(id = com.horsegallop.core.R.string.start_ride),
+                        text = stringResource(id = com.horsegallop.R.string.start_ride),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     ) 
@@ -390,8 +403,8 @@ fun RideTrackingContent(
       modifier = Modifier
         .fillMaxSize()
         .padding(innerPadding)
-        .padding(horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal)),
-      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
+        .padding(horizontal = dimensionResource(id = com.horsegallop.R.dimen.padding_screen_horizontal)),
+      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm))
     ) {
       WeatherTopRow(modifier = Modifier.padding(top = 24.dp))
       if (!state.isRiding) {
@@ -404,7 +417,7 @@ fun RideTrackingContent(
           selectedRideType = selectedRideType,
           onRideTypeSelected = { selectedRideType = it }
         )
-        Spacer(Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md)))
+        Spacer(Modifier.height(dimensionResource(id = com.horsegallop.R.dimen.section_spacing_md)))
         StatsOverviewCard(
           dailyDistance = state.dailyTrend.lastOrNull() ?: 0f,
           weeklyDistance = state.weeklyTrend.lastOrNull() ?: 0f,
@@ -417,12 +430,22 @@ fun RideTrackingContent(
           path = state.pathPoints,
           elapsedSec = state.durationSec
         )
-        Spacer(Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
-        StatsRow(speedKmh = state.speedKmh, distanceKm = state.distanceKm, durationSec = state.durationSec)
-        Spacer(Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
-        CaloriesCard(calories = state.calories)
-        Spacer(Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
-        ControlsRow(isRiding = state.isRiding, onStop = onToggleRide, autoDetect = state.autoDetect, onToggleAuto = onSetAutoDetect)
+        Spacer(Modifier.height(dimensionResource(id = com.horsegallop.R.dimen.spacing_md)))
+        LiveStatsPanel(
+            speedKmh = state.speedKmh,
+            avgSpeedKmh = state.avgSpeedKmh,
+            maxSpeedKmh = state.maxSpeedKmh,
+            distanceKm = state.distanceKm,
+            durationSec = state.durationSec,
+            calories = state.calories
+        )
+        Spacer(Modifier.height(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm)))
+        ControlsRow(
+            isRiding = state.isRiding,
+            onStop = onToggleRide,
+            autoDetect = state.autoDetect,
+            onToggleAuto = onSetAutoDetect
+        )
       }
     }
   }
@@ -442,21 +465,21 @@ private fun RideTypeCard(
 ) {
   Card(
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xxl))
+    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xxl))
   ) {
     Column(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
-      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+        .padding(dimensionResource(id = com.horsegallop.R.dimen.padding_card_md)),
+      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
     ) {
       Text(
-        text = stringResource(id = com.horsegallop.core.R.string.ride_type_title),
+        text = stringResource(id = com.horsegallop.R.string.ride_type_title),
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.onSurface
       )
       Text(
-        text = stringResource(id = com.horsegallop.core.R.string.ride_type_hint),
+        text = stringResource(id = com.horsegallop.R.string.ride_type_hint),
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant
       )
@@ -466,7 +489,7 @@ private fun RideTypeCard(
       )
       Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
+        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm))
       ) {
         types.take(2).forEach { type ->
           RideTypeChip(
@@ -479,7 +502,7 @@ private fun RideTypeCard(
       }
       Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
+        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm))
       ) {
         types.drop(2).forEach { type ->
           RideTypeChip(
@@ -502,38 +525,38 @@ private fun StatsOverviewCard(
 ) {
   Card(
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xxl)),
-    elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm))
+    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xxl)),
+    elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(id = com.horsegallop.R.dimen.elevation_sm))
   ) {
     Column(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
-      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)),
+        .padding(dimensionResource(id = com.horsegallop.R.dimen.padding_card_md)),
+      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm)),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
       Text(
-        text = stringResource(id = com.horsegallop.core.R.string.stats_title),
+        text = stringResource(id = com.horsegallop.R.string.stats_title),
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.onSurface,
         textAlign = TextAlign.Center
       )
       Text(
-        text = stringResource(id = com.horsegallop.core.R.string.stats_hint),
+        text = stringResource(id = com.horsegallop.R.string.stats_hint),
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         textAlign = TextAlign.Center
       )
       Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)),
+        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm)),
         verticalAlignment = Alignment.CenterVertically
       ) {
         StatPill(
           modifier = Modifier.weight(1f),
           icon = { Icon(Icons.Filled.Speed, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
           value = String.format("%.1f", dailyDistance),
-          label = stringResource(id = com.horsegallop.core.R.string.stats_today),
+          label = stringResource(id = com.horsegallop.R.string.stats_today),
           progress = 0.5f,
           accent = MaterialTheme.colorScheme.primary
         )
@@ -541,7 +564,7 @@ private fun StatsOverviewCard(
           modifier = Modifier.weight(1f),
           icon = { Icon(Icons.Filled.Explore, contentDescription = null, tint = MaterialTheme.colorScheme.secondary) },
           value = String.format("%.1f", weeklyDistance),
-          label = stringResource(id = com.horsegallop.core.R.string.stats_week),
+          label = stringResource(id = com.horsegallop.R.string.stats_week),
           progress = 0.5f,
           accent = MaterialTheme.colorScheme.secondary
         )
@@ -549,7 +572,7 @@ private fun StatsOverviewCard(
           modifier = Modifier.weight(1f),
           icon = { Icon(Icons.Filled.ShowChart, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary) },
           value = String.format("%.1f", totalDistance),
-          label = stringResource(id = com.horsegallop.core.R.string.stats_total),
+          label = stringResource(id = com.horsegallop.R.string.stats_total),
           progress = 0.5f,
           accent = MaterialTheme.colorScheme.tertiary
         )
@@ -570,20 +593,20 @@ private fun StatPill(
   Card(
     modifier = modifier,
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xxl)),
-    elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(id = com.horsegallop.core.R.dimen.elevation_sm)),
-    border = BorderStroke(dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin), accent.copy(alpha = 0.35f))
+    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xxl)),
+    elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(id = com.horsegallop.R.dimen.elevation_sm)),
+    border = BorderStroke(dimensionResource(id = com.horsegallop.R.dimen.width_divider_thin), accent.copy(alpha = 0.35f))
   ) {
     Column(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_sm)),
-      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_xs)),
+        .padding(dimensionResource(id = com.horsegallop.R.dimen.padding_card_sm)),
+      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_xs)),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
       Box(
         modifier = Modifier
-          .size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_lg))
+          .size(dimensionResource(id = com.horsegallop.R.dimen.icon_lg))
           .clip(CircleShape)
           .background(accent.copy(alpha = 0.12f)),
         contentAlignment = Alignment.Center
@@ -633,13 +656,13 @@ private fun RideTypeChip(
   OutlinedButton(
     onClick = onClick,
     modifier = modifier
-      .heightIn(min = dimensionResource(id = com.horsegallop.core.R.dimen.height_button_lg)),
-    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
+      .heightIn(min = dimensionResource(id = com.horsegallop.R.dimen.height_button_lg)),
+    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg)),
     colors = ButtonDefaults.outlinedButtonColors(
       containerColor = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface,
       contentColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
     ),
-    border = BorderStroke(dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin), MaterialTheme.colorScheme.primary) // themed border
+    border = BorderStroke(dimensionResource(id = com.horsegallop.R.dimen.width_divider_thin), MaterialTheme.colorScheme.primary) // themed border
   ) {
     Row(
       modifier = Modifier.fillMaxWidth(),
@@ -647,7 +670,7 @@ private fun RideTypeChip(
       verticalAlignment = Alignment.CenterVertically
     ) {
       Row(
-        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_xs)),
+        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_xs)),
         verticalAlignment = Alignment.CenterVertically
       ) {
         Text(type.emoji, maxLines = 1)
@@ -669,7 +692,7 @@ private fun MiniStat(title: String, value: String) {
       style = MaterialTheme.typography.bodySmall,
       color = MaterialTheme.colorScheme.onSurfaceVariant
     )
-    Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_xs)))
+    Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.R.dimen.spacing_xs)))
     Text(
       text = value,
       style = MaterialTheme.typography.titleMedium,
@@ -687,20 +710,20 @@ private fun WeatherTopRow(modifier: Modifier = Modifier) {
     verticalArrangement = Arrangement.spacedBy(0.dp)
   ) {
     Text(
-      text = stringResource(id = com.horsegallop.core.R.string.ride_headline),
+      text = stringResource(id = com.horsegallop.R.string.ride_headline),
       style = MaterialTheme.typography.headlineSmall,
       color = MaterialTheme.colorScheme.primary,
       fontWeight = FontWeight.Bold,
       textAlign = TextAlign.Center
     )
-    Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)))
+    Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.R.dimen.spacing_md)))
     Row(
       verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
+      horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm))
     ) {
       Box(
         modifier = Modifier
-          .size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_xl))
+          .size(dimensionResource(id = com.horsegallop.R.dimen.icon_xl))
           .clip(CircleShape)
           .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
         contentAlignment = Alignment.Center
@@ -708,7 +731,7 @@ private fun WeatherTopRow(modifier: Modifier = Modifier) {
         Text("☀️")
       }
       Text(
-        text = stringResource(id = com.horsegallop.core.R.string.ride_conditions_detail),
+        text = stringResource(id = com.horsegallop.R.string.ride_conditions_detail),
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant
       )
@@ -719,10 +742,10 @@ private fun WeatherTopRow(modifier: Modifier = Modifier) {
 @Composable
 private fun localizedRideTypeName(type: RideType): String {
   return when (type) {
-    RideType.DRESSAGE -> stringResource(id = com.horsegallop.core.R.string.ride_type_dressage)
-    RideType.SHOW_JUMPING -> stringResource(id = com.horsegallop.core.R.string.ride_type_show_jumping)
-    RideType.ENDURANCE -> stringResource(id = com.horsegallop.core.R.string.ride_type_endurance)
-    RideType.TRAIL_RIDING -> stringResource(id = com.horsegallop.core.R.string.ride_type_trail_riding)
+    RideType.DRESSAGE -> stringResource(id = com.horsegallop.R.string.ride_type_dressage)
+    RideType.SHOW_JUMPING -> stringResource(id = com.horsegallop.R.string.ride_type_show_jumping)
+    RideType.ENDURANCE -> stringResource(id = com.horsegallop.R.string.ride_type_endurance)
+    RideType.TRAIL_RIDING -> stringResource(id = com.horsegallop.R.string.ride_type_trail_riding)
   }
 }
 
@@ -732,29 +755,29 @@ private fun localizedRideTypeName(type: RideType): String {
 private fun StartRideHero(onStart: () -> Unit) {
   Card(
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer), 
-    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xxl))
+    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xxl))
   ) {
     Column(
-      modifier = Modifier.fillMaxWidth().padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_lg)),
-      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)),
+      modifier = Modifier.fillMaxWidth().padding(dimensionResource(id = com.horsegallop.R.dimen.padding_card_lg)),
+      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md)),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
       Text("Track your next ride", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
       Text("See your route, speed and time in real-time.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f), textAlign = TextAlign.Center)
       Card(
-        modifier = Modifier.clip(RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xl))).clickable { onStart() }, 
+        modifier = Modifier.clip(RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xl))).clickable { onStart() }, 
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
       ) {
         Row(
           modifier = Modifier.padding(
-            horizontal = dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_lg), 
-            vertical = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)
+            horizontal = dimensionResource(id = com.horsegallop.R.dimen.padding_card_lg), 
+            vertical = dimensionResource(id = com.horsegallop.R.dimen.spacing_md)
           ), 
           verticalAlignment = Alignment.CenterVertically, 
-          horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm))
+          horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm))
         ) {
           Icon(Icons.Default.PlayArrow, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
-          Text(stringResource(id = com.horsegallop.core.R.string.start_ride), color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
+          Text(stringResource(id = com.horsegallop.R.string.start_ride), color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
         }
       }
     }
@@ -783,17 +806,17 @@ private fun RideMapWithTimer(path: List<GeoPoint>, elapsedSec: Int) {
 
   Card(
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), 
-    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xxl))
+    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xxl))
   ) {
     Column(
-      modifier = Modifier.fillMaxWidth().padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_sm)), 
-      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+      modifier = Modifier.fillMaxWidth().padding(dimensionResource(id = com.horsegallop.R.dimen.padding_card_sm)), 
+      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
     ) {
       Box(
         modifier = Modifier
           .fillMaxWidth()
           .aspectRatio(1.4f)
-          .clip(RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)))
+          .clip(RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg)))
           .background(MaterialTheme.colorScheme.surfaceVariant)
       ) {
         // Filter out invalid (0,0) points which might come from emulator or bad GPS
@@ -880,36 +903,89 @@ private fun RideMapWithTimer(path: List<GeoPoint>, elapsedSec: Int) {
 private fun StatsRow(speedKmh: Float, distanceKm: Float, durationSec: Int) {
   Row(
     modifier = Modifier.fillMaxWidth(), 
-    horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+    horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
   ) {
-    MetricCard(title = stringResource(id = com.horsegallop.core.R.string.label_speed), value = String.format("%d", speedKmh.toInt()), unit = stringResource(id = com.horsegallop.core.R.string.unit_kmh), accent = MaterialTheme.colorScheme.primary)
-    MetricCard(title = stringResource(id = com.horsegallop.core.R.string.label_distance), value = String.format("%.2f", distanceKm), unit = stringResource(id = com.horsegallop.core.R.string.unit_km), accent = MaterialTheme.colorScheme.secondary)
+    MetricCard(title = stringResource(id = com.horsegallop.R.string.label_speed), value = String.format("%d", speedKmh.toInt()), unit = stringResource(id = com.horsegallop.R.string.unit_kmh), accent = MaterialTheme.colorScheme.primary)
+    MetricCard(title = stringResource(id = com.horsegallop.R.string.label_distance), value = String.format("%.2f", distanceKm), unit = stringResource(id = com.horsegallop.R.string.unit_km), accent = MaterialTheme.colorScheme.secondary)
     val mm: Int = durationSec / 60
     val ss: Int = durationSec % 60
-    MetricCard(title = stringResource(id = com.horsegallop.core.R.string.label_time), value = String.format("%02d:%02d", mm, ss), unit = "", accent = MaterialTheme.colorScheme.tertiary)
+    MetricCard(title = stringResource(id = com.horsegallop.R.string.label_time), value = String.format("%02d:%02d", mm, ss), unit = "", accent = MaterialTheme.colorScheme.tertiary)
   }
+}
+
+@Composable
+private fun LiveStatsPanel(
+    speedKmh: Float,
+    avgSpeedKmh: Float,
+    maxSpeedKmh: Float,
+    distanceKm: Float,
+    durationSec: Int,
+    calories: Int
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xxl)),
+        elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(id = com.horsegallop.R.dimen.elevation_sm))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(dimensionResource(id = com.horsegallop.R.dimen.padding_card_md)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm))
+        ) {
+            Text(
+                text = stringResource(id = com.horsegallop.R.string.live_route),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            StatsRow(speedKmh = speedKmh, distanceKm = distanceKm, durationSec = durationSec)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
+            ) {
+                MetricCard(
+                    title = "AVG",
+                    value = String.format("%.1f", avgSpeedKmh),
+                    unit = stringResource(id = com.horsegallop.R.string.unit_kmh),
+                    accent = MaterialTheme.colorScheme.primary
+                )
+                MetricCard(
+                    title = "MAX",
+                    value = String.format("%.1f", maxSpeedKmh),
+                    unit = stringResource(id = com.horsegallop.R.string.unit_kmh),
+                    accent = MaterialTheme.colorScheme.secondary
+                )
+                MetricCard(
+                    title = stringResource(id = com.horsegallop.R.string.metric_calories),
+                    value = calories.toString(),
+                    unit = stringResource(id = com.horsegallop.R.string.unit_kcal),
+                    accent = MaterialTheme.colorScheme.tertiary
+                )
+            }
+        }
+    }
 }
 
 @Composable
 private fun MetricCard(title: String, value: String, unit: String, accent: Color) {
   Card(
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), 
-    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xl))
+    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xl))
   ) {
     Column(
-      modifier = Modifier.padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_sm)), 
+      modifier = Modifier.padding(dimensionResource(id = com.horsegallop.R.dimen.padding_card_sm)), 
       horizontalAlignment = Alignment.Start, 
-      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_xs))
+      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_xs))
     ) {
       Text(text = title, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
       Row(
         verticalAlignment = Alignment.Bottom, 
-        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm_half))
+        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm_half))
       ) {
         Text(text = value, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         if (unit.isNotEmpty()) Text(text = unit, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
       }
-      Canvas(modifier = Modifier.fillMaxWidth().height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_xs))) { 
+      Canvas(modifier = Modifier.fillMaxWidth().height(dimensionResource(id = com.horsegallop.R.dimen.spacing_xs))) { 
         drawLine(
           color = accent, 
           start = Offset(0f, size.height / 2), 
@@ -926,21 +1002,21 @@ private fun MetricCard(title: String, value: String, unit: String, accent: Color
 private fun CaloriesCard(calories: Int) {
   Card(
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), 
-    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xl))
+    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xl))
   ) {
     Row(
-      modifier = Modifier.fillMaxWidth().padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)), 
+      modifier = Modifier.fillMaxWidth().padding(dimensionResource(id = com.horsegallop.R.dimen.padding_card_md)), 
       horizontalArrangement = Arrangement.SpaceBetween, 
       verticalAlignment = Alignment.CenterVertically
     ) {
-      Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_xs))) {
-        Text(stringResource(id = com.horsegallop.core.R.string.calories_burned), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+      Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_xs))) {
+        Text(stringResource(id = com.horsegallop.R.string.calories_burned), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text("$calories kcal", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
       }
       // decorative marker
       Box(
         modifier = Modifier
-          .size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_xs))
+          .size(dimensionResource(id = com.horsegallop.R.dimen.icon_xs))
           .clip(CircleShape)
           .background(MaterialTheme.colorScheme.secondary)
       )
@@ -952,16 +1028,16 @@ private fun CaloriesCard(calories: Int) {
 private fun TrendsSection(daily: List<Float>, weekly: List<Float>) {
   Card(
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), 
-    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xl))
+    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xl))
   ) {
     Column(
-      modifier = Modifier.fillMaxWidth().padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)), 
-      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+      modifier = Modifier.fillMaxWidth().padding(dimensionResource(id = com.horsegallop.R.dimen.padding_card_md)), 
+      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
     ) {
-      Text(stringResource(id = com.horsegallop.core.R.string.daily_ride_trend), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+      Text(stringResource(id = com.horsegallop.R.string.daily_ride_trend), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
       SimpleBars(values = daily, barColor = MaterialTheme.colorScheme.primary)
       HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-      Text(stringResource(id = com.horsegallop.core.R.string.weekly_progress), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+      Text(stringResource(id = com.horsegallop.R.string.weekly_progress), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
       SimpleBars(values = weekly, barColor = MaterialTheme.colorScheme.secondary)
     }
   }
@@ -1001,17 +1077,17 @@ private fun AchievementCard(text: String) {
   AnimatedVisibility(visible = visible, enter = fadeIn() + scaleIn(), exit = fadeOut() + scaleOut()) {
     Card(
       colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant), 
-      shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xl))
+      shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xl))
     ) {
       Row(
-        modifier = Modifier.fillMaxWidth().padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)), 
-        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)), 
+        modifier = Modifier.fillMaxWidth().padding(dimensionResource(id = com.horsegallop.R.dimen.padding_card_md)), 
+        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md)), 
         verticalAlignment = Alignment.CenterVertically
       ) {
         // decorative icon placeholder
         Box(
           modifier = Modifier
-            .size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_xs))
+            .size(dimensionResource(id = com.horsegallop.R.dimen.icon_xs))
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.tertiary)
         )
@@ -1028,8 +1104,8 @@ private fun ControlsRow(isRiding: Boolean, onStop: () -> Unit, autoDetect: Boole
   if (showStopDialog) {
       AlertDialog(
           onDismissRequest = { showStopDialog = false },
-          title = { Text(stringResource(id = com.horsegallop.core.R.string.stop_ride_confirmation_title)) },
-          text = { Text(stringResource(id = com.horsegallop.core.R.string.stop_ride_confirmation_message)) },
+          title = { Text(stringResource(id = com.horsegallop.R.string.stop_ride_confirmation_title)) },
+          text = { Text(stringResource(id = com.horsegallop.R.string.stop_ride_confirmation_message)) },
           confirmButton = {
               TextButton(
                   onClick = {
@@ -1037,84 +1113,61 @@ private fun ControlsRow(isRiding: Boolean, onStop: () -> Unit, autoDetect: Boole
                       onStop()
                   }
               ) {
-                  Text(stringResource(id = com.horsegallop.core.R.string.action_confirm_stop))
+                  Text(stringResource(id = com.horsegallop.R.string.action_confirm_stop))
               }
           },
           dismissButton = {
               TextButton(onClick = { showStopDialog = false }) {
-                  Text(stringResource(id = com.horsegallop.core.R.string.action_cancel))
+                  Text(stringResource(id = com.horsegallop.R.string.action_cancel))
               }
           }
       )
   }
 
-  Card(
-    modifier = Modifier.fillMaxWidth(),
-    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xxl))
+  Row(
+    modifier = Modifier.fillMaxWidth(), 
+    horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md)), 
+    verticalAlignment = Alignment.CenterVertically
   ) {
-    Row(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
-      horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)),
-      verticalAlignment = Alignment.CenterVertically
+    Card(
+      modifier = Modifier.weight(1f).clickable { 
+          if (isRiding) {
+              showStopDialog = true
+          } else {
+              onStop()
+          }
+      }, 
+      colors = CardDefaults.cardColors(containerColor = if (isRiding) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary), 
+      shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xl))
     ) {
-      Card(
-        modifier = Modifier.weight(1f).clickable { 
-            if (isRiding) {
-                showStopDialog = true
-            } else {
-                onStop()
-            }
-        }, 
-        colors = CardDefaults.cardColors(containerColor = if (isRiding) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary), 
-        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
+      Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = com.horsegallop.R.dimen.spacing_md)), 
+        horizontalArrangement = Arrangement.Center, 
+        verticalAlignment = Alignment.CenterVertically
       ) {
-        Row(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_sm)),
-          horizontalArrangement = Arrangement.Center, 
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Icon(
-            if (isRiding) Icons.Default.Stop else Icons.Default.PlayArrow, 
-            contentDescription = null, 
-            tint = if (isRiding) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary
-          )
-          Spacer(Modifier.width(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
-          Text(
-            if (isRiding) stringResource(id = com.horsegallop.core.R.string.finish_ride) else stringResource(id = com.horsegallop.core.R.string.start_ride),
-            color = if (isRiding) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary,
-            fontWeight = FontWeight.Bold
-          )
-        }
-      }
-      
-      Card(
-        modifier = Modifier.width(120.dp),
-        colors = CardDefaults.cardColors(containerColor = if (autoDetect) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg)),
-        border = androidx.compose.foundation.BorderStroke(
-          dimensionResource(id = com.horsegallop.core.R.dimen.width_divider_thin), 
-          if (autoDetect) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+        if (!isRiding) Icon(Icons.Default.PlayArrow, contentDescription = null, tint = if (isRiding) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary)
+        Spacer(Modifier.size(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm)))
+        Text(
+          if (isRiding) stringResource(id = com.horsegallop.R.string.finish_ride) else stringResource(id = com.horsegallop.R.string.start_ride),
+          color = if (isRiding) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary,
+          fontWeight = FontWeight.Bold
         )
+      }
+    }
+    Card(
+      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), 
+      shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xl))
+    ) {
+      Row(
+        modifier = Modifier.padding(
+          horizontal = dimensionResource(id = com.horsegallop.R.dimen.spacing_md), 
+          vertical = dimensionResource(id = com.horsegallop.R.dimen.spacing_sm)
+        ), 
+        verticalAlignment = Alignment.CenterVertically, 
+        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm))
       ) {
-        Row(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_sm)),
-          horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)),
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Text(stringResource(id = com.horsegallop.core.R.string.auto_ride_detection), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
-          Switch(
-            checked = autoDetect, 
-            onCheckedChange = onToggleAuto, 
-            colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.primary)
-          )
-        }
+        Text(stringResource(id = com.horsegallop.R.string.auto_ride_detection), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
+        Switch(checked = autoDetect, onCheckedChange = onToggleAuto, colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.primary))
       }
     }
   }
@@ -1131,15 +1184,15 @@ private fun BarnSelection(
     
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xxl)),
+        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xxl)),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
+            modifier = Modifier.padding(dimensionResource(id = com.horsegallop.R.dimen.padding_card_md)),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = stringResource(id = com.horsegallop.core.R.string.select_barn),
+                text = stringResource(id = com.horsegallop.R.string.select_barn),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -1149,7 +1202,7 @@ private fun BarnSelection(
                 onExpandedChange = { expanded = !expanded }
             ) {
                 OutlinedTextField(
-                    value = selectedBarn?.barn?.name ?: stringResource(id = com.horsegallop.core.R.string.select_barn_hint),
+                    value = selectedBarn?.barn?.name ?: stringResource(id = com.horsegallop.R.string.select_barn_hint),
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
@@ -1182,6 +1235,8 @@ private fun PreviewRideTracking() {
   RideTrackingContent(
     state = RideUiState(
         speedKmh = 0f,
+        avgSpeedKmh = 0f,
+        maxSpeedKmh = 0f,
         distanceKm = 0f,
         durationSec = 0,
         calories = 0,

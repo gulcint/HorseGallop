@@ -29,7 +29,7 @@ import com.horsegallop.core.components.QuickActionCard
 import com.horsegallop.core.components.StatCard
 import com.horsegallop.core.components.ActivityItem
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.horsegallop.core.R
+import com.horsegallop.R
 import com.horsegallop.core.components.HomeDashboardSkeleton
 import com.horsegallop.core.components.QuickActionsSkeleton
 import com.horsegallop.core.components.RecentActivitySkeleton
@@ -83,12 +83,12 @@ private fun HomeDashboard(
       modifier = Modifier
         .fillMaxSize(),
       contentPadding = PaddingValues(
-        start = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
-        end = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_horizontal),
-        top = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical),
-        bottom = dimensionResource(id = com.horsegallop.core.R.dimen.padding_screen_vertical)
+        start = dimensionResource(id = com.horsegallop.R.dimen.padding_screen_horizontal),
+        end = dimensionResource(id = com.horsegallop.R.dimen.padding_screen_horizontal),
+        top = dimensionResource(id = com.horsegallop.R.dimen.padding_screen_vertical),
+        bottom = dimensionResource(id = com.horsegallop.R.dimen.padding_screen_vertical)
       ),
-      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md))
+      verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.section_spacing_md))
     ) {
       item {
         WelcomeHeader(onProfileClick = onProfileClick)
@@ -108,17 +108,17 @@ private fun HomeDashboard(
         val activities = if (uiState.activities.isEmpty()) listOf(
           ActivityUi(
             id = "mock1",
-            title = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_title),
-            dateLabel = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_subtitle).substringBefore(", "),
-            timeLabel = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_subtitle).substringAfter(", "),
+            title = stringResource(id = com.horsegallop.R.string.activity_morning_ride_title),
+            dateLabel = stringResource(id = com.horsegallop.R.string.activity_morning_ride_subtitle).substringBefore(", "),
+            timeLabel = stringResource(id = com.horsegallop.R.string.activity_morning_ride_subtitle).substringAfter(", "),
             durationMin = 45,
             distanceKm = 8.2
           ),
           ActivityUi(
             id = "mock2",
-            title = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_title),
-            dateLabel = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_subtitle).substringBefore(", "),
-            timeLabel = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_subtitle).substringAfter(", "),
+            title = stringResource(id = com.horsegallop.R.string.activity_evening_ride_title),
+            dateLabel = stringResource(id = com.horsegallop.R.string.activity_evening_ride_subtitle).substringBefore(", "),
+            timeLabel = stringResource(id = com.horsegallop.R.string.activity_evening_ride_subtitle).substringAfter(", "),
             durationMin = 80,
             distanceKm = 12.5
           )
@@ -136,11 +136,11 @@ private fun HomeDashboard(
 @Composable
 private fun WelcomeHeader(onProfileClick: () -> Unit) {
   Card(
-    modifier = Modifier.fillMaxWidth().padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md)),
+    modifier = Modifier.fillMaxWidth().padding(bottom = dimensionResource(id = com.horsegallop.R.dimen.spacing_md)),
     colors = CardDefaults.cardColors(
       containerColor = MaterialTheme.colorScheme.primaryContainer
     ),
-    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_xl))
+    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xl))
   ) {
     Box(
       modifier = Modifier
@@ -153,7 +153,7 @@ private fun WelcomeHeader(onProfileClick: () -> Unit) {
             )
           )
         )
-        .padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_xl))
+        .padding(dimensionResource(id = com.horsegallop.R.dimen.padding_card_xl))
     ) {
       Row(
         modifier = Modifier.fillMaxWidth(),
@@ -167,7 +167,7 @@ private fun WelcomeHeader(onProfileClick: () -> Unit) {
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onPrimaryContainer
           )
-          Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm)))
+          Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm)))
           Text(
             text = "Your horse riding experience starts here",
             style = MaterialTheme.typography.bodyLarge,
@@ -178,7 +178,7 @@ private fun WelcomeHeader(onProfileClick: () -> Unit) {
           Icon(
             Icons.AutoMirrored.Filled.TrendingUp,
             contentDescription = null,
-            modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_xxl)),
+            modifier = Modifier.size(dimensionResource(id = com.horsegallop.R.dimen.icon_xxl)),
             tint = MaterialTheme.colorScheme.primary
           )
         }
@@ -191,15 +191,15 @@ private fun WelcomeHeader(onProfileClick: () -> Unit) {
 private fun QuickActionsSection(onStartRide: () -> Unit, onViewBarns: () -> Unit) {
   Column {
     Text(
-      text = stringResource(id = com.horsegallop.core.R.string.quick_actions_title),
+      text = stringResource(id = com.horsegallop.R.string.quick_actions_title),
       style = MaterialTheme.typography.titleLarge,
       fontWeight = FontWeight.Bold,
-      modifier = Modifier.padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+      modifier = Modifier.padding(bottom = dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
     )
     
     Row(
       modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+      horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
     ) {
       QuickActionCard(
         title = stringResource(id = R.string.qa_start_ride_title),
@@ -226,15 +226,15 @@ private fun QuickActionsSection(onStartRide: () -> Unit, onViewBarns: () -> Unit
 private fun StatsOverviewSection(totalRides: String, totalDistance: String) {
   Column {
     Text(
-      text = stringResource(id = com.horsegallop.core.R.string.stats_yours_title),
+      text = stringResource(id = com.horsegallop.R.string.stats_yours_title),
       style = MaterialTheme.typography.titleLarge,
       fontWeight = FontWeight.Bold,
-      modifier = Modifier.padding(bottom = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+      modifier = Modifier.padding(bottom = dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
     )
     
     Row(
       modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+      horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
     ) {
       StatCard(
         title = stringResource(id = R.string.stats_total_rides),
@@ -264,17 +264,17 @@ private fun RecentActivitySection(
   activities: List<ActivityUi> = listOf(
   ActivityUi(
     id = "mock1",
-    title = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_title),
-    dateLabel = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_subtitle).substringBefore(", "),
-    timeLabel = stringResource(id = com.horsegallop.core.R.string.activity_morning_ride_subtitle).substringAfter(", "),
+    title = stringResource(id = com.horsegallop.R.string.activity_morning_ride_title),
+    dateLabel = stringResource(id = com.horsegallop.R.string.activity_morning_ride_subtitle).substringBefore(", "),
+    timeLabel = stringResource(id = com.horsegallop.R.string.activity_morning_ride_subtitle).substringAfter(", "),
     durationMin = 45,
     distanceKm = 8.2
   ),
   ActivityUi(
     id = "mock2",
-    title = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_title),
-    dateLabel = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_subtitle).substringBefore(", "),
-    timeLabel = stringResource(id = com.horsegallop.core.R.string.activity_evening_ride_subtitle).substringAfter(", "),
+    title = stringResource(id = com.horsegallop.R.string.activity_evening_ride_title),
+    dateLabel = stringResource(id = com.horsegallop.R.string.activity_evening_ride_subtitle).substringBefore(", "),
+    timeLabel = stringResource(id = com.horsegallop.R.string.activity_evening_ride_subtitle).substringAfter(", "),
     durationMin = 80,
     distanceKm = 12.5
   )
@@ -288,7 +288,7 @@ private fun RecentActivitySection(
       verticalAlignment = Alignment.CenterVertically
     ) {
       Text(
-        text = stringResource(id = com.horsegallop.core.R.string.recent_activity_title),
+        text = stringResource(id = com.horsegallop.R.string.recent_activity_title),
         style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.Bold
       )
@@ -343,10 +343,10 @@ private fun RecentActivitySection(
 private fun TipsSection() {
   Column {
     Text(
-      text = stringResource(id = com.horsegallop.core.R.string.riding_tips_title),
+      text = stringResource(id = com.horsegallop.R.string.riding_tips_title),
       style = MaterialTheme.typography.titleLarge,
       fontWeight = FontWeight.Bold,
-      modifier = Modifier.padding(top = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_sm), bottom = dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+      modifier = Modifier.padding(top = dimensionResource(id = com.horsegallop.R.dimen.spacing_sm), bottom = dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
     )
     
     Card(
@@ -354,35 +354,35 @@ private fun TipsSection() {
         .fillMaxWidth()
         .clickable { /* Navigate to tips section */ },
       colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-      shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.core.R.dimen.radius_lg))
+      shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg))
     ) {
       Row(
-        modifier = Modifier.padding(dimensionResource(id = com.horsegallop.core.R.dimen.padding_card_md)),
+        modifier = Modifier.padding(dimensionResource(id = com.horsegallop.R.dimen.padding_card_md)),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.core.R.dimen.spacing_md))
+        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
       ) {
         Icon(
           Icons.Filled.Lightbulb,
           contentDescription = null,
           tint = MaterialTheme.colorScheme.onSecondaryContainer,
-          modifier = Modifier.size(dimensionResource(id = com.horsegallop.core.R.dimen.icon_md))
+          modifier = Modifier.size(dimensionResource(id = com.horsegallop.R.dimen.icon_md))
         )
         Column(modifier = Modifier.weight(1f)) {
           Text(
-            text = stringResource(id = com.horsegallop.core.R.string.tip_safe_riding_title),
+            text = stringResource(id = com.horsegallop.R.string.tip_safe_riding_title),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSecondaryContainer
           )
           Text(
-            text = stringResource(id = com.horsegallop.core.R.string.tip_safe_riding_subtitle),
+            text = stringResource(id = com.horsegallop.R.string.tip_safe_riding_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
           )
         }
       }
     }
-    Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.core.R.dimen.section_spacing_md)))
+    Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.R.dimen.section_spacing_md)))
   }
 }
 

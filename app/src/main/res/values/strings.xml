@@ -1,20 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="enrollment_title">Kaydol</string>
-    <string name="label_first_name">İsim</string>
-    <string name="label_last_name">Soyisim</string>
-    <string name="label_city">Şehir</string>
+    <string name="welcome_title">Hoş Geldiniz</string>
+    <string name="welcome_subtitle">Atlı yolculuğunuz burada başlıyor</string>
     <string name="label_country_code">Ülke Kodu</string>
-    <string name="label_phone">Telefon</string>
-    <string name="label_email">Email</string>
     <string name="label_password">Şifre (10+ karakter)</string>
-    <string name="strength_weak">Zayıf</string>
-    <string name="strength_medium">Orta</string>
-    <string name="strength_strong">Güçlü</string>
-    <string name="password_strength_prefix">Şifre Gücü: %1$s</string>
     <string name="assistchip_location_label">Konumdan al</string>
     <string name="signup_button">Kaydol</string>
-    <string name="media_volume_low_warning">Medya sesi düşük; ses duyulmayabilir</string>
     <string name="error_invalid_form">Geçerli bilgileri girin ve güçlü şifre kullanın</string>
     <string name="error_email_exists">Bu e-posta zaten kayıtlı</string>
     <string name="error_user_create_failed">Kullanıcı oluşturulamadı</string>
@@ -27,26 +18,11 @@
     <string name="error_verification_check_failed">Doğrulama kontrolü başarısız</string>
     <string name="error_email_not_verified">E-posta henüz doğrulanmadı. Lütfen maildeki linke tıklayın.</string>
     <string name="error_phone_invalid">Geçerli telefon girin</string>
-    <string name="password_guidance">Güçlü şifre için: en az 10 karakter, büyük-küçük harf, rakam ve özel karakter.</string>
     <string name="btn_resend_verification">Tekrar Gönder</string>
     <string name="btn_confirm_verified">Doğruladım</string>
     <string name="btn_apply_code">Kodu Doğrula</string>
-    <string name="btn_close">Kapat</string>
-    <string name="btn_continue">Devam Et</string>
-    <string name="verification_sent_info">E-posta doğrulama gönderildi. Maildeki doğrulama linkine tıklayın.</string>
-    <string name="verification_result_success">Doğrulama tamamlandı</string>
-    <string name="verification_result_error">Kod geçersiz veya süresi dolmuş</string>
     <string name="label_verification_code">Doğrulama Kodu</string>
     <string name="error_name_required">İsim ve soyisim gerekli</string>
     <string name="error_email_invalid">Geçerli e-posta girin</string>
     <string name="error_password_length">Şifre en az 10 karakter olmalı</string>
-    
-    <!-- Missing Enrollment Strings -->
-    <string name="verify_email_title">Verify your email</string>
-    <string name="verification_sent_to_email">We sent a verification link to %1$s</string>
-    <string name="open_mail_app">Open Mail App</string>
-    <string name="password_needs_upper">Uppercase letter</string>
-    <string name="password_needs_lower">Lowercase letter</string>
-    <string name="password_needs_digit">Number</string>
-    <string name="password_needs_special">Special character</string>
 </resources>

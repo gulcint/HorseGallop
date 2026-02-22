@@ -20,7 +20,7 @@ fun NoInternetScreen(
     onRetry: () -> Unit
 ) {
     val composition by rememberLottieComposition(
-        LottieCompositionSpec.RawRes(com.horsegallop.core.R.raw.horse)
+        LottieCompositionSpec.RawRes(com.horsegallop.R.raw.horse)
     )
     val progress by animateLottieCompositionAsState(
         composition = composition,

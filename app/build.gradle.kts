@@ -7,7 +7,6 @@ plugins {
     kotlin("kapt")
     alias(libs.plugins.hilt.android)
     id("com.google.gms.google-services")
-    alias(libs.plugins.skydoves.stability.analyzer)
 }
 
 android {
@@ -40,9 +39,13 @@ android {
 	}
 	packaging.resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
 	buildTypes {
-		getByName("debug") { isMinifyEnabled = false }
+		getByName("debug") {
+            isMinifyEnabled = false
+            buildConfigField("String", "BASE_URL", "\"https://api-5cmhzb3wtq-ew.a.run.app/\"")
+        }
 		getByName("release") {
 			isMinifyEnabled = true
+            buildConfigField("String", "BASE_URL", "\"https://api-5cmhzb3wtq-ew.a.run.app/\"")
 			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
 		}
 	}
@@ -69,7 +72,8 @@ dependencies {
 	implementation(libs.compose.material3)
 	implementation(libs.compose.tooling)
 	implementation(libs.compose.navigation)
-    implementation(libs.compose.icons.extended)
+	implementation(libs.compose.icons.extended)
+    implementation(libs.androidx.core.ktx)
 	implementation("androidx.appcompat:appcompat:1.7.0")
 	implementation(libs.lifecycle.runtime)
 	implementation(libs.lifecycle.vm)
@@ -98,9 +102,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.moshi.kotlin)
-    implementation(project(":core"))
-    implementation(project(":data"))
-    implementation(project(":domain"))
+    implementation("javax.inject:javax.inject:1")
 	debugImplementation(libs.compose.tooling)
 	testImplementation("junit:junit:4.13.2")
 	androidTestImplementation("androidx.test.ext:junit:1.2.1")

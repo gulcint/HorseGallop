@@ -52,7 +52,7 @@ fun RecentActivityDetailScreen(
             CenterAlignedTopAppBar(
                 title = { 
                     Text(
-                        stringResource(id = com.horsegallop.core.R.string.performance_board_title),
+                        stringResource(id = com.horsegallop.R.string.performance_board_title),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     ) 
@@ -81,25 +81,25 @@ fun RecentActivityDetailScreen(
             }
 
             item {
-                SectionHeader(stringResource(id = com.horsegallop.core.R.string.weekly_progress))
+                SectionHeader(stringResource(id = com.horsegallop.R.string.weekly_progress))
                 Spacer(modifier = Modifier.height(12.dp))
                 AnimatedDistanceBarChart(dailyDistance = uiState.dailyDistance)
             }
             
             item {
-                SectionHeader(stringResource(id = com.horsegallop.core.R.string.activity_distribution_title))
+                SectionHeader(stringResource(id = com.horsegallop.R.string.activity_distribution_title))
                 Spacer(modifier = Modifier.height(12.dp))
                 AnimatedActivityPieChart(uiState.activityDistribution)
             }
 
             item {
-                SectionHeader(stringResource(id = com.horsegallop.core.R.string.history_title))
+                SectionHeader(stringResource(id = com.horsegallop.R.string.history_title))
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
             items(uiState.activities) { activity ->
                         ActivityItem(
-                            title = activity.title ?: stringResource(id = com.horsegallop.core.R.string.ride_default_title),
+                            title = activity.title ?: stringResource(id = com.horsegallop.R.string.ride_default_title),
                             subtitle = "${activity.dateLabel} • ${activity.timeLabel}",
                     duration = "${activity.durationMin} min",
                     distance = "${activity.distanceKm} km",
@@ -313,7 +313,7 @@ private fun AnimatedActivityPieChart(activityDistribution: List<Pair<String?, Fl
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Text(stringResource(id = com.horsegallop.core.R.string.no_activity_data), style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(id = com.horsegallop.R.string.no_activity_data), style = MaterialTheme.typography.bodyMedium)
         }
         return
     }
@@ -391,7 +391,7 @@ private fun AnimatedActivityPieChart(activityDistribution: List<Pair<String?, Fl
                     modifier = Modifier.align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    val label = if (selectedIndex != -1) data[selectedIndex].first else stringResource(id = com.horsegallop.core.R.string.chart_total_label)
+                    val label = if (selectedIndex != -1) data[selectedIndex].first else stringResource(id = com.horsegallop.R.string.chart_total_label)
                     val value = if (selectedIndex != -1) "${(data[selectedIndex].second * 100).toInt()}%" else "100%"
                     
                     Text(
@@ -459,7 +459,7 @@ private fun AnimatedDistanceBarChart(dailyDistance: List<Float>) {
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Text(stringResource(id = com.horsegallop.core.R.string.no_activity_data), style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(id = com.horsegallop.R.string.no_activity_data), style = MaterialTheme.typography.bodyMedium)
         }
         return
     }
