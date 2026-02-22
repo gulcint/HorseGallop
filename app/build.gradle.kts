@@ -37,26 +37,6 @@ android {
 		compose = true
 		buildConfig = true
 	}
-    sourceSets {
-        getByName("main") {
-            java.srcDirs(
-                "src/main/java",
-                "../core/src/main/java",
-                "../data/src/main/java",
-                "../domain/src/main/java"
-            )
-            res.srcDirs(
-                "src/main/res",
-                "../core/src/main/res"
-            )
-        }
-        getByName("test") {
-            java.srcDirs(
-                "src/test/java",
-                "../domain/src/test/java"
-            )
-        }
-    }
 	packaging.resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
 	buildTypes {
 		getByName("debug") {
