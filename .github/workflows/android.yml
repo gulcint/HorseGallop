@@ -5,6 +5,7 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
+    types: [opened, reopened, synchronize, ready_for_review]
 
 jobs:
   build-test:
@@ -73,18 +74,51 @@ jobs:
 
       - name: Run Firebase Test Lab (Robo Test)
         if: ${{ secrets.GCP_SA_KEY != '' }}
+        id: ftl
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          FTL_RESULTS_BUCKET: ${{ secrets.FTL_RESULTS_BUCKET }}
         run: |
+          set -euo pipefail
+          PROJECT_NUMBER="$(gcloud projects describe "${GCP_PROJECT_ID}" --format='value(projectNumber)')"
+          RESULTS_BUCKET="${FTL_RESULTS_BUCKET:-test-lab-${PROJECT_NUMBER}}"
+          RESULTS_DIR="github-actions/${{ github.repository }}/${{ github.run_id }}-${{ github.run_attempt }}"
+          echo "results_bucket=${RESULTS_BUCKET}" >> "${GITHUB_OUTPUT}"
+          echo "results_dir=${RESULTS_DIR}" >> "${GITHUB_OUTPUT}"
+
           gcloud firebase test android run \
             --type robo \
             --app app/build/outputs/apk/debug/app-debug.apk \
-            --device model=Pixel2,version=30,locale=en,orientation=portrait \
+            --device model=Pixel6,version=34,locale=en,orientation=portrait \
             --timeout 300s \
-            --results-dir firebase_test_results
+            --record-video \
+            --performance-metrics \
+            --results-bucket "gs://${RESULTS_BUCKET}" \
+            --results-dir "${RESULTS_DIR}"
+
+      - name: Download Firebase Test Lab Results
+        if: ${{ always() && secrets.GCP_SA_KEY != '' }}
+        run: |
+          set -euo pipefail
+          mkdir -p firebase_test_results
+          gsutil -m cp -r \
+            "gs://${{ steps.ftl.outputs.results_bucket }}/${{ steps.ftl.outputs.results_dir }}" \
+            firebase_test_results || true
 
       - name: Upload Test Results
-        if: ${{ secrets.GCP_SA_KEY != '' }}
+        if: ${{ always() && secrets.GCP_SA_KEY != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: firebase-test-results
           path: firebase_test_results
+          if-no-files-found: warn
 
+      - name: Publish Firebase Test Lab Links
+        if: ${{ always() && secrets.GCP_SA_KEY != '' }}
+        run: |
+          {
+            echo "## Firebase Test Lab"
+            echo ""
+            echo "- Console: https://console.firebase.google.com/project/${{ secrets.GCP_PROJECT_ID }}/testlab/histories"
+            echo "- GCS Path: gs://${{ steps.ftl.outputs.results_bucket }}/${{ steps.ftl.outputs.results_dir }}"
+          } >> "${GITHUB_STEP_SUMMARY}"
