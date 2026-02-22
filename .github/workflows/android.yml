@@ -87,12 +87,6 @@ jobs:
         with:
           project_id: ${{ env.GCP_PROJECT_ID }}
 
-      - name: Verify Firebase Test Lab prerequisites
-        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' }}
-        run: |
-          set -euo pipefail
-          gcloud services enable testing.googleapis.com toolresults.googleapis.com firebase.googleapis.com --project "${GCP_PROJECT_ID}"
-
       - name: Run Firebase Test Lab (Robo Test)
         if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' }}
         id: ftl
