@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
       GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
       FTL_RESULTS_BUCKET: ${{ secrets.FTL_RESULTS_BUCKET }}
@@ -54,6 +55,13 @@ jobs:
           mkdir -p app
           printf "%s" "$GOOGLE_SERVICES_JSON" > app/google-services.json
           test -s app/google-services.json && echo "google-services.json written" || (echo "google-services.json missing" && exit 1)
+
+      - name: Verify Google Maps API key
+        run: |
+          if [ -z "${GOOGLE_MAPS_API_KEY:-}" ]; then
+            echo "::error::GOOGLE_MAPS_API_KEY secret is required for Android build."
+            exit 1
+          fi
 
       - name: Build Debug APK
         run: ./gradlew clean assembleDebug --no-daemon --stacktrace
