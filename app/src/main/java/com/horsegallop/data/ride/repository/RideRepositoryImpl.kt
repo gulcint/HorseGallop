@@ -5,6 +5,7 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority
+import com.horsegallop.core.debug.AppLog
 import com.horsegallop.domain.ride.model.GeoPoint
 import com.horsegallop.domain.ride.model.RideMetrics
 import com.horsegallop.domain.ride.model.RideSession
@@ -224,11 +225,19 @@ class RideRepositoryImpl @Inject constructor(
         }
 
         locationCallback = callback
-        fusedLocationClient.requestLocationUpdates(
-            request,
-            callback,
-            android.os.Looper.getMainLooper()
-        )
+        try {
+            fusedLocationClient.requestLocationUpdates(
+                request,
+                callback,
+                android.os.Looper.getMainLooper()
+            )
+        } catch (securityException: SecurityException) {
+            // Runtime permission can be revoked after ride starts; fail safely.
+            AppLog.e("RideRepositoryImpl", "Location permission missing: ${securityException.message}")
+            _isRiding.value = false
+            locationCallback = null
+            lastLocationTimeMillis = null
+        }
     }
 
     private fun stopLocationUpdates() {
