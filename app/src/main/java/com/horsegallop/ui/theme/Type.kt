@@ -1,4 +1,4 @@
-package com.horsegallop.core.theme
+package com.horsegallop.ui.theme
 
 import androidx.compose.material3.Typography
 

@@ -53,7 +53,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.draw.drawWithCache
-import com.horsegallop.theme.AppColors
+import com.horsegallop.ui.theme.AppColors
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -382,6 +382,10 @@ private data class OnboardingPage(
 
 @Composable
 private fun EngagingCallout(titleRes: Int, subtitleRes: Int, gradient: List<Color>) {
+    val start = gradient.firstOrNull()?.copy(alpha = 0.35f)
+        ?: MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)
+    val end = gradient.getOrNull(1)?.copy(alpha = 0.35f)
+        ?: MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.65f)
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -395,8 +399,9 @@ private fun EngagingCallout(titleRes: Int, subtitleRes: Int, gradient: List<Colo
                 .background(
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            Color(0xFFF8F9FA),
-                            Color(0xFFE9ECEF)
+                            MaterialTheme.colorScheme.surface,
+                            start,
+                            end
                         )
                     )
                 )
@@ -410,14 +415,14 @@ private fun EngagingCallout(titleRes: Int, subtitleRes: Int, gradient: List<Colo
                 Text(
                     text = "🐴", 
                     style = MaterialTheme.typography.headlineMedium, 
-                    color = Color(0xFF8B4513)
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(id = titleRes),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     val subtitle = stringResource(id = subtitleRes)
@@ -425,7 +430,7 @@ private fun EngagingCallout(titleRes: Int, subtitleRes: Int, gradient: List<Colo
                         Text(
                             text = subtitle,
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -441,7 +446,7 @@ private fun FeatureBullet(icon: androidx.compose.ui.graphics.vector.ImageVector,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White.copy(alpha = 0.12f), RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.12f), RoundedCornerShape(12.dp))
             .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
         Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)

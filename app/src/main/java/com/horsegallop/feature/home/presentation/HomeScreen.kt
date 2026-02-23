@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.material.icons.Icons
@@ -17,6 +15,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import com.horsegallop.core.components.ViewAllButton
 import com.horsegallop.core.components.HorseGallopSearchBar
 import com.horsegallop.navigation.Dest
@@ -31,11 +30,6 @@ import com.horsegallop.core.components.ActivityItem
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
 import com.horsegallop.core.components.HomeDashboardSkeleton
-import com.horsegallop.core.components.QuickActionsSkeleton
-import com.horsegallop.core.components.RecentActivitySkeleton
-import com.horsegallop.core.components.StatsOverviewSkeleton
-import com.horsegallop.core.components.TipsSkeleton
-import com.horsegallop.core.components.WelcomeHeaderSkeleton
 
 @Composable
 fun HomeScreen(
@@ -76,12 +70,55 @@ private fun HomeDashboard(
   onViewAllActivities: (() -> Unit)? = null,
   uiState: HomeUiState = HomeUiState(loading = false)
 ) {
+  var searchQuery by rememberSaveable { mutableStateOf("") }
+
+  val activities = if (uiState.activities.isEmpty()) {
+    listOf(
+      ActivityUi(
+        id = "mock1",
+        title = stringResource(id = com.horsegallop.R.string.activity_morning_ride_title),
+        dateLabel = stringResource(id = com.horsegallop.R.string.activity_morning_ride_subtitle).substringBefore(", "),
+        timeLabel = stringResource(id = com.horsegallop.R.string.activity_morning_ride_subtitle).substringAfter(", "),
+        durationMin = 45,
+        distanceKm = 8.2
+      ),
+      ActivityUi(
+        id = "mock2",
+        title = stringResource(id = com.horsegallop.R.string.activity_evening_ride_title),
+        dateLabel = stringResource(id = com.horsegallop.R.string.activity_evening_ride_subtitle).substringBefore(", "),
+        timeLabel = stringResource(id = com.horsegallop.R.string.activity_evening_ride_subtitle).substringAfter(", "),
+        durationMin = 80,
+        distanceKm = 12.5
+      )
+    )
+  } else {
+    uiState.activities
+  }
+
+  val filteredActivities = remember(activities, searchQuery) {
+    if (searchQuery.isBlank()) {
+      activities
+    } else {
+      activities.filter { item ->
+        (item.title ?: "").contains(searchQuery.trim(), ignoreCase = true)
+      }
+    }
+  }
+
   if (uiState.loading) {
     HomeDashboardSkeleton()
   } else {
     LazyColumn(
       modifier = Modifier
-        .fillMaxSize(),
+        .fillMaxSize()
+        .background(
+          Brush.verticalGradient(
+            colors = listOf(
+              MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
+              MaterialTheme.colorScheme.background
+            )
+          )
+        ),
       contentPadding = PaddingValues(
         start = dimensionResource(id = com.horsegallop.R.dimen.padding_screen_horizontal),
         end = dimensionResource(id = com.horsegallop.R.dimen.padding_screen_horizontal),
@@ -94,6 +131,14 @@ private fun HomeDashboard(
         WelcomeHeader(onProfileClick = onProfileClick)
       }
 
+      item {
+        HorseGallopSearchBar(
+          query = searchQuery,
+          onQueryChange = { searchQuery = it },
+          placeholder = stringResource(id = R.string.search_placeholder),
+          modifier = Modifier.fillMaxWidth()
+        )
+      }
 
       
       item {
@@ -105,25 +150,10 @@ private fun HomeDashboard(
       }
       
       item {
-        val activities = if (uiState.activities.isEmpty()) listOf(
-          ActivityUi(
-            id = "mock1",
-            title = stringResource(id = com.horsegallop.R.string.activity_morning_ride_title),
-            dateLabel = stringResource(id = com.horsegallop.R.string.activity_morning_ride_subtitle).substringBefore(", "),
-            timeLabel = stringResource(id = com.horsegallop.R.string.activity_morning_ride_subtitle).substringAfter(", "),
-            durationMin = 45,
-            distanceKm = 8.2
-          ),
-          ActivityUi(
-            id = "mock2",
-            title = stringResource(id = com.horsegallop.R.string.activity_evening_ride_title),
-            dateLabel = stringResource(id = com.horsegallop.R.string.activity_evening_ride_subtitle).substringBefore(", "),
-            timeLabel = stringResource(id = com.horsegallop.R.string.activity_evening_ride_subtitle).substringAfter(", "),
-            durationMin = 80,
-            distanceKm = 12.5
-          )
-        ) else uiState.activities
-        RecentActivitySection(activities = activities, onViewAllActivities = onViewAllActivities)
+        RecentActivitySection(
+          activities = filteredActivities,
+          onViewAllActivities = onViewAllActivities
+        )
       }
       
       item {
@@ -148,8 +178,8 @@ private fun WelcomeHeader(onProfileClick: () -> Unit) {
         .background(
           brush = Brush.linearGradient(
             colors = listOf(
-              MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-              MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)
+              MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
+              MaterialTheme.colorScheme.secondary.copy(alpha = 0.14f)
             )
           )
         )
@@ -162,14 +192,14 @@ private fun WelcomeHeader(onProfileClick: () -> Unit) {
       ) {
         Column {
           Text(
-            text = "Welcome",
+            text = stringResource(id = R.string.welcome_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onPrimaryContainer
           )
           Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm)))
           Text(
-            text = "Your horse riding experience starts here",
+            text = stringResource(id = R.string.welcome_subtitle),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
           )
@@ -292,7 +322,7 @@ private fun RecentActivitySection(
         style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.Bold
       )
-      com.horsegallop.core.components.ViewAllButton(
+      ViewAllButton(
         onClick = { onViewAllActivities?.invoke() }
       )
     }
@@ -308,30 +338,31 @@ private fun RecentActivitySection(
       Column(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
       ) {
-        val a1 = activities.getOrNull(0)
-        if (a1 != null) {
-          ActivityItem(
-            title = a1.title ?: stringResource(id = R.string.ride_default_title),
-            subtitle = stringResource(id = R.string.activity_subtitle_format, a1.dateLabel, a1.timeLabel),
-            duration = stringResource(id = R.string.activity_duration_minutes, a1.durationMin),
-            distance = stringResource(id = R.string.activity_distance_km, a1.distanceKm),
-            icon = Icons.AutoMirrored.Filled.DirectionsRun
+        val visibleActivities = activities.take(3)
+        if (visibleActivities.isEmpty()) {
+          Text(
+            text = stringResource(id = R.string.no_activity_data),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(vertical = 12.dp)
           )
-        }
-        HorizontalDivider(
-          modifier = Modifier.padding(vertical = 4.dp), // Reduced padding, divider makes it clean
-          thickness = 1.dp,
-          color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f)
-        )
-        val a2 = activities.getOrNull(1)
-        if (a2 != null) {
-          ActivityItem(
-            title = a2.title ?: stringResource(id = R.string.ride_default_title),
-            subtitle = stringResource(id = R.string.activity_subtitle_format, a2.dateLabel, a2.timeLabel),
-            duration = stringResource(id = R.string.activity_duration_minutes, a2.durationMin),
-            distance = stringResource(id = R.string.activity_distance_km, a2.distanceKm),
-            icon = Icons.AutoMirrored.Filled.DirectionsRun
-          )
+        } else {
+          visibleActivities.forEachIndexed { index, activity ->
+            ActivityItem(
+              title = activity.title ?: stringResource(id = R.string.ride_default_title),
+              subtitle = stringResource(id = R.string.activity_subtitle_format, activity.dateLabel, activity.timeLabel),
+              duration = stringResource(id = R.string.activity_duration_minutes, activity.durationMin),
+              distance = stringResource(id = R.string.activity_distance_km, activity.distanceKm),
+              icon = Icons.AutoMirrored.Filled.DirectionsRun
+            )
+            if (index < visibleActivities.lastIndex) {
+              HorizontalDivider(
+                modifier = Modifier.padding(vertical = 4.dp),
+                thickness = 1.dp,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f)
+              )
+            }
+          }
         }
       }
     }
@@ -385,8 +416,6 @@ private fun TipsSection() {
     Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.R.dimen.section_spacing_md)))
   }
 }
-
-private data class TabItem(val label: String, val icon: ImageVector)
 
 // Preview Components
 @Preview(showBackground = true, backgroundColor = 0xFFF5F5F5)

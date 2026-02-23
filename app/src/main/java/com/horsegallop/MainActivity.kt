@@ -12,16 +12,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import com.horsegallop.core.theme.DarkColorScheme
-import com.horsegallop.core.theme.LightColorScheme
 import com.horsegallop.feature.settings.presentation.SettingsViewModel
-import com.horsegallop.settings.ThemeMode
 import com.horsegallop.settings.toLocaleList
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +41,7 @@ import com.horsegallop.domain.model.UserRole
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.luminance
 import com.horsegallop.core.debug.AppLog
+import com.horsegallop.ui.theme.AppTheme
 
 import com.horsegallop.feature.common.presentation.NoInternetScreen
 import kotlinx.coroutines.CoroutineScope
@@ -265,28 +261,6 @@ private fun isAuthRequired(route: String): Boolean {
 }
 
 @Composable
-private fun AppTheme(
-    themeMode: ThemeMode = ThemeMode.SYSTEM,
-    content: @Composable () -> Unit
-) {
-    val darkTheme = when (themeMode) {
-        ThemeMode.DARK -> true
-        ThemeMode.LIGHT -> false
-        ThemeMode.SYSTEM -> isSystemInDarkTheme()
-    }
-    val scheme = if (darkTheme) DarkColorScheme else LightColorScheme
-    androidx.compose.runtime.CompositionLocalProvider(
-        com.horsegallop.core.theme.LocalTextColors provides com.horsegallop.core.theme.textColorsFrom(scheme)
-    ) {
-        MaterialTheme(
-            colorScheme = scheme,
-            typography = com.horsegallop.core.theme.AppTypography,
-            content = content
-        )
-    }
-}
-
-@Composable
 fun SplashScreen(
     title: String? = null,
     subtitle: String? = null,
@@ -296,7 +270,7 @@ fun SplashScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         val ctx = LocalContext.current

@@ -427,8 +427,8 @@ fun ProfileScreen(
         OutlinedButton(
             onClick = { viewModel.signOut(onLogout) },
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = com.horsegallop.core.theme.AppColors.Destructive),
-            border = androidx.compose.foundation.BorderStroke(1.dp, com.horsegallop.core.theme.AppColors.Destructive),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = com.horsegallop.ui.theme.AppColors.Destructive),
+            border = androidx.compose.foundation.BorderStroke(1.dp, com.horsegallop.ui.theme.AppColors.Destructive),
             shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg))
         ) {
             Text(stringResource(id = com.horsegallop.R.string.logout))
