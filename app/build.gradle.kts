@@ -90,7 +90,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.firestore)
-    implementation(libs.firebase.functions)
+    implementation("com.google.firebase:firebase-functions-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
     implementation(libs.firebase.appcheck.playintegrity)
     implementation(libs.firebase.appcheck.debug)
