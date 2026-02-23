@@ -5,10 +5,26 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    env:
+      GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      FTL_RESULTS_BUCKET: ${{ secrets.FTL_RESULTS_BUCKET }}
+      FTL_MODEL_ID: oriole
+      FTL_VERSION_ID: "34"
+      FTL_LOCALE: en
+      FTL_ORIENTATION: portrait
 
     steps:
       - name: Checkout
@@ -39,13 +55,21 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Setup google-services.json
-        if: ${{ secrets.GOOGLE_SERVICES_JSON != '' }}
-        env:
-          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
+          if [ -z "${GOOGLE_SERVICES_JSON:-}" ]; then
+            echo "::error::GOOGLE_SERVICES_JSON secret is required for Android build."
+            exit 1
+          fi
           mkdir -p app
           printf "%s" "$GOOGLE_SERVICES_JSON" > app/google-services.json
           test -s app/google-services.json && echo "google-services.json written" || (echo "google-services.json missing" && exit 1)
+
+      - name: Verify Google Maps API key
+        run: |
+          if [ -z "${GOOGLE_MAPS_API_KEY:-}" ]; then
+            echo "::error::GOOGLE_MAPS_API_KEY secret is required for Android build."
+            exit 1
+          fi
 
       - name: Build Debug APK
         run: ./gradlew clean assembleDebug --no-daemon --stacktrace
@@ -60,31 +84,79 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
 
       - name: Authenticate to Google Cloud
-        if: ${{ secrets.GCP_SA_KEY != '' }}
+        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' }}
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          credentials_json: ${{ env.GCP_SA_KEY }}
 
       - name: Set up gcloud CLI
-        if: ${{ secrets.GCP_SA_KEY != '' }}
+        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' }}
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Validate Firebase Test Lab device config
+        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' }}
+        run: |
+          set -euo pipefail
+          MODEL_FOUND="$(gcloud firebase test android models list --format='value(id)' | grep -x "${FTL_MODEL_ID}" || true)"
+          if [ -z "${MODEL_FOUND}" ]; then
+            echo "::error::Invalid FTL model id '${FTL_MODEL_ID}'. Use a valid id from 'gcloud firebase test android models list'."
+            exit 1
+          fi
+
+          SUPPORTED_VERSIONS="$(gcloud firebase test android models describe "${FTL_MODEL_ID}" --format='value(supportedVersionIds)')"
+          if [[ "${SUPPORTED_VERSIONS}" != *"${FTL_VERSION_ID}"* ]]; then
+            echo "::error::Model '${FTL_MODEL_ID}' does not support Android version '${FTL_VERSION_ID}'. Supported: ${SUPPORTED_VERSIONS}"
+            exit 1
+          fi
+
+          echo "Using FTL device: model=${FTL_MODEL_ID},version=${FTL_VERSION_ID},locale=${FTL_LOCALE},orientation=${FTL_ORIENTATION}"
 
       - name: Run Firebase Test Lab (Robo Test)
-        if: ${{ secrets.GCP_SA_KEY != '' }}
+        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' }}
+        id: ftl
         run: |
+          set -euo pipefail
+          PROJECT_NUMBER="$(gcloud projects describe "${GCP_PROJECT_ID}" --format='value(projectNumber)')"
+          RESULTS_BUCKET="${FTL_RESULTS_BUCKET:-test-lab-${PROJECT_NUMBER}}"
+          RESULTS_DIR="github-actions/${{ github.repository }}/${{ github.run_id }}-${{ github.run_attempt }}"
+          echo "results_bucket=${RESULTS_BUCKET}" >> "${GITHUB_OUTPUT}"
+          echo "results_dir=${RESULTS_DIR}" >> "${GITHUB_OUTPUT}"
+
           gcloud firebase test android run \
             --type robo \
             --app app/build/outputs/apk/debug/app-debug.apk \
-            --device model=Pixel2,version=30,locale=en,orientation=portrait \
+            --device model="${FTL_MODEL_ID}",version="${FTL_VERSION_ID}",locale="${FTL_LOCALE}",orientation="${FTL_ORIENTATION}" \
             --timeout 300s \
-            --results-dir firebase_test_results
+            --record-video \
+            --performance-metrics \
+            --results-bucket "gs://${RESULTS_BUCKET}" \
+            --results-dir "${RESULTS_DIR}"
+
+      - name: Download Firebase Test Lab Results
+        if: ${{ always() && steps.ftl.outputs.results_bucket != '' && steps.ftl.outputs.results_dir != '' }}
+        run: |
+          set -euo pipefail
+          mkdir -p firebase_test_results
+          gsutil -m cp -r \
+            "gs://${{ steps.ftl.outputs.results_bucket }}/${{ steps.ftl.outputs.results_dir }}" \
+            firebase_test_results || true
 
       - name: Upload Test Results
-        if: ${{ secrets.GCP_SA_KEY != '' }}
+        if: ${{ always() && steps.ftl.outputs.results_bucket != '' && steps.ftl.outputs.results_dir != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: firebase-test-results
           path: firebase_test_results
+          if-no-files-found: warn
 
+      - name: Publish Firebase Test Lab Links
+        if: ${{ always() && steps.ftl.outputs.results_bucket != '' && steps.ftl.outputs.results_dir != '' }}
+        run: |
+          {
+            echo "## Firebase Test Lab"
+            echo ""
+            echo "- Console: https://console.firebase.google.com/project/${{ env.GCP_PROJECT_ID }}/testlab/histories"
+            echo "- GCS Path: gs://${{ steps.ftl.outputs.results_bucket }}/${{ steps.ftl.outputs.results_dir }}"
+          } >> "${GITHUB_STEP_SUMMARY}"
