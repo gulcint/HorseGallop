@@ -22,7 +22,7 @@ jobs:
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
       FTL_RESULTS_BUCKET: ${{ secrets.FTL_RESULTS_BUCKET }}
       FTL_MODEL_ID: oriole
-      FTL_VERSION_ID: "34"
+      FTL_VERSION_ID: "33"
       FTL_LOCALE: en
       FTL_ORIENTATION: portrait
 
@@ -61,8 +61,8 @@ jobs:
             exit 1
           fi
 
-      - name: Build Debug APK + Unit Tests
-        run: ./gradlew assembleDebug testDebugUnitTest --no-daemon --stacktrace
+      - name: Build Debug APK + Unit Tests + Lint
+        run: ./gradlew assembleDebug testDebugUnitTest lintDebug --no-daemon --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
