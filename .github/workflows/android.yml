@@ -21,6 +21,10 @@ jobs:
       GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
       FTL_RESULTS_BUCKET: ${{ secrets.FTL_RESULTS_BUCKET }}
+      FTL_MODEL_ID: oriole
+      FTL_VERSION_ID: "34"
+      FTL_LOCALE: en
+      FTL_ORIENTATION: portrait
 
     steps:
       - name: Checkout
@@ -91,6 +95,24 @@ jobs:
         with:
           project_id: ${{ env.GCP_PROJECT_ID }}
 
+      - name: Validate Firebase Test Lab device config
+        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' }}
+        run: |
+          set -euo pipefail
+          MODEL_FOUND="$(gcloud firebase test android models list --format='value(id)' | grep -x "${FTL_MODEL_ID}" || true)"
+          if [ -z "${MODEL_FOUND}" ]; then
+            echo "::error::Invalid FTL model id '${FTL_MODEL_ID}'. Use a valid id from 'gcloud firebase test android models list'."
+            exit 1
+          fi
+
+          SUPPORTED_VERSIONS="$(gcloud firebase test android models describe "${FTL_MODEL_ID}" --format='value(supportedVersionIds)')"
+          if [[ "${SUPPORTED_VERSIONS}" != *"${FTL_VERSION_ID}"* ]]; then
+            echo "::error::Model '${FTL_MODEL_ID}' does not support Android version '${FTL_VERSION_ID}'. Supported: ${SUPPORTED_VERSIONS}"
+            exit 1
+          fi
+
+          echo "Using FTL device: model=${FTL_MODEL_ID},version=${FTL_VERSION_ID},locale=${FTL_LOCALE},orientation=${FTL_ORIENTATION}"
+
       - name: Run Firebase Test Lab (Robo Test)
         if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' }}
         id: ftl
@@ -105,7 +127,7 @@ jobs:
           gcloud firebase test android run \
             --type robo \
             --app app/build/outputs/apk/debug/app-debug.apk \
-            --device model=Pixel6,version=34,locale=en,orientation=portrait \
+            --device model="${FTL_MODEL_ID}",version="${FTL_VERSION_ID}",locale="${FTL_LOCALE}",orientation="${FTL_ORIENTATION}" \
             --timeout 300s \
             --record-video \
             --performance-metrics \
