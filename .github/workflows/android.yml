@@ -88,7 +88,20 @@ jobs:
         run: |
           set -euo pipefail
           REQUIRED_SERVICES=("firebase.googleapis.com" "testing.googleapis.com" "toolresults.googleapis.com")
-          ENABLED_SERVICES="$(gcloud services list --enabled --project "${GCP_PROJECT_ID}" --format='value(config.name)')"
+
+          if ! ENABLED_SERVICES="$(gcloud services list --enabled --project "${GCP_PROJECT_ID}" --format='value(config.name)' 2>/tmp/ftl-precheck-services.err)"; then
+            echo "::warning::Skipping Firebase Test Lab because the CI service account cannot list enabled APIs for project ${GCP_PROJECT_ID}."
+            {
+              echo "### Firebase Test Lab skipped"
+              echo ""
+              echo "Reason: CI service account cannot list enabled APIs."
+              echo ""
+              echo "Grant Service Usage Consumer (roles/serviceusage.serviceUsageConsumer)"
+              echo "or enable required APIs with a higher-privilege account."
+            } >> "${GITHUB_STEP_SUMMARY}"
+            echo "ready=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
 
           MISSING_SERVICES=()
           for SERVICE in "${REQUIRED_SERVICES[@]}"; do
