@@ -82,8 +82,50 @@ jobs:
         with:
           project_id: ${{ env.GCP_PROJECT_ID }}
 
-      - name: Validate Firebase Test Lab device config
+      - name: Check Firebase Test Lab API readiness
         if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' }}
+        id: ftl_precheck
+        run: |
+          set -euo pipefail
+          REQUIRED_SERVICES=("firebase.googleapis.com" "testing.googleapis.com" "toolresults.googleapis.com")
+
+          if ! ENABLED_SERVICES="$(gcloud services list --enabled --project "${GCP_PROJECT_ID}" --format='value(config.name)' 2>/tmp/ftl-precheck-services.err)"; then
+            echo "::warning::Skipping Firebase Test Lab because the CI service account cannot list enabled APIs for project ${GCP_PROJECT_ID}."
+            {
+              echo "### Firebase Test Lab skipped"
+              echo ""
+              echo "Reason: CI service account cannot list enabled APIs."
+              echo ""
+              echo "Grant Service Usage Consumer (roles/serviceusage.serviceUsageConsumer)"
+              echo "or enable required APIs with a higher-privilege account."
+            } >> "${GITHUB_STEP_SUMMARY}"
+            echo "ready=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          MISSING_SERVICES=()
+          for SERVICE in "${REQUIRED_SERVICES[@]}"; do
+            if ! grep -qx "${SERVICE}" <<< "${ENABLED_SERVICES}"; then
+              MISSING_SERVICES+=("${SERVICE}")
+            fi
+          done
+
+          if [ "${#MISSING_SERVICES[@]}" -gt 0 ]; then
+            MISSING_CSV="$(IFS=,; echo "${MISSING_SERVICES[*]}")"
+            echo "::warning::Skipping Firebase Test Lab because required APIs are disabled: ${MISSING_CSV}"
+            {
+              echo "### Firebase Test Lab skipped"
+              echo ""
+              echo "Missing APIs: ${MISSING_CSV}"
+              echo "Enable these APIs in Google Cloud, then rerun this workflow."
+            } >> "${GITHUB_STEP_SUMMARY}"
+            echo "ready=false" >> "${GITHUB_OUTPUT}"
+          else
+            echo "ready=true" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Validate Firebase Test Lab device config
+        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' && steps.ftl_precheck.outputs.ready == 'true' }}
         run: |
           set -euo pipefail
           MODEL_FOUND="$(gcloud firebase test android models list --format='value(id)' | grep -x "${FTL_MODEL_ID}" || true)"
@@ -101,7 +143,7 @@ jobs:
           echo "Using FTL device: model=${FTL_MODEL_ID},version=${FTL_VERSION_ID},locale=${FTL_LOCALE},orientation=${FTL_ORIENTATION}"
 
       - name: Run Firebase Test Lab (Robo Test)
-        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' }}
+        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' && steps.ftl_precheck.outputs.ready == 'true' }}
         id: ftl
         run: |
           set -euo pipefail
@@ -122,7 +164,7 @@ jobs:
             --results-dir "${RESULTS_DIR}"
 
       - name: Download Firebase Test Lab Results
-        if: ${{ always() && steps.ftl.outputs.results_bucket != '' && steps.ftl.outputs.results_dir != '' }}
+        if: ${{ always() && steps.ftl_precheck.outputs.ready == 'true' && steps.ftl.outputs.results_bucket != '' && steps.ftl.outputs.results_dir != '' }}
         run: |
           set -euo pipefail
           mkdir -p firebase_test_results
@@ -131,7 +173,7 @@ jobs:
             firebase_test_results || true
 
       - name: Upload Test Results
-        if: ${{ always() && steps.ftl.outputs.results_bucket != '' && steps.ftl.outputs.results_dir != '' }}
+        if: ${{ always() && steps.ftl_precheck.outputs.ready == 'true' && steps.ftl.outputs.results_bucket != '' && steps.ftl.outputs.results_dir != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: firebase-test-results
@@ -139,7 +181,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Publish Firebase Test Lab Links
-        if: ${{ always() && steps.ftl.outputs.results_bucket != '' && steps.ftl.outputs.results_dir != '' }}
+        if: ${{ always() && steps.ftl_precheck.outputs.ready == 'true' && steps.ftl.outputs.results_bucket != '' && steps.ftl.outputs.results_dir != '' }}
         run: |
           {
             echo "## Firebase Test Lab"
