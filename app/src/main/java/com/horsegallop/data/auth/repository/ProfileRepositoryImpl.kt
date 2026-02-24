@@ -2,14 +2,12 @@ package com.horsegallop.data.auth.repository
 
 import android.net.Uri
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.storage.FirebaseStorage
 import com.horsegallop.domain.auth.model.UserProfile
 import com.horsegallop.domain.auth.repository.ProfileRepository
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -17,123 +15,46 @@ import javax.inject.Inject
 class ProfileRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore,
-    private val storage: com.google.firebase.storage.FirebaseStorage
+    private val storage: FirebaseStorage,
+    private val functions: FirebaseFunctions
 ) : ProfileRepository {
 
-    override fun getUserProfile(uid: String): Flow<Result<UserProfile>> = callbackFlow {
-        val docRef = firestore.collection("users").document(uid)
-        
-        val listener = docRef.addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                trySend(Result.failure(error))
-                return@addSnapshotListener
-            }
-            
-            if (snapshot != null) {
-                val currentUser = auth.currentUser
-                var fName = snapshot.getString("firstName") ?: ""
-                var lName = snapshot.getString("lastName") ?: ""
-                
-                // Fallback to Firebase Auth Display Name if Firestore data is missing
-                if (fName.isBlank() && lName.isBlank() && currentUser?.displayName.isNullOrBlank().not()) {
-                    val parts = currentUser!!.displayName!!.trim().split(" ")
-                    if (parts.isNotEmpty()) {
-                        fName = parts.first()
-                        if (parts.size > 1) {
-                            lName = parts.drop(1).joinToString(" ")
-                        }
-                    }
-                }
+    override fun getUserProfile(@Suppress("UNUSED_PARAMETER") uid: String): Flow<Result<UserProfile>> = flow {
+        try {
+            val result = functions
+                .getHttpsCallable("getUserProfile")
+                .call()
+                .await()
 
-                val birthDateStr = try {
-                    val ts = snapshot.getTimestamp("birthDate")
-                    if (ts != null) {
-                        val cal = java.util.Calendar.getInstance()
-                        cal.time = ts.toDate()
-                        val y = cal.get(java.util.Calendar.YEAR)
-                        val m = cal.get(java.util.Calendar.MONTH) + 1
-                        val d = cal.get(java.util.Calendar.DAY_OF_MONTH)
-                        String.format("%04d-%02d-%02d", y, m, d)
-                    } else {
-                        val millis = snapshot.getLong("birthDate")
-                        if (millis != null) {
-                            val cal = java.util.Calendar.getInstance()
-                            cal.timeInMillis = millis
-                            val y = cal.get(java.util.Calendar.YEAR)
-                            val m = cal.get(java.util.Calendar.MONTH) + 1
-                            val d = cal.get(java.util.Calendar.DAY_OF_MONTH)
-                            String.format("%04d-%02d-%02d", y, m, d)
-                        } else {
-                            snapshot.getString("birthDate") ?: ""
-                        }
-                    }
-                } catch (e: Exception) {
-                    ""
-                }
+            val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+            val profile = mapPayloadToProfile(payload)
 
-                val profile = UserProfile(
-                    firstName = fName,
-                    lastName = lName,
-                    email = snapshot.getString("email") ?: (currentUser?.email ?: ""),
-                    phone = snapshot.getString("phone") ?: "",
-                    city = snapshot.getString("city") ?: "",
-                    birthDate = birthDateStr,
-                    photoUrl = snapshot.getString("photoUrl"),
-                    countryCode = snapshot.getString("countryCode") ?: "+90",
-                    weight = snapshot.getDouble("weight")?.toFloat()
-                )
-
-                if (!snapshot.exists()) {
-                    // Try initialize if doesn't exist (non-blocking)
-                    val birthDateTimestamp = if (profile.birthDate.isNotBlank()) {
-                        try {
-                            val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                            val date = sdf.parse(profile.birthDate)
-                            if (date != null) com.google.firebase.Timestamp(date) else null
-                        } catch (e: Exception) { null }
-                    } else null
-
-                    val init = hashMapOf(
-                        "firstName" to profile.firstName,
-                        "lastName" to profile.lastName,
-                        "email" to profile.email,
-                        "phone" to profile.phone,
-                        "city" to profile.city,
-                        "birthDate" to birthDateTimestamp,
-                        "photoUrl" to profile.photoUrl,
-                        "countryCode" to profile.countryCode,
-                        "weight" to profile.weight
-                    )
-                    docRef.set(init, com.google.firebase.firestore.SetOptions.merge())
-                }
-                
-                trySend(Result.success(profile))
-            }
+            emit(Result.success(profile))
+        } catch (e: Exception) {
+            emit(Result.failure(e))
         }
-        
-        awaitClose { listener.remove() }
     }
 
-    override fun updateUserProfile(uid: String, profile: UserProfile): Flow<Result<Unit>> = flow {
+    override fun updateUserProfile(
+        @Suppress("UNUSED_PARAMETER") uid: String,
+        profile: UserProfile
+    ): Flow<Result<Unit>> = flow {
         try {
-            val birthDateTimestamp = if (profile.birthDate.isNotBlank()) {
-                try {
-                    val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                    val date = sdf.parse(profile.birthDate)
-                    if (date != null) com.google.firebase.Timestamp(date) else null
-                } catch (e: Exception) { null }
-            } else null
-
-            val updates = mapOf(
+            val request = hashMapOf(
                 "firstName" to profile.firstName,
                 "lastName" to profile.lastName,
                 "phone" to profile.phone,
                 "city" to profile.city,
-                "birthDate" to birthDateTimestamp,
+                "birthDate" to profile.birthDate,
                 "countryCode" to profile.countryCode,
                 "weight" to profile.weight
             )
-            firestore.collection("users").document(uid).set(updates, com.google.firebase.firestore.SetOptions.merge()).await()
+
+            functions
+                .getHttpsCallable("updateUserProfile")
+                .call(request)
+                .await()
+
             emit(Result.success(Unit))
         } catch (e: Exception) {
             emit(Result.failure(e))
@@ -155,20 +76,17 @@ class ProfileRepositoryImpl @Inject constructor(
     override fun deleteAccount(): Flow<Result<Unit>> = flow {
         try {
             val user = auth.currentUser ?: throw Exception("No user logged in")
-            
-            // Delete Firestore Data
+
             firestore.collection("users").document(user.uid).delete().await()
-            
-            // Delete Photo
+
             user.photoUrl?.let {
                 try {
                     storage.getReferenceFromUrl(it.toString()).delete().await()
-                } catch (e: Exception) {
-                    // Ignore if photo doesn't exist
+                } catch (_: Exception) {
+                    // Ignore missing photo objects.
                 }
             }
 
-            // Delete User
             user.delete().await()
             emit(Result.success(Unit))
         } catch (e: Exception) {
@@ -178,5 +96,46 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override fun signOut() {
         auth.signOut()
+    }
+
+    private fun mapPayloadToProfile(payload: Map<*, *>): UserProfile {
+        val currentUser = auth.currentUser
+
+        var firstName = payload["firstName"] as? String ?: ""
+        var lastName = payload["lastName"] as? String ?: ""
+
+        if (firstName.isBlank() && lastName.isBlank() && !currentUser?.displayName.isNullOrBlank()) {
+            val parts = currentUser!!.displayName!!.trim().split(" ")
+            if (parts.isNotEmpty()) {
+                firstName = parts.first()
+                if (parts.size > 1) {
+                    lastName = parts.drop(1).joinToString(" ")
+                }
+            }
+        }
+
+        val emailFromPayload = payload["email"] as? String
+        val email = when {
+            !emailFromPayload.isNullOrBlank() -> emailFromPayload
+            !currentUser?.email.isNullOrBlank() -> currentUser?.email ?: ""
+            else -> ""
+        }
+
+        val weight = when (val rawWeight = payload["weight"]) {
+            is Number -> rawWeight.toFloat()
+            else -> null
+        }
+
+        return UserProfile(
+            firstName = firstName,
+            lastName = lastName,
+            email = email,
+            phone = payload["phone"] as? String ?: "",
+            city = payload["city"] as? String ?: "",
+            birthDate = payload["birthDate"] as? String ?: "",
+            photoUrl = payload["photoUrl"] as? String,
+            countryCode = (payload["countryCode"] as? String).orEmpty().ifBlank { "+90" },
+            weight = weight
+        )
     }
 }

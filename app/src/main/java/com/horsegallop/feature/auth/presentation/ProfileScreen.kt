@@ -1,541 +1,644 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.horsegallop.feature.auth.presentation
 
+import android.Manifest
+import android.net.Uri
+import android.os.Build
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.clickable
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.zIndex
-import androidx.compose.foundation.border
-import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.stringArrayResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import android.Manifest
-import androidx.activity.result.contract.ActivityResultContracts
-import android.net.Uri
-import android.os.Build
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import com.horsegallop.R
 import com.horsegallop.core.components.HorseGallopDatePicker
 import com.horsegallop.core.components.HorseGallopDropdown
 import com.horsegallop.core.components.HorseLoadingOverlay
-// import com.horsegallop.core.util.DateUtils
+import com.horsegallop.domain.auth.model.UserProfile
+import com.horsegallop.ui.theme.AppColors
 import java.util.Calendar
 
 @Composable
 fun ProfileScreen(
-  onBack: () -> Unit,
-  onSettings: () -> Unit,
-  onLogout: () -> Unit,
-  viewModel: ProfileViewModel = hiltViewModel()
+    onBack: () -> Unit,
+    onSettings: () -> Unit,
+    onLogout: () -> Unit,
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
-  val state by viewModel.uiState.collectAsState()
-  val ctx = LocalContext.current
+    val state by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
-
-
-
-  // Image Picker
-  val pickMediaLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
-    if (uri != null) {
-        viewModel.updateProfileImage(uri)
+    val pickMediaLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
+        if (uri != null) viewModel.updateProfileImage(uri)
     }
-  }
-  val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted: Boolean ->
-    if (granted) {
-      pickMediaLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-    }
-  }
-
-  // Determine which profile to show
-  val displayProfile = if (state.isEditing) state.draftProfile else state.userProfile
-  val nameDisplay = listOf(displayProfile.firstName, displayProfile.lastName).filter { it.isNotBlank() }.joinToString(" ")
-  val fallbackProfile = stringResource(id = com.horsegallop.R.string.profile)
-
-  // Error Toasts
-  if (state.error != null) {
-      LaunchedEffect(state.error) {
-          android.widget.Toast.makeText(ctx, state.error, android.widget.Toast.LENGTH_LONG).show()
-      }
-  }
-
-  // Success Toast
-  if (state.successMessage != null) {
-      LaunchedEffect(state.successMessage) {
-          android.widget.Toast.makeText(ctx, state.successMessage, android.widget.Toast.LENGTH_SHORT).show()
-          viewModel.clearMessages()
-      }
-  }
-
-
-  Box(modifier = Modifier.fillMaxSize()) {
-  Scaffold(
-      contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
-      topBar = {
-        CenterAlignedTopAppBar(
-          title = { Text(text = stringResource(id = com.horsegallop.R.string.profile)) },
-          navigationIcon = {
-            IconButton(onClick = onBack) {
-              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-            }
-          },
-          colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-            titleContentColor = MaterialTheme.colorScheme.onPrimary
-          )
-        )
-      }
-  ) { innerPadding ->
-    Column(
-      modifier = Modifier
-        .fillMaxSize()
-        .padding(innerPadding)
-        .verticalScroll(rememberScrollState())
-        .padding(horizontal = dimensionResource(id = com.horsegallop.R.dimen.padding_screen_horizontal))
-        ,
-      verticalArrangement = Arrangement.spacedBy(
-        dimensionResource(id = com.horsegallop.R.dimen.section_spacing_md)
-      )
-    ) {
-      
-
-      // Profile Header
-      Surface(
-        modifier = Modifier.padding(top = dimensionResource(id = com.horsegallop.R.dimen.section_spacing_md)),
-        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xl)),
-        shadowElevation = dimensionResource(id = com.horsegallop.R.dimen.elevation_md)
-      ) {
-        Row(
-          modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                Brush.linearGradient(
-                    listOf(
-                        MaterialTheme.colorScheme.primaryContainer,
-                        MaterialTheme.colorScheme.secondaryContainer
-                    )
-                )
-            )
-            .padding(dimensionResource(id = com.horsegallop.R.dimen.padding_card_md)),
-          horizontalArrangement = Arrangement.spacedBy(
-            dimensionResource(id = com.horsegallop.R.dimen.spacing_md)
-          ),
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Box(
-            modifier = Modifier.size(80.dp),
-            contentAlignment = Alignment.Center
-          ) {
-            Box(
-              modifier = Modifier
-                .matchParentSize()
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.18f))
-                .clickable {
-                  if (Build.VERSION.SDK_INT >= 33) {
-                    pickMediaLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                  } else {
-                    permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-                  }
-                },
-              contentAlignment = Alignment.Center
-            ) {
-              if (displayProfile.photoUrl != null) {
-                  coil.compose.AsyncImage(
-                    model = displayProfile.photoUrl,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
-                  )
-              } else {
-                  Icon(
-                    Icons.Filled.Person,
-                    contentDescription = null,
-                    modifier = Modifier.size(32.dp),
-                    tint = MaterialTheme.colorScheme.secondary
-                  )
-              }
-            }
-            Box(
-              modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .offset(x = 4.dp, y = 4.dp)
-                .zIndex(1f)
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary)
-                .border(
-                  androidx.compose.foundation.BorderStroke(
-                    dimensionResource(id = com.horsegallop.R.dimen.width_divider_thin),
-                    MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
-                  ),
-                  shape = CircleShape
-                )
-                .clickable {
-                   if (Build.VERSION.SDK_INT >= 33) {
-                    pickMediaLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                  } else {
-                    permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-                  }
-                },
-              contentAlignment = Alignment.Center
-            ) {
-              Icon(
-                Icons.Filled.Edit,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(20.dp)
-              )
-            }
-          }
-          Column(
-            verticalArrangement = Arrangement.spacedBy(
-              dimensionResource(id = com.horsegallop.R.dimen.text_spacing_sm)
-            )
-          ) {
-            Text(
-              text = if (nameDisplay.isNotBlank()) nameDisplay else stringResource(id = com.horsegallop.R.string.default_user_name),
-              style = MaterialTheme.typography.titleLarge,
-              fontWeight = FontWeight.Bold,
-              color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-            Text(
-              text = displayProfile.email,
-              style = MaterialTheme.typography.bodyMedium,
-              color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-            )
-          }
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted: Boolean ->
+        if (granted) {
+            pickMediaLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
-      }
+    }
 
-      // Info Fields
-      SectionCard(
-          title = stringResource(id = com.horsegallop.R.string.profile),
-          subtitle = stringResource(id = com.horsegallop.R.string.profile_description)
-      ) {
-          if (!state.isEditing) {
-              ProfileInfoRow(icon = Icons.Filled.Person, label = stringResource(id = com.horsegallop.R.string.label_full_name), value = nameDisplay)
-              HorizontalDivider()
+    val openImagePicker: () -> Unit = {
+        if (Build.VERSION.SDK_INT >= 33) {
+            pickMediaLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        } else {
+            permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+    }
 
-              ProfileInfoRow(icon = Icons.Filled.Phone, label = stringResource(id = com.horsegallop.R.string.label_phone), value = formatMaskedPhone(displayProfile.countryCode, displayProfile.phone.filter { it.isDigit() }))
-              HorizontalDivider()
-              ProfileInfoRow(icon = Icons.Filled.CalendarToday, label = stringResource(id = com.horsegallop.R.string.label_birth_date), value = displayProfile.birthDate)
-              HorizontalDivider()
-              ProfileInfoRow(icon = Icons.Filled.Email, label = stringResource(id = com.horsegallop.R.string.label_email), value = displayProfile.email)
+    val profile = if (state.isEditing) state.draftProfile else state.userProfile
+    val fullName = listOf(profile.firstName, profile.lastName)
+        .filter { it.isNotBlank() }
+        .joinToString(" ")
+        .ifBlank { stringResource(id = R.string.default_user_name) }
 
-              HorizontalDivider()
-              ProfileInfoRow(icon = Icons.Filled.LocationOn, label = stringResource(id = com.horsegallop.R.string.label_city), value = displayProfile.city)
-          } else {
-            EditFieldBlock(icon = Icons.Filled.Person, label = stringResource(id = com.horsegallop.R.string.label_first_name)) {
-              OutlinedTextField(
-                value = displayProfile.firstName,
-                onValueChange = { viewModel.updateDraft(firstName = it) },
-                singleLine = true,
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .heightIn(min = dimensionResource(id = com.horsegallop.R.dimen.height_button_md)),
-                textStyle = MaterialTheme.typography.bodyMedium,
-                shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg)),
-                colors = OutlinedTextFieldDefaults.colors(
-                  focusedBorderColor = MaterialTheme.colorScheme.primary,
-                  unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                  focusedContainerColor = MaterialTheme.colorScheme.surface,
-                  unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                )
-              )
-            }
-            EditFieldBlock(icon = Icons.Filled.Person, label = stringResource(id = com.horsegallop.R.string.label_last_name)) {
-              OutlinedTextField(
-                value = displayProfile.lastName,
-                onValueChange = { viewModel.updateDraft(lastName = it) },
-                singleLine = true,
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .heightIn(min = dimensionResource(id = com.horsegallop.R.dimen.height_button_md)),
-                textStyle = MaterialTheme.typography.bodyMedium,
-                shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg)),
-                colors = OutlinedTextFieldDefaults.colors(
-                  focusedBorderColor = MaterialTheme.colorScheme.primary,
-                  unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                  focusedContainerColor = MaterialTheme.colorScheme.surface,
-                  unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                )
-              )
-            }
-            val countryCodes = state.countryCodes
-            EditFieldBlock(icon = Icons.Filled.Phone, label = stringResource(id = com.horsegallop.R.string.label_phone)) {
-              Row(
-                horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm)),
-                verticalAlignment = Alignment.CenterVertically
-              ) {
-                HorseGallopDropdown(
-                  value = displayProfile.countryCode,
-                  onValueChange = { viewModel.updateDraft(countryCode = it) },
-                  options = countryCodes,
-                  modifier = Modifier
-                    .width(110.dp)
-                    .heightIn(min = dimensionResource(id = com.horsegallop.R.dimen.height_button_md))
-                )
+    val cities = remember {
+        runCatching { context.resources.getStringArray(R.array.city_list).toList() }
+            .getOrElse { emptyList() }
+    }
 
-                OutlinedTextField(
-                  value = displayProfile.phone,
-                  onValueChange = { if (it.length <= 15 && it.all { c -> c.isDigit() }) viewModel.updateDraft(phone = it) },
-                  singleLine = true,
-                  modifier = Modifier
-                    .weight(1f)
-                    .heightIn(min = dimensionResource(id = com.horsegallop.R.dimen.height_button_md)),
-                  textStyle = MaterialTheme.typography.bodyMedium,
-                  shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg)),
-                  colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                  ),
-                  keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                  visualTransformation = PhoneVisualTransformation(displayProfile.countryCode)
-                )
-              }
-            }
-            // Date Picker (using simple TextField for now to match original logic but wired to VM)
-            // Original logic used a DatePickerDialog, I should ideally restore it.
-            // But for brevity and "simple explanation" I will use the text field with placeholder or simple click.
-            // Let's restore the DatePickerDialog behavior
-            val context = LocalContext.current
-            val calendar = Calendar.getInstance()
-            val datePickerDialog = android.app.DatePickerDialog(
-                context,
-                { _, year, month, dayOfMonth ->
-                    val formatted = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
-                    viewModel.updateDraft(birthDate = formatted)
+    if (state.error != null) {
+        LaunchedEffect(state.error) {
+            Toast.makeText(context, state.error, Toast.LENGTH_LONG).show()
+            viewModel.clearMessages()
+        }
+    }
+
+    if (state.successMessage != null) {
+        LaunchedEffect(state.successMessage) {
+            Toast.makeText(context, state.successMessage, Toast.LENGTH_SHORT).show()
+            viewModel.clearMessages()
+        }
+    }
+
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = if (state.isEditing) {
+                            "${stringResource(id = R.string.button_edit)} ${stringResource(id = R.string.profile)}"
+                        } else {
+                            stringResource(id = R.string.profile)
+                        },
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 },
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(id = R.string.back)
+                        )
+                    }
+                },
+                actions = {
+                    if (!state.isEditing) {
+                        IconButton(onClick = onSettings) {
+                            Icon(
+                                imageVector = Icons.Filled.Settings,
+                                contentDescription = stringResource(id = R.string.settings)
+                            )
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            ProfileHeaderCard(
+                profile = profile,
+                fullName = fullName,
+                onPhotoClick = openImagePicker
             )
 
-            EditFieldBlock(icon = Icons.Filled.CalendarToday, label = stringResource(id = com.horsegallop.R.string.label_birth_date)) {
-              HorseGallopDatePicker(
-                value = displayProfile.birthDate,
-                onDateSelected = { datePickerDialog.show() },
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .heightIn(min = dimensionResource(id = com.horsegallop.R.dimen.height_button_md))
-              )
-            }
+            if (state.isEditing) {
+                EditProfileSection(
+                    profile = profile,
+                    countryCodes = state.countryCodes,
+                    cities = cities,
+                    onUpdate = viewModel::updateDraft
+                )
 
-            // City
-            val cities = remember(context) {
-                try {
-                    context.resources.getStringArray(com.horsegallop.R.array.city_list).toList()
-                } catch (e: Exception) {
-                    com.horsegallop.core.debug.AppLog.e("ProfileScreen", "Error loading city list: ${e.message}")
-                    emptyList()
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { viewModel.toggleEdit() },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Text(text = stringResource(id = R.string.button_cancel))
+                    }
+
+                    Button(
+                        onClick = { viewModel.saveProfile() },
+                        enabled = !state.isLoading,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Text(text = stringResource(id = R.string.button_save))
+                    }
                 }
-            }
-            EditFieldBlock(icon = Icons.Filled.LocationOn, label = stringResource(id = com.horsegallop.R.string.label_city)) {
-              HorseGallopDropdown(
-                value = displayProfile.city,
-                onValueChange = { viewModel.updateDraft(city = it) },
-                options = cities,
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .heightIn(min = dimensionResource(id = com.horsegallop.R.dimen.height_button_md))
-              )
+            } else {
+                ProfileDetailSection(profile = profile, fullName = fullName)
+
+                ProfileActionSection(
+                    onEdit = { viewModel.toggleEdit() },
+                    onSettings = onSettings,
+                    onLogout = { viewModel.signOut(onLogout) }
+                )
             }
 
+            Spacer(modifier = Modifier.height(WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 24.dp))
+        }
+    }
 
-          }
-      }
+    HorseLoadingOverlay(visible = state.isLoading)
+}
 
-      // Buttons
-      if (state.isEditing) {
+@Composable
+private fun ProfileHeaderCard(
+    profile: UserProfile,
+    fullName: String,
+    onPhotoClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 3.dp,
+        border = androidx.compose.foundation.BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
+        )
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = androidx.compose.foundation.layout.WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 120.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedButton(
-                onClick = { viewModel.toggleEdit() },
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg))
-            ) {
-                Text(text = stringResource(id = com.horsegallop.R.string.button_cancel))
-            }
-            Button(
-                onClick = { viewModel.saveProfile() },
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg)),
-                enabled = !state.isLoading
-            ) {
-                Text(text = stringResource(id = com.horsegallop.R.string.button_save))
-            }
-        }
-      } else {
-        Button(
-            onClick = { viewModel.toggleEdit() },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer),
-            shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg))
-        ) {
-            Icon(Icons.Filled.Edit, null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text(stringResource(id = com.horsegallop.R.string.button_edit))
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        OutlinedButton(
-            onClick = onSettings,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg))
-        ) {
-            Icon(Icons.Filled.Settings, null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text(stringResource(id = com.horsegallop.R.string.settings))
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        OutlinedButton(
-            onClick = { viewModel.signOut(onLogout) },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = com.horsegallop.ui.theme.AppColors.Destructive),
-            border = androidx.compose.foundation.BorderStroke(1.dp, com.horsegallop.ui.theme.AppColors.Destructive),
-            shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg))
-        ) {
-            Text(stringResource(id = com.horsegallop.R.string.logout))
-        }
-
-
-      }
-      Spacer(modifier = Modifier.height(140.dp))
-    }
-  }
-  HorseLoadingOverlay(visible = state.isLoading)
-  }
-
-
-
-
-}
-
-@Composable
-fun ProfileInfoRow(icon: ImageVector, label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
-        Spacer(Modifier.width(16.dp))
-        Column {
-            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(if (value.isNotBlank()) value else "-", style = MaterialTheme.typography.bodyLarge)
-        }
-    }
-}
-
-@Composable
-fun EditableInfoRow(icon: ImageVector, label: String, content: @Composable () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
-        Spacer(Modifier.width(16.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.height(4.dp))
-            content()
-        }
-    }
-}
-
-@Composable
-private fun EditFieldBlock(
-    icon: ImageVector,
-    label: String,
-    content: @Composable () -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
-            Spacer(Modifier.width(10.dp))
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        Surface(
-            shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg)),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-            border = androidx.compose.foundation.BorderStroke(
-                dimensionResource(id = com.horsegallop.R.dimen.width_divider_thin),
-                MaterialTheme.colorScheme.outlineVariant
-            )
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
+                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f)
+                        )
+                    )
+                )
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(6.dp)
+                modifier = Modifier.size(88.dp),
+                contentAlignment = Alignment.Center
             ) {
-                content()
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.14f))
+                        .clickable(onClick = onPhotoClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (!profile.photoUrl.isNullOrBlank()) {
+                        AsyncImage(
+                            model = profile.photoUrl,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Filled.Person,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(34.dp)
+                        )
+                    }
+                }
+
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(30.dp)
+                        .clickable(onClick = onPhotoClick),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primary,
+                    border = androidx.compose.foundation.BorderStroke(
+                        width = 1.dp,
+                        color = Color.White.copy(alpha = 0.75f)
+                    )
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Filled.Edit,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = fullName,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Text(
+                    text = profile.email,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                if (profile.city.isNotBlank()) {
+                    Surface(
+                        shape = RoundedCornerShape(999.dp),
+                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.65f)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.LocationOn,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                            Text(
+                                text = profile.city,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun SectionCard(
+private fun ProfileDetailSection(
+    profile: UserProfile,
+    fullName: String
+) {
+    ProfileSection(
+        title = stringResource(id = R.string.profile),
+        subtitle = stringResource(id = R.string.profile_description)
+    ) {
+        ProfileInfoRow(
+            icon = Icons.Filled.Person,
+            label = stringResource(id = R.string.label_full_name),
+            value = fullName
+        )
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+        ProfileInfoRow(
+            icon = Icons.Filled.Phone,
+            label = stringResource(id = R.string.label_phone),
+            value = formatMaskedPhone(profile.countryCode, profile.phone.filter { it.isDigit() })
+        )
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+        ProfileInfoRow(
+            icon = Icons.Filled.CalendarToday,
+            label = stringResource(id = R.string.label_birth_date),
+            value = profile.birthDate
+        )
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+        ProfileInfoRow(
+            icon = Icons.Filled.Email,
+            label = stringResource(id = R.string.label_email),
+            value = profile.email
+        )
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+        ProfileInfoRow(
+            icon = Icons.Filled.LocationOn,
+            label = stringResource(id = R.string.label_city),
+            value = profile.city
+        )
+    }
+}
+
+@Composable
+private fun ProfileActionSection(
+    onEdit: () -> Unit,
+    onSettings: () -> Unit,
+    onLogout: () -> Unit
+) {
+    ProfileSection(
+        title = stringResource(id = R.string.settings),
+        subtitle = stringResource(id = R.string.profile_description)
+    ) {
+        Button(
+            onClick = onEdit,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Edit,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = stringResource(id = R.string.button_edit))
+        }
+
+        OutlinedButton(
+            onClick = onSettings,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            shape = RoundedCornerShape(14.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Settings,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = stringResource(id = R.string.settings))
+        }
+
+        OutlinedButton(
+            onClick = onLogout,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.Destructive),
+            border = androidx.compose.foundation.BorderStroke(1.dp, AppColors.Destructive)
+        ) {
+            Text(text = stringResource(id = R.string.logout))
+        }
+    }
+}
+
+@Composable
+private fun EditProfileSection(
+    profile: UserProfile,
+    countryCodes: List<String>,
+    cities: List<String>,
+    onUpdate: (
+        firstName: String?,
+        lastName: String?,
+        phone: String?,
+        city: String?,
+        birthDate: String?,
+        countryCode: String?
+    ) -> Unit
+) {
+    val context = LocalContext.current
+    val calendar = remember { Calendar.getInstance() }
+    val datePickerDialog = remember {
+        android.app.DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                val formatted = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
+                onUpdate(null, null, null, null, formatted, null)
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
+    }
+
+    ProfileSection(
+        title = "${stringResource(id = R.string.button_edit)} ${stringResource(id = R.string.profile)}",
+        subtitle = stringResource(id = R.string.profile_description)
+    ) {
+        EditFieldBlock(icon = Icons.Filled.Person, label = stringResource(id = R.string.label_first_name)) {
+            OutlinedTextField(
+                value = profile.firstName,
+                onValueChange = { onUpdate(it, null, null, null, null, null) },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 52.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = profileFieldColors()
+            )
+        }
+
+        EditFieldBlock(icon = Icons.Filled.Person, label = stringResource(id = R.string.label_last_name)) {
+            OutlinedTextField(
+                value = profile.lastName,
+                onValueChange = { onUpdate(null, it, null, null, null, null) },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 52.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = profileFieldColors()
+            )
+        }
+
+        EditFieldBlock(icon = Icons.Filled.Email, label = stringResource(id = R.string.label_email)) {
+            OutlinedTextField(
+                value = profile.email,
+                onValueChange = {},
+                readOnly = true,
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 52.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = profileFieldColors()
+            )
+        }
+
+        EditFieldBlock(icon = Icons.Filled.Phone, label = stringResource(id = R.string.label_phone)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                HorseGallopDropdown(
+                    value = profile.countryCode,
+                    onValueChange = { onUpdate(null, null, null, null, null, it) },
+                    options = countryCodes,
+                    modifier = Modifier.width(110.dp)
+                )
+
+                OutlinedTextField(
+                    value = profile.phone,
+                    onValueChange = {
+                        if (it.length <= 15 && it.all { c -> c.isDigit() }) {
+                            onUpdate(null, null, it, null, null, null)
+                        }
+                    },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    visualTransformation = PhoneVisualTransformation(profile.countryCode),
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = 52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = profileFieldColors()
+                )
+            }
+        }
+
+        EditFieldBlock(icon = Icons.Filled.CalendarToday, label = stringResource(id = R.string.label_birth_date)) {
+            HorseGallopDatePicker(
+                value = profile.birthDate,
+                onDateSelected = { datePickerDialog.show() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 52.dp)
+            )
+        }
+
+        EditFieldBlock(icon = Icons.Filled.LocationOn, label = stringResource(id = R.string.label_city)) {
+            HorseGallopDropdown(
+                value = profile.city,
+                onValueChange = { onUpdate(null, null, null, it, null, null) },
+                options = cities,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 52.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun profileFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedBorderColor = MaterialTheme.colorScheme.primary,
+    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+    focusedContainerColor = MaterialTheme.colorScheme.surface,
+    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+    disabledBorderColor = MaterialTheme.colorScheme.outlineVariant,
+    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)
+)
+
+@Composable
+private fun ProfileSection(
     title: String,
     subtitle: String,
-    content: @Composable () -> Unit
+    content: @Composable ColumnScope.() -> Unit
 ) {
     Surface(
-        shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg)),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surface,
-        shadowElevation = dimensionResource(id = com.horsegallop.R.dimen.elevation_sm),
+        tonalElevation = 2.dp,
+        shadowElevation = 1.dp,
         border = androidx.compose.foundation.BorderStroke(
-            dimensionResource(id = com.horsegallop.R.dimen.width_divider_thin),
-            MaterialTheme.colorScheme.outlineVariant
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.58f)
         )
     ) {
         Column(
-            modifier = Modifier.padding(dimensionResource(id = com.horsegallop.R.dimen.padding_card_md)),
-            verticalArrangement = Arrangement.spacedBy(
-                dimensionResource(id = com.horsegallop.R.dimen.list_item_spacing_md)
-            )
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
                 text = title,
@@ -548,15 +651,82 @@ private fun SectionCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            HorizontalDivider()
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f))
             content()
         }
     }
 }
 
-class PhoneVisualTransformation(val countryCode: String) : VisualTransformation {
+@Composable
+private fun ProfileInfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(34.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+        Column {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = value.ifBlank { "-" },
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
+@Composable
+private fun EditFieldBlock(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    content: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        content()
+    }
+}
+
+class PhoneVisualTransformation(private val countryCode: String) : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
-        return TransformedText(text, OffsetMapping.Identity) // Simplified for now
+        return TransformedText(text, OffsetMapping.Identity)
     }
 }
 

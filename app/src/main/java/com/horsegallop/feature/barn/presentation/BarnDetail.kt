@@ -3,6 +3,7 @@
 package com.horsegallop.feature.barn.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -17,11 +18,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
@@ -37,6 +41,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import java.util.Locale
 
 @Composable
 fun BarnDetailScreen(
@@ -44,11 +49,26 @@ fun BarnDetailScreen(
     viewModel: BarnDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val topBarTitle = when (val state = uiState) {
+        is BarnDetailUiState.Success -> state.barn.barn.name
+        else -> stringResource(id = R.string.barn_detail_title)
+    }
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            TopAppBar(
-                title = { Text(text = "") },
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = topBarTitle,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -57,14 +77,21 @@ fun BarnDetailScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.96f),
+                    scrolledContainerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface
-                )
+                ),
+                scrollBehavior = scrollBehavior
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
             when (val state = uiState) {
                 is BarnDetailUiState.Loading -> BarnDetailShimmer()
                 is BarnDetailUiState.Success -> BarnDetailContent(barn = state.barn)
@@ -72,7 +99,11 @@ fun BarnDetailScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = state.message)
+                    Text(
+                        text = state.message,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
@@ -83,161 +114,69 @@ fun BarnDetailScreen(
 fun BarnDetailContent(barn: BarnWithLocation) {
     val context = LocalContext.current
     var showReservationSheet by remember { mutableStateOf(false) }
-    
-    Box(modifier = Modifier.fillMaxSize()) {
+    val ratingText = if (barn.barn.rating > 0.0) {
+        String.format(Locale.US, "%.1f", barn.barn.rating)
+    } else {
+        "4.8"
+    }
+    val reviewSummary = if (barn.barn.reviewCount > 0) {
+        "${barn.barn.reviewCount} reviews"
+    } else {
+        stringResource(id = R.string.barn_detail_top_rated)
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.surface
+                    )
+                )
+            )
+    ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 100.dp)
+            contentPadding = PaddingValues(bottom = 118.dp)
         ) {
             item {
                 val barnLocation = LatLng(barn.lat, barn.lng)
                 val cameraPositionState = rememberCameraPositionState {
                     position = CameraPosition.fromLatLngZoom(barnLocation, 15f)
                 }
-                
+
                 Box(
                     modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
                         .fillMaxWidth()
                         .height(280.dp)
+                        .clip(RoundedCornerShape(28.dp))
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f),
+                            shape = RoundedCornerShape(28.dp)
+                        )
                 ) {
-                    GoogleMap(
-                        modifier = Modifier.fillMaxSize(),
-                        cameraPositionState = cameraPositionState,
-                        uiSettings = MapUiSettings(
-                            zoomControlsEnabled = false,
-                            scrollGesturesEnabled = false,
-                            zoomGesturesEnabled = false,
-                            tiltGesturesEnabled = false,
-                            rotationGesturesEnabled = false,
-                            mapToolbarEnabled = false
+                    if (!barn.barn.heroImageUrl.isNullOrBlank()) {
+                        AsyncImage(
+                            model = barn.barn.heroImageUrl,
+                            contentDescription = barn.barn.name,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
                         )
-                    ) {
-                        Marker(
-                            state = MarkerState(position = barnLocation),
-                            title = barn.barn.name
-                        )
-                    }
-                    // Gradient overlay for text visibility
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .background(
-                                androidx.compose.ui.graphics.Brush.verticalGradient(
-                                    colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.4f))
-                                )
-                            )
-                    )
-                }
-            }
-
-            // Title and Rating
-            item {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Text(
-                            text = barn.barn.name,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.primaryContainer
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Star,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "4.8",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            }
-                        }
-                    }
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.LocationOn,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = barn.barn.location.ifEmpty { stringResource(id = com.horsegallop.R.string.unknown_location) },
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-
-            // Description
-            item {
-                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                    Text(
-                        text = stringResource(id = com.horsegallop.R.string.barn_detail_description),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = barn.barn.description.ifEmpty { stringResource(id = com.horsegallop.R.string.barn_description_fallback) },
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                    )
-                }
-            }
-            
-            // Map Location
-            item {
-                val barnLocation = LatLng(barn.lat, barn.lng)
-                val cameraPositionState = rememberCameraPositionState {
-                    position = CameraPosition.fromLatLngZoom(barnLocation, 14f)
-                }
-                
-                Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
-                    Text(
-                        text = stringResource(id = com.horsegallop.R.string.label_location),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color.LightGray)
-                    ) {
+                    } else {
                         GoogleMap(
                             modifier = Modifier.fillMaxSize(),
                             cameraPositionState = cameraPositionState,
-                            googleMapOptionsFactory = {
-                                GoogleMapOptions().liteMode(true)
-                            },
                             uiSettings = MapUiSettings(
                                 zoomControlsEnabled = false,
                                 scrollGesturesEnabled = false,
                                 zoomGesturesEnabled = false,
                                 tiltGesturesEnabled = false,
-                                rotationGesturesEnabled = false
+                                rotationGesturesEnabled = false,
+                                mapToolbarEnabled = false
                             )
                         ) {
                             Marker(
@@ -246,51 +185,238 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                             )
                         }
                     }
-                }
-            }
 
-            item { Spacer(modifier = Modifier.height(24.dp)) }
-
-            // Amenities / Tags
-            item {
-                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                    Text(
-                        text = stringResource(id = com.horsegallop.R.string.barn_detail_amenities),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.62f))
+                                )
+                            )
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(barn.barn.tags.ifEmpty { listOf("Parking", "Cafe", "Lessons", "Trail") }) { tag ->
+
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = barn.barn.name,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color.White
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = null,
+                                tint = Color.White.copy(alpha = 0.92f),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = barn.barn.location.ifEmpty { stringResource(id = R.string.unknown_location) },
+                                style = MaterialTheme.typography.labelLarge,
+                                color = Color.White.copy(alpha = 0.92f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
-                                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.secondaryContainer)
+                                shape = RoundedCornerShape(12.dp),
+                                color = Color.Black.copy(alpha = 0.26f)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Star,
+                                        contentDescription = null,
+                                        tint = Color(0xFFFFC85E),
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = ratingText,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = Color.Black.copy(alpha = 0.22f)
                             ) {
                                 Text(
-                                    text = tag.replace("_", " ").replaceFirstChar { it.uppercase() },
+                                    text = reviewSummary,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                     style = MaterialTheme.typography.labelMedium,
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    color = Color.White
                                 )
                             }
                         }
                     }
                 }
             }
+
+            item {
+                Surface(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 2.dp,
+                    shadowElevation = 1.dp,
+                    border = androidx.compose.foundation.BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(18.dp)) {
+                        Text(
+                            text = stringResource(id = R.string.barn_detail_description),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = barn.barn.description.ifEmpty { stringResource(id = R.string.barn_description_fallback) },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            item {
+                val barnLocation = LatLng(barn.lat, barn.lng)
+                val cameraPositionState = rememberCameraPositionState {
+                    position = CameraPosition.fromLatLngZoom(barnLocation, 14f)
+                }
+
+                Surface(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 2.dp,
+                    border = androidx.compose.foundation.BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(18.dp)) {
+                        Text(
+                            text = stringResource(id = R.string.label_location),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(190.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                        ) {
+                            GoogleMap(
+                                modifier = Modifier.fillMaxSize(),
+                                cameraPositionState = cameraPositionState,
+                                googleMapOptionsFactory = {
+                                    GoogleMapOptions().liteMode(true)
+                                },
+                                uiSettings = MapUiSettings(
+                                    zoomControlsEnabled = false,
+                                    scrollGesturesEnabled = false,
+                                    zoomGesturesEnabled = false,
+                                    tiltGesturesEnabled = false,
+                                    rotationGesturesEnabled = false
+                                )
+                            ) {
+                                Marker(
+                                    state = MarkerState(position = barnLocation),
+                                    title = barn.barn.name
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                Surface(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 2.dp,
+                    border = androidx.compose.foundation.BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(18.dp)) {
+                        Text(
+                            text = stringResource(id = R.string.barn_detail_amenities),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(barn.barn.tags.ifEmpty { listOf("Parking", "Cafe", "Lessons", "Trail") }) { tag ->
+                                Surface(
+                                    shape = RoundedCornerShape(10.dp),
+                                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f),
+                                    border = androidx.compose.foundation.BorderStroke(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.secondary.copy(alpha = 0.34f)
+                                    )
+                                ) {
+                                    Text(
+                                        text = tag.replace("_", " ").replaceFirstChar { it.uppercase() },
+                                        style = MaterialTheme.typography.labelMedium,
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            item { Spacer(modifier = Modifier.height(32.dp)) }
         }
-        
-        // Bottom Action Bar
+
         Surface(
             modifier = Modifier.align(Alignment.BottomCenter),
-            shadowElevation = 16.dp,
+            shadowElevation = 24.dp,
+            tonalElevation = 6.dp,
             color = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+            border = androidx.compose.foundation.BorderStroke(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
+            )
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp)
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
                     .navigationBarsPadding(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -299,7 +425,15 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                     modifier = Modifier
                         .weight(1f)
                         .height(56.dp),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f),
+                        contentColor = MaterialTheme.colorScheme.primary
+                    ),
+                    border = androidx.compose.foundation.BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                    )
                 ) {
                     Text(stringResource(id = com.horsegallop.R.string.contact))
                 }
@@ -308,7 +442,11 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                     modifier = Modifier
                         .weight(2f)
                         .height(56.dp),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = MaterialTheme.colorScheme.onSecondary
+                    )
                 ) {
                     Text(stringResource(id = com.horsegallop.R.string.book_lesson))
                 }
@@ -486,12 +624,13 @@ fun ReservationContent(onConfirm: () -> Unit) {
 
 @Composable
 fun BarnDetailShimmer() {
+    val shimmerBase = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
     Column(modifier = Modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(250.dp)
-                .background(Color.LightGray)
+                .background(shimmerBase)
         )
         Spacer(modifier = Modifier.height(16.dp))
         Box(
@@ -499,7 +638,7 @@ fun BarnDetailShimmer() {
                 .padding(horizontal = 16.dp)
                 .width(200.dp)
                 .height(32.dp)
-                .background(Color.LightGray, RoundedCornerShape(4.dp))
+                .background(shimmerBase, RoundedCornerShape(8.dp))
         )
         Spacer(modifier = Modifier.height(8.dp))
         Box(
@@ -507,7 +646,7 @@ fun BarnDetailShimmer() {
                 .padding(horizontal = 16.dp)
                 .width(150.dp)
                 .height(24.dp)
-                .background(Color.LightGray, RoundedCornerShape(4.dp))
+                .background(shimmerBase, RoundedCornerShape(8.dp))
         )
     }
 }
