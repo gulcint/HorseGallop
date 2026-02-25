@@ -318,10 +318,12 @@
     <string name="button_edit">Edit</string>
     
     <!-- Barn Detail -->
+    <string name="barn_detail_title">Barn Details</string>
     <string name="barn_detail_location">Location</string>
     <string name="barn_detail_description">Description</string>
     <string name="barn_detail_amenities">Amenities</string>
     <string name="barn_detail_book_now">Book Now</string>
+    <string name="barn_detail_top_rated">Top rated</string>
     <string name="unknown_location">Unknown Location</string>
     <string name="label_location">Location</string>
 

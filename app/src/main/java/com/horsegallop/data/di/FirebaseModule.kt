@@ -5,6 +5,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.storage.FirebaseStorage
 import dagger.Module
 import dagger.Provides
@@ -28,6 +29,10 @@ object FirebaseModule {
     @Provides
     @Singleton
     fun provideFirebaseStorage(): FirebaseStorage = FirebaseStorage.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideFirebaseFunctions(): FirebaseFunctions = FirebaseFunctions.getInstance("us-central1")
 
     @Provides
     @Singleton
