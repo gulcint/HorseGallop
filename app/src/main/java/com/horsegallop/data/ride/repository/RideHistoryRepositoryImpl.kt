@@ -48,14 +48,24 @@ class RideHistoryRepositoryImpl @Inject constructor(
             try {
                 val remote = apiService.getMyRidesV2().map { dto ->
                     val seconds = (dto.startedAt?.get("_seconds") as? Number)?.toLong() ?: 0L
+                    val distanceKm = (dto.distanceKm ?: 0.0).toFloat()
+                    val durationSec = ((dto.durationMin ?: 0.0) * 60).toInt()
+                    val avgSpeedFallback = if (durationSec > 0) {
+                        (distanceKm / (durationSec / 3600f)).coerceAtLeast(0f)
+                    } else {
+                        0f
+                    }
                     RideSession(
                         id = dto.id,
                         dateMillis = seconds * 1000L,
-                        durationSec = ((dto.durationMin ?: 0.0) * 60).toInt(),
-                        distanceKm = (dto.distanceKm ?: 0.0).toFloat(),
+                        durationSec = durationSec,
+                        distanceKm = distanceKm,
                         calories = (dto.calories ?: 0.0).toInt(),
                         pathPoints = emptyList<GeoPoint>(),
-                        barnName = dto.barnName
+                        barnName = dto.barnName,
+                        avgSpeedKmh = (dto.avgSpeedKmh?.toFloat() ?: avgSpeedFallback),
+                        maxSpeedKmh = (dto.maxSpeedKmh?.toFloat() ?: avgSpeedFallback),
+                        rideType = dto.rideType
                     )
                 }
                 _history.value = remote

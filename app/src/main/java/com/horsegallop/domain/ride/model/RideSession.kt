@@ -7,5 +7,8 @@ data class RideSession(
     val distanceKm: Float,
     val calories: Int,
     val pathPoints: List<GeoPoint>,
-    val barnName: String? = null
+    val barnName: String? = null,
+    val avgSpeedKmh: Float = 0f,
+    val maxSpeedKmh: Float = 0f,
+    val rideType: String? = null
 )

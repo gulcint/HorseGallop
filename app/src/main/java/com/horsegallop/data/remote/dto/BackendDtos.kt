@@ -30,5 +30,8 @@ data class BackendRideDto(
     val durationMin: Double?,
     val calories: Double?,
     val status: String?,
-    val barnName: String?
+    val barnName: String?,
+    val avgSpeedKmh: Double? = null,
+    val maxSpeedKmh: Double? = null,
+    val rideType: String? = null
 )

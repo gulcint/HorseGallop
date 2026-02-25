@@ -7,24 +7,30 @@ on:
     branches: ["main"]
     types: [opened, reopened, synchronize]
   workflow_dispatch:
+    inputs:
+      run_ftl:
+        description: "Run Firebase Test Lab after Android CI"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: write
+  id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-test:
+  android-ci:
+    name: android-ci
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     env:
       GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
       GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
-      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-      FTL_RESULTS_BUCKET: ${{ secrets.FTL_RESULTS_BUCKET }}
-      FTL_MODEL_ID: oriole
-      FTL_VERSION_ID: "33"
-      FTL_LOCALE: en
-      FTL_ORIENTATION: portrait
 
     steps:
       - name: Checkout
@@ -33,13 +39,15 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: "17"
+          distribution: "temurin"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: wrapper
+          cache-disabled: false
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork }}
 
       - name: Grant execute permission
         run: chmod +x gradlew
@@ -69,21 +77,83 @@ jobs:
         with:
           name: app-debug
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - name: Upload Lint Reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-debug-reports
+          path: |
+            app/build/reports/lint-results-debug.html
+            app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt
+          if-no-files-found: warn
+
+      - name: Cache Behavior Note
+        if: ${{ always() }}
+        run: |
+          {
+            echo "## Gradle Cache"
+            echo ""
+            echo "- Cache restore/save warnings are non-fatal."
+            echo "- Build fails only on compile/test/lint failures."
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+  firebase-test-lab:
+    name: firebase-test-lab
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: android-ci
+    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_ftl == 'true') }}
+    env:
+      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      FTL_RESULTS_BUCKET: ${{ secrets.FTL_RESULTS_BUCKET }}
+      FTL_MODEL_ID: oriole
+      FTL_VERSION_ID: "33"
+      FTL_LOCALE: en
+      FTL_ORIENTATION: portrait
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download APK Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug
+
+      - name: Check GCP Secrets
+        id: gcp_precheck
+        run: |
+          set -euo pipefail
+          if [ -z "${GCP_SA_KEY:-}" ] || [ -z "${GCP_PROJECT_ID:-}" ]; then
+            echo "::warning::Skipping Firebase Test Lab because GCP_SA_KEY or GCP_PROJECT_ID is missing."
+            {
+              echo "## Firebase Test Lab"
+              echo ""
+              echo "- Skipped: missing required GCP secrets."
+            } >> "${GITHUB_STEP_SUMMARY}"
+            echo "ready=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          echo "ready=true" >> "${GITHUB_OUTPUT}"
 
       - name: Authenticate to Google Cloud
-        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' }}
+        if: ${{ steps.gcp_precheck.outputs.ready == 'true' }}
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ env.GCP_SA_KEY }}
 
       - name: Set up gcloud CLI
-        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' }}
+        if: ${{ steps.gcp_precheck.outputs.ready == 'true' }}
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ env.GCP_PROJECT_ID }}
 
       - name: Check Firebase Test Lab API readiness
-        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' }}
+        if: ${{ steps.gcp_precheck.outputs.ready == 'true' }}
         id: ftl_precheck
         run: |
           set -euo pipefail
@@ -92,12 +162,10 @@ jobs:
           if ! ENABLED_SERVICES="$(gcloud services list --enabled --project "${GCP_PROJECT_ID}" --format='value(config.name)' 2>/tmp/ftl-precheck-services.err)"; then
             echo "::warning::Skipping Firebase Test Lab because the CI service account cannot list enabled APIs for project ${GCP_PROJECT_ID}."
             {
-              echo "### Firebase Test Lab skipped"
+              echo "## Firebase Test Lab"
               echo ""
-              echo "Reason: CI service account cannot list enabled APIs."
-              echo ""
-              echo "Grant Service Usage Consumer (roles/serviceusage.serviceUsageConsumer)"
-              echo "or enable required APIs with a higher-privilege account."
+              echo "- Skipped: CI service account cannot list enabled APIs."
+              echo "- Grant Service Usage Consumer (roles/serviceusage.serviceUsageConsumer)."
             } >> "${GITHUB_STEP_SUMMARY}"
             echo "ready=false" >> "${GITHUB_OUTPUT}"
             exit 0
@@ -114,10 +182,9 @@ jobs:
             MISSING_CSV="$(IFS=,; echo "${MISSING_SERVICES[*]}")"
             echo "::warning::Skipping Firebase Test Lab because required APIs are disabled: ${MISSING_CSV}"
             {
-              echo "### Firebase Test Lab skipped"
+              echo "## Firebase Test Lab"
               echo ""
-              echo "Missing APIs: ${MISSING_CSV}"
-              echo "Enable these APIs in Google Cloud, then rerun this workflow."
+              echo "- Skipped: missing APIs (${MISSING_CSV})."
             } >> "${GITHUB_STEP_SUMMARY}"
             echo "ready=false" >> "${GITHUB_OUTPUT}"
           else
@@ -125,7 +192,7 @@ jobs:
           fi
 
       - name: Validate Firebase Test Lab device config
-        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' && steps.ftl_precheck.outputs.ready == 'true' }}
+        if: ${{ steps.gcp_precheck.outputs.ready == 'true' && steps.ftl_precheck.outputs.ready == 'true' }}
         run: |
           set -euo pipefail
           MODEL_FOUND="$(gcloud firebase test android models list --format='value(id)' | grep -x "${FTL_MODEL_ID}" || true)"
@@ -143,7 +210,7 @@ jobs:
           echo "Using FTL device: model=${FTL_MODEL_ID},version=${FTL_VERSION_ID},locale=${FTL_LOCALE},orientation=${FTL_ORIENTATION}"
 
       - name: Run Firebase Test Lab (Robo Test)
-        if: ${{ env.GCP_SA_KEY != '' && env.GCP_PROJECT_ID != '' && steps.ftl_precheck.outputs.ready == 'true' }}
+        if: ${{ steps.gcp_precheck.outputs.ready == 'true' && steps.ftl_precheck.outputs.ready == 'true' }}
         id: ftl
         run: |
           set -euo pipefail
@@ -172,7 +239,7 @@ jobs:
             "gs://${{ steps.ftl.outputs.results_bucket }}/${{ steps.ftl.outputs.results_dir }}" \
             firebase_test_results || true
 
-      - name: Upload Test Results
+      - name: Upload Firebase Test Results
         if: ${{ always() && steps.ftl_precheck.outputs.ready == 'true' && steps.ftl.outputs.results_bucket != '' && steps.ftl.outputs.results_dir != '' }}
         uses: actions/upload-artifact@v4
         with:

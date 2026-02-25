@@ -1,16 +1,24 @@
 package com.horsegallop.data.ride.repository
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority
+import androidx.core.content.ContextCompat
 import com.horsegallop.core.debug.AppLog
+import com.horsegallop.data.remote.dto.GeoPointDto
+import com.horsegallop.data.remote.dto.StartRideRequestDto
+import com.horsegallop.data.remote.dto.StopRideRequestDto
 import com.horsegallop.domain.ride.model.GeoPoint
 import com.horsegallop.domain.ride.model.RideMetrics
 import com.horsegallop.domain.ride.model.RideSession
 import com.horsegallop.domain.ride.repository.RideHistoryRepository
 import com.horsegallop.domain.ride.repository.RideRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -24,6 +32,7 @@ import kotlin.math.sqrt
 
 @Singleton
 class RideRepositoryImpl @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val fusedLocationClient: FusedLocationProviderClient,
     private val rideHistoryRepository: RideHistoryRepository,
     private val apiService: com.horsegallop.data.remote.ApiService
@@ -50,11 +59,18 @@ class RideRepositoryImpl @Inject constructor(
     private var speedSamples: Int = 0
     private var speedSum: Double = 0.0
     private var maxSpeed: Double = 0.0
+    private var currentRideType: String? = null
 
-    override suspend fun startRide(weightKg: Float) {
+    override suspend fun startRide(weightKg: Float, rideType: String?) {
         if (_isRiding.value) return
+        if (!hasLocationPermission()) {
+            AppLog.e("RideRepositoryImpl", "Cannot start ride without location permission")
+            _isRiding.value = false
+            return
+        }
         _isRiding.value = true
         userWeightKg = weightKg
+        currentRideType = normalizeRideType(rideType)
         startTimeMillis = System.currentTimeMillis()
         lastLocationTimeMillis = null
         accumulatedCalories = 0.0
@@ -65,8 +81,8 @@ class RideRepositoryImpl @Inject constructor(
         _rideMetrics.value = RideMetrics(pathPoints = emptyList())
         currentRideId = try {
             apiService.startRide(
-                com.horsegallop.data.remote.dto.StartRideRequestDto(
-                    rideType = null,
+                StartRideRequestDto(
+                    rideType = currentRideType,
                     startLocation = null
                 )
             ).id
@@ -81,14 +97,19 @@ class RideRepositoryImpl @Inject constructor(
             val metrics = _rideMetrics.value
             // Save ride session
             if (metrics.pathPoints.isNotEmpty()) {
+                val avgSpeedKmh = if (speedSamples > 0) speedSum / speedSamples else 0.0
+                val downsampledPath = downsamplePath(metrics.pathPoints, 1500)
                 val session = RideSession(
                     id = UUID.randomUUID().toString(),
                     dateMillis = startTimeMillis,
                     durationSec = metrics.durationSec,
                     distanceKm = metrics.distanceKm,
                     calories = metrics.calories,
-                    pathPoints = metrics.pathPoints,
-                    barnName = barnName
+                    pathPoints = downsampledPath,
+                    barnName = barnName,
+                    avgSpeedKmh = avgSpeedKmh.toFloat(),
+                    maxSpeedKmh = maxSpeed.toFloat(),
+                    rideType = currentRideType
                 )
                 rideHistoryRepository.saveRide(session)
             }
@@ -97,12 +118,12 @@ class RideRepositoryImpl @Inject constructor(
                 val avgSpeedKmh = if (speedSamples > 0) speedSum / speedSamples else 0.0
                 val durationMin = metrics.durationSec / 60.0
                 val points = downsamplePath(metrics.pathPoints, 500).map {
-                    com.horsegallop.data.remote.dto.GeoPointDto(it.latitude, it.longitude, null)
+                    GeoPointDto(it.latitude, it.longitude, null)
                 }
                 try {
                     apiService.stopRide(
                         rideId,
-                        com.horsegallop.data.remote.dto.StopRideRequestDto(
+                        StopRideRequestDto(
                             distanceKm = metrics.distanceKm.toDouble(),
                             durationMin = durationMin,
                             calories = metrics.calories.toDouble(),
@@ -120,6 +141,7 @@ class RideRepositoryImpl @Inject constructor(
         stopLocationUpdates()
         _rideMetrics.update { it.copy(speedKmh = 0f) }
         currentRideId = null
+        currentRideType = null
     }
 
     override suspend fun setAutoDetect(enabled: Boolean) {
@@ -127,6 +149,11 @@ class RideRepositoryImpl @Inject constructor(
     }
 
     private fun startLocationUpdates() {
+        if (!hasLocationPermission()) {
+            _isRiding.value = false
+            AppLog.e("RideRepositoryImpl", "Location permission missing before requesting updates")
+            return
+        }
         val request = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY,
             2000L
@@ -238,6 +265,23 @@ class RideRepositoryImpl @Inject constructor(
             locationCallback = null
             lastLocationTimeMillis = null
         }
+    }
+
+    private fun hasLocationPermission(): Boolean {
+        val fineGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val coarseGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        return fineGranted || coarseGranted
+    }
+
+    private fun normalizeRideType(raw: String?): String? {
+        val normalized = raw?.trim()?.lowercase() ?: return null
+        return normalized.takeIf { it in setOf("dressage", "show_jumping", "endurance", "trail_riding") }
     }
 
     private fun stopLocationUpdates() {
