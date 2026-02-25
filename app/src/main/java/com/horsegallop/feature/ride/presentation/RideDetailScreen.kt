@@ -5,10 +5,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -93,7 +95,7 @@ fun RideDetailScreen(
                         Row(modifier = Modifier.fillMaxWidth()) {
                             StatItem(
                                 modifier = Modifier.weight(1f),
-                                icon = Icons.Default.Speed,
+                                icon = Icons.Default.Straighten,
                                 value = String.format("%.2f", ride.distanceKm),
                                 unit = stringResource(R.string.unit_km),
                                 label = stringResource(R.string.stat_distance)
@@ -102,16 +104,54 @@ fun RideDetailScreen(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.AccessTime,
                                 value = formatDuration(ride.durationSec),
-                                unit = stringResource(R.string.unit_time),
+                                unit = "",
                                 label = stringResource(R.string.stat_duration)
                             )
                             StatItem(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.LocalFireDepartment,
-                                value = "${ride.calories}",
+                                value = ride.calories.toString(),
                                 unit = stringResource(R.string.unit_kcal),
                                 label = stringResource(R.string.label_energy)
                             )
+                        }
+
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            StatItem(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Default.Speed,
+                                value = String.format("%.1f", ride.avgSpeedKmh),
+                                unit = stringResource(R.string.unit_kmh),
+                                label = stringResource(R.string.ride_avg_speed)
+                            )
+                            StatItem(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.AutoMirrored.Filled.TrendingUp,
+                                value = String.format("%.1f", ride.maxSpeedKmh),
+                                unit = stringResource(R.string.unit_kmh),
+                                label = stringResource(R.string.ride_max_speed)
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+
+                        if (!ride.rideType.isNullOrBlank()) {
+                            val rideTypeLabel = rideTypeToLabel(ride.rideType)
+                            Card(
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = stringResource(
+                                        id = R.string.ride_type_saved_format,
+                                        rideTypeLabel
+                                    ),
+                                    modifier = Modifier.padding(16.dp),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
                         }
                         
                         if (!ride.barnName.isNullOrEmpty()) {
@@ -253,4 +293,14 @@ private fun formatDuration(seconds: Int): String {
     val m = (seconds % 3600) / 60
     val s = seconds % 60
     return if (h > 0) String.format("%d:%02d:%02d", h, m, s) else String.format("%02d:%02d", m, s)
+}
+
+private fun rideTypeToLabel(rideType: String?): String {
+    return when (rideType?.lowercase()) {
+        "dressage" -> "Dressage"
+        "show_jumping" -> "Show Jumping"
+        "endurance" -> "Endurance"
+        "trail_riding" -> "Trail Riding"
+        else -> rideType.orEmpty()
+    }
 }

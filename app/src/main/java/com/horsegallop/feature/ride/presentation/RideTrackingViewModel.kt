@@ -1,0 +1,188 @@
+package com.horsegallop.feature.ride.presentation
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.horsegallop.R
+import com.horsegallop.domain.auth.usecase.GetCurrentUserIdUseCase
+import com.horsegallop.domain.auth.usecase.GetUserProfileUseCase
+import com.horsegallop.domain.barn.model.BarnWithLocation
+import com.horsegallop.domain.barn.repository.BarnRepository
+import com.horsegallop.domain.ride.usecase.ObserveIsRidingUseCase
+import com.horsegallop.domain.ride.usecase.ObserveRideMetricsUseCase
+import com.horsegallop.domain.ride.usecase.SetAutoDetectUseCase
+import com.horsegallop.domain.ride.usecase.StartRideUseCase
+import com.horsegallop.domain.ride.usecase.StopRideUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+@HiltViewModel
+class RideTrackingViewModel @Inject constructor(
+    private val startRideUseCase: StartRideUseCase,
+    private val stopRideUseCase: StopRideUseCase,
+    private val observeRideMetricsUseCase: ObserveRideMetricsUseCase,
+    private val observeIsRidingUseCase: ObserveIsRidingUseCase,
+    private val setAutoDetectUseCase: SetAutoDetectUseCase,
+    private val barnRepository: BarnRepository,
+    private val getUserProfileUseCase: GetUserProfileUseCase,
+    private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(RideUiState())
+    val uiState: StateFlow<RideUiState> = _uiState.asStateFlow()
+
+    private var userWeightKg: Float = 70f
+
+    init {
+        combine(
+            observeIsRidingUseCase(),
+            observeRideMetricsUseCase()
+        ) { isRiding, metrics ->
+            isRiding to metrics
+        }.onEach { (isRiding, metrics) ->
+            _uiState.update { previous ->
+                val averageSpeed = calculateAverageSpeed(metrics.distanceKm, metrics.durationSec)
+                val nextMaxSpeed = if (isRiding) {
+                    maxOf(previous.maxSpeedKmh, metrics.speedKmh)
+                } else {
+                    previous.maxSpeedKmh
+                }
+                previous.copy(
+                    isRiding = isRiding,
+                    speedKmh = metrics.speedKmh,
+                    avgSpeedKmh = averageSpeed,
+                    maxSpeedKmh = nextMaxSpeed,
+                    distanceKm = metrics.distanceKm,
+                    durationSec = metrics.durationSec,
+                    calories = metrics.calories,
+                    pathPoints = metrics.pathPoints
+                )
+            }
+        }.launchIn(viewModelScope)
+
+        barnRepository.getBarns().onEach { barns ->
+            _uiState.update { state ->
+                state.copy(
+                    barns = barns,
+                    selectedBarn = state.selectedBarn ?: barns.firstOrNull()
+                )
+            }
+        }.launchIn(viewModelScope)
+
+        loadUserProfileWeight()
+    }
+
+    fun onRideTypeSelected(rideType: RideType) {
+        _uiState.update { it.copy(selectedRideType = rideType) }
+    }
+
+    fun onBarnSelected(barn: BarnWithLocation) {
+        _uiState.update { it.copy(selectedBarn = barn) }
+    }
+
+    fun onToggleRide(hasLocationPermission: Boolean) {
+        if (_uiState.value.isRiding) {
+            finishRide()
+        } else {
+            startRide(hasLocationPermission)
+        }
+    }
+
+    fun onSetAutoDetect(enabled: Boolean) {
+        viewModelScope.launch {
+            setAutoDetectUseCase(enabled)
+            _uiState.update { it.copy(autoDetect = enabled) }
+        }
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(errorMessageResId = null) }
+    }
+
+    fun dismissSavedSummary() {
+        _uiState.update { it.copy(savedRideSummary = null) }
+    }
+
+    private fun startRide(hasLocationPermission: Boolean) {
+        if (!hasLocationPermission) {
+            _uiState.update { it.copy(errorMessageResId = R.string.ride_permission_required) }
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val rideType = _uiState.value.selectedRideType.backendValue
+                _uiState.update {
+                    it.copy(
+                        errorMessageResId = null,
+                        savedRideSummary = null,
+                        maxSpeedKmh = 0f,
+                        avgSpeedKmh = 0f
+                    )
+                }
+                startRideUseCase(userWeightKg, rideType)
+            } catch (_: Exception) {
+                _uiState.update { it.copy(errorMessageResId = R.string.error_unknown) }
+            }
+        }
+    }
+
+    private fun finishRide() {
+        val snapshot = _uiState.value
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSaving = true) }
+            try {
+                stopRideUseCase(snapshot.selectedBarn?.barn?.name)
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        errorMessageResId = null,
+                        savedRideSummary = SavedRideSummary(
+                            durationSec = snapshot.durationSec,
+                            distanceKm = snapshot.distanceKm,
+                            calories = snapshot.calories,
+                            avgSpeedKmh = snapshot.avgSpeedKmh,
+                            maxSpeedKmh = snapshot.maxSpeedKmh,
+                            rideType = snapshot.selectedRideType,
+                            barnName = snapshot.selectedBarn?.barn?.name,
+                            savedAtMillis = System.currentTimeMillis()
+                        )
+                    )
+                }
+            } catch (_: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        errorMessageResId = R.string.error_unknown
+                    )
+                }
+            }
+        }
+    }
+
+    private fun calculateAverageSpeed(distanceKm: Float, durationSec: Int): Float {
+        if (durationSec <= 0) return 0f
+        val hours = durationSec / 3600f
+        if (hours <= 0f) return 0f
+        return distanceKm / hours
+    }
+
+    private fun loadUserProfileWeight() {
+        val uid = getCurrentUserIdUseCase() ?: return
+        viewModelScope.launch {
+            getUserProfileUseCase(uid).collect { result ->
+                result.onSuccess { profile ->
+                    userWeightKg = profile.weight ?: 70f
+                }
+            }
+        }
+    }
+}
