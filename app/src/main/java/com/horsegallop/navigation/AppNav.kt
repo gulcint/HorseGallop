@@ -35,9 +35,11 @@ import com.horsegallop.domain.model.UserRole
 import androidx.compose.runtime.remember
 import com.horsegallop.feature.auth.presentation.LoginScreen
 import com.horsegallop.feature.auth.presentation.EmailLoginScreen
+import com.horsegallop.feature.auth.presentation.EditProfileScreen
 import com.horsegallop.feature.auth.presentation.EnrollmentScreen
 import com.horsegallop.feature.auth.presentation.ForgotPasswordScreen
 import com.horsegallop.feature.auth.presentation.ProfileScreen
+import com.horsegallop.feature.auth.presentation.ProfileViewModel
 import com.horsegallop.feature.barn.presentation.BarnDetailScreen
 import com.horsegallop.feature.home.presentation.HomeScreen
 import com.horsegallop.feature.onboarding.presentation.OnboardingScreen
@@ -61,6 +63,7 @@ sealed class Dest(val route: String) {
   object ForgotPassword : Dest("forgotPassword")
   object Enroll : Dest("enroll")
   object Profile : Dest("profile")
+  object ProfileEdit : Dest("profile/edit")
   object Settings : Dest("settings")
   object BarnDetail : Dest("barnDetail/{id}") {
     fun routeWithId(id: String): String = "barnDetail/$id"
@@ -263,14 +266,27 @@ fun AppNavHost(
       )
     }
     composable(Dest.Profile.route) {
+      val profileViewModel: ProfileViewModel = hiltViewModel()
       ProfileScreen(
         onBack = { navController.popBackStack() },
         onSettings = { navController.navigate(Dest.Settings.route) },
+        onEditProfile = { navController.navigate(Dest.ProfileEdit.route) },
         onLogout = {
           navController.navigate(Dest.Onboarding.route) {
             popUpTo(Dest.Home.route) { inclusive = true }
           }
-        }
+        },
+        viewModel = profileViewModel
+      )
+    }
+    composable(Dest.ProfileEdit.route) { backStackEntry ->
+      val parentEntry = remember(backStackEntry) {
+        navController.getBackStackEntry(Dest.Profile.route)
+      }
+      val profileViewModel: ProfileViewModel = hiltViewModel(parentEntry)
+      EditProfileScreen(
+        onBack = { navController.popBackStack() },
+        viewModel = profileViewModel
       )
     }
     composable(Dest.Settings.route) {

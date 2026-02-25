@@ -216,7 +216,8 @@
     <string name="auth_success">Authentication successful</string>
     
     <!-- Profile -->
-    <string name="profile_description">Manage your profile</string>
+    <string name="profile_description">Keep your rider identity and contact details up to date.</string>
+    <string name="profile_saved_success">Profile updated successfully</string>
     <string name="delete_account">Delete Account</string>
     <string name="delete_account_confirmation">Are you sure you want to delete your account?</string>
     <string name="delete_account_failed">Failed to delete account</string>
@@ -311,11 +312,24 @@
     <string name="label_birth_date">Date of Birth</string>
     <string name="label_email">Email</string>
     <string name="label_city">City</string>
+    <string name="label_weight">Weight</string>
+    <string name="unit_kg">kg</string>
     <string name="label_first_name">First Name</string>
     <string name="label_last_name">Last Name</string>
     <string name="button_cancel">Cancel</string>
     <string name="button_save">Save</string>
     <string name="button_edit">Edit</string>
+    <string name="edit_profile_title">Edit Profile</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="profile_snapshot_title">Rider Snapshot</string>
+    <string name="profile_actions_title">Account Actions</string>
+    <string name="profile_section_personal">Personal Information</string>
+    <string name="profile_section_contact">Contact Information</string>
+    <string name="profile_section_health">Health Information</string>
+    <string name="validation_first_name_required">First name is required</string>
+    <string name="validation_last_name_required">Last name is required</string>
+    <string name="validation_phone_invalid">Phone must contain only digits and be up to 15 characters.</string>
+    <string name="validation_weight_invalid">Weight must be between 0 and 500 kg.</string>
     
     <!-- Barn Detail -->
     <string name="barn_detail_title">Barn Details</string>
