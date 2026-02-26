@@ -1,6 +1,7 @@
 package com.horsegallop.feature.ride.presentation
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -101,6 +102,29 @@ class RideTrackingScreenTest {
         composeRule.runOnIdle {
             assertTrue(retryTriggered)
         }
+    }
+
+    @Test
+    fun syncedStatus_showsStatusCardWithoutRetryButton() {
+        composeRule.setContent {
+            RideTrackingContent(
+                state = sampleIdleState().copy(
+                    pendingSyncCount = 0,
+                    lastStopSyncStatus = com.horsegallop.domain.ride.model.RideSyncStatus.Synced
+                ),
+                hasLocationPermission = true,
+                onRequestLocationPermission = {},
+                onToggleRide = {},
+                onSetAutoDetect = {},
+                onBarnSelected = {},
+                onRideTypeSelected = {},
+                onDismissSavedSummary = {},
+                onRetryPendingSync = {}
+            )
+        }
+
+        composeRule.onNodeWithTag(RideTestTags.SyncStatusCard).assertIsDisplayed()
+        composeRule.onNodeWithTag(RideTestTags.RetrySyncButton).assertDoesNotExist()
     }
 
     private fun sampleIdleState(): RideUiState {

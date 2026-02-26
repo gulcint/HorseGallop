@@ -10,6 +10,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import java.io.IOException
+import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RideRepositoryImplTest {
@@ -71,6 +72,47 @@ class RideRepositoryImplTest {
         assertEquals(3_600_000L, orchestrator.retryDelayMillis(40))
     }
 
+    @Test
+    fun retryDuePendingSync_onlyProcessesDueItems() = runTest {
+        val (store, orchestrator) = buildStoreAndOrchestrator()
+        val now = System.currentTimeMillis()
+        val due = pendingEntry(rideId = "ride-due", nextRetryAtMillis = now - 1_000L)
+        val notDue = pendingEntry(rideId = "ride-not-due", nextRetryAtMillis = now + 60_000L)
+        store.append(due)
+        store.append(notDue)
+
+        var called = 0
+        orchestrator.retryDuePendingSync { _, _ -> called += 1 }
+
+        assertEquals(1, called)
+        val remainingRideIds = store.snapshot().map { it.rideId }
+        assertEquals(listOf("ride-not-due"), remainingRideIds)
+    }
+
+    @Test
+    fun purgeExpired_removesItemsOlderThan24Hours() = runTest {
+        val (store, orchestrator) = buildStoreAndOrchestrator()
+        val now = System.currentTimeMillis()
+        val maxAgeMillis = 24 * 60 * 60 * 1000L
+        val expired = pendingEntry(
+            rideId = "ride-expired",
+            createdAtMillis = now - maxAgeMillis - 1L,
+            nextRetryAtMillis = now - 1_000L
+        )
+        val fresh = pendingEntry(
+            rideId = "ride-fresh",
+            createdAtMillis = now - 10_000L,
+            nextRetryAtMillis = now - 1_000L
+        )
+        store.append(expired)
+        store.append(fresh)
+
+        orchestrator.retryDuePendingSync { _, _ -> throw IOException("network") }
+
+        val remainingRideIds = store.snapshot().map { it.rideId }
+        assertEquals(listOf("ride-fresh"), remainingRideIds)
+    }
+
     private fun buildStoreAndOrchestrator(): Pair<RideSyncOutboxStore, RideStopSyncOrchestrator> {
         val tempFile = File.createTempFile("ride_sync_outbox_test", ".json").apply {
             writeText("[]")
@@ -88,5 +130,19 @@ class RideRepositoryImplTest {
         avgSpeedKmh = 12.0,
         maxSpeedKmh = 18.0,
         pathPoints = emptyList()
+    )
+
+    private fun pendingEntry(
+        rideId: String,
+        createdAtMillis: Long = System.currentTimeMillis(),
+        nextRetryAtMillis: Long = createdAtMillis
+    ): PendingRideStopSync = PendingRideStopSync(
+        id = UUID.randomUUID().toString(),
+        rideId = rideId,
+        request = sampleRequest(),
+        retryCount = 0,
+        nextRetryAtMillis = nextRetryAtMillis,
+        createdAtMillis = createdAtMillis,
+        lastErrorMessage = null
     )
 }

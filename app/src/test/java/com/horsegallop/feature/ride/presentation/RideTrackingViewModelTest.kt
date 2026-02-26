@@ -150,6 +150,35 @@ class RideTrackingViewModelTest {
         assertTrue(fakeRideRepository.retryCallCount >= initialRetryCount + 1)
     }
 
+    @Test
+    fun pendingThenZero_updatesStatusToSynced() = runTest {
+        val (viewModel, fakeRideRepository) = buildViewModel()
+        fakeRideRepository.stopRideResult = StopRideResult(
+            localSaved = true,
+            remoteSynced = false,
+            pendingSyncId = "pending-1"
+        )
+        fakeRideRepository.pendingSyncCountFlow.value = 2
+        fakeRideRepository.metricsFlow.value = RideMetrics(
+            speedKmh = 9f,
+            distanceKm = 1.9f,
+            durationSec = 480,
+            calories = 120,
+            pathPoints = listOf(GeoPoint(41.0, 29.0), GeoPoint(41.01, 29.01))
+        )
+        fakeRideRepository.isRidingFlow.value = true
+        advanceUntilIdle()
+
+        viewModel.onToggleRide(hasLocationPermission = true)
+        advanceUntilIdle()
+        assertEquals(RideSyncStatus.Pending, viewModel.uiState.value.lastStopSyncStatus)
+
+        fakeRideRepository.pendingSyncCountFlow.value = 0
+        advanceUntilIdle()
+
+        assertEquals(RideSyncStatus.Synced, viewModel.uiState.value.lastStopSyncStatus)
+    }
+
     private fun buildViewModel(): Pair<RideTrackingViewModel, FakeRideRepository> {
         val fakeRideRepository = FakeRideRepository()
         val fakeBarnRepository = FakeBarnRepository()
