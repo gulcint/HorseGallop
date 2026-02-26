@@ -159,6 +159,7 @@ jobs:
       GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
       FTL_RESULTS_BUCKET: ${{ secrets.FTL_RESULTS_BUCKET }}
+      FTL_STRICT_GATE: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_ftl == 'true') }}
       FTL_MODEL_ID: oriole
       FTL_VERSION_ID: "33"
       FTL_LOCALE: en
@@ -179,6 +180,16 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "${GCP_SA_KEY:-}" ] || [ -z "${GCP_PROJECT_ID:-}" ]; then
+            if [ "${FTL_STRICT_GATE}" = "true" ]; then
+              echo "::error::RC gate failed because FTL prerequisites are missing/disabled."
+              {
+                echo "## Firebase Test Lab"
+                echo ""
+                echo "- RC gate failed because FTL prerequisites are missing/disabled."
+                echo "- Missing required GCP secrets (GCP_SA_KEY or GCP_PROJECT_ID)."
+              } >> "${GITHUB_STEP_SUMMARY}"
+              exit 1
+            fi
             echo "::warning::Skipping Firebase Test Lab because GCP_SA_KEY or GCP_PROJECT_ID is missing."
             {
               echo "## Firebase Test Lab"
@@ -210,6 +221,17 @@ jobs:
           REQUIRED_SERVICES=("firebase.googleapis.com" "testing.googleapis.com" "toolresults.googleapis.com")
 
           if ! ENABLED_SERVICES="$(gcloud services list --enabled --project "${GCP_PROJECT_ID}" --format='value(config.name)' 2>/tmp/ftl-precheck-services.err)"; then
+            if [ "${FTL_STRICT_GATE}" = "true" ]; then
+              echo "::error::RC gate failed because FTL prerequisites are missing/disabled."
+              {
+                echo "## Firebase Test Lab"
+                echo ""
+                echo "- RC gate failed because FTL prerequisites are missing/disabled."
+                echo "- CI service account cannot list enabled APIs for project ${GCP_PROJECT_ID}."
+                echo "- Required role: Service Usage Consumer (roles/serviceusage.serviceUsageConsumer)."
+              } >> "${GITHUB_STEP_SUMMARY}"
+              exit 1
+            fi
             echo "::warning::Skipping Firebase Test Lab because the CI service account cannot list enabled APIs for project ${GCP_PROJECT_ID}."
             {
               echo "## Firebase Test Lab"
@@ -230,6 +252,16 @@ jobs:
 
           if [ "${#MISSING_SERVICES[@]}" -gt 0 ]; then
             MISSING_CSV="$(IFS=,; echo "${MISSING_SERVICES[*]}")"
+            if [ "${FTL_STRICT_GATE}" = "true" ]; then
+              echo "::error::RC gate failed because FTL prerequisites are missing/disabled."
+              {
+                echo "## Firebase Test Lab"
+                echo ""
+                echo "- RC gate failed because FTL prerequisites are missing/disabled."
+                echo "- Missing required APIs: ${MISSING_CSV}."
+              } >> "${GITHUB_STEP_SUMMARY}"
+              exit 1
+            fi
             echo "::warning::Skipping Firebase Test Lab because required APIs are disabled: ${MISSING_CSV}"
             {
               echo "## Firebase Test Lab"

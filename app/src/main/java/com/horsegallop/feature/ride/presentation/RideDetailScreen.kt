@@ -96,7 +96,7 @@ fun RideDetailScreen(
                             StatItem(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.Straighten,
-                                value = String.format("%.2f", ride.distanceKm),
+                                value = String.format(Locale.getDefault(), "%.2f", ride.distanceKm),
                                 unit = stringResource(R.string.unit_km),
                                 label = stringResource(R.string.stat_distance)
                             )
@@ -120,14 +120,14 @@ fun RideDetailScreen(
                             StatItem(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.Speed,
-                                value = String.format("%.1f", ride.avgSpeedKmh),
+                                value = String.format(Locale.getDefault(), "%.1f", ride.avgSpeedKmh),
                                 unit = stringResource(R.string.unit_kmh),
                                 label = stringResource(R.string.ride_avg_speed)
                             )
                             StatItem(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.AutoMirrored.Filled.TrendingUp,
-                                value = String.format("%.1f", ride.maxSpeedKmh),
+                                value = String.format(Locale.getDefault(), "%.1f", ride.maxSpeedKmh),
                                 unit = stringResource(R.string.unit_kmh),
                                 label = stringResource(R.string.ride_max_speed)
                             )
@@ -296,7 +296,11 @@ private fun formatDuration(seconds: Int): String {
     val h = seconds / 3600
     val m = (seconds % 3600) / 60
     val s = seconds % 60
-    return if (h > 0) String.format("%d:%02d:%02d", h, m, s) else String.format("%02d:%02d", m, s)
+    return if (h > 0) {
+        String.format(Locale.getDefault(), "%d:%02d:%02d", h, m, s)
+    } else {
+        String.format(Locale.getDefault(), "%02d:%02d", m, s)
+    }
 }
 
 private fun rideTypeToLabel(rideType: String?): String {

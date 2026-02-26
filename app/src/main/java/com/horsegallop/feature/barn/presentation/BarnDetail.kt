@@ -475,9 +475,9 @@ fun BarnDetailContent(barn: BarnWithLocation) {
 
 @Composable
 fun ReservationContent(onConfirm: () -> Unit) {
-    var selectedDateIndex by remember { mutableStateOf(0) }
-    var selectedTimeIndex by remember { mutableStateOf<Int?>(null) }
-    var selectedInstructorIndex by remember { mutableStateOf<Int?>(null) }
+    var selectedDateIndex by remember { mutableIntStateOf(0) }
+    var selectedTimeIndex by remember { mutableIntStateOf(-1) }
+    var selectedInstructorIndex by remember { mutableIntStateOf(-1) }
 
     // Mock Instructors - TODO: Fetch from backend
     val instructors = listOf(
@@ -613,7 +613,7 @@ fun ReservationContent(onConfirm: () -> Unit) {
         
         Button(
             onClick = onConfirm,
-            enabled = selectedTimeIndex != null && selectedInstructorIndex != null,
+            enabled = selectedTimeIndex >= 0 && selectedInstructorIndex >= 0,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
