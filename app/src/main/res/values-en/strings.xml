@@ -51,4 +51,9 @@
     <string name="ride_permission_hint">Enable location permission to record route, speed, and distance accurately.</string>
     <string name="ride_finish_and_save">Finish &amp; Save</string>
     <string name="ride_type_saved_format">Ride Type: %1$s</string>
+    <string name="ride_sync_pending">Locally saved. Cloud sync pending.</string>
+    <string name="ride_sync_pending_count">%1$d pending cloud sync</string>
+    <string name="ride_sync_completed">Cloud sync completed.</string>
+    <string name="ride_sync_failed">Cloud sync failed. Retry required.</string>
+    <string name="ride_sync_retry">Retry Sync</string>
 </resources>

@@ -13,10 +13,13 @@ import com.horsegallop.domain.model.User
 import com.horsegallop.domain.model.UserRole
 import com.horsegallop.domain.ride.model.GeoPoint
 import com.horsegallop.domain.ride.model.RideMetrics
-import com.horsegallop.domain.ride.model.RideSession
+import com.horsegallop.domain.ride.model.RideSyncStatus
+import com.horsegallop.domain.ride.model.StopRideResult
 import com.horsegallop.domain.ride.repository.RideRepository
 import com.horsegallop.domain.ride.usecase.ObserveIsRidingUseCase
+import com.horsegallop.domain.ride.usecase.ObservePendingRideSyncCountUseCase
 import com.horsegallop.domain.ride.usecase.ObserveRideMetricsUseCase
+import com.horsegallop.domain.ride.usecase.RetryPendingRideSyncUseCase
 import com.horsegallop.domain.ride.usecase.SetAutoDetectUseCase
 import com.horsegallop.domain.ride.usecase.StartRideUseCase
 import com.horsegallop.domain.ride.usecase.StopRideUseCase
@@ -102,6 +105,51 @@ class RideTrackingViewModelTest {
         assertEquals("Caddebostan Arena", fakeRideRepository.lastStopBarnName)
     }
 
+    @Test
+    fun pendingSyncCount_updatesUiState() = runTest {
+        val (viewModel, fakeRideRepository) = buildViewModel()
+
+        fakeRideRepository.pendingSyncCountFlow.value = 2
+        advanceUntilIdle()
+
+        assertEquals(2, viewModel.uiState.value.pendingSyncCount)
+    }
+
+    @Test
+    fun stopRide_withPendingSync_setsPendingStatus() = runTest {
+        val (viewModel, fakeRideRepository) = buildViewModel()
+        fakeRideRepository.stopRideResult = StopRideResult(
+            localSaved = true,
+            remoteSynced = false,
+            pendingSyncId = "pending-1"
+        )
+        fakeRideRepository.metricsFlow.value = RideMetrics(
+            speedKmh = 10f,
+            distanceKm = 2.3f,
+            durationSec = 600,
+            calories = 140,
+            pathPoints = listOf(GeoPoint(41.0, 29.0), GeoPoint(41.01, 29.01))
+        )
+        fakeRideRepository.isRidingFlow.value = true
+        advanceUntilIdle()
+
+        viewModel.onToggleRide(hasLocationPermission = true)
+        advanceUntilIdle()
+
+        assertEquals(RideSyncStatus.Pending, viewModel.uiState.value.lastStopSyncStatus)
+    }
+
+    @Test
+    fun onRetryPendingSync_callsRepositoryRetry() = runTest {
+        val (viewModel, fakeRideRepository) = buildViewModel()
+        val initialRetryCount = fakeRideRepository.retryCallCount
+
+        viewModel.onRetryPendingSync()
+        advanceUntilIdle()
+
+        assertTrue(fakeRideRepository.retryCallCount >= initialRetryCount + 1)
+    }
+
     private fun buildViewModel(): Pair<RideTrackingViewModel, FakeRideRepository> {
         val fakeRideRepository = FakeRideRepository()
         val fakeBarnRepository = FakeBarnRepository()
@@ -113,6 +161,8 @@ class RideTrackingViewModelTest {
             stopRideUseCase = StopRideUseCase(fakeRideRepository),
             observeRideMetricsUseCase = ObserveRideMetricsUseCase(fakeRideRepository),
             observeIsRidingUseCase = ObserveIsRidingUseCase(fakeRideRepository),
+            observePendingRideSyncCountUseCase = ObservePendingRideSyncCountUseCase(fakeRideRepository),
+            retryPendingRideSyncUseCase = RetryPendingRideSyncUseCase(fakeRideRepository),
             setAutoDetectUseCase = SetAutoDetectUseCase(fakeRideRepository),
             barnRepository = fakeBarnRepository,
             getUserProfileUseCase = GetUserProfileUseCase(fakeProfileRepository),
@@ -139,22 +189,35 @@ class RideMainDispatcherRule(
 private class FakeRideRepository : RideRepository {
     val isRidingFlow = MutableStateFlow(false)
     val metricsFlow = MutableStateFlow(RideMetrics())
+    val pendingSyncCountFlow = MutableStateFlow(0)
 
     var lastStartRideType: String? = null
     var lastStopBarnName: String? = null
     var autoDetectValue: Boolean = false
+    var stopRideResult: StopRideResult = StopRideResult(
+        localSaved = true,
+        remoteSynced = true,
+        pendingSyncId = null
+    )
+    var retryCallCount: Int = 0
 
     override val isRiding: Flow<Boolean> = isRidingFlow
     override val rideMetrics: Flow<RideMetrics> = metricsFlow
+    override val pendingSyncCount: Flow<Int> = pendingSyncCountFlow
 
     override suspend fun startRide(weightKg: Float, rideType: String?) {
         lastStartRideType = rideType
         isRidingFlow.value = true
     }
 
-    override suspend fun stopRide(barnName: String?) {
+    override suspend fun stopRide(barnName: String?): StopRideResult {
         lastStopBarnName = barnName
         isRidingFlow.value = false
+        return stopRideResult
+    }
+
+    override suspend fun retryPendingRideSync() {
+        retryCallCount += 1
     }
 
     override suspend fun setAutoDetect(enabled: Boolean) {

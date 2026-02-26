@@ -16,9 +16,11 @@ import com.horsegallop.data.remote.dto.StopRideRequestDto
 import com.horsegallop.domain.ride.model.GeoPoint
 import com.horsegallop.domain.ride.model.RideMetrics
 import com.horsegallop.domain.ride.model.RideSession
+import com.horsegallop.domain.ride.model.StopRideResult
 import com.horsegallop.domain.ride.repository.RideHistoryRepository
 import com.horsegallop.domain.ride.repository.RideRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -35,7 +37,8 @@ class RideRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val fusedLocationClient: FusedLocationProviderClient,
     private val rideHistoryRepository: RideHistoryRepository,
-    private val apiService: com.horsegallop.data.remote.ApiService
+    private val apiService: com.horsegallop.data.remote.ApiService,
+    private val stopSyncOrchestrator: RideStopSyncOrchestrator
 ) : RideRepository {
 
     private val _isRiding = MutableStateFlow(false)
@@ -47,6 +50,7 @@ class RideRepositoryImpl @Inject constructor(
         )
     )
     override val rideMetrics = _rideMetrics.asStateFlow()
+    override val pendingSyncCount: Flow<Int> = stopSyncOrchestrator.pendingSyncCount
 
     private var isAutoDetectEnabled = false
 
@@ -92,7 +96,10 @@ class RideRepositoryImpl @Inject constructor(
         startLocationUpdates()
     }
 
-    override suspend fun stopRide(barnName: String?) {
+    override suspend fun stopRide(barnName: String?): StopRideResult {
+        var localSaved = false
+        var remoteSynced = false
+        var pendingSyncId: String? = null
         if (_isRiding.value) {
             val metrics = _rideMetrics.value
             // Save ride session
@@ -112,36 +119,48 @@ class RideRepositoryImpl @Inject constructor(
                     rideType = currentRideType
                 )
                 rideHistoryRepository.saveRide(session)
+                localSaved = true
             }
             val rideId = currentRideId
-            if (rideId != null) {
-                val avgSpeedKmh = if (speedSamples > 0) speedSum / speedSamples else 0.0
-                val durationMin = metrics.durationSec / 60.0
-                val points = downsamplePath(metrics.pathPoints, 500).map {
-                    GeoPointDto(it.latitude, it.longitude, null)
-                }
-                try {
-                    apiService.stopRide(
-                        rideId,
-                        StopRideRequestDto(
-                            distanceKm = metrics.distanceKm.toDouble(),
-                            durationMin = durationMin,
-                            calories = metrics.calories.toDouble(),
-                            avgSpeedKmh = avgSpeedKmh,
-                            maxSpeedKmh = maxSpeed,
-                            pathPoints = points
-                        )
-                    )
-                } catch (e: Exception) {
-                    // Ignore backend sync failures; local history is still saved
-                }
+            val avgSpeedKmh = if (speedSamples > 0) speedSum / speedSamples else 0.0
+            val durationMin = metrics.durationSec / 60.0
+            val points = downsamplePath(metrics.pathPoints, 500).map {
+                GeoPointDto(it.latitude, it.longitude, null)
             }
+            val stopRequest = StopRideRequestDto(
+                distanceKm = metrics.distanceKm.toDouble(),
+                durationMin = durationMin,
+                calories = metrics.calories.toDouble(),
+                avgSpeedKmh = avgSpeedKmh,
+                maxSpeedKmh = maxSpeed,
+                pathPoints = points
+            )
+            val syncResult = stopSyncOrchestrator.syncStopOrQueue(
+                rideId = rideId,
+                request = stopRequest,
+                stopRemote = { id, body ->
+                    apiService.stopRide(id, body)
+                }
+            )
+            remoteSynced = syncResult.remoteSynced
+            pendingSyncId = syncResult.pendingSyncId
         }
         _isRiding.value = false
         stopLocationUpdates()
         _rideMetrics.update { it.copy(speedKmh = 0f) }
         currentRideId = null
         currentRideType = null
+        return StopRideResult(
+            localSaved = localSaved,
+            remoteSynced = remoteSynced,
+            pendingSyncId = pendingSyncId
+        )
+    }
+
+    override suspend fun retryPendingRideSync() {
+        stopSyncOrchestrator.retryDuePendingSync { id, body ->
+            apiService.stopRide(id, body)
+        }
     }
 
     override suspend fun setAutoDetect(enabled: Boolean) {

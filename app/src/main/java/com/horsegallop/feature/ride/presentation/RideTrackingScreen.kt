@@ -90,6 +90,8 @@ import com.horsegallop.R
 import com.horsegallop.domain.barn.model.BarnUi
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.ride.model.GeoPoint
+import com.horsegallop.domain.ride.model.RideSyncStatus
+import java.util.Locale
 
 @Composable
 fun RideTrackingRoute(
@@ -151,6 +153,7 @@ fun RideTrackingScreen(
             onBarnSelected = viewModel::onBarnSelected,
             onRideTypeSelected = viewModel::onRideTypeSelected,
             onDismissSavedSummary = viewModel::dismissSavedSummary,
+            onRetryPendingSync = viewModel::onRetryPendingSync,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -169,6 +172,7 @@ fun RideTrackingContent(
     onBarnSelected: (BarnWithLocation) -> Unit,
     onRideTypeSelected: (RideType) -> Unit,
     onDismissSavedSummary: () -> Unit,
+    onRetryPendingSync: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showStopDialog by remember { mutableStateOf(false) }
@@ -200,6 +204,15 @@ fun RideTrackingContent(
     ) {
         item {
             RideHeader(isRiding = state.isRiding)
+        }
+
+        item {
+            SyncStatusCard(
+                pendingSyncCount = state.pendingSyncCount,
+                lastStatus = state.lastStopSyncStatus,
+                isRetrying = state.isRetryingSync,
+                onRetryPendingSync = onRetryPendingSync
+            )
         }
 
         if (!hasLocationPermission) {
@@ -325,6 +338,70 @@ private fun RideHeader(isRiding: Boolean) {
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SyncStatusCard(
+    pendingSyncCount: Int,
+    lastStatus: RideSyncStatus?,
+    isRetrying: Boolean,
+    onRetryPendingSync: () -> Unit
+) {
+    if (pendingSyncCount <= 0 && lastStatus == null) return
+
+    val statusText = when {
+        pendingSyncCount > 0 -> stringResource(
+            id = R.string.ride_sync_pending_count,
+            pendingSyncCount
+        )
+        lastStatus == RideSyncStatus.Synced -> stringResource(id = R.string.ride_sync_completed)
+        else -> stringResource(id = R.string.ride_sync_failed)
+    }
+
+    val containerColor = when {
+        pendingSyncCount > 0 -> MaterialTheme.colorScheme.secondaryContainer
+        lastStatus == RideSyncStatus.Synced -> MaterialTheme.colorScheme.tertiaryContainer
+        else -> MaterialTheme.colorScheme.errorContainer
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(RideTestTags.SyncStatusCard),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = containerColor)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = statusText,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            if (pendingSyncCount > 0) {
+                OutlinedButton(
+                    onClick = onRetryPendingSync,
+                    enabled = !isRetrying,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(RideTestTags.RetrySyncButton),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Text(
+                        text = if (isRetrying) {
+                            stringResource(id = R.string.loading)
+                        } else {
+                            stringResource(id = R.string.ride_sync_retry)
+                        }
+                    )
+                }
             }
         }
     }
@@ -599,14 +676,14 @@ private fun MetricsGrid(state: RideUiState) {
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.Speed,
                 label = stringResource(id = R.string.ride_avg_speed),
-                value = String.format("%.1f", state.avgSpeedKmh),
+                value = String.format(Locale.US, "%.1f", state.avgSpeedKmh),
                 unit = stringResource(id = R.string.unit_kmh)
             )
             MetricTile(
                 modifier = Modifier.weight(1f),
                 icon = Icons.AutoMirrored.Filled.DirectionsRun,
                 label = stringResource(id = R.string.label_speed),
-                value = String.format("%.1f", state.speedKmh),
+                value = String.format(Locale.US, "%.1f", state.speedKmh),
                 unit = stringResource(id = R.string.unit_kmh)
             )
         }
@@ -615,14 +692,14 @@ private fun MetricsGrid(state: RideUiState) {
                 modifier = Modifier.weight(1f),
                 icon = Icons.AutoMirrored.Filled.TrendingUp,
                 label = stringResource(id = R.string.ride_max_speed),
-                value = String.format("%.1f", state.maxSpeedKmh),
+                value = String.format(Locale.US, "%.1f", state.maxSpeedKmh),
                 unit = stringResource(id = R.string.unit_kmh)
             )
             MetricTile(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.Straighten,
                 label = stringResource(id = R.string.label_distance),
-                value = String.format("%.2f", state.distanceKm),
+                value = String.format(Locale.US, "%.2f", state.distanceKm),
                 unit = stringResource(id = R.string.unit_km)
             )
             MetricTile(
@@ -766,15 +843,15 @@ private fun SavedRideSummaryCard(
                 style = MaterialTheme.typography.bodySmall
             )
             Text(
-                text = "${formatDuration(summary.durationSec)} • ${String.format("%.2f", summary.distanceKm)} ${stringResource(id = R.string.unit_km)} • ${summary.calories} ${stringResource(id = R.string.unit_kcal)}",
+                text = "${formatDuration(summary.durationSec)} • ${String.format(Locale.US, "%.2f", summary.distanceKm)} ${stringResource(id = R.string.unit_km)} • ${summary.calories} ${stringResource(id = R.string.unit_kcal)}",
                 style = MaterialTheme.typography.bodyMedium
             )
             Text(
-                text = "${stringResource(id = R.string.ride_avg_speed)} ${String.format("%.1f", summary.avgSpeedKmh)} ${stringResource(id = R.string.unit_kmh)}",
+                text = "${stringResource(id = R.string.ride_avg_speed)} ${String.format(Locale.US, "%.1f", summary.avgSpeedKmh)} ${stringResource(id = R.string.unit_kmh)}",
                 style = MaterialTheme.typography.bodyMedium
             )
             Text(
-                text = "${stringResource(id = R.string.ride_max_speed)} ${String.format("%.1f", summary.maxSpeedKmh)} ${stringResource(id = R.string.unit_kmh)}",
+                text = "${stringResource(id = R.string.ride_max_speed)} ${String.format(Locale.US, "%.1f", summary.maxSpeedKmh)} ${stringResource(id = R.string.unit_kmh)}",
                 style = MaterialTheme.typography.bodyMedium
             )
             summary.rideType?.let {
@@ -799,9 +876,9 @@ private fun formatDuration(durationSec: Int): String {
     val minutes = (durationSec % 3600) / 60
     val seconds = durationSec % 60
     return if (hours > 0) {
-        String.format("%02d:%02d:%02d", hours, minutes, seconds)
+        String.format(Locale.US, "%02d:%02d:%02d", hours, minutes, seconds)
     } else {
-        String.format("%02d:%02d", minutes, seconds)
+        String.format(Locale.US, "%02d:%02d", minutes, seconds)
     }
 }
 
@@ -842,6 +919,7 @@ private fun RideTrackingContentPreview() {
         onSetAutoDetect = {},
         onBarnSelected = {},
         onRideTypeSelected = {},
-        onDismissSavedSummary = {}
+        onDismissSavedSummary = {},
+        onRetryPendingSync = {}
     )
 }

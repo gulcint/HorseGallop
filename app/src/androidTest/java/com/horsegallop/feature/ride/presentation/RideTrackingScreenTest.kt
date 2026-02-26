@@ -3,6 +3,7 @@ package com.horsegallop.feature.ride.presentation
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.horsegallop.domain.barn.model.BarnUi
 import com.horsegallop.domain.barn.model.BarnWithLocation
@@ -10,6 +11,7 @@ import com.horsegallop.domain.ride.model.GeoPoint
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.junit.Assert.assertTrue
 
 @RunWith(AndroidJUnit4::class)
 class RideTrackingScreenTest {
@@ -28,7 +30,8 @@ class RideTrackingScreenTest {
                 onSetAutoDetect = {},
                 onBarnSelected = {},
                 onRideTypeSelected = {},
-                onDismissSavedSummary = {}
+                onDismissSavedSummary = {},
+                onRetryPendingSync = {}
             )
         }
 
@@ -48,7 +51,8 @@ class RideTrackingScreenTest {
                 onSetAutoDetect = {},
                 onBarnSelected = {},
                 onRideTypeSelected = {},
-                onDismissSavedSummary = {}
+                onDismissSavedSummary = {},
+                onRetryPendingSync = {}
             )
         }
 
@@ -66,12 +70,37 @@ class RideTrackingScreenTest {
                 onSetAutoDetect = {},
                 onBarnSelected = {},
                 onRideTypeSelected = {},
-                onDismissSavedSummary = {}
+                onDismissSavedSummary = {},
+                onRetryPendingSync = {}
             )
         }
 
         composeRule.onNodeWithTag(RideTestTags.MapCard).assertIsDisplayed()
         composeRule.onNodeWithTag(RideTestTags.FinishButton).assertIsDisplayed()
+    }
+
+    @Test
+    fun pendingSync_showsRetryAction() {
+        var retryTriggered = false
+        composeRule.setContent {
+            RideTrackingContent(
+                state = sampleIdleState().copy(pendingSyncCount = 2),
+                hasLocationPermission = true,
+                onRequestLocationPermission = {},
+                onToggleRide = {},
+                onSetAutoDetect = {},
+                onBarnSelected = {},
+                onRideTypeSelected = {},
+                onDismissSavedSummary = {},
+                onRetryPendingSync = { retryTriggered = true }
+            )
+        }
+
+        composeRule.onNodeWithTag(RideTestTags.SyncStatusCard).assertIsDisplayed()
+        composeRule.onNodeWithTag(RideTestTags.RetrySyncButton).performClick()
+        composeRule.runOnIdle {
+            assertTrue(retryTriggered)
+        }
     }
 
     private fun sampleIdleState(): RideUiState {

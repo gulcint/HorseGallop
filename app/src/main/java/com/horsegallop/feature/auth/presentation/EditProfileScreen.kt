@@ -63,6 +63,7 @@ import com.horsegallop.core.components.HorseGallopDatePicker
 import com.horsegallop.core.components.HorseGallopDropdown
 import com.horsegallop.core.components.HorseLoadingOverlay
 import java.util.Calendar
+import java.util.Locale
 
 @Composable
 fun EditProfileScreen(
@@ -106,7 +107,7 @@ fun EditProfileScreen(
         DatePickerDialog(
             context,
             { _, year, month, dayOfMonth ->
-                val formatted = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
+                val formatted = String.format(Locale.US, "%04d-%02d-%02d", year, month + 1, dayOfMonth)
                 viewModel.updateDraft(birthDate = formatted)
             },
             calendar.get(Calendar.YEAR),
