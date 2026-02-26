@@ -30,7 +30,7 @@ fun QuickActionCard(
     modifier = modifier
       .height(120.dp),
     onClick = onClick,
-    colors = CardDefaults.cardColors(containerColor = Color.White),
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     shape = RoundedCornerShape(16.dp)
   ) {
     Box(
@@ -58,7 +58,7 @@ fun QuickActionCard(
             Text(
               text = subtitle,
               style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+              color = MaterialTheme.colorScheme.onSurfaceVariant
             )
           }
         }
@@ -66,4 +66,3 @@ fun QuickActionCard(
     }
   }
 }
-

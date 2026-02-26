@@ -114,8 +114,8 @@ private fun HomeDashboard(
         .background(
           Brush.verticalGradient(
             colors = listOf(
-              MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
-              MaterialTheme.colorScheme.background
+              MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.16f),
+              MaterialTheme.colorScheme.surface
             )
           )
         ),
@@ -178,8 +178,8 @@ private fun WelcomeHeader(onProfileClick: () -> Unit) {
         .background(
           brush = Brush.linearGradient(
             colors = listOf(
-              MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
-              MaterialTheme.colorScheme.secondary.copy(alpha = 0.14f)
+              MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+              MaterialTheme.colorScheme.secondary.copy(alpha = 0.08f)
             )
           )
         )
@@ -330,10 +330,10 @@ private fun RecentActivitySection(
     
     Card(
       modifier = Modifier.fillMaxWidth(),
-      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)),
+      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
       shape = RoundedCornerShape(20.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-      border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.08f))
+      border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
       Column(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -359,7 +359,7 @@ private fun RecentActivitySection(
               HorizontalDivider(
                 modifier = Modifier.padding(vertical = 4.dp),
                 thickness = 1.dp,
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f)
+                color = MaterialTheme.colorScheme.outlineVariant
               )
             }
           }

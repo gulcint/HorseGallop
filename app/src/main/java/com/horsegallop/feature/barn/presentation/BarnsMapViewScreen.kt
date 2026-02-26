@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.FilterList
 import com.horsegallop.R
 import com.horsegallop.domain.barn.model.BarnUi
+import com.horsegallop.ui.theme.LocalSemanticColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,7 +74,7 @@ fun BarnsMapViewScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF2F1ED)) // Map-like background (Light Beige)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // Map Layer
         BarnsMapCanvas(
@@ -152,7 +153,7 @@ fun BarnsMapViewScreen(
                             selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                         ),
                         border = FilterChipDefaults.filterChipBorder(
-                            borderColor = Color.Transparent,
+                            borderColor = MaterialTheme.colorScheme.outlineVariant,
                             enabled = true,
                             selected = isSelected
                         ),
@@ -252,11 +253,11 @@ private fun BarnsMapCanvas(
     zoomLevel: Float,
     onGroupClick: (BarnGroup) -> Unit
 ) {
+    val semantic = LocalSemanticColors.current
     val primaryColor = MaterialTheme.colorScheme.primary
     val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
-    // Lighter, subtle grid
-    val gridColor = Color.Black.copy(alpha = 0.05f) 
-    val clusterColor = MaterialTheme.colorScheme.tertiary
+    val gridColor = semantic.mapGrid
+    val clusterColor = MaterialTheme.colorScheme.secondary
     val textMeasurer = rememberTextMeasurer()
     val textStyle = MaterialTheme.typography.labelSmall.copy(color = onPrimaryColor, fontWeight = FontWeight.Bold)
     
@@ -293,7 +294,9 @@ private fun BarnsMapCanvas(
                     y = y,
                     color = primaryColor,
                     centerColor = onPrimaryColor,
-                    size = 14.dp.toPx()
+                    size = 14.dp.toPx(),
+                    shadowColor = semantic.imageOverlaySoft.copy(alpha = 0.20f),
+                    borderColor = semantic.onImageOverlay
                 )
             } else {
                 drawClusterPin(
@@ -305,7 +308,9 @@ private fun BarnsMapCanvas(
                     textColor = onPrimaryColor,
                     size = 18.dp.toPx(),
                     textMeasurer = textMeasurer,
-                    textStyle = textStyle
+                    textStyle = textStyle,
+                    shadowColor = semantic.imageOverlaySoft.copy(alpha = 0.20f),
+                    borderColor = semantic.onImageOverlay
                 )
             }
         }
@@ -342,11 +347,13 @@ private fun drawPin(
     y: Float,
     color: Color,
     centerColor: Color,
-    size: Float
+    size: Float,
+    shadowColor: Color,
+    borderColor: Color
 ) {
     // Drop shadow
     scope.drawCircle(
-        color = Color.Black.copy(alpha = 0.2f),
+        color = shadowColor,
         radius = size * 0.8f,
         center = Offset(x, y + size * 0.5f)
     )
@@ -367,7 +374,7 @@ private fun drawPin(
     
     // Stroke
     scope.drawCircle(
-        color = Color.White,
+        color = borderColor,
         radius = size,
         center = Offset(x, y - size * 0.3f),
         style = Stroke(width = size * 0.1f)
@@ -383,11 +390,13 @@ private fun drawClusterPin(
     textColor: Color,
     size: Float,
     textMeasurer: androidx.compose.ui.text.TextMeasurer,
-    textStyle: TextStyle
+    textStyle: TextStyle,
+    shadowColor: Color,
+    borderColor: Color
 ) {
     // Shadow
     scope.drawCircle(
-        color = Color.Black.copy(alpha = 0.2f),
+        color = shadowColor,
         radius = size,
         center = Offset(x, y + 2f)
     )
@@ -401,7 +410,7 @@ private fun drawClusterPin(
     
     // Border
     scope.drawCircle(
-        color = Color.White,
+        color = borderColor,
         radius = size,
         center = Offset(x, y),
         style = Stroke(width = size * 0.15f)
@@ -463,6 +472,7 @@ private fun BarnListItemHorizontal(
     barn: BarnUi,
     onClick: () -> Unit
 ) {
+    val semantic = LocalSemanticColors.current
     Card(
         onClick = onClick,
         modifier = Modifier
@@ -529,7 +539,7 @@ private fun BarnListItemHorizontal(
                     Icon(
                         Icons.Filled.Star, 
                         contentDescription = null, 
-                        tint = Color(0xFFFFB300),
+                        tint = semantic.ratingStar,
                         modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))

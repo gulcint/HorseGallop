@@ -90,7 +90,7 @@ fun ForgotPasswordScreen(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
                             focusedLabelColor = MaterialTheme.colorScheme.primary
                         )
                     )
@@ -117,7 +117,7 @@ fun ForgotPasswordScreen(
                         },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
                             errorBorderColor = MaterialTheme.colorScheme.error,
                             focusedLabelColor = MaterialTheme.colorScheme.primary,
                             errorLabelColor = MaterialTheme.colorScheme.error
@@ -172,7 +172,7 @@ fun ForgotPasswordScreen(
                         ),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
                             errorBorderColor = MaterialTheme.colorScheme.error,
                             focusedLabelColor = MaterialTheme.colorScheme.primary,
                             errorLabelColor = MaterialTheme.colorScheme.error

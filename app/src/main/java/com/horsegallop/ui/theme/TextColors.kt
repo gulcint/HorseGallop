@@ -16,13 +16,13 @@ data class TextColors(
 
 val LocalTextColors = staticCompositionLocalOf {
   TextColors(
-    titlePrimary = Color(0xFF1A1A1A),
-    bodyPrimary = Color(0xFF1A1A1A),
-    bodySecondary = Color(0xFF666666),
-    bodyTertiary = Color(0xFF7A7A7A),
-    hint = Color(0xFF9E9E9E),
-    highlight = Color(0xFF8B4513),
-    inverse = Color(0xFFFFFFFF)
+    titlePrimary = Color.Unspecified,
+    bodyPrimary = Color.Unspecified,
+    bodySecondary = Color.Unspecified,
+    bodyTertiary = Color.Unspecified,
+    hint = Color.Unspecified,
+    highlight = Color.Unspecified,
+    inverse = Color.Unspecified
   )
 }
 
@@ -37,5 +37,4 @@ fun textColorsFrom(colorScheme: ColorScheme): TextColors {
     inverse = colorScheme.inverseOnSurface
   )
 }
-
 

@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.core.components.HorseGallopButton
 import com.horsegallop.core.components.HorseGallopTextField
+import com.horsegallop.ui.theme.LocalSemanticColors
 import com.horsegallop.R as CoreR
 import com.horsegallop.R as AppR
 
@@ -154,6 +155,7 @@ fun EnrollmentScreen(
 private fun AuthHeader() {
     val primary = MaterialTheme.colorScheme.primary
     val secondary = MaterialTheme.colorScheme.secondary
+    val semantic = LocalSemanticColors.current
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -171,23 +173,23 @@ private fun AuthHeader() {
                 text = stringResource(CoreR.string.login_title_brand),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = semantic.onImageOverlay
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = stringResource(CoreR.string.signup_prompt),
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.White.copy(alpha = 0.9f)
+                color = semantic.onImageOverlay.copy(alpha = 0.9f)
             )
             Spacer(modifier = Modifier.height(12.dp))
             Surface(
-                color = Color.White.copy(alpha = 0.15f),
+                color = semantic.onImageOverlay.copy(alpha = 0.15f),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
                     text = stringResource(CoreR.string.terms_consent),
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.White,
+                    color = semantic.onImageOverlay,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                 )
             }

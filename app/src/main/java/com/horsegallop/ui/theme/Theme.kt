@@ -18,8 +18,12 @@ fun AppTheme(
     }
 
     val scheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val semanticColors = semanticColorsFrom(scheme, darkTheme)
 
-    CompositionLocalProvider(LocalTextColors provides textColorsFrom(scheme)) {
+    CompositionLocalProvider(
+        LocalTextColors provides textColorsFrom(scheme),
+        LocalSemanticColors provides semanticColors
+    ) {
         MaterialTheme(
             colorScheme = scheme,
             typography = AppTypography,

@@ -1,56 +1,39 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Main App Theme -->
     <style name="Theme.horsegallop" parent="android:Theme.Material.Light.NoActionBar">
-        <!-- Status Bar -->
-        <item name="android:statusBarColor">@color/primary</item>
-        <item name="android:windowLightStatusBar">false</item>
-        
-        <!-- Navigation Bar -->
-        <item name="android:navigationBarColor">@color/secondary_variant</item>
-        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
-        
-        <!-- Primary Colors -->
+        <item name="android:statusBarColor">@color/background</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="23">true</item>
+        <item name="android:navigationBarColor">@color/background</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/secondary</item>
-        
-        <!-- Background Colors -->
+
         <item name="android:colorBackground">@color/background</item>
         <item name="android:colorForeground">@color/on_background</item>
-        
-        <!-- Error Color -->
         <item name="colorError">@color/error</item>
     </style>
-    
-    <!-- Splash Screen Theme -->
+
     <style name="Theme.horsegallop.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/splash_background</item>
-        <item name="windowSplashScreenAnimationDuration">2000</item>
+        <item name="windowSplashScreenAnimationDuration">800</item>
         <item name="postSplashScreenTheme">@style/Theme.horsegallop</item>
         <item name="android:statusBarColor">@color/splash_background</item>
-        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="23">true</item>
     </style>
-    
-    <!-- Dark Theme (for future use) -->
+
     <style name="Theme.horsegallop.Dark" parent="android:Theme.Material.NoActionBar">
-        <!-- Status Bar -->
         <item name="android:statusBarColor">@color/primary_dark</item>
-        <item name="android:windowLightStatusBar">false</item>
-        
-        <!-- Navigation Bar -->
+        <item name="android:windowLightStatusBar" tools:targetApi="23">false</item>
         <item name="android:navigationBarColor">@color/primary_dark</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
-        
-        <!-- Primary Colors -->
+
         <item name="colorPrimary">@color/primary_light</item>
         <item name="colorPrimaryDark">@color/primary</item>
         <item name="colorAccent">@color/secondary_light</item>
-        
-        <!-- Background Colors -->
+
         <item name="android:colorBackground">@color/primary_dark</item>
         <item name="android:colorForeground">@color/on_primary</item>
-        
-        <!-- Error Color -->
         <item name="colorError">@color/error_light</item>
     </style>
 </resources>

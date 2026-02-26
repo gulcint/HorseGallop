@@ -141,8 +141,8 @@ fun EmailLoginContent(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
-                        MaterialTheme.colorScheme.background
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.14f),
+                        MaterialTheme.colorScheme.surface
                     )
                 )
             )
@@ -192,7 +192,7 @@ fun EmailLoginContent(
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
                         )
                     )
 
@@ -227,7 +227,7 @@ fun EmailLoginContent(
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
                         )
                     )
 

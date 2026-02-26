@@ -68,6 +68,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.toArgb
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -76,7 +77,6 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
 import com.horsegallop.R
 import com.horsegallop.core.components.HorseLoadingOverlay
-import com.horsegallop.ui.theme.AppColors
 import com.horsegallop.ui.theme.LocalTextColors
 import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.Dispatchers
@@ -95,6 +95,10 @@ fun LoginScreen(
     val uiState by vm.uiState.collectAsState()
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
+    val toastContainerColor = MaterialTheme.colorScheme.surface.toArgb()
+    val toastTextColor = MaterialTheme.colorScheme.onSurface.toArgb()
+    val toastErrorStroke = MaterialTheme.colorScheme.error.toArgb()
+    val toastNeutralStroke = MaterialTheme.colorScheme.outlineVariant.toArgb()
 
     val gso = remember {
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -166,10 +170,26 @@ fun LoginScreen(
                             }
                         }
                     }
-                    showLogoToast(context, msg, !msgKey.contains("sent"))
+                    showLogoToast(
+                        context = context,
+                        text = msg,
+                        isError = !msgKey.contains("sent"),
+                        containerColorInt = toastContainerColor,
+                        textColorInt = toastTextColor,
+                        errorStrokeColorInt = toastErrorStroke,
+                        neutralStrokeColorInt = toastNeutralStroke
+                    )
                 }
                 is LoginEffect.ShowVerificationEmailSent -> {
-                    showLogoToast(context, context.getString(R.string.login_verify_email_sent), false)
+                    showLogoToast(
+                        context = context,
+                        text = context.getString(R.string.login_verify_email_sent),
+                        isError = false,
+                        containerColorInt = toastContainerColor,
+                        textColorInt = toastTextColor,
+                        errorStrokeColorInt = toastErrorStroke,
+                        neutralStrokeColorInt = toastNeutralStroke
+                    )
                 }
             }
         }
@@ -181,8 +201,8 @@ fun LoginScreen(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
-                        MaterialTheme.colorScheme.background
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.16f),
+                        MaterialTheme.colorScheme.surface
                     )
                 )
             )
@@ -253,7 +273,7 @@ fun LoginScreen(
                             .heightIn(min = 48.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
                             focusedLabelColor = MaterialTheme.colorScheme.primary
                         )
                     )
@@ -310,7 +330,7 @@ fun LoginScreen(
                             .heightIn(min = 48.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
                             focusedLabelColor = MaterialTheme.colorScheme.primary
                         )
                     )
@@ -384,14 +404,14 @@ fun LoginScreen(
                     .padding(vertical = dimensionResource(id = R.dimen.spacing_sm)),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                HorizontalDivider(modifier = Modifier.weight(1f), color = AppColors.Divider)
+                HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
                 Text(
                     text = stringResource(R.string.or_label),
                     modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.spacing_md)),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium
                 )
-                HorizontalDivider(modifier = Modifier.weight(1f), color = AppColors.Divider)
+                HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
             }
 
             GoogleSignInButton(loading = uiState.isLoading) {
@@ -403,9 +423,13 @@ fun LoginScreen(
                         withContext(Dispatchers.Main) {
                             if (availability != ConnectionResult.SUCCESS) {
                                 showLogoToast(
-                                    context,
-                                    context.getString(R.string.auth_error_play_services),
-                                    true
+                                    context = context,
+                                    text = context.getString(R.string.auth_error_play_services),
+                                    isError = true,
+                                    containerColorInt = toastContainerColor,
+                                    textColorInt = toastTextColor,
+                                    errorStrokeColorInt = toastErrorStroke,
+                                    neutralStrokeColorInt = toastNeutralStroke
                                 )
                             } else {
                                 val account = GoogleSignIn.getLastSignedInAccount(context)
@@ -462,7 +486,15 @@ private fun LoginHeader() {
     }
 }
 
-private fun showLogoToast(context: Context, text: String, isError: Boolean) {
+private fun showLogoToast(
+    context: Context,
+    text: String,
+    isError: Boolean,
+    containerColorInt: Int,
+    textColorInt: Int,
+    errorStrokeColorInt: Int,
+    neutralStrokeColorInt: Int
+) {
     val density = context.resources.displayMetrics.density
     fun dp(v: Int) = (v * density).toInt()
 
@@ -474,8 +506,8 @@ private fun showLogoToast(context: Context, text: String, isError: Boolean) {
 
     val bg = GradientDrawable().apply {
         cornerRadius = dp(12).toFloat()
-        setColor(0xFFFFFFFF.toInt())
-        setStroke(dp(1), if (isError) 0xFFE57373.toInt() else 0xFFB0BEC5.toInt())
+        setColor(containerColorInt)
+        setStroke(dp(1), if (isError) errorStrokeColorInt else neutralStrokeColorInt)
     }
     container.background = bg
 
@@ -486,7 +518,7 @@ private fun showLogoToast(context: Context, text: String, isError: Boolean) {
 
     val tv = TextView(context).apply {
         this.text = text
-        setTextColor(0xFF212121.toInt())
+        setTextColor(textColorInt)
         setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
     }
 
