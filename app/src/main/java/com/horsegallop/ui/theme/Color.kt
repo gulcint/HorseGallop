@@ -9,17 +9,17 @@ import androidx.compose.ui.graphics.Color
 // Light theme
 val Primary = Color(0xFF7A3F14)
 val OnPrimary = Color(0xFFFFFFFF)
-val PrimaryContainer = Color(0xFFFCF1E7)
+val PrimaryContainer = Color(0xFFF1E1D2)
 val OnPrimaryContainer = Color(0xFF2E1405)
 
-val Secondary = Color(0xFFC56D23)
+val Secondary = Color(0xFFB7601D)
 val OnSecondary = Color(0xFFFFFFFF)
-val SecondaryContainer = Color(0xFFFFF5EC)
+val SecondaryContainer = Color(0xFFF6E4D3)
 val OnSecondaryContainer = Color(0xFF3C1E08)
 
 val Tertiary = Color(0xFF6C5B2D)
 val OnTertiary = Color(0xFFFFFFFF)
-val TertiaryContainer = Color(0xFFFAF4E2)
+val TertiaryContainer = Color(0xFFEDE2C4)
 val OnTertiaryContainer = Color(0xFF2D240A)
 
 val Error = Color(0xFFB3261E)
@@ -27,19 +27,19 @@ val OnError = Color(0xFFFFFFFF)
 val ErrorContainer = Color(0xFFF9DEDC)
 val OnErrorContainer = Color(0xFF410E0B)
 
-val Background = Color(0xFFFFFEFC)
+val Background = Color(0xFFF4EEE7)
 val OnBackground = Color(0xFF2A1D12)
-val Surface = Color(0xFFFFFFFF)
+val Surface = Color(0xFFFBF6F0)
 val OnSurface = Color(0xFF2A1D12)
-val SurfaceVariant = Color(0xFFF9F4EE)
-val OnSurfaceVariant = Color(0xFF625547)
-val Outline = Color(0xFFB9A797)
+val SurfaceVariant = Color(0xFFEADFD1)
+val OnSurfaceVariant = Color(0xFF5F5245)
+val Outline = Color(0xFFAF9A87)
 val OnInverseSurface = Color(0xFFF9EADB)
 val InverseSurface = Color(0xFF382519)
-val InversePrimary = Color(0xFFE8B387)
+val InversePrimary = Color(0xFFE7B184)
 val Shadow = Color(0xFF000000)
 val SurfaceTint = Primary
-val OutlineVariant = Color(0xFFECE1D7)
+val OutlineVariant = Color(0xFFD8CABA)
 val Scrim = Color(0xFF000000)
 
 // Dark theme

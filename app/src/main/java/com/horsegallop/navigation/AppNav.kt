@@ -102,18 +102,18 @@ fun AppNavHost(
     bottomBar = {
       if (showBottomBar) {
         Surface(
-          color = MaterialTheme.colorScheme.surface,
+          color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f),
           tonalElevation = 2.dp,
           shadowElevation = 4.dp
         ) {
           val itemColors = NavigationBarItemDefaults.colors(
             selectedIconColor = MaterialTheme.colorScheme.primary,
             selectedTextColor = MaterialTheme.colorScheme.primary,
-            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+            indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.86f),
             unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
             unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
           )
-          NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+          NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)) {
             NavigationBarItem(
               selected = currentRoute == Dest.Home.route,
               onClick = {

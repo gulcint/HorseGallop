@@ -280,12 +280,11 @@ fun SplashScreen(
         val composition by rememberLottieComposition(
             LottieCompositionSpec.RawRes(com.horsegallop.R.raw.horse)
         )
-        // Use LottieAnimatable to control playback precisely
         val lottieAnimatable = rememberLottieAnimatable()
         
         var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
-        var isSoundReady by remember { mutableStateOf(false) }
-        var soundDurationMs by remember { mutableStateOf(0) }
+        var isSoundCompleted by remember { mutableStateOf(false) }
+        var isAnimationCompleted by remember { mutableStateOf(false) }
         var finished by remember { mutableStateOf(false) }
 
         fun finishOnce() {
@@ -295,44 +294,27 @@ fun SplashScreen(
         }
         
         DisposableEffect(Unit) {
-            val mp = MediaPlayer()
-            val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO)
-            
-            val job = scope.launch {
-                try {
-                    val afd = ctx.resources.openRawResourceFd(com.horsegallop.R.raw.horse_gallop)
-                    if (afd != null) {
-                        mp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
-                        afd.close()
-                        withContext(kotlinx.coroutines.Dispatchers.Main) {
-                            mp.setOnPreparedListener { player ->
-                                player.setVolume(1.0f, 1.0f)
-                                soundDurationMs = player.duration
-                                mediaPlayer = player
-                                isSoundReady = true
-                            }
-                            mp.prepareAsync()
-                        }
-                    } else {
-                        withContext(kotlinx.coroutines.Dispatchers.Main) {
-                            isSoundReady = true
-                        }
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    withContext(kotlinx.coroutines.Dispatchers.Main) {
-                        isSoundReady = true
-                    }
+            val mp = runCatching { MediaPlayer.create(ctx, com.horsegallop.R.raw.horse_gallop) }.getOrNull()
+            mediaPlayer = mp
+            if (mp == null) {
+                isSoundCompleted = true
+            } else {
+                mp.setVolume(1.0f, 1.0f)
+                mp.setOnCompletionListener {
+                    isSoundCompleted = true
+                }
+                mp.setOnErrorListener { _, _, _ ->
+                    isSoundCompleted = true
+                    true
                 }
             }
 
             onDispose {
-                scope.cancel()
                 try {
-                    if (mp.isPlaying) {
+                    if (mp != null && mp.isPlaying) {
                         mp.stop()
                     }
-                    mp.release()
+                    mp?.release()
                     mediaPlayer = null
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -340,51 +322,42 @@ fun SplashScreen(
             }
         }
 
-        // Prevent indefinite splash if media or animation cannot initialize.
+        LaunchedEffect(mediaPlayer) {
+            val player = mediaPlayer ?: return@LaunchedEffect
+            try {
+                player.seekTo(0)
+                player.start()
+            } catch (e: Exception) {
+                AppLog.e("SplashScreen", "Splash sound playback error: ${e.message}")
+                isSoundCompleted = true
+            }
+        }
+
+        LaunchedEffect(composition) {
+            val splashComposition = composition ?: return@LaunchedEffect
+            try {
+                lottieAnimatable.animate(
+                    composition = splashComposition,
+                    iterations = 1
+                )
+            } catch (e: Exception) {
+                AppLog.e("SplashScreen", "Splash lottie playback error: ${e.message}")
+            } finally {
+                isAnimationCompleted = true
+            }
+        }
+
+        LaunchedEffect(isSoundCompleted, isAnimationCompleted) {
+            if (finished) return@LaunchedEffect
+            if (isSoundCompleted && isAnimationCompleted) {
+                finishOnce()
+            }
+        }
+
         LaunchedEffect(Unit) {
             kotlinx.coroutines.delay(5500)
             if (!finished) {
                 AppLog.w("SplashScreen", "Forced finish after startup timeout")
-                finishOnce()
-            }
-        }
-        
-        LaunchedEffect(composition, isSoundReady) {
-            if (finished || !isSoundReady) return@LaunchedEffect
-            
-            val player = mediaPlayer
-            if (player == null) {
-                if (composition != null) {
-                    lottieAnimatable.animate(
-                        composition = composition,
-                        iterations = 1
-                    )
-                }
-                finishOnce()
-                return@LaunchedEffect
-            }
-            
-            val durationToWait = soundDurationMs
-                .takeIf { it > 0 }
-                ?: 1200
-            
-            val clampedDuration = durationToWait.coerceIn(500, 5000).toLong()
-            
-            try {
-                player.seekTo(0)
-                player.start()
-
-                kotlinx.coroutines.delay(clampedDuration)
-
-                if (composition != null) {
-                    lottieAnimatable.animate(
-                        composition = composition,
-                        iterations = 1
-                    )
-                }
-            } catch (e: Exception) {
-                AppLog.e("SplashScreen", "Splash playback error: ${e.message}")
-            } finally {
                 finishOnce()
             }
         }

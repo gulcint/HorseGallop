@@ -60,22 +60,19 @@ import com.horsegallop.ui.theme.SemanticColors
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
-    val primary = MaterialTheme.colorScheme.primary
-    val secondary = MaterialTheme.colorScheme.secondary
-    val toastedAlmond = MaterialTheme.colorScheme.secondary
-    val softSand = MaterialTheme.colorScheme.tertiaryContainer
-    val lightCoffee = MaterialTheme.colorScheme.primaryContainer
+    val warmUmber = MaterialTheme.colorScheme.primary
+    val warmCopper = MaterialTheme.colorScheme.secondary
+    val warmChestnut = MaterialTheme.colorScheme.tertiary
+    val warmClay = MaterialTheme.colorScheme.primaryContainer
     val semantic = LocalSemanticColors.current
 
-    // User requested less whiteness. We use Saddle Brown -> Toasted Almond/Soft Sand.
-    // This reduces the white intensity while keeping a gradient.
-    val pages: List<OnboardingPage> = remember(primary, secondary, toastedAlmond, softSand, lightCoffee) {
+    // Keep warm identity while reducing white-heavy gradients.
+    val pages: List<OnboardingPage> = remember(warmUmber, warmCopper, warmChestnut, warmClay) {
         listOf(
             OnboardingPage(
                 titleRes = com.horsegallop.R.string.onboarding_title_ranch,
                 subtitleRes = com.horsegallop.R.string.onboarding_subtitle_ranch,
-                // Saddle Brown -> Toasted Almond (Warm, reduced whiteness)
-                gradient = listOf(primary, toastedAlmond),
+                gradient = listOf(warmUmber, warmCopper),
                 features = listOf(
                     FeatureRes(Icons.Filled.Home, com.horsegallop.R.string.onboarding_feature_barn_select),
                     FeatureRes(Icons.Filled.MedicalServices, com.horsegallop.R.string.onboarding_feature_safety),
@@ -85,8 +82,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
             OnboardingPage(
                 titleRes = com.horsegallop.R.string.onboarding_title_packages,
                 subtitleRes = com.horsegallop.R.string.onboarding_subtitle_packages,
-                // Saddle Brown -> Soft Sand (Light beige, but not white)
-                gradient = listOf(primary, softSand),
+                gradient = listOf(warmUmber, warmChestnut),
                 features = listOf(
                     FeatureRes(Icons.Filled.School, com.horsegallop.R.string.onboarding_feature_reserve),
                     FeatureRes(Icons.Filled.Timeline, com.horsegallop.R.string.onboarding_feature_progress),
@@ -96,8 +92,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
             OnboardingPage(
                 titleRes = com.horsegallop.R.string.onboarding_title_boarding,
                 subtitleRes = com.horsegallop.R.string.onboarding_subtitle_boarding,
-                // Saddle Brown -> Toasted Almond
-                gradient = listOf(primary, toastedAlmond),
+                gradient = listOf(warmCopper, warmChestnut),
                 features = listOf(
                     FeatureRes(Icons.Filled.Build, com.horsegallop.R.string.onboarding_feature_kvkk),
                     FeatureRes(Icons.Filled.LocalFireDepartment, com.horsegallop.R.string.onboarding_feature_safety),
@@ -107,8 +102,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
             OnboardingPage(
                 titleRes = com.horsegallop.R.string.onboarding_title_cafe,
                 subtitleRes = com.horsegallop.R.string.onboarding_subtitle_cafe,
-                // Saddle Brown -> Soft Sand
-                gradient = listOf(primary, softSand),
+                gradient = listOf(warmUmber, warmClay),
                 features = listOf(
                     FeatureRes(Icons.Filled.EmojiEvents, com.horsegallop.R.string.onboarding_feature_progress),
                     FeatureRes(Icons.Filled.Star, com.horsegallop.R.string.onboarding_feature_reviews),
@@ -129,7 +123,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
     ) {
         // Animated gradient background (kept, but optimized)
         ThemedAnimatedBackground(gradient = pages[pagerState.currentPage].gradient)
-        AnimatedCoffeeOverlay(semantic = semantic)
+        AnimatedCoffeeOverlay()
         // Back button exits app on onboarding
         val activity = LocalContext.current as? Activity
         BackHandler(enabled = true) { activity?.finish() }
@@ -283,7 +277,7 @@ private fun ThemedAnimatedBackground(gradient: List<Color>) {
 }
 
 @Composable
-private fun AnimatedCoffeeOverlay(semantic: SemanticColors) {
+private fun AnimatedCoffeeOverlay() {
     val transition = rememberInfiniteTransition(label = "coffee")
     val pulse by transition.animateFloat(
         initialValue = 0.15f,
@@ -303,9 +297,9 @@ private fun AnimatedCoffeeOverlay(semantic: SemanticColors) {
         ),
         label = "slide"
     )
-    val softCoffee1 = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.20f + pulse * 0.4f)
-    val softCoffee2 = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.12f + pulse * 0.4f)
-    val softCoffee3 = semantic.onImageOverlay.copy(alpha = 0.12f + pulse * 0.4f)
+    val softCoffee1 = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f + pulse * 0.30f)
+    val softCoffee2 = MaterialTheme.colorScheme.secondary.copy(alpha = 0.10f + pulse * 0.28f)
+    val softCoffee3 = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.10f + pulse * 0.24f)
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -319,7 +313,7 @@ private fun AnimatedCoffeeOverlay(semantic: SemanticColors) {
                 )
                 onDrawBehind { drawRect(brush) }
             }
-            .alpha(0.55f)
+            .alpha(0.40f)
     )
 }
 
@@ -385,10 +379,11 @@ private data class OnboardingPage(
 
 @Composable
 private fun EngagingCallout(titleRes: Int, subtitleRes: Int, gradient: List<Color>) {
-    val start = gradient.firstOrNull()?.copy(alpha = 0.35f)
-        ?: MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
-    val end = gradient.getOrNull(1)?.copy(alpha = 0.35f)
-        ?: MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.35f)
+    val base = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.94f)
+    val start = gradient.firstOrNull()?.copy(alpha = 0.24f)
+        ?: MaterialTheme.colorScheme.primary.copy(alpha = 0.24f)
+    val end = gradient.getOrNull(1)?.copy(alpha = 0.24f)
+        ?: MaterialTheme.colorScheme.secondary.copy(alpha = 0.24f)
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -402,7 +397,7 @@ private fun EngagingCallout(titleRes: Int, subtitleRes: Int, gradient: List<Colo
                 .background(
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            MaterialTheme.colorScheme.surface,
+                            base,
                             start,
                             end
                         )

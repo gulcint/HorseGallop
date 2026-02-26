@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.horsegallop.domain.auth.model.UserProfile
+import com.horsegallop.ui.theme.LocalSemanticColors
 
 object ProfileTestTags {
     const val EditButton = "profile_edit_button"
@@ -58,10 +59,11 @@ fun ProfileSectionCard(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val semantic = LocalSemanticColors.current
     ElevatedCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.elevatedCardColors(containerColor = semantic.cardElevated),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
     ) {
         Column(
@@ -97,6 +99,7 @@ fun ProfileHeroCard(
     modifier: Modifier = Modifier,
     onPhotoClick: () -> Unit
 ) {
+    val semantic = LocalSemanticColors.current
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
@@ -130,7 +133,7 @@ fun ProfileHeroCard(
                     modifier = Modifier
                         .size(96.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.65f))
+                        .background(semantic.cardSubtle.copy(alpha = 0.9f))
                         .clickable(onClick = onPhotoClick),
                     contentAlignment = Alignment.Center
                 ) {
