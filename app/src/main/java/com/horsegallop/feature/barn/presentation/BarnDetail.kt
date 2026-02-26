@@ -80,7 +80,7 @@ fun BarnDetailScreen(
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.96f),
-                    scrolledContainerColor = MaterialTheme.colorScheme.surface,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 ),
@@ -134,7 +134,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                 Brush.verticalGradient(
                     colors = listOf(
                         MaterialTheme.colorScheme.background,
-                        MaterialTheme.colorScheme.surface
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
                     )
                 )
             )
@@ -279,7 +279,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                         .padding(horizontal = 16.dp, vertical = 4.dp)
                         .fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surface,
+                    color = semantic.cardElevated,
                     tonalElevation = 2.dp,
                     shadowElevation = 1.dp,
                     border = androidx.compose.foundation.BorderStroke(
@@ -314,7 +314,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                         .padding(horizontal = 16.dp, vertical = 6.dp)
                         .fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surface,
+                    color = semantic.cardElevated,
                     tonalElevation = 2.dp,
                     border = androidx.compose.foundation.BorderStroke(
                         width = 1.dp,
@@ -364,7 +364,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                         .padding(horizontal = 16.dp, vertical = 6.dp)
                         .fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surface,
+                    color = semantic.cardElevated,
                     tonalElevation = 2.dp,
                     border = androidx.compose.foundation.BorderStroke(
                         width = 1.dp,
@@ -408,7 +408,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
             modifier = Modifier.align(Alignment.BottomCenter),
             shadowElevation = 24.dp,
             tonalElevation = 6.dp,
-            color = MaterialTheme.colorScheme.surface,
+            color = semantic.cardElevated,
             shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
             border = androidx.compose.foundation.BorderStroke(
                 width = 1.dp,
@@ -459,7 +459,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
             val toastMessage = stringResource(id = com.horsegallop.R.string.reservation_request_sent)
             ModalBottomSheet(
                 onDismissRequest = { showReservationSheet = false },
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor = semantic.cardElevated,
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
             ) {
                 ReservationContent(

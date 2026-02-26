@@ -4,6 +4,8 @@ package com.horsegallop.feature.auth.presentation
 
 import android.app.DatePickerDialog
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -62,7 +64,9 @@ import com.horsegallop.R
 import com.horsegallop.core.components.HorseGallopDatePicker
 import com.horsegallop.core.components.HorseGallopDropdown
 import com.horsegallop.core.components.HorseLoadingOverlay
+import com.horsegallop.ui.theme.LocalSemanticColors
 import java.util.Calendar
+import java.util.Locale
 
 @Composable
 fun EditProfileScreen(
@@ -106,7 +110,7 @@ fun EditProfileScreen(
         DatePickerDialog(
             context,
             { _, year, month, dayOfMonth ->
-                val formatted = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
+                val formatted = String.format(Locale.US, "%04d-%02d-%02d", year, month + 1, dayOfMonth)
                 viewModel.updateDraft(birthDate = formatted)
             },
             calendar.get(Calendar.YEAR),
@@ -116,6 +120,7 @@ fun EditProfileScreen(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
@@ -142,7 +147,7 @@ fun EditProfileScreen(
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
+                    containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.98f),
                     titleContentColor = MaterialTheme.colorScheme.onBackground
                 )
             )
@@ -167,41 +172,53 @@ fun EditProfileScreen(
             }
         }
     ) { innerPadding ->
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f),
+                            MaterialTheme.colorScheme.background
+                        )
+                    )
+                )
         ) {
-            if (state.isSaving) {
-                item {
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                if (state.isSaving) {
+                    item {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    }
                 }
-            }
 
-            item {
-                ProfileSectionCard(
-                    title = stringResource(id = R.string.profile_section_personal),
-                    subtitle = stringResource(id = R.string.profile_description)
-                ) {
-                    FormSectionTitle(
-                        icon = Icons.Filled.Person,
-                        title = stringResource(id = R.string.label_first_name)
-                    )
-                    OutlinedTextField(
-                        value = profile.firstName,
-                        onValueChange = { viewModel.updateDraft(firstName = it) },
-                        singleLine = true,
-                        isError = state.formErrors.firstNameResId != null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 52.dp)
-                            .testTag(ProfileTestTags.FirstNameField),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = editFieldColors()
-                    )
-                    ValidationMessage(state.formErrors.firstNameResId)
+                item {
+                    ProfileSectionCard(
+                        title = stringResource(id = R.string.profile_section_personal),
+                        subtitle = stringResource(id = R.string.profile_description)
+                    ) {
+                        FormSectionTitle(
+                            icon = Icons.Filled.Person,
+                            title = stringResource(id = R.string.label_first_name)
+                        )
+                        OutlinedTextField(
+                            value = profile.firstName,
+                            onValueChange = { viewModel.updateDraft(firstName = it) },
+                            singleLine = true,
+                            isError = state.formErrors.firstNameResId != null,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 52.dp)
+                                .testTag(ProfileTestTags.FirstNameField),
+                            shape = RoundedCornerShape(14.dp),
+                            colors = editFieldColors()
+                        )
+                        ValidationMessage(state.formErrors.firstNameResId)
 
                     FormSectionTitle(
                         icon = Icons.Filled.Badge,
@@ -342,14 +359,15 @@ fun EditProfileScreen(
                 }
             }
 
-            item {
-                Spacer(
-                    modifier = Modifier.height(
-                        WindowInsets.navigationBars
-                            .asPaddingValues()
-                            .calculateBottomPadding() + 12.dp
+                item {
+                    Spacer(
+                        modifier = Modifier.height(
+                            WindowInsets.navigationBars
+                                .asPaddingValues()
+                                .calculateBottomPadding() + 12.dp
+                        )
                     )
-                )
+                }
             }
         }
     }
@@ -369,10 +387,10 @@ private fun ValidationMessage(messageResId: Int?) {
 
 @Composable
 private fun editFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedContainerColor = LocalSemanticColors.current.cardElevated,
+    unfocusedContainerColor = LocalSemanticColors.current.cardElevated,
     focusedBorderColor = MaterialTheme.colorScheme.primary,
     unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-    focusedContainerColor = MaterialTheme.colorScheme.surface,
-    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
     errorBorderColor = MaterialTheme.colorScheme.error,
     errorContainerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.08f)
 )

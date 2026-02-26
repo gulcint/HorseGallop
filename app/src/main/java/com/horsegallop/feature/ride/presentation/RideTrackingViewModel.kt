@@ -7,8 +7,11 @@ import com.horsegallop.domain.auth.usecase.GetCurrentUserIdUseCase
 import com.horsegallop.domain.auth.usecase.GetUserProfileUseCase
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.barn.repository.BarnRepository
+import com.horsegallop.domain.ride.model.RideSyncStatus
 import com.horsegallop.domain.ride.usecase.ObserveIsRidingUseCase
+import com.horsegallop.domain.ride.usecase.ObservePendingRideSyncCountUseCase
 import com.horsegallop.domain.ride.usecase.ObserveRideMetricsUseCase
+import com.horsegallop.domain.ride.usecase.RetryPendingRideSyncUseCase
 import com.horsegallop.domain.ride.usecase.SetAutoDetectUseCase
 import com.horsegallop.domain.ride.usecase.StartRideUseCase
 import com.horsegallop.domain.ride.usecase.StopRideUseCase
@@ -30,6 +33,8 @@ class RideTrackingViewModel @Inject constructor(
     private val stopRideUseCase: StopRideUseCase,
     private val observeRideMetricsUseCase: ObserveRideMetricsUseCase,
     private val observeIsRidingUseCase: ObserveIsRidingUseCase,
+    private val observePendingRideSyncCountUseCase: ObservePendingRideSyncCountUseCase,
+    private val retryPendingRideSyncUseCase: RetryPendingRideSyncUseCase,
     private val setAutoDetectUseCase: SetAutoDetectUseCase,
     private val barnRepository: BarnRepository,
     private val getUserProfileUseCase: GetUserProfileUseCase,
@@ -77,6 +82,23 @@ class RideTrackingViewModel @Inject constructor(
             }
         }.launchIn(viewModelScope)
 
+        observePendingRideSyncCountUseCase().onEach { pendingCount ->
+            _uiState.update { state ->
+                val resolvedStatus = when {
+                    pendingCount == 0 && state.lastStopSyncStatus == RideSyncStatus.Pending -> RideSyncStatus.Synced
+                    else -> state.lastStopSyncStatus
+                }
+                state.copy(
+                    pendingSyncCount = pendingCount,
+                    lastStopSyncStatus = resolvedStatus
+                )
+            }
+        }.launchIn(viewModelScope)
+
+        viewModelScope.launch {
+            runCatching { retryPendingRideSyncUseCase() }
+        }
+
         loadUserProfileWeight()
     }
 
@@ -111,6 +133,19 @@ class RideTrackingViewModel @Inject constructor(
         _uiState.update { it.copy(savedRideSummary = null) }
     }
 
+    fun onRetryPendingSync() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isRetryingSync = true) }
+            try {
+                retryPendingRideSyncUseCase()
+            } catch (_: Exception) {
+                _uiState.update { it.copy(errorMessageResId = R.string.error_network) }
+            } finally {
+                _uiState.update { it.copy(isRetryingSync = false) }
+            }
+        }
+    }
+
     private fun startRide(hasLocationPermission: Boolean) {
         if (!hasLocationPermission) {
             _uiState.update { it.copy(errorMessageResId = R.string.ride_permission_required) }
@@ -125,7 +160,8 @@ class RideTrackingViewModel @Inject constructor(
                         errorMessageResId = null,
                         savedRideSummary = null,
                         maxSpeedKmh = 0f,
-                        avgSpeedKmh = 0f
+                        avgSpeedKmh = 0f,
+                        lastStopSyncStatus = null
                     )
                 }
                 startRideUseCase(userWeightKg, rideType)
@@ -140,11 +176,16 @@ class RideTrackingViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
             try {
-                stopRideUseCase(snapshot.selectedBarn?.barn?.name)
+                val stopResult = stopRideUseCase(snapshot.selectedBarn?.barn?.name)
                 _uiState.update {
                     it.copy(
                         isSaving = false,
                         errorMessageResId = null,
+                        lastStopSyncStatus = when {
+                            stopResult.remoteSynced -> RideSyncStatus.Synced
+                            stopResult.pendingSyncId != null -> RideSyncStatus.Pending
+                            else -> RideSyncStatus.Failed
+                        },
                         savedRideSummary = SavedRideSummary(
                             durationSec = snapshot.durationSec,
                             distanceKm = snapshot.distanceKm,

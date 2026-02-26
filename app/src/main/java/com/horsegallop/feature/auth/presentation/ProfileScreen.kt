@@ -158,7 +158,7 @@ fun ProfileScreen(
                         colors = listOf(
                             MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.14f),
                             MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.08f),
-                            MaterialTheme.colorScheme.surface
+                            MaterialTheme.colorScheme.background
                         )
                     )
                 )

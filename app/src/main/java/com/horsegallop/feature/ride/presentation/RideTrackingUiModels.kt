@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import com.horsegallop.R
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.ride.model.GeoPoint
+import com.horsegallop.domain.ride.model.RideSyncStatus
 
 enum class RideType(
     val backendValue: String,
@@ -40,7 +41,10 @@ data class RideUiState(
     val selectedBarn: BarnWithLocation? = null,
     val selectedRideType: RideType = RideType.TRAIL_RIDING,
     val isSaving: Boolean = false,
+    val isRetryingSync: Boolean = false,
     val savedRideSummary: SavedRideSummary? = null,
+    val pendingSyncCount: Int = 0,
+    val lastStopSyncStatus: RideSyncStatus? = null,
     @StringRes val errorMessageResId: Int? = null
 )
 
@@ -52,4 +56,6 @@ object RideTestTags {
     const val StartButton = "ride_start_button"
     const val FinishButton = "ride_finish_button"
     const val SavedSummaryCard = "ride_saved_summary_card"
+    const val SyncStatusCard = "ride_sync_status_card"
+    const val RetrySyncButton = "ride_retry_sync_button"
 }

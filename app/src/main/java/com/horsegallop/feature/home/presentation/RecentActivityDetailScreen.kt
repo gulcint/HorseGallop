@@ -1,6 +1,7 @@
 package com.horsegallop.feature.home.presentation
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -49,6 +50,7 @@ fun RecentActivityDetailScreen(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
                 title = { 
@@ -69,48 +71,61 @@ fun RecentActivityDetailScreen(
             )
         }
     ) { padding ->
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
-            contentPadding = PaddingValues(bottom = 32.dp, top = 16.dp)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.14f),
+                            MaterialTheme.colorScheme.background
+                        )
+                    )
+                )
         ) {
-            item {
-                AnimatedStatsSection(uiState)
-            }
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+                contentPadding = PaddingValues(bottom = 32.dp, top = 16.dp)
+            ) {
+                item {
+                    AnimatedStatsSection(uiState)
+                }
 
-            item {
-                SectionHeader(stringResource(id = com.horsegallop.R.string.weekly_progress))
-                Spacer(modifier = Modifier.height(12.dp))
-                AnimatedDistanceBarChart(dailyDistance = uiState.dailyDistance)
-            }
-            
-            item {
-                SectionHeader(stringResource(id = com.horsegallop.R.string.activity_distribution_title))
-                Spacer(modifier = Modifier.height(12.dp))
-                AnimatedActivityPieChart(uiState.activityDistribution)
-            }
+                item {
+                    SectionHeader(stringResource(id = com.horsegallop.R.string.weekly_progress))
+                    Spacer(modifier = Modifier.height(12.dp))
+                    AnimatedDistanceBarChart(dailyDistance = uiState.dailyDistance)
+                }
 
-            item {
-                SectionHeader(stringResource(id = com.horsegallop.R.string.history_title))
-                Spacer(modifier = Modifier.height(8.dp))
-            }
+                item {
+                    SectionHeader(stringResource(id = com.horsegallop.R.string.activity_distribution_title))
+                    Spacer(modifier = Modifier.height(12.dp))
+                    AnimatedActivityPieChart(uiState.activityDistribution)
+                }
 
-            items(uiState.activities) { activity ->
-                        ActivityItem(
-                            title = activity.title ?: stringResource(id = com.horsegallop.R.string.ride_default_title),
-                            subtitle = "${activity.dateLabel} • ${activity.timeLabel}",
-                    duration = "${activity.durationMin} min",
-                    distance = "${activity.distanceKm} km",
-                    icon = Icons.AutoMirrored.Filled.DirectionsRun
-                )
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp),
-                    thickness = 0.5.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
+                item {
+                    SectionHeader(stringResource(id = com.horsegallop.R.string.history_title))
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                items(uiState.activities) { activity ->
+                            ActivityItem(
+                                title = activity.title ?: stringResource(id = com.horsegallop.R.string.ride_default_title),
+                                subtitle = "${activity.dateLabel} • ${activity.timeLabel}",
+                        duration = "${activity.durationMin} min",
+                        distance = "${activity.distanceKm} km",
+                        icon = Icons.AutoMirrored.Filled.DirectionsRun
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        thickness = 0.5.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    )
+                }
             }
         }
     }
@@ -249,6 +264,7 @@ private fun AnimatedMetricCard(
     delayMillis: Int,
     visible: Boolean
 ) {
+    val semantic = LocalSemanticColors.current
     val scale by animateFloatAsState(
         targetValue = if (visible) 1f else 0.8f,
         animationSpec = tween(500, delayMillis = delayMillis)
@@ -262,9 +278,10 @@ private fun AnimatedMetricCard(
         modifier = modifier
             .scale(scale)
             .alpha(alpha),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
         shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
@@ -342,9 +359,10 @@ private fun AnimatedActivityPieChart(activityDistribution: List<Pair<String?, Fl
     
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
         shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
     ) {
         Row(
             modifier = Modifier
@@ -481,9 +499,10 @@ private fun AnimatedDistanceBarChart(dailyDistance: List<Float>) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
         shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Box(

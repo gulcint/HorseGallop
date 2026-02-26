@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.horsegallop.core.debug.AppLog
 import com.horsegallop.domain.model.UserRole
 import com.horsegallop.domain.auth.AuthRepository
+import com.horsegallop.domain.ride.usecase.RetryPendingRideSyncUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,6 +29,7 @@ data class MainUiState(
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    private val retryPendingRideSyncUseCase: RetryPendingRideSyncUseCase,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
     private val _ui = MutableStateFlow(MainUiState())
@@ -50,6 +52,9 @@ class MainViewModel @Inject constructor(
         }
         val locale = Locale.getDefault().language
         loadSplashTexts(locale)
+        viewModelScope.launch {
+            runCatching { retryPendingRideSyncUseCase() }
+        }
     }
 
     fun onSplashFinished() {

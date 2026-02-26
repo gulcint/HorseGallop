@@ -30,6 +30,7 @@ import com.horsegallop.core.components.ActivityItem
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
 import com.horsegallop.core.components.HomeDashboardSkeleton
+import com.horsegallop.ui.theme.LocalSemanticColors
 
 @Composable
 fun HomeScreen(
@@ -71,6 +72,7 @@ private fun HomeDashboard(
   uiState: HomeUiState = HomeUiState(loading = false)
 ) {
   var searchQuery by rememberSaveable { mutableStateOf("") }
+  val semantic = LocalSemanticColors.current
 
   val activities = if (uiState.activities.isEmpty()) {
     listOf(
@@ -114,8 +116,9 @@ private fun HomeDashboard(
         .background(
           Brush.verticalGradient(
             colors = listOf(
-              MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.16f),
-              MaterialTheme.colorScheme.surface
+              MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.18f),
+              MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.12f),
+              MaterialTheme.colorScheme.background
             )
           )
         ),
@@ -128,7 +131,7 @@ private fun HomeDashboard(
       verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.section_spacing_md))
     ) {
       item {
-        WelcomeHeader(onProfileClick = onProfileClick)
+        WelcomeHeader(onProfileClick = onProfileClick, cardColor = semantic.cardElevated)
       }
 
       item {
@@ -164,11 +167,11 @@ private fun HomeDashboard(
 }
 
 @Composable
-private fun WelcomeHeader(onProfileClick: () -> Unit) {
+private fun WelcomeHeader(onProfileClick: () -> Unit, cardColor: androidx.compose.ui.graphics.Color) {
   Card(
     modifier = Modifier.fillMaxWidth().padding(bottom = dimensionResource(id = com.horsegallop.R.dimen.spacing_md)),
     colors = CardDefaults.cardColors(
-      containerColor = MaterialTheme.colorScheme.primaryContainer
+      containerColor = cardColor
     ),
     shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xl))
   ) {

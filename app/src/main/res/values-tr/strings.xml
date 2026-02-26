@@ -300,4 +300,9 @@
     <string name="ride_permission_hint">Rota, hız ve mesafeyi doğru kaydetmek için konum iznini etkinleştirin.</string>
     <string name="ride_finish_and_save">Bitir ve Kaydet</string>
     <string name="ride_type_saved_format">Biniş Türü: %1$s</string>
+    <string name="ride_sync_pending">Yerel olarak kaydedildi. Bulut senkronu bekliyor.</string>
+    <string name="ride_sync_pending_count">%1$d bekleyen bulut senkronu</string>
+    <string name="ride_sync_completed">Bulut senkronu tamamlandı.</string>
+    <string name="ride_sync_failed">Bulut senkronu başarısız. Tekrar deneyin.</string>
+    <string name="ride_sync_retry">Senkronu Tekrar Dene</string>
 </resources>
