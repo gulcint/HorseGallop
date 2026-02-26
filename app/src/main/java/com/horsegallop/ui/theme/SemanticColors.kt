@@ -50,21 +50,17 @@ fun semanticColorsFrom(colorScheme: ColorScheme, isDark: Boolean): SemanticColor
         destructive = colorScheme.error,
         imageOverlayStrong = Color.Black.copy(alpha = overlayStrongAlpha),
         imageOverlaySoft = Color.Black.copy(alpha = overlaySoftAlpha),
-        cardElevated = if (isDark) {
-            colorScheme.surface
-        } else {
-            colorScheme.surface.copy(alpha = 0.96f)
-        },
+        cardElevated = if (isDark) colorScheme.surfaceContainerLow else colorScheme.surfaceContainerLowest,
         cardSubtle = if (isDark) {
-            colorScheme.surfaceVariant.copy(alpha = 0.34f)
+            colorScheme.surfaceContainerHigh
         } else {
-            colorScheme.surfaceVariant.copy(alpha = 0.58f)
+            colorScheme.surfaceContainerLow
         },
         chipSelected = colorScheme.primaryContainer,
         chipUnselected = if (isDark) {
-            colorScheme.surface
+            colorScheme.surfaceContainer
         } else {
-            colorScheme.surface.copy(alpha = 0.9f)
+            colorScheme.surfaceContainerLowest
         },
         mapGrid = colorScheme.onSurface.copy(alpha = if (isDark) 0.18f else 0.04f),
         mapPin = colorScheme.primary,
