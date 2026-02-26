@@ -41,6 +41,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.horsegallop.ui.theme.LocalSemanticColors
 import java.util.Locale
 
 @Composable
@@ -113,6 +114,7 @@ fun BarnDetailScreen(
 @Composable
 fun BarnDetailContent(barn: BarnWithLocation) {
     val context = LocalContext.current
+    val semantic = LocalSemanticColors.current
     var showReservationSheet by remember { mutableStateOf(false) }
     val ratingText = if (barn.barn.rating > 0.0) {
         String.format(Locale.US, "%.1f", barn.barn.rating)
@@ -191,7 +193,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                             .matchParentSize()
                             .background(
                                 Brush.verticalGradient(
-                                    colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.62f))
+                                    colors = listOf(Color.Transparent, semantic.imageOverlayStrong)
                                 )
                             )
                     )
@@ -208,7 +210,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                             fontWeight = FontWeight.Bold,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
-                            color = Color.White
+                            color = semantic.onImageOverlay
                         )
                         Row(
                             verticalAlignment = Alignment.CenterVertically
@@ -216,14 +218,14 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                             Icon(
                                 imageVector = Icons.Default.LocationOn,
                                 contentDescription = null,
-                                tint = Color.White.copy(alpha = 0.92f),
+                                tint = semantic.onImageOverlay.copy(alpha = 0.92f),
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = barn.barn.location.ifEmpty { stringResource(id = R.string.unknown_location) },
                                 style = MaterialTheme.typography.labelLarge,
-                                color = Color.White.copy(alpha = 0.92f),
+                                color = semantic.onImageOverlay.copy(alpha = 0.92f),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -234,7 +236,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                         ) {
                             Surface(
                                 shape = RoundedCornerShape(12.dp),
-                                color = Color.Black.copy(alpha = 0.26f)
+                                color = semantic.imageOverlaySoft.copy(alpha = 0.26f)
                             ) {
                                 Row(
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
@@ -243,27 +245,27 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                                     Icon(
                                         imageVector = Icons.Default.Star,
                                         contentDescription = null,
-                                        tint = Color(0xFFFFC85E),
+                                        tint = semantic.ratingStar,
                                         modifier = Modifier.size(14.dp)
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
                                         text = ratingText,
                                         style = MaterialTheme.typography.labelMedium,
-                                        color = Color.White,
+                                        color = semantic.onImageOverlay,
                                         fontWeight = FontWeight.SemiBold
                                     )
                                 }
                             }
                             Surface(
                                 shape = RoundedCornerShape(12.dp),
-                                color = Color.Black.copy(alpha = 0.22f)
+                                color = semantic.imageOverlaySoft.copy(alpha = 0.22f)
                             ) {
                                 Text(
                                     text = reviewSummary,
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                     style = MaterialTheme.typography.labelMedium,
-                                    color = Color.White
+                                    color = semantic.onImageOverlay
                                 )
                             }
                         }

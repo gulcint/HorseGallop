@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.horsegallop.core.components.ActivityItem
+import com.horsegallop.ui.theme.LocalSemanticColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -108,7 +109,7 @@ fun RecentActivityDetailScreen(
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 8.dp),
                     thickness = 0.5.dp,
-                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f)
+                    color = MaterialTheme.colorScheme.outlineVariant
                 )
             }
         }
@@ -121,12 +122,13 @@ private fun SectionHeader(title: String) {
         text = title,
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.SemiBold,
-        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+        color = MaterialTheme.colorScheme.onSurfaceVariant
     )
 }
 
 @Composable
 private fun AnimatedStatsSection(uiState: HomeUiState) {
+    val semantic = LocalSemanticColors.current
     // Staggered animation state
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
@@ -191,7 +193,7 @@ private fun AnimatedStatsSection(uiState: HomeUiState) {
         if (uiState.favoriteBarn != "Unknown") {
             Card(
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    containerColor = semantic.cardSubtle
                 ),
                 shape = RoundedCornerShape(24.dp),
                 modifier = Modifier
@@ -296,6 +298,7 @@ private fun AnimatedMetricCard(
 
 @Composable
 private fun AnimatedActivityPieChart(activityDistribution: List<Pair<String?, Float>>) {
+    val semantic = LocalSemanticColors.current
     val data = if (activityDistribution.isNotEmpty()) {
         activityDistribution.map { (name, value) -> 
             Pair(name ?: "Unknown", value) 
@@ -306,11 +309,11 @@ private fun AnimatedActivityPieChart(activityDistribution: List<Pair<String?, Fl
     }
     
     if (data.isEmpty()) {
-         Box(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
+                .background(semantic.cardSubtle, RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
             Text(stringResource(id = com.horsegallop.R.string.no_activity_data), style = MaterialTheme.typography.bodyMedium)
@@ -319,11 +322,11 @@ private fun AnimatedActivityPieChart(activityDistribution: List<Pair<String?, Fl
     }
 
     val colors = listOf(
-        Color(0xFF5D4037), // Saddle Brown dark
-        Color(0xFF8B4513), // Saddle Brown
-        Color(0xFFD2691E), // Chocolate
-        Color(0xFFA0522D), // Sienna
-        Color(0xFFCD853F)  // Peru
+        MaterialTheme.colorScheme.primary,
+        MaterialTheme.colorScheme.secondary,
+        MaterialTheme.colorScheme.tertiary,
+        semantic.info,
+        semantic.warning
     )
     
     var selectedIndex by remember { mutableStateOf(-1) }
@@ -448,6 +451,7 @@ private fun AnimatedActivityPieChart(activityDistribution: List<Pair<String?, Fl
 
 @Composable
 private fun AnimatedDistanceBarChart(dailyDistance: List<Float>) {
+    val semantic = LocalSemanticColors.current
     // Show last 7 days
     val chartData = dailyDistance.takeLast(7)
     
@@ -456,7 +460,7 @@ private fun AnimatedDistanceBarChart(dailyDistance: List<Float>) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
+                .background(semantic.cardSubtle, RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
             Text(stringResource(id = com.horsegallop.R.string.no_activity_data), style = MaterialTheme.typography.bodyMedium)
@@ -496,7 +500,7 @@ private fun AnimatedDistanceBarChart(dailyDistance: List<Float>) {
                     for (i in 0..gridLines) {
                         val y = size.height * (i.toFloat() / gridLines)
                         drawLine(
-                            color = Color.LightGray.copy(alpha = 0.3f),
+                            color = semantic.mapGrid,
                             start = Offset(0f, y),
                             end = Offset(size.width, y),
                             strokeWidth = 1f

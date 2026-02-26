@@ -16,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +26,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import java.text.SimpleDateFormat
 import java.util.*
+import com.horsegallop.ui.theme.LocalSemanticColors
 
 import com.horsegallop.R
 
@@ -186,6 +186,7 @@ fun RideDetailScreen(
 
 @Composable
 fun RideDetailMap(points: List<LatLng>) {
+    val semantic = LocalSemanticColors.current
     // Filter invalid 0,0 points
     val validPoints = points.filter { it.latitude != 0.0 || it.longitude != 0.0 }
     
@@ -203,10 +204,13 @@ fun RideDetailMap(points: List<LatLng>) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFE0E0E0)), // Placeholder gray
+                .background(semantic.cardSubtle),
             contentAlignment = Alignment.Center
         ) {
-            Text(stringResource(R.string.no_route_data), color = Color.Gray)
+            Text(
+                text = stringResource(R.string.no_route_data),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
         return
     }

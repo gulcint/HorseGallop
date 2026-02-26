@@ -296,8 +296,8 @@ fun RideTrackingContent(
 private fun RideHeader(isRiding: Boolean) {
     val gradient = Brush.linearGradient(
         colors = listOf(
-            MaterialTheme.colorScheme.primaryContainer,
-            MaterialTheme.colorScheme.secondaryContainer
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.78f),
+            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.72f)
         )
     )
     Card(

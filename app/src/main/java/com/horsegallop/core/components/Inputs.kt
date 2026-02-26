@@ -104,7 +104,7 @@ fun HorseGallopDropdown(
             shape = RoundedCornerShape(24.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline
             )
         )
         ExposedDropdownMenu(
@@ -161,7 +161,7 @@ fun HorseGallopDatePicker(
             shape = RoundedCornerShape(24.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline
             )
         )
         // Overlay for click detection
@@ -211,7 +211,7 @@ fun HorseGallopSearchBar(
         shape = RoundedCornerShape(24.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline
         ),
         keyboardActions = KeyboardActions(onSearch = { onSearch() }),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search)
@@ -239,7 +239,7 @@ fun HorseGallopTextField(
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline
         ),
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions

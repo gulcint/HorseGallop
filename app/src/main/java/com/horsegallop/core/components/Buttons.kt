@@ -30,7 +30,7 @@ fun ViewAllButton(
 ) {
     Surface(
         shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+        color = MaterialTheme.colorScheme.primaryContainer,
         onClick = onClick,
         modifier = modifier
     ) {

@@ -53,7 +53,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.draw.drawWithCache
-import com.horsegallop.ui.theme.AppColors
+import com.horsegallop.ui.theme.LocalSemanticColors
+import com.horsegallop.ui.theme.SemanticColors
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,14 +62,14 @@ import com.horsegallop.ui.theme.AppColors
 fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
     val primary = MaterialTheme.colorScheme.primary
     val secondary = MaterialTheme.colorScheme.secondary
-    val warmClay = AppColors.WarmClay
-    val toastedAlmond = AppColors.ToastedAlmond
-    val softSand = AppColors.SoftSand
-    val lightCoffee = AppColors.LightCoffee
+    val toastedAlmond = MaterialTheme.colorScheme.secondary
+    val softSand = MaterialTheme.colorScheme.tertiaryContainer
+    val lightCoffee = MaterialTheme.colorScheme.primaryContainer
+    val semantic = LocalSemanticColors.current
 
     // User requested less whiteness. We use Saddle Brown -> Toasted Almond/Soft Sand.
     // This reduces the white intensity while keeping a gradient.
-    val pages: List<OnboardingPage> = remember(primary, secondary, warmClay, toastedAlmond, softSand, lightCoffee) {
+    val pages: List<OnboardingPage> = remember(primary, secondary, toastedAlmond, softSand, lightCoffee) {
         listOf(
             OnboardingPage(
                 titleRes = com.horsegallop.R.string.onboarding_title_ranch,
@@ -124,11 +125,11 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(toastedAlmond) // Base color matching the lighter end of gradients
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // Animated gradient background (kept, but optimized)
         ThemedAnimatedBackground(gradient = pages[pagerState.currentPage].gradient)
-        AnimatedCoffeeOverlay()
+        AnimatedCoffeeOverlay(semantic = semantic)
         // Back button exits app on onboarding
         val activity = LocalContext.current as? Activity
         BackHandler(enabled = true) { activity?.finish() }
@@ -140,7 +141,8 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
             val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
             OnboardingPageContentAnimated(
                 page = pages[page],
-                pageOffset = pageOffset
+                pageOffset = pageOffset,
+                semantic = semantic
             )
         }
 
@@ -209,7 +211,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
                     TextButton(onClick = onSkip) { 
                         Text(
                             stringResource(com.horsegallop.R.string.onboarding_skip), 
-                            color = Color.White // Explicitly White as requested
+                            color = semantic.onImageOverlay
                         ) 
                     }
                     Button(
@@ -281,7 +283,7 @@ private fun ThemedAnimatedBackground(gradient: List<Color>) {
 }
 
 @Composable
-private fun AnimatedCoffeeOverlay() {
+private fun AnimatedCoffeeOverlay(semantic: SemanticColors) {
     val transition = rememberInfiniteTransition(label = "coffee")
     val pulse by transition.animateFloat(
         initialValue = 0.15f,
@@ -301,9 +303,9 @@ private fun AnimatedCoffeeOverlay() {
         ),
         label = "slide"
     )
-    val softCoffee1 = AppColors.LightCoffee.copy(alpha = 0.45f + pulse)
-    val softCoffee2 = AppColors.LightCoffee.copy(alpha = 0.25f + pulse * 0.6f)
-    val softCoffee3 = Color.White.copy(alpha = 0.12f + pulse * 0.4f)
+    val softCoffee1 = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.20f + pulse * 0.4f)
+    val softCoffee2 = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.12f + pulse * 0.4f)
+    val softCoffee3 = semantic.onImageOverlay.copy(alpha = 0.12f + pulse * 0.4f)
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -317,7 +319,7 @@ private fun AnimatedCoffeeOverlay() {
                 )
                 onDrawBehind { drawRect(brush) }
             }
-            .alpha(0.8f)
+            .alpha(0.55f)
     )
 }
 
@@ -325,7 +327,8 @@ private fun AnimatedCoffeeOverlay() {
 @Composable
 private fun OnboardingPageContentAnimated(
     page: OnboardingPage,
-    pageOffset: Float
+    pageOffset: Float,
+    semantic: SemanticColors
 ) {
     val clamped = pageOffset.coerceIn(-1f, 1f)
     val alpha = 1f - kotlin.math.abs(clamped) * 0.25f
@@ -347,7 +350,7 @@ private fun OnboardingPageContentAnimated(
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            color = Color.White
+            color = semantic.onImageOverlay
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -383,9 +386,9 @@ private data class OnboardingPage(
 @Composable
 private fun EngagingCallout(titleRes: Int, subtitleRes: Int, gradient: List<Color>) {
     val start = gradient.firstOrNull()?.copy(alpha = 0.35f)
-        ?: MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)
+        ?: MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
     val end = gradient.getOrNull(1)?.copy(alpha = 0.35f)
-        ?: MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.65f)
+        ?: MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.35f)
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -472,7 +475,7 @@ private fun EngagingCalloutPreview() {
         EngagingCallout(
             titleRes = com.horsegallop.R.string.onboarding_title_ride_tracking,
             subtitleRes = com.horsegallop.R.string.onboarding_subtitle_ride_tracking,
-            gradient = listOf(Color(0xFF4CAF50), Color(0xFF2E7D32))
+            gradient = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
         )
     }
 }

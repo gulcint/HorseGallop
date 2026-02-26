@@ -43,7 +43,7 @@ fun NameFieldsSection(
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline
             ),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
         )
@@ -56,7 +56,7 @@ fun NameFieldsSection(
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline
             ),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
         )
@@ -80,7 +80,7 @@ fun PasswordFieldSection(
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline
             ),
             modifier = Modifier.fillMaxWidth(),
             trailingIcon = {
