@@ -26,31 +26,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.horsegallop.ui.theme.LocalSemanticColors
 import com.valentinilk.shimmer.shimmer
 
 @Composable
 fun HomeDashboardSkeleton() {
+    val semantic = LocalSemanticColors.current
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        item { WelcomeHeaderSkeleton() }
-        item { QuickActionsSkeleton() }
-        item { StatsOverviewSkeleton() }
-        item { RecentActivitySkeleton() }
-        item { TipsSkeleton() }
+        item { WelcomeHeaderSkeleton(cardColor = semantic.cardElevated) }
+        item { QuickActionsSkeleton(cardColor = semantic.cardElevated) }
+        item { StatsOverviewSkeleton(cardColor = semantic.cardElevated) }
+        item { RecentActivitySkeleton(cardColor = semantic.cardElevated) }
+        item { TipsSkeleton(cardColor = semantic.cardElevated) }
         item { Spacer(modifier = Modifier.height(80.dp)) }
     }
 }
 
 @Composable
-fun WelcomeHeaderSkeleton() {
+fun WelcomeHeaderSkeleton(cardColor: Color) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .shimmer(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = cardColor),
         shape = RoundedCornerShape(20.dp)
     ) {
         Box(
@@ -63,7 +65,7 @@ fun WelcomeHeaderSkeleton() {
 }
 
 @Composable
-fun QuickActionsSkeleton() {
+fun QuickActionsSkeleton(cardColor: Color) {
     Column {
         Box(
             modifier = Modifier
@@ -81,7 +83,7 @@ fun QuickActionsSkeleton() {
                         .width(160.dp)
                         .height(120.dp)
                         .shimmer(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    colors = CardDefaults.cardColors(containerColor = cardColor),
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Box(
@@ -97,7 +99,7 @@ fun QuickActionsSkeleton() {
 }
 
 @Composable
-fun StatsOverviewSkeleton() {
+fun StatsOverviewSkeleton(cardColor: Color) {
     Column {
         Box(
             modifier = Modifier
@@ -117,7 +119,7 @@ fun StatsOverviewSkeleton() {
                     modifier = Modifier
                         .weight(1f)
                         .shimmer(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    colors = CardDefaults.cardColors(containerColor = cardColor),
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Box(
@@ -133,7 +135,7 @@ fun StatsOverviewSkeleton() {
 }
 
 @Composable
-fun RecentActivitySkeleton() {
+fun RecentActivitySkeleton(cardColor: Color) {
     Column {
         Box(
             modifier = Modifier
@@ -148,7 +150,7 @@ fun RecentActivitySkeleton() {
             modifier = Modifier
                 .fillMaxWidth()
                 .shimmer(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            colors = CardDefaults.cardColors(containerColor = cardColor),
             shape = RoundedCornerShape(16.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -221,7 +223,7 @@ fun RecentActivitySkeleton() {
 }
 
 @Composable
-fun TipsSkeleton() {
+fun TipsSkeleton(cardColor: Color) {
     Column {
         Box(
             modifier = Modifier
@@ -236,7 +238,7 @@ fun TipsSkeleton() {
             modifier = Modifier
                 .fillMaxWidth()
                 .shimmer(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            colors = CardDefaults.cardColors(containerColor = cardColor),
             shape = RoundedCornerShape(16.dp)
         ) {
             Row(

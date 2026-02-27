@@ -41,7 +41,7 @@ fun MetricCard(title: String, value: String, unit: String, accent: Color) {
     Card(
         colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
+        border = BorderStroke(1.dp, semantic.cardStroke)
     ) {
         Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.Start, verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(text = title, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -62,7 +62,7 @@ fun AchievementBadge(text: String, color: Color = MaterialTheme.colorScheme.tert
     Card(
         colors = CardDefaults.cardColors(containerColor = semantic.cardSubtle),
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
+        border = BorderStroke(1.dp, semantic.cardStroke)
     ) {
         Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(modifier = Modifier.size(16.dp).clip(CircleShape).background(color))
@@ -86,7 +86,7 @@ fun StatCard(
         modifier = modifier.then(if (onClick != null) Modifier else Modifier),
         colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
         shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+        border = BorderStroke(1.dp, semantic.cardStroke)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),

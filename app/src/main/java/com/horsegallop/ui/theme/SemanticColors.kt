@@ -5,14 +5,18 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 data class SemanticColors(
+    val screenBase: Color,
+    val screenTopBar: Color,
     val success: Color,
     val warning: Color,
     val info: Color,
     val destructive: Color,
     val imageOverlayStrong: Color,
     val imageOverlaySoft: Color,
+    val panelOverlay: Color,
     val cardElevated: Color,
     val cardSubtle: Color,
+    val cardStroke: Color,
     val chipSelected: Color,
     val chipUnselected: Color,
     val mapGrid: Color,
@@ -22,40 +26,29 @@ data class SemanticColors(
 )
 
 val LocalSemanticColors = staticCompositionLocalOf {
-    SemanticColors(
-        success = Color.Unspecified,
-        warning = Color.Unspecified,
-        info = Color.Unspecified,
-        destructive = Color.Unspecified,
-        imageOverlayStrong = Color.Unspecified,
-        imageOverlaySoft = Color.Unspecified,
-        cardElevated = Color.Unspecified,
-        cardSubtle = Color.Unspecified,
-        chipSelected = Color.Unspecified,
-        chipUnselected = Color.Unspecified,
-        mapGrid = Color.Unspecified,
-        mapPin = Color.Unspecified,
-        ratingStar = Color.Unspecified,
-        onImageOverlay = Color.Unspecified
-    )
+    semanticColorsFrom(LightColorScheme, isDark = false)
 }
 
 fun semanticColorsFrom(colorScheme: ColorScheme, isDark: Boolean): SemanticColors {
     val overlayStrongAlpha = if (isDark) 0.58f else 0.48f
     val overlaySoftAlpha = if (isDark) 0.24f else 0.14f
     return SemanticColors(
+        screenBase = colorScheme.background,
+        screenTopBar = if (isDark) colorScheme.surface else colorScheme.surfaceContainerLow,
         success = if (isDark) Color(0xFF74D38B) else Color(0xFF2F7A3E),
         warning = if (isDark) Color(0xFFF0BC72) else Color(0xFFB86C1D),
         info = if (isDark) Color(0xFF8EB9E0) else Color(0xFF356C9B),
         destructive = colorScheme.error,
         imageOverlayStrong = Color.Black.copy(alpha = overlayStrongAlpha),
         imageOverlaySoft = Color.Black.copy(alpha = overlaySoftAlpha),
+        panelOverlay = colorScheme.surfaceContainer,
         cardElevated = if (isDark) colorScheme.surfaceContainerLow else colorScheme.surfaceContainerLowest,
         cardSubtle = if (isDark) {
             colorScheme.surfaceContainerHigh
         } else {
             colorScheme.surfaceContainerLow
         },
+        cardStroke = colorScheme.outlineVariant.copy(alpha = if (isDark) 0.55f else 0.45f),
         chipSelected = colorScheme.primaryContainer,
         chipUnselected = if (isDark) {
             colorScheme.surfaceContainer

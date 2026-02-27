@@ -50,6 +50,7 @@ fun BarnDetailScreen(
     viewModel: BarnDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val semantic = LocalSemanticColors.current
     val topBarTitle = when (val state = uiState) {
         is BarnDetailUiState.Success -> state.barn.barn.name
         else -> stringResource(id = R.string.barn_detail_title)
@@ -58,7 +59,7 @@ fun BarnDetailScreen(
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = semantic.screenBase,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -79,8 +80,8 @@ fun BarnDetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.96f),
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    containerColor = semantic.screenTopBar,
+                    scrolledContainerColor = semantic.panelOverlay,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 ),
@@ -133,8 +134,8 @@ fun BarnDetailContent(barn: BarnWithLocation) {
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        MaterialTheme.colorScheme.background,
-                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                        semantic.screenBase,
+                        semantic.cardSubtle
                     )
                 )
             )
@@ -382,10 +383,10 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                             items(barn.barn.tags.ifEmpty { listOf("Parking", "Cafe", "Lessons", "Trail") }) { tag ->
                                 Surface(
                                     shape = RoundedCornerShape(10.dp),
-                                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f),
+                                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.85f),
                                     border = androidx.compose.foundation.BorderStroke(
                                         1.dp,
-                                        MaterialTheme.colorScheme.secondary.copy(alpha = 0.34f)
+                                        MaterialTheme.colorScheme.secondary.copy(alpha = 0.45f)
                                     )
                                 ) {
                                     Text(
@@ -475,6 +476,7 @@ fun BarnDetailContent(barn: BarnWithLocation) {
 
 @Composable
 fun ReservationContent(onConfirm: () -> Unit) {
+    val semantic = LocalSemanticColors.current
     var selectedDateIndex by remember { mutableIntStateOf(0) }
     var selectedTimeIndex by remember { mutableIntStateOf(-1) }
     var selectedInstructorIndex by remember { mutableIntStateOf(-1) }
@@ -570,7 +572,7 @@ fun ReservationContent(onConfirm: () -> Unit) {
                     Surface(
                         onClick = { selectedInstructorIndex = index },
                         shape = RoundedCornerShape(12.dp),
-                        color = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface,
+                        color = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else semantic.panelOverlay,
                         border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                         modifier = Modifier.width(140.dp)
                     ) {

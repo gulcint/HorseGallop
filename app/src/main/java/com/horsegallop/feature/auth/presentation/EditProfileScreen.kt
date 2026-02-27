@@ -76,6 +76,7 @@ fun EditProfileScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val semantic = LocalSemanticColors.current
 
     val profile = state.draftProfile
     val cities = remember {
@@ -120,7 +121,7 @@ fun EditProfileScreen(
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = semantic.screenBase,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
@@ -147,8 +148,8 @@ fun EditProfileScreen(
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.98f),
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                    containerColor = semantic.screenTopBar,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         },
@@ -179,7 +180,7 @@ fun EditProfileScreen(
                     Brush.verticalGradient(
                         colors = listOf(
                             MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f),
-                            MaterialTheme.colorScheme.background
+                            semantic.screenBase
                         )
                     )
                 )

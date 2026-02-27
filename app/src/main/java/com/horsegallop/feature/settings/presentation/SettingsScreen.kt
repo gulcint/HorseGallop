@@ -56,6 +56,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import com.horsegallop.ui.theme.LocalSemanticColors
 
 @Composable
 fun SettingsScreen(
@@ -68,6 +69,7 @@ fun SettingsScreen(
     val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    val semantic = LocalSemanticColors.current
 
     LaunchedEffect(privacyState.error) {
         privacyState.error?.let {
@@ -89,6 +91,7 @@ fun SettingsScreen(
     }
 
     Scaffold(
+        containerColor = semantic.screenBase,
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(text = stringResource(id = R.string.settings)) },
@@ -96,7 +99,12 @@ fun SettingsScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
-                }
+                },
+                colors = androidx.compose.material3.TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = semantic.screenTopBar,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         }
     ) { innerPadding ->
@@ -218,10 +226,12 @@ private fun SettingsSectionCard(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     content: @Composable () -> Unit
 ) {
+    val semantic = LocalSemanticColors.current
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
         shape = RoundedCornerShape(dimensionResource(id = R.dimen.radius_xl)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke),
         elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(id = R.dimen.elevation_sm))
     ) {
         Column(
@@ -249,7 +259,7 @@ private fun SettingsSectionCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                        color = semantic.cardSubtle,
                         shape = RoundedCornerShape(dimensionResource(id = R.dimen.radius_lg))
                     )
                     .padding(vertical = 8.dp)

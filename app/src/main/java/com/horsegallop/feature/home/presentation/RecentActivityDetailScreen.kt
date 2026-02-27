@@ -44,13 +44,14 @@ fun RecentActivityDetailScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.ui.collectAsState()
+    val semantic = LocalSemanticColors.current
 
     LaunchedEffect(Unit) {
         viewModel.loadRecentActivities(limit = 20)
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = semantic.screenBase,
         topBar = {
             CenterAlignedTopAppBar(
                 title = { 
@@ -66,7 +67,7 @@ fun RecentActivityDetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
+                    containerColor = semantic.screenTopBar
                 )
             )
         }
@@ -78,7 +79,7 @@ fun RecentActivityDetailScreen(
                     Brush.verticalGradient(
                         colors = listOf(
                             MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.14f),
-                            MaterialTheme.colorScheme.background
+                            semantic.screenBase
                         )
                     )
                 )

@@ -35,7 +35,7 @@ fun QuickActionCard(
     onClick = onClick,
     colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
     shape = RoundedCornerShape(16.dp),
-    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
+    border = BorderStroke(1.dp, semantic.cardStroke)
   ) {
     Box(
       modifier = Modifier

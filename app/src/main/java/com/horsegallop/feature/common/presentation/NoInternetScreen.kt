@@ -14,11 +14,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.compose.*
+import com.horsegallop.ui.theme.LocalSemanticColors
 
 @Composable
 fun NoInternetScreen(
     onRetry: () -> Unit
 ) {
+    val semantic = LocalSemanticColors.current
     val composition by rememberLottieComposition(
         LottieCompositionSpec.RawRes(com.horsegallop.R.raw.horse)
     )
@@ -30,7 +32,14 @@ fun NoInternetScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(
+                androidx.compose.ui.graphics.Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f),
+                        semantic.screenBase
+                    )
+                )
+            )
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
