@@ -221,25 +221,17 @@ jobs:
           REQUIRED_SERVICES=("firebase.googleapis.com" "testing.googleapis.com" "toolresults.googleapis.com")
 
           if ! ENABLED_SERVICES="$(gcloud services list --enabled --project "${GCP_PROJECT_ID}" --format='value(config.name)' 2>/tmp/ftl-precheck-services.err)"; then
-            if [ "${FTL_STRICT_GATE}" = "true" ]; then
-              echo "::error::RC gate failed because FTL prerequisites are missing/disabled."
-              {
-                echo "## Firebase Test Lab"
-                echo ""
-                echo "- RC gate failed because FTL prerequisites are missing/disabled."
-                echo "- CI service account cannot list enabled APIs for project ${GCP_PROJECT_ID}."
-                echo "- Required role: Service Usage Consumer (roles/serviceusage.serviceUsageConsumer)."
-              } >> "${GITHUB_STEP_SUMMARY}"
-              exit 1
-            fi
-            echo "::warning::Skipping Firebase Test Lab because the CI service account cannot list enabled APIs for project ${GCP_PROJECT_ID}."
+            # Compatibility mode: continue to Robo run even when API listing permission is missing.
+            # Older workflows did not block here and still attempted FTL execution.
+            echo "::warning::FTL API readiness check is inconclusive because the CI service account cannot list enabled APIs for project ${GCP_PROJECT_ID}. Continuing with Robo run."
             {
               echo "## Firebase Test Lab"
               echo ""
-              echo "- Skipped: CI service account cannot list enabled APIs."
-              echo "- Grant Service Usage Consumer (roles/serviceusage.serviceUsageConsumer)."
+              echo "- API readiness check inconclusive: CI service account cannot list enabled APIs."
+              echo "- Continuing with Robo run for backward compatibility."
+              echo "- Recommended role: Service Usage Consumer (roles/serviceusage.serviceUsageConsumer)."
             } >> "${GITHUB_STEP_SUMMARY}"
-            echo "ready=false" >> "${GITHUB_OUTPUT}"
+            echo "ready=true" >> "${GITHUB_OUTPUT}"
             exit 0
           fi
 

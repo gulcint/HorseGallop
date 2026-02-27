@@ -212,6 +212,10 @@
     <string name="riding_at">Riding at %1$s</string>
     <string name="select_barn">Select Barn</string>
     <string name="select_barn_hint">Select a barn...</string>
+    <string name="select_barn_empty">Şu anda uygun ahır bulunamadı</string>
+    <string name="selected_label">Seçili</string>
+    <string name="ride_select_barn_subtitle">Bu sürüş seansını düzenli tutmak için bir ahır seçin.</string>
+    <string name="ride_select_barn_support_text">Seçilen ahır kaydedilen sürüş detayına eklenecek.</string>
     <string name="auto_ride_detection">Otomatik Biniş Algılama</string>
     <string name="daily_ride_trend">Daily Ride Trend</string>
     <string name="weekly_progress">Weekly Progress</string>

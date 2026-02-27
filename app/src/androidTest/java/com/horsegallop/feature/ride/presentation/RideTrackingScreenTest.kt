@@ -1,18 +1,21 @@
 package com.horsegallop.feature.ride.presentation
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import com.horsegallop.domain.barn.model.BarnUi
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.ride.model.GeoPoint
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.junit.Assert.assertTrue
+import org.junit.runner.RunWith
+import com.horsegallop.R
 
 @RunWith(AndroidJUnit4::class)
 class RideTrackingScreenTest {
@@ -58,6 +61,31 @@ class RideTrackingScreenTest {
         }
 
         composeRule.onNodeWithTag(RideTestTags.PermissionCard).assertIsDisplayed()
+    }
+
+    @Test
+    fun withoutPermission_showsSingleGrantAccessAction() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val grantAccessText = context.getString(R.string.ride_grant_location)
+
+        composeRule.setContent {
+            RideTrackingContent(
+                state = sampleIdleState(),
+                hasLocationPermission = false,
+                onRequestLocationPermission = {},
+                onToggleRide = {},
+                onSetAutoDetect = {},
+                onBarnSelected = {},
+                onRideTypeSelected = {},
+                onDismissSavedSummary = {},
+                onRetryPendingSync = {}
+            )
+        }
+
+        val grantButtons = composeRule
+            .onAllNodesWithText(grantAccessText)
+            .fetchSemanticsNodes()
+        assertTrue(grantButtons.size == 1)
     }
 
     @Test
@@ -124,7 +152,10 @@ class RideTrackingScreenTest {
         }
 
         composeRule.onNodeWithTag(RideTestTags.SyncStatusCard).assertIsDisplayed()
-        composeRule.onNodeWithTag(RideTestTags.RetrySyncButton).assertDoesNotExist()
+        val retryButtons = composeRule
+            .onAllNodesWithTag(RideTestTags.RetrySyncButton)
+            .fetchSemanticsNodes()
+        assertTrue(retryButtons.isEmpty())
     }
 
     private fun sampleIdleState(): RideUiState {
