@@ -22,16 +22,15 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import android.widget.Toast
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.R
+import com.horsegallop.core.feedback.LocalAppFeedbackController
 import com.valentinilk.shimmer.shimmer
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -43,6 +42,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.horsegallop.ui.theme.LocalSemanticColors
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 @Composable
 fun BarnDetailScreen(
@@ -114,7 +114,8 @@ fun BarnDetailScreen(
 
 @Composable
 fun BarnDetailContent(barn: BarnWithLocation) {
-    val context = LocalContext.current
+    val feedback = LocalAppFeedbackController.current
+    val coroutineScope = rememberCoroutineScope()
     val semantic = LocalSemanticColors.current
     var showReservationSheet by remember { mutableStateOf(false) }
     val ratingText = if (barn.barn.rating > 0.0) {
@@ -457,7 +458,6 @@ fun BarnDetailContent(barn: BarnWithLocation) {
         }
 
         if (showReservationSheet) {
-            val toastMessage = stringResource(id = com.horsegallop.R.string.reservation_request_sent)
             ModalBottomSheet(
                 onDismissRequest = { showReservationSheet = false },
                 containerColor = semantic.cardElevated,
@@ -466,7 +466,9 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                 ReservationContent(
                     onConfirm = {
                         showReservationSheet = false
-                        Toast.makeText(context, toastMessage, Toast.LENGTH_LONG).show()
+                        coroutineScope.launch {
+                            feedback.showSuccess(R.string.reservation_request_sent)
+                        }
                     }
                 )
             }

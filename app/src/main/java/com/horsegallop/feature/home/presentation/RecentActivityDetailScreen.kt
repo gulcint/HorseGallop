@@ -41,6 +41,7 @@ import com.horsegallop.ui.theme.LocalSemanticColors
 @Composable
 fun RecentActivityDetailScreen(
     navController: NavController,
+    onOpenRideDetail: (String) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.ui.collectAsState()
@@ -114,12 +115,17 @@ fun RecentActivityDetailScreen(
                 }
 
                 items(uiState.activities) { activity ->
-                            ActivityItem(
-                                title = activity.title ?: stringResource(id = com.horsegallop.R.string.ride_default_title),
-                                subtitle = "${activity.dateLabel} • ${activity.timeLabel}",
+                    ActivityItem(
+                        title = activity.title ?: stringResource(id = com.horsegallop.R.string.ride_default_title),
+                        subtitle = "${activity.dateLabel} • ${activity.timeLabel}",
                         duration = "${activity.durationMin} min",
                         distance = "${activity.distanceKm} km",
-                        icon = Icons.AutoMirrored.Filled.DirectionsRun
+                        icon = Icons.AutoMirrored.Filled.DirectionsRun,
+                        onClick = {
+                            if (activity.id.isNotBlank()) {
+                                onOpenRideDetail(activity.id)
+                            }
+                        }
                     )
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 8.dp),

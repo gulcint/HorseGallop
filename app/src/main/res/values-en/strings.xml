@@ -38,6 +38,11 @@
     <string name="loading">Loading...</string>
     <string name="error_unknown">Unknown error occurred</string>
     <string name="error_network">Network error</string>
+    <string name="feedback_profile_service_not_ready">Profile service is not ready yet. Please try again.</string>
+    <string name="feedback_service_unavailable">Service is temporarily unavailable. Please check your connection.</string>
+    <string name="feedback_request_timed_out">Request timed out. Please try again.</string>
+    <string name="feedback_location_centering">Centering on your location...</string>
+    <string name="feedback_email_verification_link_detected">Email verification link detected.</string>
     <string name="offline_mode">No internet connection. Please check your connection and try again.</string>
     <string name="splash_error_title">Connection problem</string>
     <string name="splash_error_subtitle">We could not load the content. Please check your connection.</string>

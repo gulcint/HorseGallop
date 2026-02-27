@@ -36,6 +36,7 @@ fun HomeScreen(
   onStartRide: () -> Unit,
   onViewBarns: () -> Unit,
   onProfileClick: () -> Unit,
+  onOpenRideDetail: (String) -> Unit = {},
   onViewAllActivities: (() -> Unit)? = null,
   viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -44,6 +45,7 @@ fun HomeScreen(
     onStartRide = onStartRide,
     onViewBarns = onViewBarns,
     onProfileClick = onProfileClick,
+    onOpenRideDetail = onOpenRideDetail,
     onViewAllActivities = onViewAllActivities,
     uiState = uiState
   )
@@ -66,6 +68,7 @@ private fun HomeDashboard(
   onStartRide: () -> Unit,
   onViewBarns: () -> Unit,
   onProfileClick: () -> Unit,
+  onOpenRideDetail: (String) -> Unit = {},
   onViewAllActivities: (() -> Unit)? = null,
   uiState: HomeUiState = HomeUiState(loading = false)
 ) {
@@ -132,6 +135,7 @@ private fun HomeDashboard(
       item {
         RecentActivitySection(
           activities = activities,
+          onOpenRideDetail = onOpenRideDetail,
           onViewAllActivities = onViewAllActivities
         )
       }
@@ -289,6 +293,7 @@ private fun RecentActivitySection(
     distanceKm = 12.5
   )
 ),
+  onOpenRideDetail: (String) -> Unit = {},
   onViewAllActivities: (() -> Unit)? = null
 ) {
   val semantic = LocalSemanticColors.current
@@ -334,7 +339,12 @@ private fun RecentActivitySection(
               subtitle = stringResource(id = R.string.activity_subtitle_format, activity.dateLabel, activity.timeLabel),
               duration = stringResource(id = R.string.activity_duration_minutes, activity.durationMin),
               distance = stringResource(id = R.string.activity_distance_km, activity.distanceKm),
-              icon = Icons.AutoMirrored.Filled.DirectionsRun
+              icon = Icons.AutoMirrored.Filled.DirectionsRun,
+              onClick = {
+                if (activity.id.isNotBlank()) {
+                  onOpenRideDetail(activity.id)
+                }
+              }
             )
             if (index < visibleActivities.lastIndex) {
               HorizontalDivider(

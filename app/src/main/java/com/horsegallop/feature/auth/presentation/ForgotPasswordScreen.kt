@@ -19,6 +19,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.horsegallop.core.components.HorseLoadingOverlay
+import com.horsegallop.core.feedback.LocalAppFeedbackController
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
 
@@ -29,18 +30,18 @@ fun ForgotPasswordScreen(
     viewModel: ForgotPasswordViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val feedback = LocalAppFeedbackController.current
 
     LaunchedEffect(uiState.success) {
         if (uiState.success) {
-            android.widget.Toast.makeText(context, context.getString(R.string.password_reset_email_sent), android.widget.Toast.LENGTH_LONG).show()
+            feedback.showSuccess(R.string.password_reset_email_sent)
             onBack()
         }
     }
     
     LaunchedEffect(uiState.resetSuccess) {
         if (uiState.resetSuccess) {
-            android.widget.Toast.makeText(context, context.getString(R.string.password_reset_success_login), android.widget.Toast.LENGTH_LONG).show()
+            feedback.showSuccess(R.string.password_reset_success_login)
             onBack()
         }
     }

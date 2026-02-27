@@ -43,8 +43,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -63,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
 import com.horsegallop.core.components.HorseLoadingOverlay
+import com.horsegallop.core.feedback.LocalAppFeedbackController
 import com.horsegallop.ui.theme.LocalSemanticColors
 
 @Composable
@@ -75,8 +74,8 @@ fun ProfileScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    val snackbarHostState = remember { SnackbarHostState() }
     val semantic = LocalSemanticColors.current
+    val feedback = LocalAppFeedbackController.current
 
     val pickMediaLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
         if (uri != null) viewModel.updateProfileImage(uri)
@@ -101,22 +100,21 @@ fun ProfileScreen(
         .joinToString(" ")
         .ifBlank { context.getString(R.string.default_user_name) }
 
-    LaunchedEffect(state.error) {
-        state.error?.let {
-            snackbarHostState.showSnackbar(it)
+    LaunchedEffect(state.errorMessageResId) {
+        state.errorMessageResId?.let { messageResId ->
+            feedback.showError(messageResId)
             viewModel.clearMessages()
         }
     }
 
     LaunchedEffect(state.successMessageResId) {
         state.successMessageResId?.let { messageResId ->
-            snackbarHostState.showSnackbar(context.getString(messageResId))
+            feedback.showSuccess(messageResId)
             viewModel.clearMessages()
         }
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = semantic.screenBase,
         topBar = {
             CenterAlignedTopAppBar(

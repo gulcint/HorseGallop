@@ -35,6 +35,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.horsegallop.ui.theme.LocalSemanticColors
 
+enum class CardSurfaceVariant {
+    Elevated,
+    Subtle,
+    Accent
+}
+
 @Composable
 fun MetricCard(title: String, value: String, unit: String, accent: Color) {
     val semantic = LocalSemanticColors.current
@@ -79,12 +85,18 @@ fun StatCard(
     icon: ImageVector,
     color: Color,
     modifier: Modifier = Modifier,
+    surfaceVariant: CardSurfaceVariant = CardSurfaceVariant.Elevated,
     onClick: (() -> Unit)? = null
 ) {
     val semantic = LocalSemanticColors.current
+    val containerColor = when (surfaceVariant) {
+        CardSurfaceVariant.Elevated -> semantic.cardElevated
+        CardSurfaceVariant.Subtle -> semantic.cardSubtle
+        CardSurfaceVariant.Accent -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.34f)
+    }
     Card(
         modifier = modifier.then(if (onClick != null) Modifier else Modifier),
-        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, semantic.cardStroke)
     ) {

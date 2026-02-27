@@ -8,12 +8,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.compose.*
+import com.horsegallop.R
 import com.horsegallop.ui.theme.LocalSemanticColors
 
 @Composable
@@ -55,7 +55,7 @@ fun NoInternetScreen(
 
         // Title
         Text(
-            text = "Connection Failed", // Should be localized ideally, but hardcoding for now as user requested specific flow
+            text = stringResource(id = R.string.splash_error_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
@@ -66,7 +66,7 @@ fun NoInternetScreen(
 
         // Subtitle
         Text(
-            text = "Please check your internet connection and try again.",
+            text = stringResource(id = R.string.offline_mode),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -86,7 +86,7 @@ fun NoInternetScreen(
             )
         ) {
             Text(
-                text = "Try Again",
+                text = stringResource(id = R.string.retry),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )

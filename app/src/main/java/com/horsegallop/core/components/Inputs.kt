@@ -44,6 +44,11 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Close
 import com.horsegallop.ui.theme.LocalSemanticColors
 
+enum class InputFieldVariant {
+    Elevated,
+    Subtle
+}
+
 @Composable
 fun AutoRideDetectionSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     val semantic = LocalSemanticColors.current
@@ -238,11 +243,16 @@ fun HorseGallopTextField(
     label: String,
     modifier: Modifier = Modifier,
     isError: Boolean = false,
+    variant: InputFieldVariant = InputFieldVariant.Elevated,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     singleLine: Boolean = true
 ) {
     val semantic = LocalSemanticColors.current
+    val container = when (variant) {
+        InputFieldVariant.Elevated -> semantic.cardElevated
+        InputFieldVariant.Subtle -> semantic.cardSubtle
+    }
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
@@ -254,8 +264,8 @@ fun HorseGallopTextField(
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
             unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-            focusedContainerColor = semantic.cardElevated,
-            unfocusedContainerColor = semantic.cardElevated
+            focusedContainerColor = container,
+            unfocusedContainerColor = container
         ),
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions

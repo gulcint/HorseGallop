@@ -31,8 +31,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -41,10 +39,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -54,6 +50,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
+import com.horsegallop.core.debug.AppLog
+import com.horsegallop.core.feedback.LocalAppFeedbackController
 import com.horsegallop.ui.theme.LocalSemanticColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,8 +62,7 @@ fun EmailLoginScreen(
     onSignedIn: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    val snackbarHostState = remember { SnackbarHostState() }
+    val feedback = LocalAppFeedbackController.current
     val uiState by viewModel.uiState.collectAsState()
     val semantic = LocalSemanticColors.current
 
@@ -73,22 +70,29 @@ fun EmailLoginScreen(
         viewModel.effect.collect { effect ->
             when (effect) {
                 is LoginEffect.NavigateToHome -> {
-                    snackbarHostState.showSnackbar(context.getString(R.string.auth_success))
+                    feedback.showSuccess(R.string.auth_success)
                     onSignedIn()
                 }
                 is LoginEffect.ShowSnackbarError -> {
-                    val message = when (effect.message) {
-                        "login_verify_email_sent" -> context.getString(R.string.login_verify_email_sent)
-                        "auth_error_cancelled" -> context.getString(R.string.auth_error_cancelled)
-                        "auth_error_token_missing" -> context.getString(R.string.auth_error_token_missing)
-                        "auth_error_firebase" -> context.getString(R.string.auth_error_firebase)
-                        "Email not verified" -> context.getString(R.string.error_email_not_verified)
-                        else -> effect.message
+                    val messageResId = when (effect.message) {
+                        "login_verify_email_sent" -> R.string.login_verify_email_sent
+                        "auth_error_cancelled" -> R.string.auth_error_cancelled
+                        "auth_error_token_missing" -> R.string.auth_error_token_missing
+                        "auth_error_firebase" -> R.string.auth_error_firebase
+                        "Email not verified" -> R.string.error_email_not_verified
+                        else -> {
+                            AppLog.e("EmailLoginScreen", "Unhandled login feedback key: ${effect.message}")
+                            R.string.error_unknown
+                        }
                     }
-                    snackbarHostState.showSnackbar(message)
+                    if (effect.message.contains("sent")) {
+                        feedback.showSuccess(messageResId)
+                    } else {
+                        feedback.showError(messageResId)
+                    }
                 }
                 is LoginEffect.ShowVerificationEmailSent -> {
-                    snackbarHostState.showSnackbar(context.getString(R.string.login_verify_email_sent))
+                    feedback.showSuccess(R.string.login_verify_email_sent)
                 }
             }
         }
@@ -96,7 +100,6 @@ fun EmailLoginScreen(
 
     Scaffold(
         containerColor = semantic.screenBase,
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(text = stringResource(R.string.signin_email)) },

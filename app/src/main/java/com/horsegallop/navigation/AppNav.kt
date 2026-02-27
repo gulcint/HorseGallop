@@ -70,6 +70,9 @@ sealed class Dest(val route: String) {
   }
   object RecentActivityDetail : Dest("recentActivityDetail")
   object BarnsMapView : Dest("barnsMapView")
+  object RideDetail : Dest("rideDetail/{id}") {
+    fun routeWithId(id: String): String = "rideDetail/$id"
+  }
 }
 
 @Composable
@@ -274,6 +277,9 @@ fun AppNavHost(
         onStartRide = { navController.navigate(Dest.Ride.route) },
         onViewBarns = { navController.navigate(Dest.Barns.route) },
         onProfileClick = { navController.navigate(Dest.Profile.route) },
+        onOpenRideDetail = { rideId ->
+          navController.navigate(Dest.RideDetail.routeWithId(rideId))
+        },
         onViewAllActivities = { navController.navigate(Dest.RecentActivityDetail.route) }
       )
     }
@@ -318,17 +324,7 @@ fun AppNavHost(
       )
     }
     composable(Dest.Schedule.route) {
-      ScheduleRoute(
-        onLessonClick = { lessonId ->
-          android.widget.Toast
-            .makeText(
-              ctx,
-              ctx.getString(com.horsegallop.R.string.lesson_detail) + ": " + lessonId,
-              android.widget.Toast.LENGTH_SHORT
-            )
-            .show()
-        }
-      )
+      ScheduleRoute()
     }
     composable(Dest.Barns.route) {
       // Barns ekranında geri tuşu Home'a döner
@@ -350,7 +346,19 @@ fun AppNavHost(
     composable(Dest.RecentActivityDetail.route) {
       BackHandler { navController.popBackStack() }
       com.horsegallop.feature.home.presentation.RecentActivityDetailScreen(
-        navController = navController
+        navController = navController,
+        onOpenRideDetail = { rideId ->
+          navController.navigate(Dest.RideDetail.routeWithId(rideId))
+        }
+      )
+    }
+    composable(
+      route = Dest.RideDetail.route,
+      arguments = listOf(navArgument("id") { type = NavType.StringType })
+    ) {
+      BackHandler { navController.popBackStack() }
+      RideDetailScreen(
+        onBack = { navController.popBackStack() }
       )
     }
     composable(Dest.BarnsMapView.route) {

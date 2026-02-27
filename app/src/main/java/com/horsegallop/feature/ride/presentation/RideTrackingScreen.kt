@@ -47,8 +47,6 @@ import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -87,6 +85,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.horsegallop.R
+import com.horsegallop.core.feedback.LocalAppFeedbackController
 import com.horsegallop.domain.barn.model.BarnUi
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.ride.model.GeoPoint
@@ -115,7 +114,7 @@ fun RideTrackingScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    val snackbarHostState = remember { SnackbarHostState() }
+    val feedback = LocalAppFeedbackController.current
     val semantic = LocalSemanticColors.current
 
     var hasLocationPermission by remember { mutableStateOf(context.hasLocationPermission()) }
@@ -131,12 +130,11 @@ fun RideTrackingScreen(
 
     LaunchedEffect(state.errorMessageResId) {
         val messageRes = state.errorMessageResId ?: return@LaunchedEffect
-        snackbarHostState.showSnackbar(context.getString(messageRes))
+        feedback.showError(messageRes)
         viewModel.clearError()
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = semantic.screenBase
     ) { innerPadding ->
         RideTrackingContent(
@@ -177,6 +175,7 @@ fun RideTrackingContent(
     onRetryPendingSync: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val semantic = LocalSemanticColors.current
     var showStopDialog by remember { mutableStateOf(false) }
 
     if (showStopDialog) {
@@ -200,108 +199,119 @@ fun RideTrackingContent(
         )
     }
 
-    LazyColumn(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        item {
-            RideHeader(isRiding = state.isRiding)
-        }
-
-        item {
-            SyncStatusCard(
-                pendingSyncCount = state.pendingSyncCount,
-                lastStatus = state.lastStopSyncStatus,
-                isRetrying = state.isRetryingSync,
-                onRetryPendingSync = onRetryPendingSync
+    Box(
+        modifier = modifier.background(
+            Brush.verticalGradient(
+                colors = listOf(
+                    semantic.screenTopBar.copy(alpha = 0.34f),
+                    semantic.screenBase
+                )
             )
-        }
+        )
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            item {
+                RideHeader(isRiding = state.isRiding)
+            }
 
-        if (!hasLocationPermission) {
             item {
-                PermissionCard(
-                    onGrantPermission = onRequestLocationPermission,
-                    modifier = Modifier.testTag(RideTestTags.PermissionCard)
+                SyncStatusCard(
+                    pendingSyncCount = state.pendingSyncCount,
+                    lastStatus = state.lastStopSyncStatus,
+                    isRetrying = state.isRetryingSync,
+                    onRetryPendingSync = onRetryPendingSync
                 )
             }
-        }
 
-        if (state.isRiding) {
-            item {
-                RideMapCard(
-                    pathPoints = state.pathPoints,
-                    elapsedSec = state.durationSec,
-                    hasLocationPermission = hasLocationPermission
-                )
-            }
-            item {
-                MetricsGrid(state = state)
-            }
-            item {
-                if (state.isSaving) {
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                }
-                LiveActions(
-                    autoDetect = state.autoDetect,
-                    onSetAutoDetect = onSetAutoDetect,
-                    onFinishRide = { showStopDialog = true }
-                )
-            }
-        } else {
-            item {
-                RideTypeSection(
-                    selectedRideType = state.selectedRideType,
-                    onRideTypeSelected = onRideTypeSelected
-                )
-            }
-            item {
-                BarnSelector(
-                    barns = state.barns,
-                    selectedBarn = state.selectedBarn,
-                    onBarnSelected = onBarnSelected
-                )
-            }
-            item {
-                Button(
-                    onClick = onToggleRide,
-                    enabled = hasLocationPermission,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
-                        .testTag(RideTestTags.StartButton),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.start_ride),
-                        style = MaterialTheme.typography.titleMedium
+            if (!hasLocationPermission) {
+                item {
+                    PermissionCard(
+                        onGrantPermission = onRequestLocationPermission,
+                        modifier = Modifier.testTag(RideTestTags.PermissionCard)
                     )
                 }
-                if (!hasLocationPermission) {
-                    OutlinedButton(
-                        onClick = onRequestLocationPermission,
+            }
+
+            if (state.isRiding) {
+                item {
+                    RideMapCard(
+                        pathPoints = state.pathPoints,
+                        elapsedSec = state.durationSec,
+                        hasLocationPermission = hasLocationPermission
+                    )
+                }
+                item {
+                    MetricsGrid(state = state)
+                }
+                item {
+                    if (state.isSaving) {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    }
+                    LiveActions(
+                        autoDetect = state.autoDetect,
+                        onSetAutoDetect = onSetAutoDetect,
+                        onFinishRide = { showStopDialog = true }
+                    )
+                }
+            } else {
+                item {
+                    RideTypeSection(
+                        selectedRideType = state.selectedRideType,
+                        onRideTypeSelected = onRideTypeSelected
+                    )
+                }
+                item {
+                    BarnSelector(
+                        barns = state.barns,
+                        selectedBarn = state.selectedBarn,
+                        onBarnSelected = onBarnSelected
+                    )
+                }
+                item {
+                    Button(
+                        onClick = onToggleRide,
+                        enabled = hasLocationPermission,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 8.dp),
+                            .height(52.dp)
+                            .testTag(RideTestTags.StartButton),
                         shape = RoundedCornerShape(16.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.MyLocation,
-                            contentDescription = null
+                        Text(
+                            text = stringResource(id = R.string.start_ride),
+                            style = MaterialTheme.typography.titleMedium
                         )
-                        Spacer(modifier = Modifier.size(8.dp))
-                        Text(text = stringResource(id = R.string.ride_grant_location))
+                    }
+                    if (!hasLocationPermission) {
+                        OutlinedButton(
+                            onClick = onRequestLocationPermission,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MyLocation,
+                                contentDescription = null
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Text(text = stringResource(id = R.string.ride_grant_location))
+                        }
                     }
                 }
             }
-        }
 
-        state.savedRideSummary?.let { summary ->
-            item {
-                SavedRideSummaryCard(
-                    summary = summary,
-                    onDismiss = onDismissSavedSummary,
-                    modifier = Modifier.testTag(RideTestTags.SavedSummaryCard)
-                )
+            state.savedRideSummary?.let { summary ->
+                item {
+                    SavedRideSummaryCard(
+                        summary = summary,
+                        onDismiss = onDismissSavedSummary,
+                        modifier = Modifier.testTag(RideTestTags.SavedSummaryCard)
+                    )
+                }
             }
         }
     }
@@ -309,15 +319,17 @@ fun RideTrackingContent(
 
 @Composable
 private fun RideHeader(isRiding: Boolean) {
+    val semantic = LocalSemanticColors.current
     val gradient = Brush.linearGradient(
         colors = listOf(
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.78f),
-            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.72f)
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.92f),
+            semantic.cardElevated
         )
     )
     Card(
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke)
     ) {
         Box(
             modifier = Modifier
@@ -325,7 +337,7 @@ private fun RideHeader(isRiding: Boolean) {
                 .background(gradient)
                 .padding(20.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = stringResource(id = R.string.ride_live_title),
                     style = MaterialTheme.typography.titleLarge,
@@ -340,6 +352,28 @@ private fun RideHeader(isRiding: Boolean) {
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(
+                            if (isRiding) {
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
+                            } else {
+                                semantic.cardSubtle
+                            }
+                        )
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = if (isRiding) {
+                            stringResource(id = R.string.finish_ride)
+                        } else {
+                            stringResource(id = R.string.start_ride)
+                        },
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }
@@ -353,6 +387,7 @@ private fun SyncStatusCard(
     onRetryPendingSync: () -> Unit
 ) {
     if (pendingSyncCount <= 0 && lastStatus == null) return
+    val semantic = LocalSemanticColors.current
 
     val statusText = when {
         pendingSyncCount > 0 -> stringResource(
@@ -364,9 +399,9 @@ private fun SyncStatusCard(
     }
 
     val containerColor = when {
-        pendingSyncCount > 0 -> MaterialTheme.colorScheme.secondaryContainer
-        lastStatus == RideSyncStatus.Synced -> MaterialTheme.colorScheme.tertiaryContainer
-        else -> MaterialTheme.colorScheme.errorContainer
+        pendingSyncCount > 0 -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.62f)
+        lastStatus == RideSyncStatus.Synced -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.58f)
+        else -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.52f)
     }
 
     Card(
@@ -374,7 +409,8 @@ private fun SyncStatusCard(
             .fillMaxWidth()
             .testTag(RideTestTags.SyncStatusCard),
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor)
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke)
     ) {
         Column(
             modifier = Modifier
@@ -394,7 +430,8 @@ private fun SyncStatusCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag(RideTestTags.RetrySyncButton),
-                    shape = RoundedCornerShape(14.dp)
+                    shape = RoundedCornerShape(14.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke)
                 ) {
                     Text(
                         text = if (isRetrying) {
@@ -414,10 +451,12 @@ private fun PermissionCard(
     onGrantPermission: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val semantic = LocalSemanticColors.current
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+        colors = CardDefaults.cardColors(containerColor = semantic.cardSubtle),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.35f))
     ) {
         Column(
             modifier = Modifier
@@ -431,7 +470,8 @@ private fun PermissionCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.LocationOn,
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
                 )
                 Text(
                     text = stringResource(id = R.string.ride_permission_required),
@@ -458,9 +498,12 @@ private fun RideTypeSection(
     selectedRideType: RideType,
     onRideTypeSelected: (RideType) -> Unit
 ) {
+    val semantic = LocalSemanticColors.current
     Card(
         modifier = Modifier.testTag(RideTestTags.RideTypeSection),
-        shape = RoundedCornerShape(20.dp)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+        border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke)
     ) {
         Column(
             modifier = Modifier
@@ -484,7 +527,11 @@ private fun RideTypeSection(
                         selected = selectedRideType == rideType,
                         onClick = { onRideTypeSelected(rideType) },
                         label = { Text(text = stringResource(id = rideType.labelResId)) },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = semantic.chipSelected,
+                            containerColor = semantic.chipUnselected
+                        )
                     )
                 }
             }
@@ -494,7 +541,11 @@ private fun RideTypeSection(
                         selected = selectedRideType == rideType,
                         onClick = { onRideTypeSelected(rideType) },
                         label = { Text(text = stringResource(id = rideType.labelResId)) },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = semantic.chipSelected,
+                            containerColor = semantic.chipUnselected
+                        )
                     )
                 }
             }
@@ -508,8 +559,13 @@ private fun BarnSelector(
     selectedBarn: BarnWithLocation?,
     onBarnSelected: (BarnWithLocation) -> Unit
 ) {
+    val semantic = LocalSemanticColors.current
     var expanded by remember { mutableStateOf(false) }
-    Card(shape = RoundedCornerShape(20.dp)) {
+    Card(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+        border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -534,11 +590,16 @@ private fun BarnSelector(
                         .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
                         .fillMaxWidth()
                         .testTag(RideTestTags.BarnField),
-                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
+                        focusedContainerColor = semantic.cardSubtle,
+                        unfocusedContainerColor = semantic.cardSubtle,
+                        disabledContainerColor = semantic.cardSubtle
+                    )
                 )
                 ExposedDropdownMenu(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onDismissRequest = { expanded = false },
+                    containerColor = semantic.panelOverlay
                 ) {
                     barns.forEach { barn ->
                         DropdownMenuItem(
@@ -561,6 +622,7 @@ private fun RideMapCard(
     elapsedSec: Int,
     hasLocationPermission: Boolean
 ) {
+    val semantic = LocalSemanticColors.current
     val validPath = remember(pathPoints) {
         pathPoints
             .filter { it.latitude != 0.0 || it.longitude != 0.0 }
@@ -600,7 +662,9 @@ private fun RideMapCard(
             .aspectRatio(1.6f)
             .testTag(RideTestTags.MapCard),
         shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+        border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             GoogleMap(
@@ -646,10 +710,24 @@ private fun RideMapCard(
             }
             Box(
                 modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(start = 12.dp, top = 12.dp)
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(semantic.panelOverlay.copy(alpha = 0.95f))
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.ride_live_title),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+            Box(
+                modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 14.dp)
                     .clip(CircleShape)
-                    .background(LocalSemanticColors.current.panelOverlay.copy(alpha = 0.92f))
+                    .background(semantic.panelOverlay.copy(alpha = 0.92f))
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Text(
@@ -777,6 +855,7 @@ private fun LiveActions(
     onSetAutoDetect: (Boolean) -> Unit,
     onFinishRide: () -> Unit
 ) {
+    val semantic = LocalSemanticColors.current
     Row(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -798,7 +877,9 @@ private fun LiveActions(
         }
         Card(
             modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+            border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke)
         ) {
             Row(
                 modifier = Modifier
@@ -826,10 +907,12 @@ private fun SavedRideSummaryCard(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val semantic = LocalSemanticColors.current
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+        colors = CardDefaults.cardColors(containerColor = semantic.cardSubtle),
+        border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke)
     ) {
         Column(
             modifier = Modifier
