@@ -42,8 +42,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -64,6 +62,7 @@ import com.horsegallop.R
 import com.horsegallop.core.components.HorseGallopDatePicker
 import com.horsegallop.core.components.HorseGallopDropdown
 import com.horsegallop.core.components.HorseLoadingOverlay
+import com.horsegallop.core.feedback.LocalAppFeedbackController
 import com.horsegallop.ui.theme.LocalSemanticColors
 import java.util.Calendar
 import java.util.Locale
@@ -75,8 +74,8 @@ fun EditProfileScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    val snackbarHostState = remember { SnackbarHostState() }
     val semantic = LocalSemanticColors.current
+    val feedback = LocalAppFeedbackController.current
 
     val profile = state.draftProfile
     val cities = remember {
@@ -94,9 +93,9 @@ fun EditProfileScreen(
         viewModel.startEditSession()
     }
 
-    LaunchedEffect(state.error) {
-        state.error?.let {
-            snackbarHostState.showSnackbar(it)
+    LaunchedEffect(state.errorMessageResId) {
+        state.errorMessageResId?.let { messageResId ->
+            feedback.showError(messageResId)
             viewModel.clearMessages()
         }
     }
@@ -122,7 +121,6 @@ fun EditProfileScreen(
 
     Scaffold(
         containerColor = semantic.screenBase,
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(text = stringResource(id = R.string.edit_profile_title)) },

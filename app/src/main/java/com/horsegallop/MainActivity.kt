@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import com.horsegallop.feature.settings.presentation.SettingsViewModel
 import com.horsegallop.settings.toLocaleList
@@ -36,11 +37,13 @@ import com.horsegallop.navigation.Dest
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.material3.ExperimentalMaterial3Api
-import android.widget.Toast
 import com.horsegallop.domain.model.UserRole
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.luminance
 import com.horsegallop.core.debug.AppLog
+import com.horsegallop.core.feedback.HorseGallopSnackbarHost
+import com.horsegallop.core.feedback.LocalAppFeedbackController
+import com.horsegallop.core.feedback.SnackbarAppFeedbackController
 import com.horsegallop.ui.theme.AppTheme
 import com.horsegallop.ui.theme.LocalSemanticColors
 
@@ -53,13 +56,17 @@ import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private var pendingDeepLinkFeedbackResId: Int? = null
+
      override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 		
         enableEdgeToEdge()
         handleDeepLink(intent)
 
-        setContent { AppContent() }
+        setContent {
+            AppContent(initialFeedbackMessageResId = pendingDeepLinkFeedbackResId)
+        }
     }
 
     private fun handleDeepLink(intent: android.content.Intent?) {
@@ -67,7 +74,7 @@ class MainActivity : ComponentActivity() {
             val mode = data.getQueryParameter("mode")
             val oobCode = data.getQueryParameter("oobCode")
             if (mode == "verifyEmail" && !oobCode.isNullOrBlank()) {
-                Toast.makeText(this, "E-posta doğrulama bağlantısı algılandı", Toast.LENGTH_SHORT).show()
+                pendingDeepLinkFeedbackResId = R.string.feedback_email_verification_link_detected
             }
         }
     }
@@ -109,13 +116,20 @@ private fun PreviewSplashScreen() {
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppContent() {
+fun AppContent(initialFeedbackMessageResId: Int? = null) {
     val mainVm: MainViewModel = androidx.hilt.navigation.compose.hiltViewModel()
     val ui by mainVm.ui.collectAsState()
     val settingsVm: SettingsViewModel = androidx.hilt.navigation.compose.hiltViewModel()
     val settings by settingsVm.uiState.collectAsState()
     val navController = rememberNavController()
     val context = LocalContext.current
+    val appSnackbarHostState = remember { SnackbarHostState() }
+    val appFeedbackController = remember(appSnackbarHostState, context.resources) {
+        SnackbarAppFeedbackController(
+            hostState = appSnackbarHostState,
+            resources = context.resources
+        )
+    }
     val isOnlineState = remember { mutableStateOf(true) }
     var showNoInternet by remember { mutableStateOf(false) }
 
@@ -159,6 +173,7 @@ fun AppContent() {
         }
     }
     
+    CompositionLocalProvider(LocalAppFeedbackController provides appFeedbackController) {
     AppTheme(themeMode = settings.themeMode) {
         val semantic = LocalSemanticColors.current
         val systemBarColor = semantic.screenTopBar
@@ -172,6 +187,12 @@ fun AppContent() {
                 val isLightBars = systemBarColor.luminance() > 0.5f
                 controller.isAppearanceLightStatusBars = isLightBars
                 controller.isAppearanceLightNavigationBars = isLightBars
+            }
+        }
+
+        LaunchedEffect(initialFeedbackMessageResId) {
+            initialFeedbackMessageResId?.let { messageResId ->
+                appFeedbackController.showInfo(messageResId)
             }
         }
 
@@ -248,7 +269,13 @@ fun AppContent() {
                     }
                 }
             }
+
+            HorseGallopSnackbarHost(
+                hostState = appSnackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
         }
+    }
     }
 }
 

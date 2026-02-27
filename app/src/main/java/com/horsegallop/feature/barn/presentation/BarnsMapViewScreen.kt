@@ -40,8 +40,10 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.FilterList
 import com.horsegallop.R
+import com.horsegallop.core.feedback.LocalAppFeedbackController
 import com.horsegallop.domain.barn.model.BarnUi
 import com.horsegallop.ui.theme.LocalSemanticColors
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,6 +53,8 @@ fun BarnsMapViewScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val barns = uiState.filteredBarns
+    val feedback = LocalAppFeedbackController.current
+    val coroutineScope = rememberCoroutineScope()
     val semantic = LocalSemanticColors.current
     
     // Zoom state
@@ -173,10 +177,11 @@ fun BarnsMapViewScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // My Location Button
-            val context = androidx.compose.ui.platform.LocalContext.current
             FloatingActionButton(
                 onClick = { 
-                    android.widget.Toast.makeText(context, "Centering on your location...", android.widget.Toast.LENGTH_SHORT).show()
+                    coroutineScope.launch {
+                        feedback.showInfo(R.string.feedback_location_centering)
+                    }
                     // Here we would normally use a LocationProvider to get user coords
                     // For now, just reset zoom or center on the first barn group
                 },

@@ -1,13 +1,6 @@
 package com.horsegallop.feature.auth.presentation
 
 import android.app.Activity
-import android.content.Context
-import android.graphics.drawable.GradientDrawable
-import android.util.TypedValue
-import android.view.Gravity
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -42,6 +35,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -68,7 +62,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.toArgb
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -77,6 +70,8 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
 import com.horsegallop.R
 import com.horsegallop.core.components.HorseLoadingOverlay
+import com.horsegallop.core.debug.AppLog
+import com.horsegallop.core.feedback.LocalAppFeedbackController
 import com.horsegallop.ui.theme.LocalSemanticColors
 import com.horsegallop.ui.theme.LocalTextColors
 import com.valentinilk.shimmer.shimmer
@@ -95,12 +90,9 @@ fun LoginScreen(
     val vm: LoginViewModel = hiltViewModel()
     val uiState by vm.uiState.collectAsState()
     val semantic = LocalSemanticColors.current
+    val feedback = LocalAppFeedbackController.current
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
-    val toastContainerColor = semantic.cardElevated.toArgb()
-    val toastTextColor = MaterialTheme.colorScheme.onSurface.toArgb()
-    val toastErrorStroke = MaterialTheme.colorScheme.error.toArgb()
-    val toastNeutralStroke = MaterialTheme.colorScheme.outlineVariant.toArgb()
 
     val gso = remember {
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -143,55 +135,37 @@ fun LoginScreen(
                 is LoginEffect.NavigateToHome -> onGoogleClick()
                 is LoginEffect.ShowSnackbarError -> {
                     val msgKey = effect.message
-                    val isDebug = (context.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
-                    val msg = when (msgKey) {
-                        "auth_error_google" -> context.getString(R.string.auth_error_google)
-                        "auth_error_firebase" -> context.getString(R.string.auth_error_firebase)
-                        "auth_error_cancelled" -> context.getString(R.string.auth_error_cancelled)
-                        "auth_error_token_missing" -> context.getString(R.string.auth_error_token_missing)
-                        "login_verify_email_sent" -> context.getString(R.string.login_verify_email_sent)
-                        "verification_email_sent" -> context.getString(R.string.login_verify_email_sent)
-                        "Email not verified" -> context.getString(R.string.error_email_not_verified)
-                        else -> {
-                            if (msgKey.startsWith("google_error_code:")) {
-                                val code = msgKey.removePrefix("google_error_code:")
-                                if (isDebug) {
-                                    "Google Sign-In error code: $code"
-                                } else {
-                                    context.getString(R.string.auth_error_google)
-                                }
-                            } else if (msgKey.startsWith("auth_error_firebase: ")) {
-                                val error = msgKey.removePrefix("auth_error_firebase: ")
-                                if (isDebug) {
-                                    "Authentication failed: $error"
-                                } else {
-                                    context.getString(R.string.auth_error_firebase)
-                                }
-                            } else {
-                                context.getString(R.string.error_unknown)
+                    val messageResId = when (msgKey) {
+                        "auth_error_google" -> R.string.auth_error_google
+                        "auth_error_firebase" -> R.string.auth_error_firebase
+                        "auth_error_cancelled" -> R.string.auth_error_cancelled
+                        "auth_error_token_missing" -> R.string.auth_error_token_missing
+                        "login_verify_email_sent" -> R.string.login_verify_email_sent
+                        "verification_email_sent" -> R.string.login_verify_email_sent
+                        "Email not verified" -> R.string.error_email_not_verified
+                        else -> when {
+                            msgKey.startsWith("google_error_code:") -> {
+                                AppLog.e("LoginScreen", "Google sign-in technical error: $msgKey")
+                                R.string.auth_error_google
+                            }
+                            msgKey.startsWith("auth_error_firebase:") -> {
+                                AppLog.e("LoginScreen", "Firebase auth technical error: $msgKey")
+                                R.string.auth_error_firebase
+                            }
+                            else -> {
+                                AppLog.e("LoginScreen", "Unhandled login feedback key: $msgKey")
+                                R.string.error_unknown
                             }
                         }
                     }
-                    showLogoToast(
-                        context = context,
-                        text = msg,
-                        isError = !msgKey.contains("sent"),
-                        containerColorInt = toastContainerColor,
-                        textColorInt = toastTextColor,
-                        errorStrokeColorInt = toastErrorStroke,
-                        neutralStrokeColorInt = toastNeutralStroke
-                    )
+                    if (msgKey.contains("sent")) {
+                        feedback.showSuccess(messageResId)
+                    } else {
+                        feedback.showError(messageResId)
+                    }
                 }
                 is LoginEffect.ShowVerificationEmailSent -> {
-                    showLogoToast(
-                        context = context,
-                        text = context.getString(R.string.login_verify_email_sent),
-                        isError = false,
-                        containerColorInt = toastContainerColor,
-                        textColorInt = toastTextColor,
-                        errorStrokeColorInt = toastErrorStroke,
-                        neutralStrokeColorInt = toastNeutralStroke
-                    )
+                    feedback.showSuccess(R.string.login_verify_email_sent)
                 }
             }
         }
@@ -353,6 +327,24 @@ fun LoginScreen(
                         }
                     }
 
+                    OutlinedButton(
+                        onClick = onEmailClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(dimensionResource(id = R.dimen.height_button_xl)),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(dimensionResource(id = R.dimen.radius_lg)),
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.65f)
+                        )
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.signin_email),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
                     Button(
                         onClick = vm::login,
                         enabled = !uiState.isLoading && uiState.isFormValid,
@@ -428,15 +420,7 @@ fun LoginScreen(
                             .isGooglePlayServicesAvailable(context)
                         withContext(Dispatchers.Main) {
                             if (availability != ConnectionResult.SUCCESS) {
-                                showLogoToast(
-                                    context = context,
-                                    text = context.getString(R.string.auth_error_play_services),
-                                    isError = true,
-                                    containerColorInt = toastContainerColor,
-                                    textColorInt = toastTextColor,
-                                    errorStrokeColorInt = toastErrorStroke,
-                                    neutralStrokeColorInt = toastNeutralStroke
-                                )
+                                feedback.showError(R.string.auth_error_play_services)
                             } else {
                                 val account = GoogleSignIn.getLastSignedInAccount(context)
                                 if (account != null && !account.idToken.isNullOrEmpty()) {
@@ -490,53 +474,6 @@ private fun LoginHeader() {
             textAlign = TextAlign.Center
         )
     }
-}
-
-private fun showLogoToast(
-    context: Context,
-    text: String,
-    isError: Boolean,
-    containerColorInt: Int,
-    textColorInt: Int,
-    errorStrokeColorInt: Int,
-    neutralStrokeColorInt: Int
-) {
-    val density = context.resources.displayMetrics.density
-    fun dp(v: Int) = (v * density).toInt()
-
-    val container = LinearLayout(context).apply {
-        orientation = LinearLayout.HORIZONTAL
-        gravity = Gravity.CENTER_VERTICAL
-        setPadding(dp(12), dp(10), dp(12), dp(10))
-    }
-
-    val bg = GradientDrawable().apply {
-        cornerRadius = dp(12).toFloat()
-        setColor(containerColorInt)
-        setStroke(dp(1), if (isError) errorStrokeColorInt else neutralStrokeColorInt)
-    }
-    container.background = bg
-
-    val icon = ImageView(context).apply {
-        setImageResource(R.mipmap.ic_launcher)
-        layoutParams = LinearLayout.LayoutParams(dp(20), dp(20)).also { it.rightMargin = dp(8) }
-    }
-
-    val tv = TextView(context).apply {
-        this.text = text
-        setTextColor(textColorInt)
-        setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
-    }
-
-    val toast = android.widget.Toast(context).apply {
-        duration = android.widget.Toast.LENGTH_SHORT
-        view = container.apply {
-            addView(icon)
-            addView(tv)
-        }
-        setGravity(Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL, 0, dp(96))
-    }
-    toast.show()
 }
 
 @Preview(showBackground = true, name = "LoginScreen")

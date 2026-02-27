@@ -22,6 +22,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+enum class ButtonVariant {
+    Primary,
+    Secondary,
+    Tonal,
+    Danger
+}
+
 @Composable
 fun ViewAllButton(
     onClick: () -> Unit,
@@ -61,25 +68,39 @@ fun HorseGallopButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isLoading: Boolean = false,
-    containerColor: Color = MaterialTheme.colorScheme.primary,
-    contentColor: Color = MaterialTheme.colorScheme.onPrimary
+    variant: ButtonVariant = ButtonVariant.Primary,
+    containerColor: Color? = null,
+    contentColor: Color? = null
 ) {
+    val resolvedContainer = containerColor ?: when (variant) {
+        ButtonVariant.Primary -> MaterialTheme.colorScheme.primary
+        ButtonVariant.Secondary -> MaterialTheme.colorScheme.secondary
+        ButtonVariant.Tonal -> MaterialTheme.colorScheme.tertiaryContainer
+        ButtonVariant.Danger -> MaterialTheme.colorScheme.error
+    }
+    val resolvedContent = contentColor ?: when (variant) {
+        ButtonVariant.Primary -> MaterialTheme.colorScheme.onPrimary
+        ButtonVariant.Secondary -> MaterialTheme.colorScheme.onSecondary
+        ButtonVariant.Tonal -> MaterialTheme.colorScheme.onTertiaryContainer
+        ButtonVariant.Danger -> MaterialTheme.colorScheme.onError
+    }
+
     Button(
         onClick = onClick,
         modifier = modifier.height(56.dp),
         enabled = enabled && !isLoading,
         shape = RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = containerColor,
-            contentColor = contentColor,
-            disabledContainerColor = containerColor.copy(alpha = 0.5f),
-            disabledContentColor = contentColor.copy(alpha = 0.5f)
+            containerColor = resolvedContainer,
+            contentColor = resolvedContent,
+            disabledContainerColor = resolvedContainer.copy(alpha = 0.5f),
+            disabledContentColor = resolvedContent.copy(alpha = 0.5f)
         )
     ) {
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(24.dp),
-                color = contentColor,
+                color = resolvedContent,
                 strokeWidth = 2.dp
             )
         } else {

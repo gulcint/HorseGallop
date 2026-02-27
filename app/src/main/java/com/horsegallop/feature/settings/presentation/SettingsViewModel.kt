@@ -2,6 +2,7 @@ package com.horsegallop.feature.settings.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.horsegallop.core.feedback.FeedbackErrorMapper
 import com.horsegallop.settings.AppLanguage
 import com.horsegallop.settings.SettingsRepository
 import com.horsegallop.settings.SettingsState
@@ -19,7 +20,7 @@ import javax.inject.Inject
 data class PrivacyUiState(
     val isProcessing: Boolean = false,
     val exportJson: String? = null,
-    val error: String? = null
+    val errorMessageResId: Int? = null
 )
 
 @HiltViewModel
@@ -48,13 +49,17 @@ class SettingsViewModel @Inject constructor(
 
     fun requestDataExport() {
         if (_privacyState.value.isProcessing) return
-        _privacyState.value = _privacyState.value.copy(isProcessing = true, error = null)
+        _privacyState.value = _privacyState.value.copy(isProcessing = true, errorMessageResId = null)
         viewModelScope.launch {
             requestDataExportUseCase.execute().collect { result ->
                 result.onSuccess { json ->
                     _privacyState.value = _privacyState.value.copy(isProcessing = false, exportJson = json)
                 }.onFailure { e ->
-                    _privacyState.value = _privacyState.value.copy(isProcessing = false, error = e.localizedMessage ?: "Unknown error")
+                    FeedbackErrorMapper.logTechnicalError("SettingsViewModel.requestDataExport", e)
+                    _privacyState.value = _privacyState.value.copy(
+                        isProcessing = false,
+                        errorMessageResId = FeedbackErrorMapper.toMessageRes(e)
+                    )
                 }
             }
         }
@@ -62,7 +67,7 @@ class SettingsViewModel @Inject constructor(
 
     fun requestAccountDeletion(onDeleted: () -> Unit) {
         if (_privacyState.value.isProcessing) return
-        _privacyState.value = _privacyState.value.copy(isProcessing = true, error = null)
+        _privacyState.value = _privacyState.value.copy(isProcessing = true, errorMessageResId = null)
         viewModelScope.launch {
             deleteUserDataUseCase.execute().collect { result ->
                 result.onSuccess {
@@ -70,7 +75,11 @@ class SettingsViewModel @Inject constructor(
                     _privacyState.value = _privacyState.value.copy(isProcessing = false)
                     onDeleted()
                 }.onFailure { e ->
-                    _privacyState.value = _privacyState.value.copy(isProcessing = false, error = e.localizedMessage ?: "Unknown error")
+                    FeedbackErrorMapper.logTechnicalError("SettingsViewModel.requestAccountDeletion", e)
+                    _privacyState.value = _privacyState.value.copy(
+                        isProcessing = false,
+                        errorMessageResId = FeedbackErrorMapper.toMessageRes(e)
+                    )
                 }
             }
         }
@@ -81,6 +90,6 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun clearPrivacyError() {
-        _privacyState.value = _privacyState.value.copy(error = null)
+        _privacyState.value = _privacyState.value.copy(errorMessageResId = null)
     }
 }

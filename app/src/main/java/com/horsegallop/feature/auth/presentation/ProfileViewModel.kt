@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.horsegallop.R
+import com.horsegallop.core.feedback.FeedbackErrorMapper
 import com.horsegallop.domain.auth.model.UserProfile
 import com.horsegallop.domain.auth.usecase.GetCurrentUserIdUseCase
 import com.horsegallop.domain.auth.usecase.GetUserProfileUseCase
@@ -37,7 +38,7 @@ data class ProfileUiState(
     val draftProfile: UserProfile = UserProfile(),
     val draftWeightInput: String = "",
     val formErrors: ProfileFormErrors = ProfileFormErrors(),
-    val error: String? = null,
+    val errorMessageResId: Int? = null,
     val successMessageResId: Int? = null,
     val isEditSessionActive: Boolean = false,
     val countryCodes: List<String> = listOf("+90", "+1", "+44", "+49", "+33", "+34", "+39", "+61", "+81", "+86", "+971", "+7")
@@ -70,12 +71,14 @@ class ProfileViewModel @Inject constructor(
                         isLoading = false,
                         userProfile = profile,
                         draftProfile = profile,
-                        draftWeightInput = formatWeightInput(profile.weight)
+                        draftWeightInput = formatWeightInput(profile.weight),
+                        errorMessageResId = null
                     )
                 }.onFailure { e ->
+                    FeedbackErrorMapper.logTechnicalError("ProfileViewModel.loadProfile", e)
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = e.localizedMessage
+                        errorMessageResId = mapProfileErrorRes(e)
                     )
                 }
             }
@@ -138,7 +141,7 @@ class ProfileViewModel @Inject constructor(
     fun saveProfile(onSuccess: (() -> Unit)? = null) {
         val uid = getCurrentUserIdUseCase()
         if (uid == null) {
-            _uiState.value = _uiState.value.copy(error = "User session not found")
+            _uiState.value = _uiState.value.copy(errorMessageResId = R.string.error_user_session_not_found)
             return
         }
 
@@ -178,9 +181,10 @@ class ProfileViewModel @Inject constructor(
                             )
                             onSuccess?.invoke()
                         }.onFailure { e ->
+                            FeedbackErrorMapper.logTechnicalError("ProfileViewModel.saveProfile", e)
                             _uiState.value = _uiState.value.copy(
                                 isSaving = false,
-                                error = e.localizedMessage ?: "Unknown error"
+                                errorMessageResId = mapProfileErrorRes(e)
                             )
                         }
                     }
@@ -188,12 +192,13 @@ class ProfileViewModel @Inject constructor(
             } catch (_: TimeoutCancellationException) {
                 _uiState.value = _uiState.value.copy(
                     isSaving = false,
-                    error = "Request timed out. Please check your connection."
+                    errorMessageResId = R.string.feedback_request_timed_out
                 )
             } catch (e: Exception) {
+                FeedbackErrorMapper.logTechnicalError("ProfileViewModel.saveProfile", e)
                 _uiState.value = _uiState.value.copy(
                     isSaving = false,
-                    error = e.localizedMessage ?: "An unexpected error occurred"
+                    errorMessageResId = mapProfileErrorRes(e)
                 )
             }
         }
@@ -212,14 +217,15 @@ class ProfileViewModel @Inject constructor(
                         draftProfile = updatedDraft
                     )
                 }.onFailure { e ->
-                    _uiState.value = _uiState.value.copy(error = e.localizedMessage)
+                    FeedbackErrorMapper.logTechnicalError("ProfileViewModel.updateProfileImage", e)
+                    _uiState.value = _uiState.value.copy(errorMessageResId = mapProfileErrorRes(e))
                 }
             }
         }
     }
 
     fun clearMessages() {
-        _uiState.value = _uiState.value.copy(error = null, successMessageResId = null)
+        _uiState.value = _uiState.value.copy(errorMessageResId = null, successMessageResId = null)
     }
 
     fun signOut(onSignOut: () -> Unit) {
@@ -286,6 +292,17 @@ class ProfileViewModel @Inject constructor(
             weight.toInt().toString()
         } else {
             String.format(Locale.US, "%.1f", weight)
+        }
+    }
+
+    private fun mapProfileErrorRes(throwable: Throwable): Int {
+        val raw = (throwable.message ?: throwable.localizedMessage ?: "").lowercase(Locale.US)
+        return when {
+            raw.isBlank() -> R.string.error_unknown
+            raw.contains("not found") || raw.contains("not_found") -> R.string.feedback_profile_service_not_ready
+            raw.contains("timeout") || raw.contains("timed out") -> R.string.feedback_request_timed_out
+            raw.contains("network") -> R.string.feedback_service_unavailable
+            else -> FeedbackErrorMapper.toMessageRes(throwable)
         }
     }
 }

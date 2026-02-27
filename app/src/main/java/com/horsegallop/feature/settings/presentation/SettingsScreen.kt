@@ -44,7 +44,6 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
@@ -56,6 +55,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import com.horsegallop.core.feedback.LocalAppFeedbackController
 import com.horsegallop.ui.theme.LocalSemanticColors
 
 @Composable
@@ -66,14 +66,14 @@ fun SettingsScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val privacyState by viewModel.privacyState.collectAsState()
-    val context = LocalContext.current
+    val feedback = LocalAppFeedbackController.current
     val clipboard = LocalClipboardManager.current
     var showDeleteConfirm by remember { mutableStateOf(false) }
     val semantic = LocalSemanticColors.current
 
-    LaunchedEffect(privacyState.error) {
-        privacyState.error?.let {
-            android.widget.Toast.makeText(context, it, android.widget.Toast.LENGTH_LONG).show()
+    LaunchedEffect(privacyState.errorMessageResId) {
+        privacyState.errorMessageResId?.let { messageResId ->
+            feedback.showError(messageResId)
             viewModel.clearPrivacyError()
         }
     }
@@ -81,11 +81,7 @@ fun SettingsScreen(
     LaunchedEffect(privacyState.exportJson) {
         privacyState.exportJson?.let { json ->
             clipboard.setText(AnnotatedString(json))
-            android.widget.Toast.makeText(
-                context,
-                context.getString(R.string.privacy_export_ready),
-                android.widget.Toast.LENGTH_LONG
-            ).show()
+            feedback.showSuccess(R.string.privacy_export_ready)
             viewModel.consumeExport()
         }
     }
