@@ -121,7 +121,12 @@ private fun HomeDashboard(
       verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.section_spacing_md))
     ) {
       item {
-        WelcomeHeader(onProfileClick = onProfileClick, cardColor = semantic.cardElevated)
+        WelcomeHeader(
+          onProfileClick = onProfileClick,
+          cardColor = semantic.cardElevated,
+          totalRides = uiState.totalRides,
+          totalDistance = uiState.totalDistance
+        )
       }
 
       item {
@@ -148,13 +153,22 @@ private fun HomeDashboard(
 }
 
 @Composable
-private fun WelcomeHeader(onProfileClick: () -> Unit, cardColor: androidx.compose.ui.graphics.Color) {
+private fun WelcomeHeader(
+  onProfileClick: () -> Unit,
+  cardColor: androidx.compose.ui.graphics.Color,
+  totalRides: String,
+  totalDistance: String
+) {
+  val semantic = LocalSemanticColors.current
   Card(
-    modifier = Modifier.fillMaxWidth().padding(bottom = dimensionResource(id = com.horsegallop.R.dimen.spacing_md)),
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(bottom = dimensionResource(id = com.horsegallop.R.dimen.spacing_md)),
     colors = CardDefaults.cardColors(
       containerColor = cardColor
     ),
-    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xl))
+    shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_xl)),
+    border = BorderStroke(1.dp, semantic.cardStroke)
   ) {
     Box(
       modifier = Modifier
@@ -174,7 +188,7 @@ private fun WelcomeHeader(onProfileClick: () -> Unit, cardColor: androidx.compos
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
       ) {
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
           Text(
             text = stringResource(id = R.string.welcome_title),
             style = MaterialTheme.typography.headlineMedium,
@@ -187,14 +201,53 @@ private fun WelcomeHeader(onProfileClick: () -> Unit, cardColor: androidx.compos
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
           )
+          Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.R.dimen.spacing_md)))
+          Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Surface(
+              shape = RoundedCornerShape(999.dp),
+              color = semantic.panelOverlay.copy(alpha = 0.78f),
+              border = BorderStroke(1.dp, semantic.cardStroke)
+            ) {
+              Text(
+                text = "${stringResource(id = R.string.stats_total_rides)} $totalRides",
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                style = MaterialTheme.typography.labelMedium
+              )
+            }
+            Surface(
+              shape = RoundedCornerShape(999.dp),
+              color = semantic.panelOverlay.copy(alpha = 0.78f),
+              border = BorderStroke(1.dp, semantic.cardStroke)
+            ) {
+              Text(
+                text = "${stringResource(id = R.string.stats_distance)} $totalDistance",
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                style = MaterialTheme.typography.labelMedium
+              )
+            }
+          }
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(
+          verticalArrangement = Arrangement.spacedBy(10.dp),
+          horizontalAlignment = Alignment.End
+        ) {
           Icon(
             Icons.AutoMirrored.Filled.TrendingUp,
             contentDescription = null,
             modifier = Modifier.size(dimensionResource(id = com.horsegallop.R.dimen.icon_xxl)),
             tint = MaterialTheme.colorScheme.primary
           )
+          FilledTonalButton(
+            onClick = onProfileClick,
+            shape = RoundedCornerShape(12.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
+          ) {
+            Icon(
+              imageVector = Icons.Filled.Person,
+              contentDescription = null,
+              modifier = Modifier.size(16.dp)
+            )
+          }
         }
       }
     }
@@ -211,27 +264,23 @@ private fun QuickActionsSection(onStartRide: () -> Unit, onViewBarns: () -> Unit
       modifier = Modifier.padding(bottom = dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
     )
     
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
-    ) {
-      QuickActionCard(
-        title = stringResource(id = R.string.qa_start_ride_title),
-        subtitle = stringResource(id = R.string.qa_start_ride_subtitle),
-        icon = Icons.Filled.PlayArrow,
-        color = MaterialTheme.colorScheme.primary,
-        onClick = onStartRide,
-        modifier = Modifier.weight(1f)
-      )
-      QuickActionCard(
-        title = stringResource(id = R.string.qa_view_barns_title),
-        subtitle = stringResource(id = R.string.qa_view_barns_subtitle),
-        icon = Icons.Filled.LocationOn,
-        color = MaterialTheme.colorScheme.secondary,
-        onClick = onViewBarns,
-        modifier = Modifier.weight(1f)
-      )
-    }
+    QuickActionCard(
+      title = stringResource(id = R.string.qa_start_ride_title),
+      subtitle = stringResource(id = R.string.qa_start_ride_subtitle),
+      icon = Icons.Filled.PlayArrow,
+      color = MaterialTheme.colorScheme.primary,
+      onClick = onStartRide,
+      modifier = Modifier.fillMaxWidth()
+    )
+    Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.R.dimen.spacing_md)))
+    QuickActionCard(
+      title = stringResource(id = R.string.qa_view_barns_title),
+      subtitle = stringResource(id = R.string.qa_view_barns_subtitle),
+      icon = Icons.Filled.LocationOn,
+      color = MaterialTheme.colorScheme.secondary,
+      onClick = onViewBarns,
+      modifier = Modifier.fillMaxWidth()
+    )
   }
 }
 
@@ -363,6 +412,7 @@ private fun RecentActivitySection(
 
 @Composable
 private fun TipsSection() {
+  val semantic = LocalSemanticColors.current
   Column {
     Text(
       text = stringResource(id = com.horsegallop.R.string.riding_tips_title),
@@ -375,8 +425,9 @@ private fun TipsSection() {
       modifier = Modifier
         .fillMaxWidth()
         .clickable { /* Navigate to tips section */ },
-      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-      shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg))
+      colors = CardDefaults.cardColors(containerColor = semantic.cardSubtle),
+      shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg)),
+      border = BorderStroke(1.dp, semantic.cardStroke)
     ) {
       Row(
         modifier = Modifier.padding(dimensionResource(id = com.horsegallop.R.dimen.padding_card_md)),
@@ -386,7 +437,7 @@ private fun TipsSection() {
         Icon(
           Icons.Filled.Lightbulb,
           contentDescription = null,
-          tint = MaterialTheme.colorScheme.onSecondaryContainer,
+          tint = MaterialTheme.colorScheme.secondary,
           modifier = Modifier.size(dimensionResource(id = com.horsegallop.R.dimen.icon_md))
         )
         Column(modifier = Modifier.weight(1f)) {
@@ -394,12 +445,12 @@ private fun TipsSection() {
             text = stringResource(id = com.horsegallop.R.string.tip_safe_riding_title),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSecondaryContainer
+            color = MaterialTheme.colorScheme.onSurface
           )
           Text(
             text = stringResource(id = com.horsegallop.R.string.tip_safe_riding_subtitle),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
           )
         }
       }
