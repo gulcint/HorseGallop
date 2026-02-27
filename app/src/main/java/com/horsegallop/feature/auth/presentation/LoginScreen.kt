@@ -77,6 +77,7 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
 import com.horsegallop.R
 import com.horsegallop.core.components.HorseLoadingOverlay
+import com.horsegallop.ui.theme.LocalSemanticColors
 import com.horsegallop.ui.theme.LocalTextColors
 import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.Dispatchers
@@ -93,9 +94,10 @@ fun LoginScreen(
     val context = LocalContext.current
     val vm: LoginViewModel = hiltViewModel()
     val uiState by vm.uiState.collectAsState()
+    val semantic = LocalSemanticColors.current
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
-    val toastContainerColor = MaterialTheme.colorScheme.surface.toArgb()
+    val toastContainerColor = semantic.cardElevated.toArgb()
     val toastTextColor = MaterialTheme.colorScheme.onSurface.toArgb()
     val toastErrorStroke = MaterialTheme.colorScheme.error.toArgb()
     val toastNeutralStroke = MaterialTheme.colorScheme.outlineVariant.toArgb()
@@ -202,7 +204,7 @@ fun LoginScreen(
                 Brush.verticalGradient(
                     colors = listOf(
                         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.16f),
-                        MaterialTheme.colorScheme.surface
+                        semantic.screenBase
                     )
                 )
             )
@@ -227,11 +229,11 @@ fun LoginScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(dimensionResource(id = R.dimen.radius_lg)),
-                color = MaterialTheme.colorScheme.surface,
+                color = semantic.cardElevated,
                 shadowElevation = dimensionResource(id = R.dimen.elevation_sm),
                 border = BorderStroke(
                     dimensionResource(id = R.dimen.width_divider_thin),
-                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
+                    semantic.cardStroke
                 )
             ) {
                 Column(
@@ -274,7 +276,9 @@ fun LoginScreen(
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                            focusedLabelColor = MaterialTheme.colorScheme.primary
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            focusedContainerColor = semantic.cardElevated,
+                            unfocusedContainerColor = semantic.cardElevated
                         )
                     )
 
@@ -331,7 +335,9 @@ fun LoginScreen(
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                            focusedLabelColor = MaterialTheme.colorScheme.primary
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            focusedContainerColor = semantic.cardElevated,
+                            unfocusedContainerColor = semantic.cardElevated
                         )
                     )
 
@@ -547,17 +553,18 @@ private fun PreviewLoginScreen() {
 
 @Composable
 fun GoogleSignInButton(loading: Boolean = false, onClick: () -> Unit) {
+    val semantic = LocalSemanticColors.current
     Surface(
         onClick = if (loading) ({}) else onClick,
         modifier = Modifier
             .fillMaxWidth()
             .height(dimensionResource(id = R.dimen.height_button_xl)),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(dimensionResource(id = R.dimen.radius_lg)),
-        color = MaterialTheme.colorScheme.surface,
+        color = semantic.cardElevated,
         shadowElevation = dimensionResource(id = R.dimen.elevation_sm),
         border = BorderStroke(
             dimensionResource(id = R.dimen.width_divider_thin),
-            MaterialTheme.colorScheme.primary
+            semantic.cardStroke
         )
     ) {
         Row(

@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.luminance
 import com.horsegallop.core.debug.AppLog
 import com.horsegallop.ui.theme.AppTheme
+import com.horsegallop.ui.theme.LocalSemanticColors
 
 import com.horsegallop.feature.common.presentation.NoInternetScreen
 import kotlinx.coroutines.CoroutineScope
@@ -82,11 +83,12 @@ private fun PreviewAppContent() {
 @Composable
 private fun PreviewSplashScreen() {
     AppTheme {
+        val semantic = LocalSemanticColors.current
         // Side-effect free splash preview (no MediaPlayer/Lottie playback)
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(semantic.screenBase),
         contentAlignment = Alignment.Center
     ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -158,7 +160,8 @@ fun AppContent() {
     }
     
     AppTheme(themeMode = settings.themeMode) {
-        val systemBarColor = MaterialTheme.colorScheme.background
+        val semantic = LocalSemanticColors.current
+        val systemBarColor = semantic.screenTopBar
         SideEffect {
             val window = (context as? android.app.Activity)?.window
             if (window != null) {
@@ -267,10 +270,11 @@ fun SplashScreen(
     isOnline: Boolean = true,
     onFinished: () -> Unit
 ): Unit {
+    val semantic = LocalSemanticColors.current
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(semantic.screenBase),
         contentAlignment = Alignment.Center
     ) {
         val ctx = LocalContext.current

@@ -51,6 +51,7 @@ fun BarnsMapViewScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val barns = uiState.filteredBarns
+    val semantic = LocalSemanticColors.current
     
     // Zoom state
     var zoomLevel by remember { mutableFloatStateOf(1f) }
@@ -74,7 +75,7 @@ fun BarnsMapViewScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(semantic.screenBase)
     ) {
         // Map Layer
         BarnsMapCanvas(
@@ -108,7 +109,7 @@ fun BarnsMapViewScreen(
                 Surface(
                     onClick = { navController.navigateUp() },
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surface,
+                    color = semantic.panelOverlay,
                     shadowElevation = 4.dp,
                     modifier = Modifier.size(48.dp)
                 ) {
@@ -147,7 +148,7 @@ fun BarnsMapViewScreen(
                             { Icon(Icons.Filled.LocationOn, contentDescription = null, modifier = Modifier.size(16.dp)) }
                         } else null,
                         colors = FilterChipDefaults.filterChipColors(
-                            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                            containerColor = semantic.panelOverlay,
                             labelColor = MaterialTheme.colorScheme.onSurface,
                             selectedContainerColor = MaterialTheme.colorScheme.primary,
                             selectedLabelColor = MaterialTheme.colorScheme.onPrimary
@@ -179,7 +180,7 @@ fun BarnsMapViewScreen(
                     // Here we would normally use a LocationProvider to get user coords
                     // For now, just reset zoom or center on the first barn group
                 },
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor = semantic.panelOverlay,
                 contentColor = MaterialTheme.colorScheme.primary,
                 shape = CircleShape,
                 modifier = Modifier.size(48.dp)
@@ -190,7 +191,7 @@ fun BarnsMapViewScreen(
             // Zoom Controls
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surface,
+                color = semantic.panelOverlay,
                 shadowElevation = 4.dp,
                 modifier = Modifier.width(48.dp)
             ) {
@@ -220,7 +221,7 @@ fun BarnsMapViewScreen(
                 // "Search this area" button (Visible when moved - simulated always visible for now)
                 Button(
                     onClick = { /* Re-search */ },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface, contentColor = MaterialTheme.colorScheme.primary),
+                    colors = ButtonDefaults.buttonColors(containerColor = semantic.panelOverlay, contentColor = MaterialTheme.colorScheme.primary),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
@@ -479,7 +480,8 @@ private fun BarnListItemHorizontal(
             .width(280.dp)
             .height(120.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+        border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(

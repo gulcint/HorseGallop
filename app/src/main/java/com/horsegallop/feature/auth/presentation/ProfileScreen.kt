@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
 import com.horsegallop.core.components.HorseLoadingOverlay
+import com.horsegallop.ui.theme.LocalSemanticColors
 
 @Composable
 fun ProfileScreen(
@@ -75,6 +76,7 @@ fun ProfileScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val semantic = LocalSemanticColors.current
 
     val pickMediaLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
         if (uri != null) viewModel.updateProfileImage(uri)
@@ -115,7 +117,7 @@ fun ProfileScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = semantic.screenBase,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -142,10 +144,10 @@ fun ProfileScreen(
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
-                    actionIconContentColor = MaterialTheme.colorScheme.onBackground
+                    containerColor = semantic.screenTopBar,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -158,7 +160,7 @@ fun ProfileScreen(
                         colors = listOf(
                             MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.14f),
                             MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.08f),
-                            MaterialTheme.colorScheme.background
+                            semantic.screenBase
                         )
                     )
                 )

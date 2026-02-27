@@ -15,9 +15,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import com.horsegallop.core.components.ViewAllButton
-import com.horsegallop.core.components.HorseGallopSearchBar
 import com.horsegallop.navigation.Dest
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,7 +69,6 @@ private fun HomeDashboard(
   onViewAllActivities: (() -> Unit)? = null,
   uiState: HomeUiState = HomeUiState(loading = false)
 ) {
-  var searchQuery by rememberSaveable { mutableStateOf("") }
   val semantic = LocalSemanticColors.current
 
   val activities = if (uiState.activities.isEmpty()) {
@@ -97,16 +94,6 @@ private fun HomeDashboard(
     uiState.activities
   }
 
-  val filteredActivities = remember(activities, searchQuery) {
-    if (searchQuery.isBlank()) {
-      activities
-    } else {
-      activities.filter { item ->
-        (item.title ?: "").contains(searchQuery.trim(), ignoreCase = true)
-      }
-    }
-  }
-
   if (uiState.loading) {
     HomeDashboardSkeleton()
   } else {
@@ -118,7 +105,7 @@ private fun HomeDashboard(
             colors = listOf(
               MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.18f),
               MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.12f),
-              MaterialTheme.colorScheme.background
+              semantic.screenBase
             )
           )
         ),
@@ -135,16 +122,6 @@ private fun HomeDashboard(
       }
 
       item {
-        HorseGallopSearchBar(
-          query = searchQuery,
-          onQueryChange = { searchQuery = it },
-          placeholder = stringResource(id = R.string.search_placeholder),
-          modifier = Modifier.fillMaxWidth()
-        )
-      }
-
-      
-      item {
         QuickActionsSection(onStartRide = onStartRide, onViewBarns = onViewBarns)
       }
       
@@ -154,7 +131,7 @@ private fun HomeDashboard(
       
       item {
         RecentActivitySection(
-          activities = filteredActivities,
+          activities = activities,
           onViewAllActivities = onViewAllActivities
         )
       }
@@ -314,6 +291,7 @@ private fun RecentActivitySection(
 ),
   onViewAllActivities: (() -> Unit)? = null
 ) {
+  val semantic = LocalSemanticColors.current
   Column {
     Row(
       modifier = Modifier.fillMaxWidth(),
@@ -333,10 +311,10 @@ private fun RecentActivitySection(
     
     Card(
       modifier = Modifier.fillMaxWidth(),
-      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+      colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
       shape = RoundedCornerShape(20.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-      border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+      border = BorderStroke(1.dp, semantic.cardStroke)
     ) {
       Column(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)

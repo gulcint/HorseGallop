@@ -50,7 +50,7 @@ fun AutoRideDetectionSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit
     Card(
         colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
+        border = BorderStroke(1.dp, semantic.cardStroke)
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -117,7 +117,7 @@ fun HorseGallopDropdown(
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.background(semantic.cardElevated)
+            modifier = Modifier.background(semantic.panelOverlay)
         ) {
             options.forEach { option ->
                 DropdownMenuItem(

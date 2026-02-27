@@ -82,6 +82,7 @@ import com.horsegallop.core.components.ViewAllButton
 import com.horsegallop.core.components.HorseGallopSearchBar
 import com.horsegallop.domain.barn.model.BarnUi
 import com.horsegallop.domain.barn.model.BarnWithLocation
+import com.horsegallop.ui.theme.LocalSemanticColors
 
 
 
@@ -95,6 +96,7 @@ fun BarnListScreen(
   viewModel: BarnViewModel = hiltViewModel()
 ) {
   val uiState by viewModel.uiState.collectAsState()
+  val semantic = LocalSemanticColors.current
 
   Column(modifier = Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 16.dp)) {
       Spacer(modifier = Modifier.height(24.dp))
@@ -168,7 +170,8 @@ fun BarnListScreen(
         Spacer(modifier = Modifier.height(12.dp))
         Card(
           shape = RoundedCornerShape(24.dp),
-          colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+          colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+          border = BorderStroke(1.dp, semantic.cardStroke),
           elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
           modifier = Modifier.fillMaxWidth()
         ) {
@@ -234,6 +237,7 @@ fun BarnListScreen(
 
 @Composable
 fun BarnCard(barn: BarnUi, onClick: () -> Unit, onFavoriteClick: () -> Unit) {
+    val semantic = LocalSemanticColors.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -245,7 +249,8 @@ fun BarnCard(barn: BarnUi, onClick: () -> Unit, onFavoriteClick: () -> Unit) {
             )
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+        border = BorderStroke(1.dp, semantic.cardStroke),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
@@ -327,7 +332,11 @@ fun BarnCard(barn: BarnUi, onClick: () -> Unit, onFavoriteClick: () -> Unit) {
                     items(barn.tags) { tag ->
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.82f),
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.38f)
+                            ),
                             modifier = Modifier.height(28.dp)
                         ) {
                             Row(
@@ -338,13 +347,13 @@ fun BarnCard(barn: BarnUi, onClick: () -> Unit, onFavoriteClick: () -> Unit) {
                                 Icon(
                                     Icons.Filled.Star,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = MaterialTheme.colorScheme.secondary,
                                     modifier = Modifier.size(12.dp)
                                 )
                                 Text(
                                     text = getFilterLabel(tag),
                                     style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             }
                         }

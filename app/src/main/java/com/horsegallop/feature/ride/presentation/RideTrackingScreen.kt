@@ -91,6 +91,7 @@ import com.horsegallop.domain.barn.model.BarnUi
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.ride.model.GeoPoint
 import com.horsegallop.domain.ride.model.RideSyncStatus
+import com.horsegallop.ui.theme.LocalSemanticColors
 import java.util.Locale
 
 @Composable
@@ -115,6 +116,7 @@ fun RideTrackingScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val semantic = LocalSemanticColors.current
 
     var hasLocationPermission by remember { mutableStateOf(context.hasLocationPermission()) }
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -135,7 +137,7 @@ fun RideTrackingScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = semantic.screenBase
     ) { innerPadding ->
         RideTrackingContent(
             state = state,
@@ -647,7 +649,7 @@ private fun RideMapCard(
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 14.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.92f))
+                    .background(LocalSemanticColors.current.panelOverlay.copy(alpha = 0.92f))
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Text(
@@ -721,10 +723,12 @@ private fun MetricTile(
     value: String,
     unit: String
 ) {
+    val semantic = LocalSemanticColors.current
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+        border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke)
     ) {
         Column(
             modifier = Modifier.padding(12.dp),

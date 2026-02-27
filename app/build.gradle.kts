@@ -1,4 +1,5 @@
 import java.util.Properties
+import org.gradle.api.GradleException
 
 plugins {
     alias(libs.plugins.android.application)
@@ -63,6 +64,57 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEa
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
+}
+
+val disallowedSurfacePatterns = listOf(
+    Regex("""CardDefaults\.cardColors\(\s*containerColor\s*=\s*MaterialTheme\.colorScheme\.surface\s*\)"""),
+    Regex("""containerColor\s*=\s*MaterialTheme\.colorScheme\.background(?:\.copy\([^)]*\))?"""),
+    Regex("""\.background\(\s*MaterialTheme\.colorScheme\.background\s*\)"""),
+    Regex("""color\s*=\s*MaterialTheme\.colorScheme\.surface\b""")
+)
+
+tasks.register("enforceSemanticSurfaceTokens") {
+    group = "verification"
+    description = "Enforces semantic surface usage in feature layer UI files."
+    doLast {
+        val scanTargets = listOf(
+            file("src/main/java/com/horsegallop/feature"),
+            file("src/main/java/com/horsegallop/MainActivity.kt")
+        )
+
+        val violations = mutableListOf<String>()
+        scanTargets.forEach { target ->
+            if (!target.exists()) return@forEach
+            val files = if (target.isDirectory) {
+                target.walkTopDown().filter { it.isFile && it.extension == "kt" && !it.name.contains(" 2") }.toList()
+            } else {
+                if (target.extension == "kt" && !target.name.contains(" 2")) listOf(target) else emptyList()
+            }
+
+            files.forEach { file ->
+                val relativePath = file.relativeTo(project.projectDir).path
+                file.readLines().forEachIndexed { index, line ->
+                    if (disallowedSurfacePatterns.any { regex -> regex.containsMatchIn(line) }) {
+                        violations += "$relativePath:${index + 1}: ${line.trim()}"
+                    }
+                }
+            }
+        }
+
+        if (violations.isNotEmpty()) {
+            throw GradleException(
+                buildString {
+                    appendLine("Found disallowed direct surface/background usage in UI layer:")
+                    violations.forEach { appendLine(it) }
+                    appendLine("Use LocalSemanticColors tokens (screenBase/screenTopBar/cardElevated/cardSubtle/panelOverlay/cardStroke) instead.")
+                }
+            )
+        }
+    }
+}
+
+tasks.named("preBuild").configure {
+    dependsOn("enforceSemanticSurfaceTokens")
 }
 
 kapt {

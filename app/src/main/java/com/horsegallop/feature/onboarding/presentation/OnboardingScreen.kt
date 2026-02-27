@@ -1,5 +1,6 @@
 package com.horsegallop.feature.onboarding.presentation
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
@@ -119,7 +120,7 @@ fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(semantic.screenBase)
     ) {
         // Animated gradient background (kept, but optimized)
         ThemedAnimatedBackground(gradient = pages[pagerState.currentPage].gradient)
@@ -379,13 +380,16 @@ private data class OnboardingPage(
 
 @Composable
 private fun EngagingCallout(titleRes: Int, subtitleRes: Int, gradient: List<Color>) {
+    val semantic = LocalSemanticColors.current
     val base = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.94f)
     val start = gradient.firstOrNull()?.copy(alpha = 0.24f)
         ?: MaterialTheme.colorScheme.primary.copy(alpha = 0.24f)
     val end = gradient.getOrNull(1)?.copy(alpha = 0.24f)
         ?: MaterialTheme.colorScheme.secondary.copy(alpha = 0.24f)
     Card(
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
         shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, semantic.cardStroke),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .fillMaxWidth()

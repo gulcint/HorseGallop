@@ -54,6 +54,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
+import com.horsegallop.ui.theme.LocalSemanticColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,6 +67,7 @@ fun EmailLoginScreen(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val uiState by viewModel.uiState.collectAsState()
+    val semantic = LocalSemanticColors.current
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
@@ -93,6 +95,7 @@ fun EmailLoginScreen(
     }
 
     Scaffold(
+        containerColor = semantic.screenBase,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
@@ -106,7 +109,9 @@ fun EmailLoginScreen(
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
+                    containerColor = semantic.screenTopBar,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -135,6 +140,7 @@ fun EmailLoginContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val semantic = LocalSemanticColors.current
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -142,7 +148,7 @@ fun EmailLoginContent(
                 Brush.verticalGradient(
                     colors = listOf(
                         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.14f),
-                        MaterialTheme.colorScheme.surface
+                        semantic.screenBase
                     )
                 )
             )
@@ -161,11 +167,12 @@ fun EmailLoginContent(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                color = semantic.cardElevated,
                 tonalElevation = 1.dp,
                 shadowElevation = 6.dp,
                 border = androidx.compose.foundation.BorderStroke(
                     1.dp,
-                    MaterialTheme.colorScheme.outlineVariant
+                    semantic.cardStroke
                 )
             ) {
                 Column(
@@ -192,7 +199,9 @@ fun EmailLoginContent(
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedContainerColor = semantic.cardElevated,
+                            unfocusedContainerColor = semantic.cardElevated
                         )
                     )
 
@@ -227,7 +236,9 @@ fun EmailLoginContent(
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedContainerColor = semantic.cardElevated,
+                            unfocusedContainerColor = semantic.cardElevated
                         )
                     )
 

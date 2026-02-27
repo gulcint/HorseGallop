@@ -35,12 +35,14 @@ fun EnrollmentScreen(
 ) {
     val uiState by viewModel.ui.collectAsState()
     val scrollState = rememberScrollState()
+    val semantic = LocalSemanticColors.current
 
     LaunchedEffect(Unit) {
         viewModel.loadLottieConfig()
     }
 
     Scaffold(
+        containerColor = semantic.screenBase,
         topBar = {
             TopAppBar(
                 title = { },
@@ -53,7 +55,7 @@ fun EnrollmentScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
+                    containerColor = semantic.screenTopBar
                 )
             )
         }
@@ -86,11 +88,12 @@ fun EnrollmentScreen(
 
                     Surface(
                         shape = RoundedCornerShape(24.dp),
+                        color = semantic.cardElevated,
                         tonalElevation = 2.dp,
                         shadowElevation = 6.dp,
                         border = androidx.compose.foundation.BorderStroke(
                             1.dp,
-                            MaterialTheme.colorScheme.outlineVariant
+                            semantic.cardStroke
                         )
                     ) {
                         Column(
