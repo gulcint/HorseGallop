@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import com.horsegallop.R
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Close
+import com.horsegallop.ui.theme.LocalComponentColors
 import com.horsegallop.ui.theme.LocalSemanticColors
 
 enum class InputFieldVariant {
@@ -52,6 +53,7 @@ enum class InputFieldVariant {
 @Composable
 fun AutoRideDetectionSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     val semantic = LocalSemanticColors.current
+    val component = LocalComponentColors.current
     Card(
         colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
         shape = RoundedCornerShape(20.dp),
@@ -69,7 +71,7 @@ fun AutoRideDetectionSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit
             Switch(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
-                colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.primary)
+                colors = SwitchDefaults.colors(checkedThumbColor = component.tintStrong)
             )
         }
     }
@@ -87,6 +89,7 @@ fun HorseGallopDropdown(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val semantic = LocalSemanticColors.current
+    val component = LocalComponentColors.current
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -113,10 +116,10 @@ fun HorseGallopDropdown(
             textStyle = MaterialTheme.typography.bodyMedium,
             shape = RoundedCornerShape(24.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                focusedContainerColor = semantic.cardElevated,
-                unfocusedContainerColor = semantic.cardElevated
+                focusedBorderColor = component.inputBorderFocused,
+                unfocusedBorderColor = component.inputBorderUnfocused,
+                focusedContainerColor = component.inputContainer,
+                unfocusedContainerColor = component.inputContainer
             )
         )
         ExposedDropdownMenu(
@@ -150,6 +153,7 @@ fun HorseGallopDatePicker(
     placeholder: String? = null
 ) {
     val semantic = LocalSemanticColors.current
+    val component = LocalComponentColors.current
     Box(modifier = modifier) {
         OutlinedTextField(
             value = value,
@@ -173,10 +177,10 @@ fun HorseGallopDatePicker(
             textStyle = MaterialTheme.typography.bodyMedium,
             shape = RoundedCornerShape(24.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                focusedContainerColor = semantic.cardElevated,
-                unfocusedContainerColor = semantic.cardElevated
+                focusedBorderColor = component.inputBorderFocused,
+                unfocusedBorderColor = component.inputBorderUnfocused,
+                focusedContainerColor = component.inputContainer,
+                unfocusedContainerColor = component.inputContainer
             )
         )
         // Overlay for click detection
@@ -197,7 +201,7 @@ fun HorseGallopSearchBar(
     placeholder: String? = null,
     modifier: Modifier = Modifier
 ) {
-    val semantic = LocalSemanticColors.current
+    val component = LocalComponentColors.current
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
@@ -226,10 +230,10 @@ fun HorseGallopSearchBar(
         modifier = modifier,
         shape = RoundedCornerShape(24.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-            focusedContainerColor = semantic.cardElevated,
-            unfocusedContainerColor = semantic.cardElevated
+            focusedBorderColor = component.inputBorderFocused,
+            unfocusedBorderColor = component.inputBorderUnfocused,
+            focusedContainerColor = component.inputContainer,
+            unfocusedContainerColor = component.inputContainer
         ),
         keyboardActions = KeyboardActions(onSearch = { onSearch() }),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search)
@@ -248,10 +252,10 @@ fun HorseGallopTextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     singleLine: Boolean = true
 ) {
-    val semantic = LocalSemanticColors.current
+    val component = LocalComponentColors.current
     val container = when (variant) {
-        InputFieldVariant.Elevated -> semantic.cardElevated
-        InputFieldVariant.Subtle -> semantic.cardSubtle
+        InputFieldVariant.Elevated -> component.inputContainer
+        InputFieldVariant.Subtle -> component.inputContainerSubtle
     }
     OutlinedTextField(
         value = value,
@@ -262,8 +266,8 @@ fun HorseGallopTextField(
         singleLine = singleLine,
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            focusedBorderColor = component.inputBorderFocused,
+            unfocusedBorderColor = component.inputBorderUnfocused,
             focusedContainerColor = container,
             unfocusedContainerColor = container
         ),

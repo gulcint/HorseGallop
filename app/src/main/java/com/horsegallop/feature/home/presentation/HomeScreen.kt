@@ -106,8 +106,9 @@ private fun HomeDashboard(
         .background(
           Brush.verticalGradient(
             colors = listOf(
-              MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.18f),
-              MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.12f),
+              MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.30f),
+              MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.20f),
+              MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.12f),
               semantic.screenBase
             )
           )

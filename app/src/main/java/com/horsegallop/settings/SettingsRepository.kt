@@ -37,7 +37,7 @@ class SettingsRepository @Inject constructor(
     }
 
     private fun readState(): SettingsState {
-        val themeMode = ThemeMode.fromId(prefs.getString(KEY_THEME_MODE, ThemeMode.SYSTEM.id))
+        val themeMode = ThemeMode.LIGHT
         val language = AppLanguage.fromId(prefs.getString(KEY_LANGUAGE, AppLanguage.SYSTEM.id))
         val notificationsEnabled = prefs.getBoolean(KEY_NOTIFICATIONS, true)
         return SettingsState(

@@ -156,8 +156,9 @@ fun ProfileScreen(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.14f),
-                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.08f),
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.24f),
+                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.16f),
+                            MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.10f),
                             semantic.screenBase
                         )
                     )

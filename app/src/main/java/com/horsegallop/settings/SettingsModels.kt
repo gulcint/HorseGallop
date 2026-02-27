@@ -27,7 +27,7 @@ enum class AppLanguage(val id: String, val localeTag: String?) {
 }
 
 data class SettingsState(
-    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val themeMode: ThemeMode = ThemeMode.LIGHT,
     val language: AppLanguage = AppLanguage.SYSTEM,
     val notificationsEnabled: Boolean = true
 )

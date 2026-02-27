@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.horsegallop.ui.theme.LocalComponentColors
 
 enum class ButtonVariant {
     Primary,
@@ -35,9 +36,10 @@ fun ViewAllButton(
     modifier: Modifier = Modifier,
     text: String = androidx.compose.ui.res.stringResource(id = com.horsegallop.R.string.view_all)
 ) {
+    val componentColors = LocalComponentColors.current
     Surface(
         shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.primaryContainer,
+        color = componentColors.buttonSecondaryContainer,
         onClick = onClick,
         modifier = modifier
     ) {
@@ -49,12 +51,12 @@ fun ViewAllButton(
             Text(
                 text = text,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = componentColors.buttonSecondaryContent
             )
             Icon(
                 Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = componentColors.buttonSecondaryContent,
                 modifier = Modifier.size(16.dp)
             )
         }
@@ -72,17 +74,18 @@ fun HorseGallopButton(
     containerColor: Color? = null,
     contentColor: Color? = null
 ) {
+    val componentColors = LocalComponentColors.current
     val resolvedContainer = containerColor ?: when (variant) {
-        ButtonVariant.Primary -> MaterialTheme.colorScheme.primary
-        ButtonVariant.Secondary -> MaterialTheme.colorScheme.secondary
-        ButtonVariant.Tonal -> MaterialTheme.colorScheme.tertiaryContainer
-        ButtonVariant.Danger -> MaterialTheme.colorScheme.error
+        ButtonVariant.Primary -> componentColors.buttonPrimaryContainer
+        ButtonVariant.Secondary -> componentColors.buttonSecondaryContainer
+        ButtonVariant.Tonal -> componentColors.buttonTonalContainer
+        ButtonVariant.Danger -> componentColors.buttonDangerContainer
     }
     val resolvedContent = contentColor ?: when (variant) {
-        ButtonVariant.Primary -> MaterialTheme.colorScheme.onPrimary
-        ButtonVariant.Secondary -> MaterialTheme.colorScheme.onSecondary
-        ButtonVariant.Tonal -> MaterialTheme.colorScheme.onTertiaryContainer
-        ButtonVariant.Danger -> MaterialTheme.colorScheme.onError
+        ButtonVariant.Primary -> componentColors.buttonPrimaryContent
+        ButtonVariant.Secondary -> componentColors.buttonSecondaryContent
+        ButtonVariant.Tonal -> componentColors.buttonTonalContent
+        ButtonVariant.Danger -> componentColors.buttonDangerContent
     }
 
     Button(

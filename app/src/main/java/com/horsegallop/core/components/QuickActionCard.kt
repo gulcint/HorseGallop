@@ -80,7 +80,7 @@ fun QuickActionCard(
           }
           Surface(
             shape = CircleShape,
-            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f)
+            color = semantic.panelOverlay.copy(alpha = 0.78f)
           ) {
             Icon(
               imageVector = Icons.AutoMirrored.Filled.ArrowForward,

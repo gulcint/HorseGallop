@@ -150,7 +150,8 @@ fun EmailLoginContent(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.14f),
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.24f),
+                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.16f),
                         semantic.screenBase
                     )
                 )

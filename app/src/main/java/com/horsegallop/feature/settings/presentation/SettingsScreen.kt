@@ -19,7 +19,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -48,7 +47,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
 import com.horsegallop.settings.AppLanguage
-import com.horsegallop.settings.ThemeMode
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.AlertDialog
@@ -113,27 +111,6 @@ fun SettingsScreen(
                 .padding(bottom = dimensionResource(id = R.dimen.padding_screen_vertical)),
             verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.section_spacing_md))
         ) {
-            SettingsSectionCard(
-                title = stringResource(id = R.string.setting_theme_title),
-                icon = Icons.Filled.Palette
-            ) {
-                SettingsRadioRow(
-                    label = stringResource(id = R.string.theme_system),
-                    selected = state.themeMode == ThemeMode.SYSTEM,
-                    onClick = { viewModel.onThemeSelected(ThemeMode.SYSTEM) }
-                )
-                SettingsRadioRow(
-                    label = stringResource(id = R.string.theme_light),
-                    selected = state.themeMode == ThemeMode.LIGHT,
-                    onClick = { viewModel.onThemeSelected(ThemeMode.LIGHT) }
-                )
-                SettingsRadioRow(
-                    label = stringResource(id = R.string.theme_dark),
-                    selected = state.themeMode == ThemeMode.DARK,
-                    onClick = { viewModel.onThemeSelected(ThemeMode.DARK) }
-                )
-            }
-
             SettingsSectionCard(
                 title = stringResource(id = R.string.setting_language_title),
                 icon = Icons.Filled.Language

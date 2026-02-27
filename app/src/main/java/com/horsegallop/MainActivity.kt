@@ -174,7 +174,7 @@ fun AppContent(initialFeedbackMessageResId: Int? = null) {
     }
     
     CompositionLocalProvider(LocalAppFeedbackController provides appFeedbackController) {
-    AppTheme(themeMode = settings.themeMode) {
+    AppTheme {
         val semantic = LocalSemanticColors.current
         val systemBarColor = semantic.screenTopBar
         SideEffect {

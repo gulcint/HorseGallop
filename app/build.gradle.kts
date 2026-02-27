@@ -67,10 +67,15 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEa
 }
 
 val disallowedSurfacePatterns = listOf(
-    Regex("""CardDefaults\.cardColors\(\s*containerColor\s*=\s*MaterialTheme\.colorScheme\.surface\s*\)"""),
+    Regex("""CardDefaults\.cardColors\(\s*containerColor\s*=\s*MaterialTheme\.colorScheme\.surface\b\s*\)"""),
+    Regex("""CardDefaults\.cardColors\(\s*containerColor\s*=\s*MaterialTheme\.colorScheme\.surface(?:\.copy\([^)]*\))?\b\s*\)"""),
     Regex("""containerColor\s*=\s*MaterialTheme\.colorScheme\.background(?:\.copy\([^)]*\))?"""),
+    Regex("""containerColor\s*=\s*MaterialTheme\.colorScheme\.surface(?:\.copy\([^)]*\))?\b"""),
     Regex("""\.background\(\s*MaterialTheme\.colorScheme\.background\s*\)"""),
-    Regex("""color\s*=\s*MaterialTheme\.colorScheme\.surface\b""")
+    Regex("""\.background\(\s*MaterialTheme\.colorScheme\.surface(?:\.copy\([^)]*\))?\b\s*\)"""),
+    Regex("""color\s*=\s*MaterialTheme\.colorScheme\.surface(?:\.copy\([^)]*\))?\b"""),
+    Regex("""Color\(\s*0x[0-9A-Fa-f]{6,8}\s*\)"""),
+    Regex("""Color\.(White|Black|Gray)\b""")
 )
 
 tasks.register("enforceSemanticSurfaceTokens") {
@@ -79,6 +84,8 @@ tasks.register("enforceSemanticSurfaceTokens") {
     doLast {
         val scanTargets = listOf(
             file("src/main/java/com/horsegallop/feature"),
+            file("src/main/java/com/horsegallop/core"),
+            file("src/main/java/com/horsegallop/navigation"),
             file("src/main/java/com/horsegallop/MainActivity.kt")
         )
 
@@ -106,7 +113,11 @@ tasks.register("enforceSemanticSurfaceTokens") {
                 buildString {
                     appendLine("Found disallowed direct surface/background usage in UI layer:")
                     violations.forEach { appendLine(it) }
-                    appendLine("Use LocalSemanticColors tokens (screenBase/screenTopBar/cardElevated/cardSubtle/panelOverlay/cardStroke) instead.")
+                    appendLine("Use LocalSemanticColors tokens instead:")
+                    appendLine("- screenBase/screenTopBar for screen scaffolds and app shells")
+                    appendLine("- cardElevated/cardSubtle/panelOverlay for card and host containers")
+                    appendLine("- calloutInfoContainer/calloutSuccessContainer/calloutWarningContainer/calloutErrorContainer for feedback callouts")
+                    appendLine("- use theme tokens in ui/theme for any color generation; avoid static Color hex/White/Black/Gray in UI layer")
                 }
             )
         }

@@ -35,7 +35,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -82,7 +81,6 @@ import kotlinx.coroutines.withContext
 @Composable
 fun LoginScreen(
     onGoogleClick: () -> Unit = {},
-    onEmailClick: () -> Unit = {},
     onSignupClick: () -> Unit = {},
     onForgotPasswordClick: () -> Unit = {}
 ) {
@@ -177,7 +175,9 @@ fun LoginScreen(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.16f),
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.28f),
+                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.18f),
+                        MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.10f),
                         semantic.screenBase
                     )
                 )
@@ -327,24 +327,6 @@ fun LoginScreen(
                         }
                     }
 
-                    OutlinedButton(
-                        onClick = onEmailClick,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(dimensionResource(id = R.dimen.height_button_xl)),
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(dimensionResource(id = R.dimen.radius_lg)),
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.65f)
-                        )
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.signin_email),
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
                     Button(
                         onClick = vm::login,
                         enabled = !uiState.isLoading && uiState.isFormValid,
@@ -482,7 +464,6 @@ private fun PreviewLoginScreen() {
     MaterialTheme {
         LoginScreen(
             onGoogleClick = {},
-            onEmailClick = {},
             onSignupClick = {}
         )
     }

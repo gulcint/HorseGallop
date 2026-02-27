@@ -35,7 +35,8 @@ fun NoInternetScreen(
             .background(
                 androidx.compose.ui.graphics.Brush.verticalGradient(
                     colors = listOf(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f),
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.22f),
+                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.14f),
                         semantic.screenBase
                     )
                 )
