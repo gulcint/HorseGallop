@@ -202,6 +202,10 @@
     <string name="riding_at">Riding at %1$s</string>
     <string name="select_barn">Select Barn</string>
     <string name="select_barn_hint">Select a barn...</string>
+    <string name="select_barn_empty">No barns available right now</string>
+    <string name="selected_label">Selected</string>
+    <string name="ride_select_barn_subtitle">Choose a barn to keep this ride session organized.</string>
+    <string name="ride_select_barn_support_text">Chosen barn will be attached to saved ride details.</string>
     <string name="auto_ride_detection">Auto Ride Detection</string>
     <string name="daily_ride_trend">Daily Ride Trend</string>
     <string name="weekly_progress">Weekly Progress</string>
