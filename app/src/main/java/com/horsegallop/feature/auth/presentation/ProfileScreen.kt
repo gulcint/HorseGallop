@@ -62,6 +62,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
 import com.horsegallop.core.components.HorseLoadingOverlay
 import com.horsegallop.core.feedback.LocalAppFeedbackController
+import com.horsegallop.domain.subscription.model.SubscriptionTier
 import com.horsegallop.ui.theme.LocalSemanticColors
 
 @Composable
@@ -99,6 +100,11 @@ fun ProfileScreen(
         .filter { it.isNotBlank() }
         .joinToString(" ")
         .ifBlank { context.getString(R.string.default_user_name) }
+    val membershipLabel = when (state.subscriptionStatus.tier) {
+        SubscriptionTier.PRO_YEARLY -> context.getString(R.string.subscription_yearly)
+        SubscriptionTier.PRO_MONTHLY -> context.getString(R.string.subscription_monthly)
+        SubscriptionTier.FREE -> context.getString(R.string.subscription_free)
+    }
 
     LaunchedEffect(state.errorMessageResId) {
         state.errorMessageResId?.let { messageResId ->
@@ -174,6 +180,7 @@ fun ProfileScreen(
                     ProfileHeroCard(
                         profile = profile,
                         fullName = fullName,
+                        membershipLabel = membershipLabel,
                         onPhotoClick = openImagePicker
                     )
                 }

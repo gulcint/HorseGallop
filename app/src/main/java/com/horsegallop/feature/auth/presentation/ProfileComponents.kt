@@ -96,6 +96,7 @@ fun ProfileSectionCard(
 fun ProfileHeroCard(
     profile: UserProfile,
     fullName: String,
+    membershipLabel: String? = null,
     modifier: Modifier = Modifier,
     onPhotoClick: () -> Unit
 ) {
@@ -200,6 +201,23 @@ fun ProfileHeroCard(
                             colors = AssistChipDefaults.assistChipColors(
                                 disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
                                 disabledLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        )
+                    }
+
+                    membershipLabel?.let {
+                        AssistChip(
+                            onClick = {},
+                            enabled = false,
+                            label = {
+                                Text(
+                                    text = it,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                            },
+                            colors = AssistChipDefaults.assistChipColors(
+                                disabledContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                disabledLabelColor = MaterialTheme.colorScheme.onTertiaryContainer
                             )
                         )
                     }

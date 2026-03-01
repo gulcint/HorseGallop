@@ -11,11 +11,17 @@ import com.horsegallop.domain.auth.usecase.GetUserProfileUseCase
 import com.horsegallop.domain.auth.usecase.SignOutUseCase
 import com.horsegallop.domain.auth.usecase.UpdateProfileImageUseCase
 import com.horsegallop.domain.auth.usecase.UpdateUserProfileUseCase
+import com.horsegallop.domain.subscription.model.SubscriptionStatus
+import com.horsegallop.domain.subscription.model.SubscriptionTier
+import com.horsegallop.domain.subscription.usecase.ObserveSubscriptionStatusUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import java.util.Locale
@@ -40,6 +46,10 @@ data class ProfileUiState(
     val formErrors: ProfileFormErrors = ProfileFormErrors(),
     val errorMessageResId: Int? = null,
     val successMessageResId: Int? = null,
+    val subscriptionStatus: SubscriptionStatus = SubscriptionStatus(
+        tier = SubscriptionTier.FREE,
+        isActive = false
+    ),
     val isEditSessionActive: Boolean = false,
     val countryCodes: List<String> = listOf("+90", "+1", "+44", "+49", "+33", "+34", "+39", "+61", "+81", "+86", "+971", "+7")
 )
@@ -50,13 +60,21 @@ class ProfileViewModel @Inject constructor(
     private val getUserProfileUseCase: GetUserProfileUseCase,
     private val updateUserProfileUseCase: UpdateUserProfileUseCase,
     private val updateProfileImageUseCase: UpdateProfileImageUseCase,
-    private val signOutUseCase: SignOutUseCase
+    private val signOutUseCase: SignOutUseCase,
+    observeSubscriptionStatusUseCase: ObserveSubscriptionStatusUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
+    private val subscriptionStatusFlow = observeSubscriptionStatusUseCase()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = SubscriptionStatus(SubscriptionTier.FREE, isActive = false)
+        )
 
     init {
+        observeSubscription()
         loadProfile()
     }
 
@@ -232,6 +250,14 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             signOutUseCase.execute().collect {
                 onSignOut()
+            }
+        }
+    }
+
+    private fun observeSubscription() {
+        viewModelScope.launch {
+            subscriptionStatusFlow.collect { status ->
+                _uiState.value = _uiState.value.copy(subscriptionStatus = status)
             }
         }
     }

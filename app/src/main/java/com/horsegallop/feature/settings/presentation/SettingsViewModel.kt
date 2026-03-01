@@ -3,6 +3,9 @@ package com.horsegallop.feature.settings.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.horsegallop.core.feedback.FeedbackErrorMapper
+import com.horsegallop.domain.subscription.model.SubscriptionStatus
+import com.horsegallop.domain.subscription.model.SubscriptionTier
+import com.horsegallop.domain.subscription.usecase.ObserveSubscriptionStatusUseCase
 import com.horsegallop.settings.AppLanguage
 import com.horsegallop.settings.SettingsRepository
 import com.horsegallop.settings.SettingsState
@@ -12,8 +15,10 @@ import com.horsegallop.domain.privacy.usecase.DeleteUserDataUseCase
 import com.horsegallop.domain.auth.usecase.SignOutUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,6 +31,7 @@ data class PrivacyUiState(
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
+    observeSubscriptionStatusUseCase: ObserveSubscriptionStatusUseCase,
     private val requestDataExportUseCase: RequestDataExportUseCase,
     private val deleteUserDataUseCase: DeleteUserDataUseCase,
     private val signOutUseCase: SignOutUseCase
@@ -34,6 +40,12 @@ class SettingsViewModel @Inject constructor(
     val uiState: StateFlow<SettingsState> = settingsRepository.state
     private val _privacyState = MutableStateFlow(PrivacyUiState())
     val privacyState: StateFlow<PrivacyUiState> = _privacyState.asStateFlow()
+    val subscriptionStatus: StateFlow<SubscriptionStatus> = observeSubscriptionStatusUseCase()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = SubscriptionStatus(SubscriptionTier.FREE, isActive = false)
+        )
 
     fun onThemeSelected(mode: ThemeMode) {
         settingsRepository.setThemeMode(mode)

@@ -398,4 +398,12 @@
     <string name="activity_type_training">Training</string>
     <string name="chart_total_label">Total</string>
     <string name="default_user_name">User</string>
+    <string name="setting_pro_title">HorseGallop Pro</string>
+    <string name="setting_pro_status_title">Plan: %1$s</string>
+    <string name="setting_pro_status_active">Pro aboneliğiniz aktif.</string>
+    <string name="setting_pro_status_inactive">Şu anda Free plandasınız.</string>
+    <string name="setting_pro_manage">Yönet</string>
+    <string name="subscription_free">Free</string>
+    <string name="subscription_monthly">Pro Aylık</string>
+    <string name="subscription_yearly">Pro Yıllık</string>
 </resources>

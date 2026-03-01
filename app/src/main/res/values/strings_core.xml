@@ -56,6 +56,11 @@
 
     <!-- Settings -->
     <string name="setting_theme_title">Theme</string>
+    <string name="setting_pro_title">HorseGallop Pro</string>
+    <string name="setting_pro_status_title">Plan: %1$s</string>
+    <string name="setting_pro_status_active">Your Pro subscription is active.</string>
+    <string name="setting_pro_status_inactive">You are currently on the Free plan.</string>
+    <string name="setting_pro_manage">Manage</string>
     <string name="setting_language_title">Language</string>
     <string name="setting_language_system">System default</string>
     <string name="setting_language_english">English</string>
@@ -283,6 +288,9 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="theme_system">System</string>
+    <string name="subscription_free">Free</string>
+    <string name="subscription_monthly">Pro Monthly</string>
+    <string name="subscription_yearly">Pro Yearly</string>
     <string name="notifications_description">Manage notifications</string>
     
     <!-- Restaurant -->

@@ -16,6 +16,7 @@ compose-test = "1.7.2"
 play-services-maps = "18.2.0"
 play-services-location = "21.2.0"
 maps-compose = "4.3.0"
+billing = "6.2.1"
 kotlin = "2.0.0"
 skydoves-stability = "0.6.6"
 
@@ -56,6 +57,7 @@ compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", ve
 google-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "play-services-maps" }
 google-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "maps-compose" }
+billing-ktx = { module = "com.android.billingclient:billing-ktx", version.ref = "billing" }
 
 [bundles]
 compose_base = ["compose-ui", "compose-material3", "compose-tooling", "compose-navigation"]

@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -49,6 +50,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
 import com.horsegallop.settings.AppLanguage
 import com.horsegallop.settings.ThemeMode
+import com.horsegallop.domain.subscription.model.SubscriptionTier
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.AlertDialog
@@ -66,6 +68,7 @@ fun SettingsScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val privacyState by viewModel.privacyState.collectAsState()
+    val subscriptionStatus by viewModel.subscriptionStatus.collectAsState()
     val feedback = LocalAppFeedbackController.current
     val clipboard = LocalClipboardManager.current
     var showDeleteConfirm by remember { mutableStateOf(false) }
@@ -113,6 +116,29 @@ fun SettingsScreen(
                 .padding(bottom = dimensionResource(id = R.dimen.padding_screen_vertical)),
             verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.section_spacing_md))
         ) {
+            SettingsSectionCard(
+                title = stringResource(id = R.string.setting_pro_title),
+                icon = Icons.Filled.Star
+            ) {
+                val tierText = when (subscriptionStatus.tier) {
+                    SubscriptionTier.PRO_YEARLY -> stringResource(id = R.string.subscription_yearly)
+                    SubscriptionTier.PRO_MONTHLY -> stringResource(id = R.string.subscription_monthly)
+                    SubscriptionTier.FREE -> stringResource(id = R.string.subscription_free)
+                }
+                SettingsActionRow(
+                    title = stringResource(id = R.string.setting_pro_status_title, tierText),
+                    subtitle = if (subscriptionStatus.isActive) {
+                        stringResource(id = R.string.setting_pro_status_active)
+                    } else {
+                        stringResource(id = R.string.setting_pro_status_inactive)
+                    },
+                    actionLabel = stringResource(id = R.string.setting_pro_manage),
+                    isDestructive = false,
+                    enabled = true,
+                    onClick = {}
+                )
+            }
+
             SettingsSectionCard(
                 title = stringResource(id = R.string.setting_theme_title),
                 icon = Icons.Filled.Palette
