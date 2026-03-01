@@ -61,10 +61,16 @@ fun HorseGallopSnackbarHost(
         val visuals = snackbarData.visuals as? AppSnackbarVisuals
         val tone = visuals?.tone ?: FeedbackTone.Info
         val strokeColor = when (tone) {
-            FeedbackTone.Success -> MaterialTheme.colorScheme.tertiary
-            FeedbackTone.Error -> MaterialTheme.colorScheme.error
-            FeedbackTone.Warning -> MaterialTheme.colorScheme.secondary
-            FeedbackTone.Info -> MaterialTheme.colorScheme.primary
+            FeedbackTone.Success -> semantic.calloutBorderSuccess
+            FeedbackTone.Error -> semantic.calloutBorderError
+            FeedbackTone.Warning -> semantic.calloutBorderWarning
+            FeedbackTone.Info -> semantic.calloutBorderInfo
+        }
+        val containerColor = when (tone) {
+            FeedbackTone.Success -> semantic.calloutSuccessContainer
+            FeedbackTone.Error -> semantic.calloutErrorContainer
+            FeedbackTone.Warning -> semantic.calloutWarningContainer
+            FeedbackTone.Info -> semantic.calloutInfoContainer
         }
         val icon = when (tone) {
             FeedbackTone.Success -> Icons.Filled.CheckCircle
@@ -81,7 +87,7 @@ fun HorseGallopSnackbarHost(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-                color = semantic.cardElevated,
+                color = containerColor,
                 border = BorderStroke(1.dp, strokeColor.copy(alpha = 0.6f)),
                 shadowElevation = 8.dp
             ) {
@@ -97,11 +103,11 @@ fun HorseGallopSnackbarHost(
                         text = snackbarData.visuals.message,
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = semantic.calloutOnContainer
                     )
                     snackbarData.visuals.actionLabel?.let { label ->
                         TextButton(onClick = { snackbarData.performAction() }) {
-                            Text(text = label)
+                            Text(text = label, color = strokeColor)
                         }
                     }
                     if (snackbarData.visuals.withDismissAction) {
@@ -109,7 +115,7 @@ fun HorseGallopSnackbarHost(
                             Icon(
                                 imageVector = Icons.Filled.Close,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                tint = semantic.calloutOnContainer.copy(alpha = 0.85f)
                             )
                         }
                     }
