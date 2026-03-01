@@ -10,16 +10,17 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.horsegallop.ui.theme.LocalSemanticColors
 
 @Composable
 fun HorseLoadingOverlay(visible: Boolean) {
   if (!visible) return
+  val semantic = LocalSemanticColors.current
   Dialog(
     onDismissRequest = {},
     properties = DialogProperties(
@@ -31,7 +32,7 @@ fun HorseLoadingOverlay(visible: Boolean) {
     Box(
       modifier = Modifier
         .fillMaxSize()
-        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.20f)),
+        .background(semantic.imageOverlaySoft),
       contentAlignment = Alignment.Center
     ) {
       val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(com.horsegallop.R.raw.horse))
