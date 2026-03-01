@@ -67,3 +67,27 @@ Zorunlu kurallar:
 1. Yeni Gradle modulu acilmaz; tum gelistirme `:app` ve gerekirse `backend/` altinda yapilir.
 2. UI tarafinda statik renk kullanimi yasak; tema tokenlari disina cikilmaz.
 3. Ride ve Profile gibi kritik akislarda regresyon riski varsa once test yazilir.
+
+## 8) Merge Sonrasi Zorunlu Emulator Rutini
+
+Her basarili PR merge sonrasinda su adimlar zorunludur:
+
+1. Emulator kapaliysa acilir.
+2. Cihazda yüklü eski `com.horsegallop` paketi kaldirilir.
+3. Guncel `debug` APK yeniden build edilir.
+4. Yeni APK emulator'e temiz kurulur.
+
+Tek komut:
+
+```bash
+./scripts/post-pr-emulator-sync.sh
+```
+
+Not:
+
+1. Varsayilan AVD: `Pixel_9`
+2. Farkli AVD icin:
+
+```bash
+AVD_NAME=Pixel_8 ./scripts/post-pr-emulator-sync.sh
+```
