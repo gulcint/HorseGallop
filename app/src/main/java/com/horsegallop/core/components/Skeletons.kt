@@ -59,7 +59,7 @@ fun WelcomeHeaderSkeleton(cardColor: Color) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(120.dp)
-                .background(Color.Gray.copy(alpha = 0.3f))
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.62f))
         )
     }
 }
@@ -72,7 +72,7 @@ fun QuickActionsSkeleton(cardColor: Color) {
                 .width(120.dp)
                 .height(24.dp)
                 .shimmer()
-                .background(Color.Gray.copy(alpha = 0.3f))
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.62f))
                 .clip(RoundedCornerShape(4.dp))
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -90,7 +90,7 @@ fun QuickActionsSkeleton(cardColor: Color) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(120.dp)
-                            .background(Color.Gray.copy(alpha = 0.3f))
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.62f))
                     )
                 }
             }
@@ -106,7 +106,7 @@ fun StatsOverviewSkeleton(cardColor: Color) {
                 .width(140.dp)
                 .height(24.dp)
                 .shimmer()
-                .background(Color.Gray.copy(alpha = 0.3f))
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.62f))
                 .clip(RoundedCornerShape(4.dp))
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -126,7 +126,7 @@ fun StatsOverviewSkeleton(cardColor: Color) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(120.dp)
-                            .background(Color.Gray.copy(alpha = 0.3f))
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.62f))
                     )
                 }
             }
@@ -136,13 +136,14 @@ fun StatsOverviewSkeleton(cardColor: Color) {
 
 @Composable
 fun RecentActivitySkeleton(cardColor: Color) {
+    val semantic = LocalSemanticColors.current
     Column {
         Box(
             modifier = Modifier
                 .width(120.dp)
                 .height(24.dp)
                 .shimmer()
-                .background(Color.Gray.copy(alpha = 0.3f))
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.62f))
                 .clip(RoundedCornerShape(4.dp))
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -168,7 +169,7 @@ fun RecentActivitySkeleton(cardColor: Color) {
                                 modifier = Modifier
                                     .size(40.dp)
                                     .shimmer()
-                                    .background(Color.Gray.copy(alpha = 0.3f))
+                                    .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.62f))
                                     .clip(CircleShape)
                             )
                             Column {
@@ -177,7 +178,7 @@ fun RecentActivitySkeleton(cardColor: Color) {
                                         .width(80.dp)
                                         .height(16.dp)
                                         .shimmer()
-                                        .background(Color.Gray.copy(alpha = 0.3f))
+                                        .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.62f))
                                         .clip(RoundedCornerShape(4.dp))
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
@@ -186,7 +187,7 @@ fun RecentActivitySkeleton(cardColor: Color) {
                                         .width(60.dp)
                                         .height(12.dp)
                                         .shimmer()
-                                        .background(Color.Gray.copy(alpha = 0.3f))
+                                        .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.62f))
                                         .clip(RoundedCornerShape(4.dp))
                                 )
                             }
@@ -197,7 +198,7 @@ fun RecentActivitySkeleton(cardColor: Color) {
                                     .width(40.dp)
                                     .height(14.dp)
                                     .shimmer()
-                                    .background(Color.Gray.copy(alpha = 0.3f))
+                                    .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.62f))
                                     .clip(RoundedCornerShape(4.dp))
                             )
                             Spacer(modifier = Modifier.height(4.dp))
@@ -206,14 +207,14 @@ fun RecentActivitySkeleton(cardColor: Color) {
                                     .width(50.dp)
                                     .height(12.dp)
                                     .shimmer()
-                                    .background(Color.Gray.copy(alpha = 0.3f))
+                                    .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.62f))
                                     .clip(RoundedCornerShape(4.dp))
                             )
                         }
                     }
                     if (it == 0) {
                         Spacer(modifier = Modifier.height(12.dp))
-                        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+                        HorizontalDivider(color = semantic.dividerSoft)
                         Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
@@ -230,7 +231,7 @@ fun TipsSkeleton(cardColor: Color) {
                 .width(140.dp)
                 .height(24.dp)
                 .shimmer()
-                .background(Color.Gray.copy(alpha = 0.3f))
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.62f))
                 .clip(RoundedCornerShape(4.dp))
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -250,7 +251,7 @@ fun TipsSkeleton(cardColor: Color) {
                     modifier = Modifier
                         .size(24.dp)
                         .shimmer()
-                        .background(Color.Gray.copy(alpha = 0.3f))
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.62f))
                         .clip(CircleShape)
                 )
                 Column(modifier = Modifier.weight(1f)) {
@@ -259,7 +260,7 @@ fun TipsSkeleton(cardColor: Color) {
                             .width(100.dp)
                             .height(16.dp)
                             .shimmer()
-                            .background(Color.Gray.copy(alpha = 0.3f))
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.62f))
                             .clip(RoundedCornerShape(4.dp))
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -268,7 +269,7 @@ fun TipsSkeleton(cardColor: Color) {
                             .fillMaxWidth()
                             .height(14.dp)
                             .shimmer()
-                            .background(Color.Gray.copy(alpha = 0.3f))
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.62f))
                             .clip(RoundedCornerShape(4.dp))
                     )
                 }

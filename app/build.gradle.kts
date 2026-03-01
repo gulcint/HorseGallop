@@ -68,9 +68,12 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEa
 
 val disallowedSurfacePatterns = listOf(
     Regex("""CardDefaults\.cardColors\(\s*containerColor\s*=\s*MaterialTheme\.colorScheme\.surface\s*\)"""),
+    Regex("""CardDefaults\.cardColors\(\s*containerColor\s*=\s*MaterialTheme\.colorScheme\.background(?:\.copy\([^)]*\))?\s*\)"""),
+    Regex("""containerColor\s*=\s*MaterialTheme\.colorScheme\.surface(?:\.copy\([^)]*\))?"""),
     Regex("""containerColor\s*=\s*MaterialTheme\.colorScheme\.background(?:\.copy\([^)]*\))?"""),
     Regex("""\.background\(\s*MaterialTheme\.colorScheme\.background\s*\)"""),
-    Regex("""color\s*=\s*MaterialTheme\.colorScheme\.surface\b""")
+    Regex("""Color\((0x[0-9A-Fa-f]+)\)"""),
+    Regex("""Color\.(White|Black|Gray)\b""")
 )
 
 tasks.register("enforceSemanticSurfaceTokens") {
@@ -79,6 +82,8 @@ tasks.register("enforceSemanticSurfaceTokens") {
     doLast {
         val scanTargets = listOf(
             file("src/main/java/com/horsegallop/feature"),
+            file("src/main/java/com/horsegallop/core"),
+            file("src/main/java/com/horsegallop/navigation"),
             file("src/main/java/com/horsegallop/MainActivity.kt")
         )
 
@@ -94,7 +99,9 @@ tasks.register("enforceSemanticSurfaceTokens") {
             files.forEach { file ->
                 val relativePath = file.relativeTo(project.projectDir).path
                 file.readLines().forEachIndexed { index, line ->
-                    if (disallowedSurfacePatterns.any { regex -> regex.containsMatchIn(line) }) {
+                    val hasViolation = disallowedSurfacePatterns.any { regex -> regex.containsMatchIn(line) }
+                    val allowTransparent = line.contains("Color.Transparent")
+                    if (hasViolation && !allowTransparent) {
                         violations += "$relativePath:${index + 1}: ${line.trim()}"
                     }
                 }

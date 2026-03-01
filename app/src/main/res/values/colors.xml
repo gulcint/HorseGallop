@@ -1,20 +1,20 @@
 <resources>
-    <color name="primary">#7A3F14</color>
-    <color name="primary_dark">#4F2910</color>
-    <color name="primary_light">#CC8A52</color>
+    <color name="primary">#CB997E</color>
+    <color name="primary_dark">#6B705C</color>
+    <color name="primary_light">#DDBEA9</color>
 
-    <color name="secondary">#CC772C</color>
-    <color name="secondary_variant">#E3A067</color>
-    <color name="secondary_light">#F3B37C</color>
+    <color name="secondary">#A5A58D</color>
+    <color name="secondary_variant">#B7B7A4</color>
+    <color name="secondary_light">#DDBEA9</color>
 
-    <color name="background">#F4EEE7</color>
-    <color name="surface">#FBF6F0</color>
-    <color name="on_background">#2A1D12</color>
-    <color name="on_primary">#FFFFFF</color>
+    <color name="background">#FFE8D6</color>
+    <color name="surface">#FFF3EA</color>
+    <color name="on_background">#2E3229</color>
+    <color name="on_primary">#2E3229</color>
 
-    <color name="error">#B3261E</color>
-    <color name="error_light">#FFB4AB</color>
+    <color name="error">#8B6958</color>
+    <color name="error_light">#CB997E</color>
 
-    <color name="splash_background">#F7EBDD</color>
-    <color name="ic_launcher_background">#643C1E</color>
+    <color name="splash_background">#FFE8D6</color>
+    <color name="ic_launcher_background">#CB997E</color>
 </resources>

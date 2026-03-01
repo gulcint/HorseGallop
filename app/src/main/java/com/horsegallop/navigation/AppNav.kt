@@ -51,6 +51,7 @@ import com.horsegallop.feature.ride.presentation.RideTrackingRoute
 import com.horsegallop.feature.ride.presentation.RideTrackingViewModel
 
 import com.horsegallop.feature.ride.presentation.RideDetailScreen
+import com.horsegallop.ui.theme.LocalSemanticColors
 
 sealed class Dest(val route: String) {
   object Onboarding : Dest("onboarding")
@@ -104,19 +105,20 @@ fun AppNavHost(
   Scaffold(
     bottomBar = {
       if (showBottomBar) {
+        val semantic = LocalSemanticColors.current
         Surface(
-          color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f),
+          color = semantic.panelOverlay,
           tonalElevation = 2.dp,
           shadowElevation = 4.dp
         ) {
           val itemColors = NavigationBarItemDefaults.colors(
             selectedIconColor = MaterialTheme.colorScheme.primary,
             selectedTextColor = MaterialTheme.colorScheme.primary,
-            indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.86f),
+            indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
             unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
             unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
           )
-          NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)) {
+          NavigationBar(containerColor = semantic.panelOverlay) {
             NavigationBarItem(
               selected = currentRoute == Dest.Home.route,
               onClick = {
