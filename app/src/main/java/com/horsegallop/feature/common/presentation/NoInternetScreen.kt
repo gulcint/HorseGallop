@@ -18,6 +18,7 @@ import com.horsegallop.ui.theme.LocalSemanticColors
 
 @Composable
 fun NoInternetScreen(
+    message: String? = null,
     onRetry: () -> Unit
 ) {
     val semantic = LocalSemanticColors.current
@@ -66,7 +67,7 @@ fun NoInternetScreen(
 
         // Subtitle
         Text(
-            text = stringResource(id = R.string.offline_mode),
+            text = message ?: stringResource(id = R.string.offline_mode),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center

@@ -3,6 +3,9 @@ package com.horsegallop
 import android.content.ContextWrapper
 import com.horsegallop.domain.auth.AuthRepository
 import com.horsegallop.domain.auth.model.UserProfile
+import com.horsegallop.domain.content.model.AppContent
+import com.horsegallop.domain.content.repository.ContentRepository
+import com.horsegallop.domain.content.usecase.GetAppContentUseCase
 import com.horsegallop.domain.model.User
 import com.horsegallop.domain.model.UserRole
 import com.horsegallop.domain.ride.model.RideMetrics
@@ -41,6 +44,7 @@ class MainViewModelTest {
         val viewModel = MainViewModel(
             authRepository = fakeAuthRepository,
             retryPendingRideSyncUseCase = RetryPendingRideSyncUseCase(fakeRideRepository),
+            getAppContentUseCase = GetAppContentUseCase(FakeContentRepository()),
             context = ContextWrapper(null)
         )
 
@@ -48,6 +52,21 @@ class MainViewModelTest {
 
         assertEquals(1, fakeRideRepository.retryCallCount)
         assertTrue(viewModel.ui.value.isLoggedIn)
+    }
+}
+
+private class FakeContentRepository : ContentRepository {
+    override fun getAppContent(locale: String): Flow<Result<AppContent>> {
+        return flowOf(
+            Result.success(
+                AppContent(
+                    locale = locale,
+                    homeHeroTitle = "Hero",
+                    homeHeroSubtitle = "Subtitle",
+                    offlineHelp = "Try again"
+                )
+            )
+        )
     }
 }
 

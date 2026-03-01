@@ -3,6 +3,7 @@ package com.horsegallop.feature.schedule.presentation
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -49,29 +50,100 @@ fun ScheduleRoute(
     viewModel: ScheduleViewModel = hiltViewModel(),
     onLessonClick: (Lesson) -> Unit = {}
 ) {
-    val lessons by viewModel.lessons.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     ScheduleScreen(
-        lessons = lessons,
-        onLessonClick = onLessonClick
+        uiState = uiState,
+        onLessonClick = onLessonClick,
+        onRetry = { viewModel.refresh() }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleScreen(
-    lessons: List<Lesson>,
-    onLessonClick: (Lesson) -> Unit = {}
+    uiState: ScheduleUiState,
+    onLessonClick: (Lesson) -> Unit = {},
+    onRetry: () -> Unit = {}
 ) {
     val semantic = LocalSemanticColors.current
     var selectedLesson by remember { mutableStateOf<Lesson?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    if (uiState.loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            androidx.compose.material3.CircularProgressIndicator()
+        }
+        return
+    }
+
+    if (uiState.error != null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = semantic.calloutErrorContainer),
+                border = BorderStroke(1.dp, semantic.calloutBorderError)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = uiState.error ?: stringResource(R.string.backend_error_generic),
+                        color = semantic.calloutOnContainer
+                    )
+                    Button(onClick = onRetry) {
+                        Text(text = stringResource(R.string.retry))
+                    }
+                }
+            }
+        }
+        return
+    }
+
+    if (uiState.isEmpty) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+                border = BorderStroke(1.dp, semantic.cardStroke)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(text = stringResource(R.string.schedule_empty_title))
+                    Button(onClick = onRetry) {
+                        Text(text = stringResource(R.string.retry))
+                    }
+                }
+            }
+        }
+        return
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        items(lessons, key = { it.id }) { lesson ->
+        items(uiState.lessons, key = { it.id }) { lesson ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -174,9 +246,12 @@ fun ScheduleScreen(
 private fun SchedulePreview() {
     MaterialTheme {
         ScheduleScreen(
-            lessons = listOf(
+            uiState = ScheduleUiState(
+                loading = false,
+                lessons = listOf(
                 Lesson("l1", "2025-10-01 10:00", "Beginner Ride", "Alice"),
                 Lesson("l2", "2025-10-02 14:00", "Trail Basics", "Bob")
+                )
             )
         )
     }

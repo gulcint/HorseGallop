@@ -7,6 +7,8 @@
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc",
+    "test": "npm run build && node --test \"lib/__tests__/**/*.test.js\"",
+    "seed": "npm run build && node lib/scripts/seed.js",
     "serve": "firebase emulators:start --only functions",
     "deploy": "npm run build && firebase deploy --only functions",
     "lint": "echo 'No lint configured'"
@@ -16,6 +18,7 @@
     "firebase-functions": "^5.1.1"
   },
   "devDependencies": {
+    "@types/node": "^20.17.0",
     "typescript": "^5.6.3"
   }
 }

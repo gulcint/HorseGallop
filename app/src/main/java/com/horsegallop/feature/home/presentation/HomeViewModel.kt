@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.horsegallop.domain.auth.usecase.GetCurrentUserIdUseCase
 import com.horsegallop.domain.home.usecase.GetRecentActivitiesUseCase
 import com.horsegallop.domain.home.usecase.GetUserStatsUseCase
+import com.horsegallop.domain.content.usecase.GetAppContentUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,25 +20,50 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
   private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase,
   private val getRecentActivitiesUseCase: GetRecentActivitiesUseCase,
-  private val getUserStatsUseCase: GetUserStatsUseCase
+  private val getUserStatsUseCase: GetUserStatsUseCase,
+  private val getAppContentUseCase: GetAppContentUseCase
 ) : ViewModel() {
 
   private val _ui = MutableStateFlow(HomeUiState())
   val ui: StateFlow<HomeUiState> = _ui
 
   init {
-    loadData()
+    refresh()
   }
 
-  private fun loadData() {
+  fun refresh(limit: Int = 5) {
+    loadDynamicContent()
     val uid = getCurrentUserIdUseCase()
     if (uid == null) {
-      _ui.update { it.copy(loading = false) }
+      _ui.update {
+        it.copy(
+          loading = false,
+          error = "User session not found",
+          isEmpty = true
+        )
+      }
       return
     }
 
+    _ui.update { it.copy(loading = true, error = null) }
     loadStats(uid)
-    loadRecentActivities()
+    loadRecentActivities(uid, limit)
+  }
+
+  private fun loadDynamicContent() {
+    val locale = Locale.getDefault().language
+    viewModelScope.launch {
+      getAppContentUseCase(locale).collect { result ->
+        result.onSuccess { content ->
+          _ui.update {
+            it.copy(
+              heroTitle = content.homeHeroTitle ?: it.heroTitle,
+              heroSubtitle = content.homeHeroSubtitle ?: it.heroSubtitle
+            )
+          }
+        }
+      }
+    }
   }
 
   private fun loadStats(uid: String) {
@@ -50,11 +76,15 @@ class HomeViewModel @Inject constructor(
               totalDistance = String.format(Locale.US, "%.1f", stats.totalDistance),
               totalDuration = "${stats.totalDurationMin / 60}h ${stats.totalDurationMin % 60}m",
               totalCalories = stats.totalCalories.toInt().toString(),
-              favoriteBarn = stats.favoriteBarn ?: "Unknown"
+              favoriteBarn = stats.favoriteBarn ?: "-"
             )
           }
-        }.onFailure {
-          // Log error or handle silently for stats
+        }.onFailure { error ->
+          _ui.update {
+            it.copy(
+              error = error.localizedMessage ?: "Failed to load stats"
+            )
+          }
         }
       }
     }
@@ -62,8 +92,11 @@ class HomeViewModel @Inject constructor(
 
   fun loadRecentActivities(limit: Int = 5) {
     val uid = getCurrentUserIdUseCase() ?: return
+    loadRecentActivities(uid, limit)
+  }
+
+  private fun loadRecentActivities(uid: String, limit: Int) {
     viewModelScope.launch {
-      _ui.update { it.copy(loading = true, error = null) }
       getRecentActivitiesUseCase(uid, limit).collect { result ->
         result.onSuccess { activities ->
           val items = activities.map { activity ->
@@ -76,30 +109,34 @@ class HomeViewModel @Inject constructor(
               distanceKm = activity.distanceKm
             )
           }
-          val totalCount = activities.size
+          val totalCount = items.size
           val distribution = if (totalCount > 0) {
             items.groupingBy { it.title ?: "Other" }
               .eachCount()
-              .map { (title, count) ->
-                title to (count.toFloat() / totalCount)
-              }
+              .map { (title, count) -> title to (count.toFloat() / totalCount) }
               .sortedByDescending { it.second }
           } else {
             emptyList()
           }
 
-          val dailyDistance = calculateDailyDistance(activities)
-
           _ui.update {
             it.copy(
               activities = items,
               loading = false,
+              error = if (items.isEmpty()) null else it.error,
+              isEmpty = items.isEmpty(),
               activityDistribution = distribution,
-              dailyDistance = dailyDistance
+              dailyDistance = calculateDailyDistance(activities)
             )
           }
         }.onFailure { e ->
-          _ui.update { it.copy(loading = false, error = e.localizedMessage) }
+          _ui.update {
+            it.copy(
+              loading = false,
+              error = e.localizedMessage ?: "Failed to load activities",
+              isEmpty = true
+            )
+          }
         }
       }
     }
@@ -125,25 +162,25 @@ class HomeViewModel @Inject constructor(
     cal.set(java.util.Calendar.MILLISECOND, 0)
     val todayMillis = cal.timeInMillis
     val oneDayMillis = 24 * 60 * 60 * 1000L
-    
+
     val days = FloatArray(7)
-    
+
     activities.forEach { activity ->
-        if (activity.timestamp == null) return@forEach
-        val rideCal = java.util.Calendar.getInstance()
-        rideCal.time = activity.timestamp!!
-        rideCal.set(java.util.Calendar.HOUR_OF_DAY, 0)
-        rideCal.set(java.util.Calendar.MINUTE, 0)
-        rideCal.set(java.util.Calendar.SECOND, 0)
-        rideCal.set(java.util.Calendar.MILLISECOND, 0)
-        
-        val diff = todayMillis - rideCal.timeInMillis
-        if (diff >= 0) {
-            val dayDiff = (diff / oneDayMillis).toInt()
-            if (dayDiff in 0..6) {
-                days[6 - dayDiff] += activity.distanceKm.toFloat()
-            }
+      val ts = activity.timestamp ?: return@forEach
+      val rideCal = java.util.Calendar.getInstance()
+      rideCal.time = ts
+      rideCal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+      rideCal.set(java.util.Calendar.MINUTE, 0)
+      rideCal.set(java.util.Calendar.SECOND, 0)
+      rideCal.set(java.util.Calendar.MILLISECOND, 0)
+
+      val diff = todayMillis - rideCal.timeInMillis
+      if (diff >= 0) {
+        val dayDiff = (diff / oneDayMillis).toInt()
+        if (dayDiff in 0..6) {
+          days[6 - dayDiff] += activity.distanceKm.toFloat()
         }
+      }
     }
     return days.toList()
   }
@@ -153,11 +190,14 @@ data class HomeUiState(
   val activities: List<ActivityUi> = emptyList(),
   val loading: Boolean = true,
   val error: String? = null,
+  val isEmpty: Boolean = false,
+  val heroTitle: String? = null,
+  val heroSubtitle: String? = null,
   val totalRides: String = "0",
   val totalDistance: String = "0.0",
   val totalDuration: String = "0h 0m",
   val totalCalories: String = "0",
-  val favoriteBarn: String = "Unknown",
+  val favoriteBarn: String = "-",
   val activityDistribution: List<Pair<String?, Float>> = emptyList(),
   val dailyDistance: List<Float> = emptyList()
 )

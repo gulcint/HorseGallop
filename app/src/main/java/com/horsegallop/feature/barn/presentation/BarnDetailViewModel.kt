@@ -27,6 +27,10 @@ class BarnDetailViewModel @Inject constructor(
         loadBarnDetails()
     }
 
+    fun refresh() {
+        loadBarnDetails()
+    }
+
     private fun loadBarnDetails() {
         viewModelScope.launch {
             _uiState.value = BarnDetailUiState.Loading

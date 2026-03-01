@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -166,7 +167,42 @@ fun BarnListScreen(
       
 
       
-      if (uiState.filteredBarns.isEmpty()) {
+      if (uiState.loading) {
+        Box(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 24.dp),
+          contentAlignment = Alignment.Center
+        ) {
+          CircularProgressIndicator()
+        }
+      } else if (uiState.error != null) {
+        Spacer(modifier = Modifier.height(12.dp))
+        Card(
+          shape = RoundedCornerShape(24.dp),
+          colors = CardDefaults.cardColors(containerColor = semantic.calloutErrorContainer),
+          border = BorderStroke(1.dp, semantic.calloutBorderError),
+          modifier = Modifier.fillMaxWidth()
+        ) {
+          Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(16.dp)
+          ) {
+            Text(
+              text = uiState.error ?: stringResource(com.horsegallop.R.string.backend_error_generic),
+              style = MaterialTheme.typography.bodyMedium,
+              color = semantic.calloutOnContainer,
+              textAlign = TextAlign.Center
+            )
+            OutlinedButton(onClick = { viewModel.loadBarns() }) {
+              Text(text = stringResource(com.horsegallop.R.string.retry))
+            }
+          }
+        }
+      } else if (uiState.filteredBarns.isEmpty()) {
         Spacer(modifier = Modifier.height(12.dp))
         Card(
           shape = RoundedCornerShape(24.dp),

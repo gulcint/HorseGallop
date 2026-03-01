@@ -147,6 +147,34 @@ jobs:
             app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt
           if-no-files-found: warn
 
+  backend-check:
+    name: backend-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Backend build
+        working-directory: backend
+        run: npm run build
+
+      - name: Backend tests
+        working-directory: backend
+        run: npm test
+
   firebase-test-lab:
     name: firebase-test-lab
     runs-on: ubuntu-latest

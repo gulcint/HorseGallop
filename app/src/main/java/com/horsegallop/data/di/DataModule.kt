@@ -12,9 +12,11 @@ import com.horsegallop.domain.ride.repository.RideRepository
 import com.horsegallop.domain.ride.repository.RideHistoryRepository
 import com.horsegallop.domain.schedule.repository.ScheduleRepository
 import com.horsegallop.data.home.repository.HomeRepositoryImpl
+import com.horsegallop.data.content.repository.ContentRepositoryImpl
 import com.horsegallop.domain.auth.repository.ProfileRepository
 import com.horsegallop.domain.auth.AuthRepository
 import com.horsegallop.domain.home.repository.HomeRepository
+import com.horsegallop.domain.content.repository.ContentRepository
 import com.horsegallop.domain.privacy.repository.PrivacyRepository
 import dagger.Binds
 import dagger.Module
@@ -43,6 +45,12 @@ abstract class DataModule {
     abstract fun bindHomeRepository(
         homeRepositoryImpl: HomeRepositoryImpl
     ): HomeRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindContentRepository(
+        contentRepositoryImpl: ContentRepositoryImpl
+    ): ContentRepository
 
     @Binds
     @Singleton

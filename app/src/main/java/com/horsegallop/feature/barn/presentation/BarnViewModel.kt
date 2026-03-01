@@ -2,7 +2,6 @@ package com.horsegallop.feature.barn.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.barn.usecase.GetBarnsUseCase
 import com.horsegallop.domain.barn.usecase.ToggleBarnFavoriteUseCase
@@ -19,6 +18,8 @@ data class BarnUiState(
     val selectedFilters: Set<String> = emptySet(),
     val filteredBarns: List<BarnWithLocation> = emptyList(),
     val allBarns: List<BarnWithLocation> = emptyList(),
+    val loading: Boolean = true,
+    val error: String? = null,
     val availableFilters: List<String> = listOf(
         "cafe", "indoor_arena", "outdoor_arena", "parking", "lessons",
         "boarding", "vet", "farrier", "lighting", "trail", "open_now"
@@ -38,10 +39,29 @@ class BarnViewModel @Inject constructor(
         loadBarns()
     }
 
-    private fun loadBarns() {
+    fun loadBarns() {
         viewModelScope.launch {
-            getBarnsUseCase().collect { barns ->
-                _uiState.update { it.copy(allBarns = barns, filteredBarns = barns) }
+            _uiState.update { it.copy(loading = true, error = null) }
+            try {
+                getBarnsUseCase().collect { barns ->
+                    _uiState.update {
+                        it.copy(
+                            loading = false,
+                            allBarns = barns,
+                            filteredBarns = barns
+                        )
+                    }
+                    applyFilters()
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        loading = false,
+                        error = e.localizedMessage ?: "Failed to load barns",
+                        allBarns = emptyList(),
+                        filteredBarns = emptyList()
+                    )
+                }
             }
         }
     }
@@ -49,7 +69,6 @@ class BarnViewModel @Inject constructor(
     fun toggleFavorite(barnId: String) {
         viewModelScope.launch {
             toggleBarnFavoriteUseCase(barnId)
-            // The list will automatically update via the flow from getBarnsUseCase
         }
     }
 
@@ -86,20 +105,17 @@ class BarnViewModel @Inject constructor(
         val all = currentState.allBarns
 
         val filtered = all.filter { item ->
-            // Filter by query
             val matchesQuery = if (query.isBlank()) true else {
                 item.barn.name.contains(query, ignoreCase = true) ||
-                item.barn.description.contains(query, ignoreCase = true)
+                    item.barn.description.contains(query, ignoreCase = true)
             }
-            // Filter by amenities
             val matchesFilters = if (filters.isEmpty()) true else {
                 filters.all { it in item.amenities }
             }
             matchesQuery && matchesFilters
         }
 
-        // Sort: If query exists, prioritize exact matches or startsWith. Otherwise, sort by name.
-        val sorted = filtered.sortedWith(compareByDescending<BarnWithLocation> { 
+        val sorted = filtered.sortedWith(compareByDescending<BarnWithLocation> {
             if (query.isNotBlank()) {
                 if (it.barn.name.equals(query, ignoreCase = true)) 2
                 else if (it.barn.name.startsWith(query, ignoreCase = true)) 1

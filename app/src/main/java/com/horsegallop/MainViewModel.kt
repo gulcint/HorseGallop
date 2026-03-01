@@ -6,6 +6,7 @@ import com.horsegallop.core.debug.AppLog
 import com.horsegallop.domain.model.UserRole
 import com.horsegallop.domain.auth.AuthRepository
 import com.horsegallop.domain.ride.usecase.RetryPendingRideSyncUseCase
+import com.horsegallop.domain.content.usecase.GetAppContentUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +24,7 @@ data class MainUiState(
     val isInitialized: Boolean = false,
     val splashTitle: String? = null,
     val splashSubtitle: String? = null,
+    val offlineHelpText: String? = null,
     val hasSplashError: Boolean = false
 )
 
@@ -30,6 +32,7 @@ data class MainUiState(
 class MainViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val retryPendingRideSyncUseCase: RetryPendingRideSyncUseCase,
+    private val getAppContentUseCase: GetAppContentUseCase,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
     private val _ui = MutableStateFlow(MainUiState())
@@ -51,6 +54,7 @@ class MainViewModel @Inject constructor(
             )
         }
         val locale = Locale.getDefault().language
+        loadAppContent(locale)
         loadSplashTexts(locale)
         viewModelScope.launch {
             runCatching { retryPendingRideSyncUseCase() }
@@ -89,6 +93,18 @@ class MainViewModel @Inject constructor(
                             hasSplashError = true
                         )
                     }
+            }
+        }
+    }
+
+    private fun loadAppContent(locale: String) {
+        viewModelScope.launch {
+            getAppContentUseCase(locale).collect { result ->
+                result.onSuccess { content ->
+                    _ui.value = _ui.value.copy(
+                        offlineHelpText = content.offlineHelp
+                    )
+                }
             }
         }
     }
