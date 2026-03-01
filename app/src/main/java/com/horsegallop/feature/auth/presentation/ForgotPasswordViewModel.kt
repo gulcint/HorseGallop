@@ -4,10 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.horsegallop.domain.auth.usecase.ConfirmPasswordResetUseCase
 import com.horsegallop.domain.auth.usecase.SendPasswordResetEmailUseCase
+import com.horsegallop.domain.content.usecase.GetAppContentUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.util.Locale
 import javax.inject.Inject
 
 data class ForgotPasswordUiState(
@@ -19,17 +21,23 @@ data class ForgotPasswordUiState(
     val newPassword: String = "",
     val confirmPassword: String = "",
     val isResetMode: Boolean = false, // True if we are in the "enter new password" phase
-    val resetSuccess: Boolean = false
+    val resetSuccess: Boolean = false,
+    val subtitle: String? = null
 )
 
 @HiltViewModel
 class ForgotPasswordViewModel @Inject constructor(
     private val sendPasswordResetEmailUseCase: SendPasswordResetEmailUseCase,
-    private val confirmPasswordResetUseCase: ConfirmPasswordResetUseCase
+    private val confirmPasswordResetUseCase: ConfirmPasswordResetUseCase,
+    private val getAppContentUseCase: GetAppContentUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ForgotPasswordUiState())
     val uiState: StateFlow<ForgotPasswordUiState> = _uiState
+
+    init {
+        loadDynamicContent(Locale.getDefault().language)
+    }
 
     fun updateEmail(email: String) {
         _uiState.value = _uiState.value.copy(email = email)
@@ -86,6 +94,18 @@ class ForgotPasswordViewModel @Inject constructor(
                  }.onFailure { e ->
                      _uiState.value = _uiState.value.copy(loading = false, errorMessage = e.localizedMessage)
                  }
+            }
+        }
+    }
+
+    private fun loadDynamicContent(locale: String) {
+        viewModelScope.launch {
+            getAppContentUseCase(locale).collect { result ->
+                result.onSuccess { content ->
+                    _uiState.value = _uiState.value.copy(
+                        subtitle = content.forgotPasswordSubtitle
+                    )
+                }
             }
         }
     }

@@ -335,7 +335,7 @@ export const getAppContent = onCall({ region: "us-central1" }, async (request) =
   const locale = parseOptionalString((request.data || {}).locale, 10) || "tr";
   const doc = await db.collection("app_content").doc(locale).get();
   if (!doc.exists) {
-    return { locale, home: null, barn: null, common: null };
+    return { locale, home: null, barn: null, common: null, auth: null, onboarding: null };
   }
 
   return {

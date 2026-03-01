@@ -20,7 +20,12 @@ class ContentRepositoryImpl @Inject constructor(
                         locale = content.locale,
                         homeHeroTitle = content.homeHeroTitle,
                         homeHeroSubtitle = content.homeHeroSubtitle,
-                        offlineHelp = content.offlineHelp
+                        offlineHelp = content.offlineHelp,
+                        loginTitle = content.loginTitle,
+                        loginSubtitle = content.loginSubtitle,
+                        forgotPasswordSubtitle = content.forgotPasswordSubtitle,
+                        onboardingHeroTitle = content.onboardingHeroTitle,
+                        onboardingHeroSubtitle = content.onboardingHeroSubtitle
                     )
                 )
             )

@@ -94,12 +94,19 @@ class AppFunctionsDataSource @Inject constructor(
         val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
         val home = payload["home"] as? Map<*, *> ?: emptyMap<String, Any?>()
         val common = payload["common"] as? Map<*, *> ?: emptyMap<String, Any?>()
+        val auth = payload["auth"] as? Map<*, *> ?: emptyMap<String, Any?>()
+        val onboarding = payload["onboarding"] as? Map<*, *> ?: emptyMap<String, Any?>()
 
         return AppContentFunctionsDto(
             locale = (payload["locale"] as? String) ?: locale,
             homeHeroTitle = home["heroTitle"] as? String,
             homeHeroSubtitle = home["heroSubtitle"] as? String,
-            offlineHelp = common["offlineHelp"] as? String
+            offlineHelp = common["offlineHelp"] as? String,
+            loginTitle = auth["loginTitle"] as? String,
+            loginSubtitle = auth["loginSubtitle"] as? String,
+            forgotPasswordSubtitle = auth["forgotPasswordSubtitle"] as? String,
+            onboardingHeroTitle = onboarding["heroTitle"] as? String,
+            onboardingHeroSubtitle = onboarding["heroSubtitle"] as? String
         )
     }
 

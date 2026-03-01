@@ -84,6 +84,15 @@ async function seedAppContent() {
       common: {
         offlineHelp: "Bağlantını kontrol et ve tekrar dene.",
       },
+      auth: {
+        loginTitle: "HorseGallop'a Hoş Geldin",
+        loginSubtitle: "Sürüşlerini takip et, antrenman hedeflerini yükselt.",
+        forgotPasswordSubtitle: "E-posta adresini gir, sıfırlama bağlantısını hemen gönderelim.",
+      },
+      onboarding: {
+        heroTitle: "Atçılık yolculuğuna profesyonel başla",
+        heroSubtitle: "Ahır, eğitim ve sürüş verilerini tek panelde yönet.",
+      },
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     },
     { merge: true }
@@ -97,6 +106,15 @@ async function seedAppContent() {
       },
       common: {
         offlineHelp: "Check your connection and retry.",
+      },
+      auth: {
+        loginTitle: "Welcome to HorseGallop",
+        loginSubtitle: "Track rides and level up your training goals.",
+        forgotPasswordSubtitle: "Enter your email and we will send a reset link right away.",
+      },
+      onboarding: {
+        heroTitle: "Start your riding journey like a pro",
+        heroSubtitle: "Manage barns, lessons, and ride analytics from one place.",
       },
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     },

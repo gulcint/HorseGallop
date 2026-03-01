@@ -10,6 +10,10 @@ This folder contains backend code used by the Android app.
 - `getBarnDetail`: returns single barn detail
 - `getLessons`: returns lesson list (optional date range)
 - `getAppContent`: returns locale-based dynamic content blocks
+  - `home`: hero title/subtitle
+  - `auth`: login and forgot-password copy
+  - `onboarding`: onboarding hero copy
+  - `common`: offline help text
 
 ## Firestore Collections (contract)
 - `users/{uid}`
