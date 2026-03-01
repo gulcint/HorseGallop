@@ -3,10 +3,13 @@ package com.horsegallop.data.di
 import com.horsegallop.data.auth.FirebaseAuthRepository
 import com.horsegallop.data.auth.repository.ProfileRepositoryImpl
 import com.horsegallop.data.barn.repository.BarnRepositoryImpl
+import com.horsegallop.data.billing.BillingGateway
+import com.horsegallop.data.billing.GooglePlayBillingGateway
 import com.horsegallop.data.ride.repository.RideRepositoryImpl
 import com.horsegallop.data.ride.repository.RideHistoryRepositoryImpl
 import com.horsegallop.data.schedule.repository.ScheduleRepositoryImpl
 import com.horsegallop.data.privacy.repository.PrivacyRepositoryImpl
+import com.horsegallop.data.subscription.repository.SubscriptionRepositoryImpl
 import com.horsegallop.domain.barn.repository.BarnRepository
 import com.horsegallop.domain.ride.repository.RideRepository
 import com.horsegallop.domain.ride.repository.RideHistoryRepository
@@ -16,6 +19,7 @@ import com.horsegallop.domain.auth.repository.ProfileRepository
 import com.horsegallop.domain.auth.AuthRepository
 import com.horsegallop.domain.home.repository.HomeRepository
 import com.horsegallop.domain.privacy.repository.PrivacyRepository
+import com.horsegallop.domain.subscription.repository.SubscriptionRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -73,4 +77,16 @@ abstract class DataModule {
     abstract fun bindPrivacyRepository(
         privacyRepositoryImpl: PrivacyRepositoryImpl
     ): PrivacyRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBillingGateway(
+        gateway: GooglePlayBillingGateway
+    ): BillingGateway
+
+    @Binds
+    @Singleton
+    abstract fun bindSubscriptionRepository(
+        repositoryImpl: SubscriptionRepositoryImpl
+    ): SubscriptionRepository
 }

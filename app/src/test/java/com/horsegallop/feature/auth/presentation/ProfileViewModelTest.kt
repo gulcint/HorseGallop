@@ -12,6 +12,10 @@ import com.horsegallop.domain.auth.usecase.UpdateProfileImageUseCase
 import com.horsegallop.domain.auth.usecase.UpdateUserProfileUseCase
 import com.horsegallop.domain.model.User
 import com.horsegallop.domain.model.UserRole
+import com.horsegallop.domain.subscription.model.SubscriptionStatus
+import com.horsegallop.domain.subscription.model.SubscriptionTier
+import com.horsegallop.domain.subscription.repository.SubscriptionRepository
+import com.horsegallop.domain.subscription.usecase.ObserveSubscriptionStatusUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -146,13 +150,15 @@ class ProfileViewModelTest {
     ): Pair<ProfileViewModel, FakeProfileRepository> {
         val fakeAuthRepository = FakeAuthRepository(currentUserId = "uid-1")
         val fakeProfileRepository = FakeProfileRepository(seedProfile)
+        val fakeSubscriptionRepository = FakeSubscriptionRepository()
 
         val viewModel = ProfileViewModel(
             getCurrentUserIdUseCase = GetCurrentUserIdUseCase(fakeAuthRepository),
             getUserProfileUseCase = GetUserProfileUseCase(fakeProfileRepository),
             updateUserProfileUseCase = UpdateUserProfileUseCase(fakeProfileRepository),
             updateProfileImageUseCase = UpdateProfileImageUseCase(fakeProfileRepository),
-            signOutUseCase = SignOutUseCase(fakeAuthRepository)
+            signOutUseCase = SignOutUseCase(fakeAuthRepository),
+            observeSubscriptionStatusUseCase = ObserveSubscriptionStatusUseCase(fakeSubscriptionRepository)
         )
 
         return viewModel to fakeProfileRepository
@@ -231,4 +237,16 @@ private class FakeAuthRepository(
     override fun getSplashTexts(locale: String): Flow<Result<Pair<String, String>>> = flowOf(Result.success("" to ""))
 
     override fun getCurrentUserId(): String? = currentUserId
+}
+
+private class FakeSubscriptionRepository : SubscriptionRepository {
+    private val status = SubscriptionStatus(SubscriptionTier.FREE, isActive = false)
+
+    override fun observeSubscriptionStatus(): Flow<SubscriptionStatus> = flowOf(status)
+
+    override suspend fun getSubscriptionStatus(): Result<SubscriptionStatus> = Result.success(status)
+
+    override suspend fun startSubscriptionPurchase(productId: String): Result<Unit> = Result.success(Unit)
+
+    override suspend fun refreshEntitlements(): Result<SubscriptionStatus> = Result.success(status)
 }
