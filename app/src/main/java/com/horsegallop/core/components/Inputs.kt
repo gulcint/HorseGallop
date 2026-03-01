@@ -169,7 +169,7 @@ fun HorseGallopDatePicker(
                 Icon(
                     Icons.Filled.DateRange,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = component.tintMuted
                 )
             },
             modifier = Modifier.fillMaxWidth(),
@@ -214,7 +214,7 @@ fun HorseGallopSearchBar(
             Icon(
                 imageVector = Icons.Filled.Search,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = component.tintMuted
             )
         },
         trailingIcon = {
@@ -222,7 +222,7 @@ fun HorseGallopSearchBar(
                 Icon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = component.tintMuted,
                     modifier = Modifier.clickable { onQueryChange("") }
                 )
             }

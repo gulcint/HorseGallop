@@ -3,6 +3,7 @@ package com.horsegallop.ui.theme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 
 data class SemanticColors(
     val screenBase: Color,
@@ -53,6 +54,7 @@ fun semanticColorsFrom(colorScheme: ColorScheme, isDark: Boolean): SemanticColor
     val warningColor = colorScheme.secondary
     val infoColor = colorScheme.primary
 
+    val elevatedBase = if (isDark) colorScheme.surfaceContainerLow else colorScheme.surfaceContainerLowest
     return SemanticColors(
         screenBase = if (isDark) colorScheme.background else colorScheme.background,
         screenTopBar = if (isDark) colorScheme.surfaceContainer else colorScheme.surfaceContainerLow,
@@ -80,14 +82,14 @@ fun semanticColorsFrom(colorScheme: ColorScheme, isDark: Boolean): SemanticColor
         mapPin = colorScheme.primary,
         ratingStar = colorScheme.secondary,
         onImageOverlay = colorScheme.inverseOnSurface,
-        calloutInfoContainer = colorScheme.primaryContainer.copy(alpha = if (isDark) 0.52f else 0.82f),
-        calloutSuccessContainer = colorScheme.tertiaryContainer.copy(alpha = if (isDark) 0.54f else 0.84f),
-        calloutWarningContainer = colorScheme.secondaryContainer.copy(alpha = if (isDark) 0.56f else 0.86f),
-        calloutErrorContainer = colorScheme.errorContainer.copy(alpha = if (isDark) 0.56f else 0.88f),
+        calloutInfoContainer = lerp(elevatedBase, colorScheme.primaryContainer, if (isDark) 0.30f else 0.42f),
+        calloutSuccessContainer = lerp(elevatedBase, colorScheme.tertiaryContainer, if (isDark) 0.32f else 0.44f),
+        calloutWarningContainer = lerp(elevatedBase, colorScheme.secondaryContainer, if (isDark) 0.34f else 0.46f),
+        calloutErrorContainer = lerp(elevatedBase, colorScheme.errorContainer, if (isDark) 0.28f else 0.38f),
         calloutOnContainer = colorScheme.onSurface,
-        calloutBorderInfo = infoColor.copy(alpha = if (isDark) 0.82f else 0.70f),
-        calloutBorderSuccess = successColor.copy(alpha = if (isDark) 0.82f else 0.70f),
-        calloutBorderWarning = warningColor.copy(alpha = if (isDark) 0.82f else 0.70f),
-        calloutBorderError = colorScheme.error.copy(alpha = if (isDark) 0.84f else 0.74f)
+        calloutBorderInfo = infoColor.copy(alpha = if (isDark) 0.74f else 0.58f),
+        calloutBorderSuccess = successColor.copy(alpha = if (isDark) 0.74f else 0.58f),
+        calloutBorderWarning = warningColor.copy(alpha = if (isDark) 0.74f else 0.58f),
+        calloutBorderError = colorScheme.error.copy(alpha = if (isDark) 0.78f else 0.62f)
     )
 }

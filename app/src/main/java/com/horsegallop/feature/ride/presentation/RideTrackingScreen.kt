@@ -99,12 +99,14 @@ import java.util.Locale
 fun RideTrackingRoute(
     viewModel: RideTrackingViewModel = hiltViewModel(),
     onHomeClick: () -> Unit = {},
-    onBarnsClick: () -> Unit = {}
+    onBarnsClick: () -> Unit = {},
+    onOpenTraining: () -> Unit = {}
 ) {
     RideTrackingScreen(
         viewModel = viewModel,
         onHomeClick = onHomeClick,
-        onBarnsClick = onBarnsClick
+        onBarnsClick = onBarnsClick,
+        onOpenTraining = onOpenTraining
     )
 }
 
@@ -112,7 +114,8 @@ fun RideTrackingRoute(
 fun RideTrackingScreen(
     viewModel: RideTrackingViewModel,
     onHomeClick: () -> Unit = {},
-    onBarnsClick: () -> Unit = {}
+    onBarnsClick: () -> Unit = {},
+    onOpenTraining: () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -156,6 +159,7 @@ fun RideTrackingScreen(
             onRideTypeSelected = viewModel::onRideTypeSelected,
             onDismissSavedSummary = viewModel::dismissSavedSummary,
             onRetryPendingSync = viewModel::onRetryPendingSync,
+            onOpenTraining = onOpenTraining,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -175,6 +179,7 @@ fun RideTrackingContent(
     onRideTypeSelected: (RideType) -> Unit,
     onDismissSavedSummary: () -> Unit,
     onRetryPendingSync: () -> Unit,
+    onOpenTraining: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val semantic = LocalSemanticColors.current
@@ -273,6 +278,9 @@ fun RideTrackingContent(
                     )
                 }
                 item {
+                    ProTrainingCallout(onOpenTraining = onOpenTraining)
+                }
+                item {
                     Button(
                         onClick = onToggleRide,
                         enabled = hasLocationPermission,
@@ -298,6 +306,43 @@ fun RideTrackingContent(
                         modifier = Modifier.testTag(RideTestTags.SavedSummaryCard)
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProTrainingCallout(onOpenTraining: () -> Unit) {
+    val semantic = LocalSemanticColors.current
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardSubtle),
+        border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.training_callout_title),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = stringResource(id = R.string.training_callout_subtitle),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            OutlinedButton(
+                onClick = onOpenTraining,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke)
+            ) {
+                Text(text = stringResource(id = R.string.training_callout_action))
             }
         }
     }
@@ -1108,6 +1153,7 @@ private fun RideTrackingContentPreview() {
         onBarnSelected = {},
         onRideTypeSelected = {},
         onDismissSavedSummary = {},
-        onRetryPendingSync = {}
+        onRetryPendingSync = {},
+        onOpenTraining = {}
     )
 }

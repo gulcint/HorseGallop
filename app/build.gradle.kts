@@ -161,6 +161,7 @@ dependencies {
     implementation(libs.google.maps)
     implementation(libs.google.location)
     implementation(libs.maps.compose)
+    implementation(libs.billing.ktx)
 	implementation("androidx.core:core-splashscreen:1.0.1")
 	implementation(libs.lottie.compose)
     implementation(libs.coil.compose)

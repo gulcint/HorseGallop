@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
+import com.horsegallop.ui.theme.LocalComponentColors
 import com.horsegallop.ui.theme.LocalSemanticColors
 
 @Composable
@@ -36,6 +37,7 @@ fun QuickActionCard(
   modifier: Modifier = Modifier
 ) {
   val semantic = LocalSemanticColors.current
+  val component = LocalComponentColors.current
   Card(
     modifier = modifier
       .height(132.dp),
@@ -86,7 +88,7 @@ fun QuickActionCard(
               imageVector = Icons.AutoMirrored.Filled.ArrowForward,
               contentDescription = null,
               modifier = Modifier.padding(6.dp).size(14.dp),
-              tint = MaterialTheme.colorScheme.onSurfaceVariant
+              tint = component.tintMuted
             )
           }
         }

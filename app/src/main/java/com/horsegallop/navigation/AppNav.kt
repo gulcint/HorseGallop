@@ -47,6 +47,7 @@ import com.horsegallop.feature.barn.presentation.BarnDetailScreen
 import com.horsegallop.feature.home.presentation.HomeScreen
 import com.horsegallop.feature.onboarding.presentation.OnboardingScreen
 import com.horsegallop.feature.schedule.presentation.ScheduleRoute
+import com.horsegallop.feature.training.presentation.TrainingPlansRoute
 
 import androidx.navigation.navDeepLink
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -68,6 +69,7 @@ sealed class Dest(val route: String) {
   object Enroll : Dest("enroll")
   object Profile : Dest("profile")
   object ProfileEdit : Dest("profile/edit")
+  object TrainingPlans : Dest("training/plans")
   object Settings : Dest("settings")
   object BarnDetail : Dest("barnDetail/{id}") {
     fun routeWithId(id: String): String = "barnDetail/$id"
@@ -295,6 +297,7 @@ fun AppNavHost(
         currentRoute = currentRoute,
         onStartRide = { navController.navigate(Dest.Ride.route) },
         onViewBarns = { navController.navigate(Dest.Barns.route) },
+        onOpenTraining = { navController.navigate(Dest.TrainingPlans.route) },
         onProfileClick = { navController.navigate(Dest.Profile.route) },
         onOpenRideDetail = { rideId ->
           navController.navigate(Dest.RideDetail.routeWithId(rideId))
@@ -339,8 +342,12 @@ fun AppNavHost(
     composable(Dest.Ride.route) {
       com.horsegallop.feature.ride.presentation.RideTrackingRoute(
         onHomeClick = { navController.navigate(Dest.Home.route) },
-        onBarnsClick = { navController.navigate(Dest.Barns.route) }
+        onBarnsClick = { navController.navigate(Dest.Barns.route) },
+        onOpenTraining = { navController.navigate(Dest.TrainingPlans.route) }
       )
+    }
+    composable(Dest.TrainingPlans.route) {
+      TrainingPlansRoute(onBack = { navController.popBackStack() })
     }
     composable(Dest.Schedule.route) {
       ScheduleRoute()

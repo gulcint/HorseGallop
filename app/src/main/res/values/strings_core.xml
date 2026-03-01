@@ -75,6 +75,8 @@
     <string name="qa_start_ride_subtitle">Begin your horse riding session</string>
     <string name="qa_view_barns_title">View Barns</string>
     <string name="qa_view_barns_subtitle">Find nearby horse facilities</string>
+    <string name="qa_training_title">Training Plans</string>
+    <string name="qa_training_subtitle">Build your weekly pro routine</string>
     <string name="stats_yours_title">Your Stats</string>
     <string name="stats_total_rides">Total Rides</string>
     <string name="stats_hours_suffix">h</string>
@@ -232,6 +234,28 @@
     <string name="ride_sync_completed">Cloud sync completed.</string>
     <string name="ride_sync_failed">Cloud sync failed. Retry required.</string>
     <string name="ride_sync_retry">Retry Sync</string>
+    <string name="training_callout_title">Want structured progress?</string>
+    <string name="training_callout_subtitle">Open Training Plans and follow rider programs with weekly goals.</string>
+    <string name="training_callout_action">Open Training Plans</string>
+
+    <!-- Training Plans -->
+    <string name="training_title">Training Plans</string>
+    <string name="training_load_failed">Could not load training plans.</string>
+    <string name="training_action_failed">Could not update this training task.</string>
+    <string name="training_task_completed">Training task completed.</string>
+    <string name="training_pro_required">This task is Pro only.</string>
+    <string name="training_pro_title">HorseGallop Pro</string>
+    <string name="training_pro_subtitle">Unlock unlimited plans, streak analytics and premium coaching tracks.</string>
+    <string name="training_status_locked">Locked</string>
+    <string name="training_status_completed">Completed</string>
+    <string name="training_mark_done">Mark Done</string>
+    <string name="training_progress_percent">%1$d%% complete</string>
+
+    <!-- Subscription -->
+    <string name="subscription_monthly">Pro Monthly</string>
+    <string name="subscription_yearly">Pro Yearly</string>
+    <string name="subscription_purchase_started">Purchase flow started.</string>
+    <string name="subscription_purchase_failed">Purchase could not be started.</string>
     
     <!-- Auth Errors -->
     <string name="auth_error_cancelled">Sign in cancelled</string>

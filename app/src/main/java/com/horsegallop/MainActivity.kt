@@ -48,14 +48,19 @@ import com.horsegallop.ui.theme.AppTheme
 import com.horsegallop.ui.theme.LocalSemanticColors
 
 import com.horsegallop.feature.common.presentation.NoInternetScreen
+import com.horsegallop.data.billing.GooglePlayBillingGateway
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var billingGateway: GooglePlayBillingGateway
+
     private var pendingDeepLinkFeedbackResId: Int? = null
 
      override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,6 +72,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppContent(initialFeedbackMessageResId = pendingDeepLinkFeedbackResId)
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        billingGateway.bindHostActivity(this)
+    }
+
+    override fun onStop() {
+        billingGateway.bindHostActivity(null)
+        super.onStop()
     }
 
     private fun handleDeepLink(intent: android.content.Intent?) {

@@ -3,6 +3,7 @@ package com.horsegallop.ui.theme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 
 data class ComponentColors(
     val buttonPrimaryContainer: Color,
@@ -41,14 +42,14 @@ fun componentColorsFrom(
         buttonTonalContent = colorScheme.primary,
         buttonDangerContainer = colorScheme.error,
         buttonDangerContent = colorScheme.onError,
-        tintStrong = colorScheme.primary,
-        tintMuted = colorScheme.onSurfaceVariant.copy(alpha = 0.9f),
+        tintStrong = lerp(colorScheme.primary, colorScheme.secondary, 0.18f),
+        tintMuted = lerp(colorScheme.onSurfaceVariant, colorScheme.outline, 0.42f),
         tintInverse = colorScheme.inverseOnSurface,
         inputContainer = semanticColors.cardElevated,
         inputContainerSubtle = semanticColors.cardSubtle,
         inputBorderFocused = colorScheme.primary,
         inputBorderUnfocused = colorScheme.outline,
         snackbarAction = semanticColors.calloutOnContainer,
-        snackbarDismiss = semanticColors.calloutOnContainer.copy(alpha = 0.84f)
+        snackbarDismiss = semanticColors.calloutOnContainer.copy(alpha = 0.72f)
     )
 }

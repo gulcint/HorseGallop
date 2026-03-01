@@ -398,4 +398,24 @@
     <string name="activity_type_training">Training</string>
     <string name="chart_total_label">Total</string>
     <string name="default_user_name">User</string>
+    <string name="qa_training_title">Antrenman Planları</string>
+    <string name="qa_training_subtitle">Haftalık pro rutininizi oluşturun</string>
+    <string name="training_callout_title">Yapılandırılmış ilerleme ister misin?</string>
+    <string name="training_callout_subtitle">Antrenman Planlarını aç ve haftalık hedeflerle binici programlarını takip et.</string>
+    <string name="training_callout_action">Antrenman Planlarını Aç</string>
+    <string name="training_title">Antrenman Planları</string>
+    <string name="training_load_failed">Antrenman planları yüklenemedi.</string>
+    <string name="training_action_failed">Bu antrenman görevi güncellenemedi.</string>
+    <string name="training_task_completed">Antrenman görevi tamamlandı.</string>
+    <string name="training_pro_required">Bu görev yalnızca Pro üyeler için.</string>
+    <string name="training_pro_title">HorseGallop Pro</string>
+    <string name="training_pro_subtitle">Sınırsız planlar, seri analizleri ve premium koçluk içeriklerini aç.</string>
+    <string name="training_status_locked">Kilitli</string>
+    <string name="training_status_completed">Tamamlandı</string>
+    <string name="training_mark_done">Tamamlandı İşaretle</string>
+    <string name="training_progress_percent">%1$d%% tamamlandı</string>
+    <string name="subscription_monthly">Pro Aylık</string>
+    <string name="subscription_yearly">Pro Yıllık</string>
+    <string name="subscription_purchase_started">Satın alma akışı başlatıldı.</string>
+    <string name="subscription_purchase_failed">Satın alma başlatılamadı.</string>
 </resources>

@@ -6,6 +6,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,6 +33,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.horsegallop.ui.theme.LocalComponentColors
@@ -88,19 +91,27 @@ fun HorseGallopSnackbarHost(
         ) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
                 color = containerColor,
                 border = BorderStroke(1.dp, borderColor),
-                shadowElevation = 8.dp
+                shadowElevation = 6.dp
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                        .padding(horizontal = 12.dp, vertical = 11.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    ToneIcon(icon = icon, tint = borderColor)
+                    Box(
+                        modifier = Modifier
+                            .clip(androidx.compose.foundation.shape.CircleShape)
+                            .background(borderColor.copy(alpha = 0.12f))
+                            .padding(8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        ToneIcon(icon = icon, tint = borderColor)
+                    }
                     Text(
                         text = snackbarData.visuals.message,
                         modifier = Modifier.weight(1f),
