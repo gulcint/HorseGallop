@@ -398,6 +398,22 @@
     <string name="activity_type_training">Training</string>
     <string name="chart_total_label">Total</string>
     <string name="default_user_name">User</string>
+    <string name="qa_training_title">Training Plans</string>
+    <string name="qa_training_subtitle">Build your weekly pro routine</string>
+    <string name="training_callout_title">Want structured progress?</string>
+    <string name="training_callout_subtitle">Open Training Plans and follow rider programs with weekly goals.</string>
+    <string name="training_callout_action">Open Training Plans</string>
+    <string name="training_title">Training Plans</string>
+    <string name="training_load_failed">Could not load training plans.</string>
+    <string name="training_action_failed">Could not update this training task.</string>
+    <string name="training_task_completed">Training task completed.</string>
+    <string name="training_pro_required">This task is Pro only.</string>
+    <string name="training_pro_title">HorseGallop Pro</string>
+    <string name="training_pro_subtitle">Unlock unlimited plans, streak analytics and premium coaching tracks.</string>
+    <string name="training_status_locked">Locked</string>
+    <string name="training_status_completed">Completed</string>
+    <string name="training_mark_done">Mark Done</string>
+    <string name="training_progress_percent">%1$d%% complete</string>
     <string name="setting_pro_title">HorseGallop Pro</string>
     <string name="setting_pro_status_title">Plan: %1$s</string>
     <string name="setting_pro_status_active">Your Pro subscription is active.</string>
@@ -406,4 +422,6 @@
     <string name="subscription_free">Free</string>
     <string name="subscription_monthly">Pro Monthly</string>
     <string name="subscription_yearly">Pro Yearly</string>
+    <string name="subscription_purchase_started">Purchase flow started.</string>
+    <string name="subscription_purchase_failed">Purchase could not be started.</string>
 </resources>

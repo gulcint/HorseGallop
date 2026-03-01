@@ -10,6 +10,7 @@ import com.horsegallop.data.ride.repository.RideHistoryRepositoryImpl
 import com.horsegallop.data.schedule.repository.ScheduleRepositoryImpl
 import com.horsegallop.data.privacy.repository.PrivacyRepositoryImpl
 import com.horsegallop.data.subscription.repository.SubscriptionRepositoryImpl
+import com.horsegallop.data.training.repository.TrainingRepositoryImpl
 import com.horsegallop.domain.barn.repository.BarnRepository
 import com.horsegallop.domain.ride.repository.RideRepository
 import com.horsegallop.domain.ride.repository.RideHistoryRepository
@@ -20,6 +21,7 @@ import com.horsegallop.domain.auth.AuthRepository
 import com.horsegallop.domain.home.repository.HomeRepository
 import com.horsegallop.domain.privacy.repository.PrivacyRepository
 import com.horsegallop.domain.subscription.repository.SubscriptionRepository
+import com.horsegallop.domain.training.repository.TrainingRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -83,6 +85,12 @@ abstract class DataModule {
     abstract fun bindBillingGateway(
         gateway: GooglePlayBillingGateway
     ): BillingGateway
+
+    @Binds
+    @Singleton
+    abstract fun bindTrainingRepository(
+        repositoryImpl: TrainingRepositoryImpl
+    ): TrainingRepository
 
     @Binds
     @Singleton

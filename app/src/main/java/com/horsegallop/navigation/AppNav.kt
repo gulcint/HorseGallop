@@ -2,12 +2,15 @@ package com.horsegallop.navigation
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.material.icons.automirrored.filled.List
@@ -44,6 +47,7 @@ import com.horsegallop.feature.barn.presentation.BarnDetailScreen
 import com.horsegallop.feature.home.presentation.HomeScreen
 import com.horsegallop.feature.onboarding.presentation.OnboardingScreen
 import com.horsegallop.feature.schedule.presentation.ScheduleRoute
+import com.horsegallop.feature.training.presentation.TrainingPlansRoute
 
 import androidx.navigation.navDeepLink
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -51,6 +55,7 @@ import com.horsegallop.feature.ride.presentation.RideTrackingRoute
 import com.horsegallop.feature.ride.presentation.RideTrackingViewModel
 
 import com.horsegallop.feature.ride.presentation.RideDetailScreen
+import com.horsegallop.ui.theme.LocalSemanticColors
 
 sealed class Dest(val route: String) {
   object Onboarding : Dest("onboarding")
@@ -64,6 +69,7 @@ sealed class Dest(val route: String) {
   object Enroll : Dest("enroll")
   object Profile : Dest("profile")
   object ProfileEdit : Dest("profile/edit")
+  object TrainingPlans : Dest("training/plans")
   object Settings : Dest("settings")
   object BarnDetail : Dest("barnDetail/{id}") {
     fun routeWithId(id: String): String = "barnDetail/$id"
@@ -98,25 +104,27 @@ fun AppNavHost(
     role == null -> Dest.Login.route
     else -> Dest.Home.route
   }
+  val semantic = LocalSemanticColors.current
   
   com.horsegallop.core.debug.AppLog.i("AppNavHost", "role=$role onboardingDone=$onboardingDone startDest=$startDest")
 
   Scaffold(
+    containerColor = semantic.screenBase,
     bottomBar = {
       if (showBottomBar) {
         Surface(
-          color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f),
+          color = semantic.panelOverlay.copy(alpha = 0.92f),
           tonalElevation = 2.dp,
           shadowElevation = 4.dp
         ) {
           val itemColors = NavigationBarItemDefaults.colors(
             selectedIconColor = MaterialTheme.colorScheme.primary,
             selectedTextColor = MaterialTheme.colorScheme.primary,
-            indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.86f),
+            indicatorColor = semantic.chipSelected.copy(alpha = 0.92f),
             unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
             unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
           )
-          NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)) {
+          NavigationBar(containerColor = semantic.panelOverlay.copy(alpha = 0.92f)) {
             NavigationBarItem(
               selected = currentRoute == Dest.Home.route,
               onClick = {
@@ -187,7 +195,21 @@ fun AppNavHost(
       }
     }
   ) { innerPadding ->
-  NavHost(navController = navController, startDestination = startDest, modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+  Box(
+    modifier = Modifier
+      .fillMaxSize()
+      .background(
+        Brush.verticalGradient(
+          colors = listOf(
+            semantic.stateOverlayInfo.copy(alpha = 0.18f),
+            semantic.stateOverlayWarning.copy(alpha = 0.12f),
+            semantic.screenBase
+          )
+        )
+      )
+      .padding(innerPadding)
+  ) {
+  NavHost(navController = navController, startDestination = startDest, modifier = Modifier.fillMaxSize()) {
     composable(Dest.Onboarding.route) {
       OnboardingScreen(
         onStart = {
@@ -211,7 +233,6 @@ fun AppNavHost(
             popUpTo(Dest.Login.route) { inclusive = true }
           }
         },
-        onEmailClick = { navController.navigate(Dest.EmailLogin.route) },
         onSignupClick = { navController.navigate(Dest.Enroll.route) },
         onForgotPasswordClick = { navController.navigate(Dest.ForgotPassword.route) }
       )
@@ -276,6 +297,7 @@ fun AppNavHost(
         currentRoute = currentRoute,
         onStartRide = { navController.navigate(Dest.Ride.route) },
         onViewBarns = { navController.navigate(Dest.Barns.route) },
+        onOpenTraining = { navController.navigate(Dest.TrainingPlans.route) },
         onProfileClick = { navController.navigate(Dest.Profile.route) },
         onOpenRideDetail = { rideId ->
           navController.navigate(Dest.RideDetail.routeWithId(rideId))
@@ -320,8 +342,12 @@ fun AppNavHost(
     composable(Dest.Ride.route) {
       com.horsegallop.feature.ride.presentation.RideTrackingRoute(
         onHomeClick = { navController.navigate(Dest.Home.route) },
-        onBarnsClick = { navController.navigate(Dest.Barns.route) }
+        onBarnsClick = { navController.navigate(Dest.Barns.route) },
+        onOpenTraining = { navController.navigate(Dest.TrainingPlans.route) }
       )
+    }
+    composable(Dest.TrainingPlans.route) {
+      TrainingPlansRoute(onBack = { navController.popBackStack() })
     }
     composable(Dest.Schedule.route) {
       ScheduleRoute()
@@ -367,6 +393,7 @@ fun AppNavHost(
         navController = navController
       )
     }
+  }
   }
   }
 }
