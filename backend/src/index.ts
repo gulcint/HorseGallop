@@ -27,6 +27,25 @@ type UpdateUserProfileInput = {
   weight?: unknown;
 };
 
+type TrainingTaskDto = {
+  id: string;
+  title: string;
+  description: string;
+  targetMinutes: number;
+  status: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED" | "LOCKED";
+};
+
+type TrainingPlanDto = {
+  id: string;
+  title: string;
+  summary: string;
+  weeklyGoal: number;
+  progressPercent: number;
+  streakDays: number;
+  status: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED" | "LOCKED";
+  tasks: TrainingTaskDto[];
+};
+
 function normalizeString(value: unknown, maxLen: number): string {
   if (typeof value !== "string") return "";
   return value.trim().slice(0, maxLen);
@@ -183,4 +202,115 @@ export const updateUserProfile = onCall({ region: "us-central1" }, async (reques
   await db.collection("users").doc(auth.uid).set(updates, { merge: true });
 
   return { success: true };
+});
+
+function defaultTrainingPlans(isPro: boolean): TrainingPlanDto[] {
+  return [
+    {
+      id: "plan_foundation",
+      title: "Foundation Control",
+      summary: "Balance, posture and smooth transitions for new-season prep.",
+      weeklyGoal: 3,
+      progressPercent: 20,
+      streakDays: 2,
+      status: "IN_PROGRESS",
+      tasks: [
+        {
+          id: "task_1",
+          title: "Warm-up 20 min",
+          description: "Walk/trot interval.",
+          targetMinutes: 20,
+          status: "COMPLETED",
+        },
+        {
+          id: "task_2",
+          title: "Core seat drills",
+          description: "No-stirrup seated work.",
+          targetMinutes: 25,
+          status: "IN_PROGRESS",
+        },
+        {
+          id: "task_3",
+          title: "Cooldown",
+          description: "Light walk and breathing.",
+          targetMinutes: 10,
+          status: "NOT_STARTED",
+        },
+      ],
+    },
+    {
+      id: "plan_endurance_pro",
+      title: "Endurance Pro 4W",
+      summary: "Distance pacing and heart-zone control for competitions.",
+      weeklyGoal: 4,
+      progressPercent: 0,
+      streakDays: 0,
+      status: isPro ? "NOT_STARTED" : "LOCKED",
+      tasks: [
+        {
+          id: "task_e1",
+          title: "Zone 2 Ride",
+          description: "Steady aerobic base work.",
+          targetMinutes: 35,
+          status: isPro ? "NOT_STARTED" : "LOCKED",
+        },
+        {
+          id: "task_e2",
+          title: "Hill Repeats",
+          description: "Controlled effort climbs.",
+          targetMinutes: 30,
+          status: isPro ? "NOT_STARTED" : "LOCKED",
+        },
+      ],
+    },
+  ];
+}
+
+export const getTrainingPlans = onCall({ region: "us-central1" }, async (request) => {
+  const auth = request.auth;
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
+  }
+
+  const entitlementDoc = await db.collection("user_entitlements").doc(auth.uid).get();
+  const tier = (entitlementDoc.data()?.tier as string | undefined) ?? "FREE";
+  const isPro = tier !== "FREE";
+  return { plans: defaultTrainingPlans(isPro), tier };
+});
+
+export const completeTrainingTask = onCall({ region: "us-central1" }, async (request) => {
+  const auth = request.auth;
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
+  }
+  const planId = normalizeString(request.data?.planId, 64);
+  const taskId = normalizeString(request.data?.taskId, 64);
+  if (!planId || !taskId) {
+    throw new HttpsError("invalid-argument", "planId and taskId are required");
+  }
+
+  await db.collection("users").doc(auth.uid).collection("trainingProgress").doc(planId).set(
+    {
+      [`tasks.${taskId}`]: "COMPLETED",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
+
+  return { success: true };
+});
+
+export const getSubscriptionEntitlements = onCall({ region: "us-central1" }, async (request) => {
+  const auth = request.auth;
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
+  }
+
+  const entitlementDoc = await db.collection("user_entitlements").doc(auth.uid).get();
+  const tier = (entitlementDoc.data()?.tier as string | undefined) ?? "FREE";
+  const active = tier !== "FREE";
+  return {
+    tier,
+    active,
+  };
 });
