@@ -100,10 +100,6 @@
     <string name="stats_distance">Mesafe</string>
     <string name="stats_km_suffix">km</string>
     <string name="recent_activity_title">Son Aktiviteler</string>
-    <string name="activity_morning_ride_title">Sabah Sürüşü</string>
-    <string name="activity_morning_ride_subtitle">Bugün, 08:30</string>
-    <string name="activity_evening_ride_title">Akşam Turu</string>
-    <string name="activity_evening_ride_subtitle">Dün, 18:15</string>
     <string name="activity_subtitle_format">%1$s, %2$s</string>
     <string name="activity_duration_minutes">%1$d dk</string>
     <string name="activity_distance_km">%1$.1f km</string>
@@ -394,6 +390,8 @@
     <string name="stats_calories">Calories</string>
     <string name="favorite_stable_title">Favorite Stable</string>
     <string name="no_activity_data">No activity data available</string>
+    <string name="backend_error_generic">Veriler şu anda yüklenemedi.</string>
+    <string name="schedule_empty_title">Şu anda uygun ders bulunmuyor.</string>
     <string name="activity_type_trail">Trail</string>
     <string name="activity_type_training">Training</string>
     <string name="chart_total_label">Total</string>

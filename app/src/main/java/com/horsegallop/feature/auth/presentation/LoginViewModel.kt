@@ -3,6 +3,7 @@ package com.horsegallop.feature.auth.presentation
 import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.horsegallop.domain.content.usecase.GetAppContentUseCase
 import com.horsegallop.domain.auth.usecase.ResendVerificationEmailUseCase
 import com.horsegallop.domain.auth.usecase.ResetPasswordUseCase
 import com.horsegallop.domain.auth.usecase.SignInWithEmailUseCase
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,7 +22,8 @@ class LoginViewModel @Inject constructor(
     private val signInWithGoogle: SignInWithGoogleUseCase,
     private val signInWithEmail: SignInWithEmailUseCase,
     private val resetPassword: ResetPasswordUseCase,
-    private val resendVerificationEmail: ResendVerificationEmailUseCase
+    private val resendVerificationEmail: ResendVerificationEmailUseCase,
+    private val getAppContentUseCase: GetAppContentUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -29,6 +32,9 @@ class LoginViewModel @Inject constructor(
     private val _effect = Channel<LoginEffect>()
     val effect = _effect.receiveAsFlow()
 
+    init {
+        loadDynamicContent(Locale.getDefault().language)
+    }
 
     fun updateEmail(email: String) {
         _uiState.value = _uiState.value.copy(email = email)
@@ -142,6 +148,19 @@ class LoginViewModel @Inject constructor(
             _effect.send(LoginEffect.ShowSnackbarError(message))
         }
     }
+
+    private fun loadDynamicContent(locale: String) {
+        viewModelScope.launch {
+            getAppContentUseCase(locale).collect { result ->
+                result.onSuccess { content ->
+                    _uiState.value = _uiState.value.copy(
+                        title = content.loginTitle,
+                        subtitle = content.loginSubtitle
+                    )
+                }
+            }
+        }
+    }
 }
 
 data class LoginUiState(
@@ -151,7 +170,9 @@ data class LoginUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val isFormValid: Boolean = false,
-    val showResendVerification: Boolean = false
+    val showResendVerification: Boolean = false,
+    val title: String? = null,
+    val subtitle: String? = null
 )
 
 sealed class LoginEffect {

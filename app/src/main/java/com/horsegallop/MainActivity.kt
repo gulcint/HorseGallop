@@ -199,6 +199,7 @@ fun AppContent(initialFeedbackMessageResId: Int? = null) {
         Box(modifier = Modifier.fillMaxSize()) {
             if (showNoInternet) {
                 NoInternetScreen(
+                    message = ui.offlineHelpText,
                     onRetry = {
                         if (isOnlineState.value) {
                             showNoInternet = false

@@ -54,25 +54,40 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.draw.drawWithCache
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.ui.theme.LocalSemanticColors
 import com.horsegallop.ui.theme.SemanticColors
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OnboardingScreen(onStart: () -> Unit = {}, onSkip: () -> Unit = {}) {
+fun OnboardingScreen(
+    onStart: () -> Unit = {},
+    onSkip: () -> Unit = {},
+    viewModel: OnboardingViewModel = hiltViewModel()
+) {
     val warmUmber = MaterialTheme.colorScheme.primary
     val warmCopper = MaterialTheme.colorScheme.secondary
     val warmChestnut = MaterialTheme.colorScheme.tertiary
     val warmClay = MaterialTheme.colorScheme.primaryContainer
     val semantic = LocalSemanticColors.current
+    val uiState by viewModel.uiState.collectAsState()
 
     // Keep warm identity while reducing white-heavy gradients.
-    val pages: List<OnboardingPage> = remember(warmUmber, warmCopper, warmChestnut, warmClay) {
+    val pages: List<OnboardingPage> = remember(
+        warmUmber,
+        warmCopper,
+        warmChestnut,
+        warmClay,
+        uiState.heroTitle,
+        uiState.heroSubtitle
+    ) {
         listOf(
             OnboardingPage(
                 titleRes = com.horsegallop.R.string.onboarding_title_ranch,
                 subtitleRes = com.horsegallop.R.string.onboarding_subtitle_ranch,
+                titleOverride = uiState.heroTitle,
+                subtitleOverride = uiState.heroSubtitle,
                 gradient = listOf(warmUmber, warmCopper),
                 features = listOf(
                     FeatureRes(Icons.Filled.Home, com.horsegallop.R.string.onboarding_feature_barn_select),
@@ -341,7 +356,7 @@ private fun OnboardingPageContentAnimated(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = stringResource(page.titleRes),
+            text = page.titleOverride ?: stringResource(page.titleRes),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -352,6 +367,8 @@ private fun OnboardingPageContentAnimated(
         EngagingCallout(
             titleRes = page.titleRes,
             subtitleRes = page.subtitleRes,
+            titleOverride = page.titleOverride,
+            subtitleOverride = page.subtitleOverride,
             gradient = page.gradient
         )
 
@@ -373,13 +390,21 @@ private data class FeatureRes(val icon: androidx.compose.ui.graphics.vector.Imag
 private data class OnboardingPage(
     val titleRes: Int,
     val subtitleRes: Int,
+    val titleOverride: String? = null,
+    val subtitleOverride: String? = null,
     val gradient: List<Color>,
     val features: List<FeatureRes> = emptyList()
 )
 
 
 @Composable
-private fun EngagingCallout(titleRes: Int, subtitleRes: Int, gradient: List<Color>) {
+private fun EngagingCallout(
+    titleRes: Int,
+    subtitleRes: Int,
+    titleOverride: String? = null,
+    subtitleOverride: String? = null,
+    gradient: List<Color>
+) {
     val semantic = LocalSemanticColors.current
     val base = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.94f)
     val start = gradient.firstOrNull()?.copy(alpha = 0.24f)
@@ -421,13 +446,13 @@ private fun EngagingCallout(titleRes: Int, subtitleRes: Int, gradient: List<Colo
                 )
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = stringResource(id = titleRes),
+                        text = titleOverride ?: stringResource(id = titleRes),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    val subtitle = stringResource(id = subtitleRes)
+                    val subtitle = subtitleOverride ?: stringResource(id = subtitleRes)
                     if (subtitle.isNotBlank()) {
                         Text(
                             text = subtitle,

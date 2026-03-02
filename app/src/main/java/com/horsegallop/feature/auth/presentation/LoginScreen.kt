@@ -198,7 +198,10 @@ fun LoginScreen(
             verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.spacing_md))
         ) {
             Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.spacing_md)))
-            LoginHeader()
+            LoginHeader(
+                title = uiState.title ?: stringResource(R.string.login_title_brand),
+                subtitle = uiState.subtitle ?: stringResource(R.string.login_subtitle)
+            )
 
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -450,7 +453,10 @@ fun LoginScreen(
 }
 
 @Composable
-private fun LoginHeader() {
+private fun LoginHeader(
+    title: String,
+    subtitle: String
+) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -462,13 +468,13 @@ private fun LoginHeader() {
             modifier = Modifier.size(dimensionResource(id = R.dimen.icon_xxxl))
         )
         Text(
-            text = stringResource(R.string.login_title_brand),
+            text = title,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = LocalTextColors.current.titlePrimary
         )
         Text(
-            text = stringResource(R.string.login_subtitle),
+            text = subtitle,
             style = MaterialTheme.typography.bodyMedium,
             color = LocalTextColors.current.bodySecondary,
             textAlign = TextAlign.Center

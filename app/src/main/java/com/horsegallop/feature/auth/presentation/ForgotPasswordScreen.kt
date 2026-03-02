@@ -142,7 +142,7 @@ fun ForgotPasswordScreen(
 
                 } else {
                     Text(
-                        text = stringResource(R.string.forgot_password_subtitle),
+                        text = uiState.subtitle ?: stringResource(R.string.forgot_password_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

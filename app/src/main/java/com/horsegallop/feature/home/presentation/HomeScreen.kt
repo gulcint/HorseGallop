@@ -47,7 +47,8 @@ fun HomeScreen(
     onProfileClick = onProfileClick,
     onOpenRideDetail = onOpenRideDetail,
     onViewAllActivities = onViewAllActivities,
-    uiState = uiState
+    uiState = uiState,
+    onRetry = { viewModel.refresh() }
   )
 }
 
@@ -70,32 +71,10 @@ private fun HomeDashboard(
   onProfileClick: () -> Unit,
   onOpenRideDetail: (String) -> Unit = {},
   onViewAllActivities: (() -> Unit)? = null,
-  uiState: HomeUiState = HomeUiState(loading = false)
+  uiState: HomeUiState = HomeUiState(loading = false),
+  onRetry: () -> Unit = {}
 ) {
   val semantic = LocalSemanticColors.current
-
-  val activities = if (uiState.activities.isEmpty()) {
-    listOf(
-      ActivityUi(
-        id = "mock1",
-        title = stringResource(id = com.horsegallop.R.string.activity_morning_ride_title),
-        dateLabel = stringResource(id = com.horsegallop.R.string.activity_morning_ride_subtitle).substringBefore(", "),
-        timeLabel = stringResource(id = com.horsegallop.R.string.activity_morning_ride_subtitle).substringAfter(", "),
-        durationMin = 45,
-        distanceKm = 8.2
-      ),
-      ActivityUi(
-        id = "mock2",
-        title = stringResource(id = com.horsegallop.R.string.activity_evening_ride_title),
-        dateLabel = stringResource(id = com.horsegallop.R.string.activity_evening_ride_subtitle).substringBefore(", "),
-        timeLabel = stringResource(id = com.horsegallop.R.string.activity_evening_ride_subtitle).substringAfter(", "),
-        durationMin = 80,
-        distanceKm = 12.5
-      )
-    )
-  } else {
-    uiState.activities
-  }
 
   if (uiState.loading) {
     HomeDashboardSkeleton()
@@ -121,7 +100,12 @@ private fun HomeDashboard(
       verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.section_spacing_md))
     ) {
       item {
-        WelcomeHeader(onProfileClick = onProfileClick, cardColor = semantic.cardElevated)
+        WelcomeHeader(
+          onProfileClick = onProfileClick,
+          cardColor = semantic.cardElevated,
+          title = uiState.heroTitle,
+          subtitle = uiState.heroSubtitle
+        )
       }
 
       item {
@@ -131,10 +115,19 @@ private fun HomeDashboard(
       item {
         StatsOverviewSection(totalRides = uiState.totalRides, totalDistance = uiState.totalDistance)
       }
+
+      if (uiState.error != null) {
+        item {
+          ErrorStateCard(
+            message = uiState.error,
+            onRetry = onRetry
+          )
+        }
+      }
       
       item {
         RecentActivitySection(
-          activities = activities,
+          activities = uiState.activities,
           onOpenRideDetail = onOpenRideDetail,
           onViewAllActivities = onViewAllActivities
         )
@@ -148,7 +141,42 @@ private fun HomeDashboard(
 }
 
 @Composable
-private fun WelcomeHeader(onProfileClick: () -> Unit, cardColor: androidx.compose.ui.graphics.Color) {
+private fun ErrorStateCard(
+  message: String,
+  onRetry: () -> Unit
+) {
+  val semantic = LocalSemanticColors.current
+  Card(
+    modifier = Modifier.fillMaxWidth(),
+    colors = CardDefaults.cardColors(containerColor = semantic.calloutErrorContainer),
+    border = BorderStroke(1.dp, semantic.calloutBorderError),
+    shape = RoundedCornerShape(18.dp)
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(14.dp),
+      verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+      Text(
+        text = message,
+        style = MaterialTheme.typography.bodyMedium,
+        color = semantic.calloutOnContainer
+      )
+      OutlinedButton(onClick = onRetry) {
+        Text(text = stringResource(id = R.string.retry))
+      }
+    }
+  }
+}
+
+@Composable
+private fun WelcomeHeader(
+  onProfileClick: () -> Unit,
+  cardColor: androidx.compose.ui.graphics.Color,
+  title: String?,
+  subtitle: String?
+) {
   Card(
     modifier = Modifier.fillMaxWidth().padding(bottom = dimensionResource(id = com.horsegallop.R.dimen.spacing_md)),
     colors = CardDefaults.cardColors(
@@ -176,14 +204,14 @@ private fun WelcomeHeader(onProfileClick: () -> Unit, cardColor: androidx.compos
       ) {
         Column {
           Text(
-            text = stringResource(id = R.string.welcome_title),
+            text = title ?: stringResource(id = R.string.welcome_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onPrimaryContainer
           )
           Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.R.dimen.spacing_sm)))
           Text(
-            text = stringResource(id = R.string.welcome_subtitle),
+            text = subtitle ?: stringResource(id = R.string.welcome_subtitle),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
           )
@@ -275,24 +303,7 @@ private fun StatsOverviewSection(totalRides: String, totalDistance: String) {
 
 @Composable
 private fun RecentActivitySection(
-  activities: List<ActivityUi> = listOf(
-  ActivityUi(
-    id = "mock1",
-    title = stringResource(id = com.horsegallop.R.string.activity_morning_ride_title),
-    dateLabel = stringResource(id = com.horsegallop.R.string.activity_morning_ride_subtitle).substringBefore(", "),
-    timeLabel = stringResource(id = com.horsegallop.R.string.activity_morning_ride_subtitle).substringAfter(", "),
-    durationMin = 45,
-    distanceKm = 8.2
-  ),
-  ActivityUi(
-    id = "mock2",
-    title = stringResource(id = com.horsegallop.R.string.activity_evening_ride_title),
-    dateLabel = stringResource(id = com.horsegallop.R.string.activity_evening_ride_subtitle).substringBefore(", "),
-    timeLabel = stringResource(id = com.horsegallop.R.string.activity_evening_ride_subtitle).substringAfter(", "),
-    durationMin = 80,
-    distanceKm = 12.5
-  )
-),
+  activities: List<ActivityUi> = emptyList(),
   onOpenRideDetail: (String) -> Unit = {},
   onViewAllActivities: (() -> Unit)? = null
 ) {

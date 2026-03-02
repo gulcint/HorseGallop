@@ -1,5 +1,14 @@
 import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import type { BarnDto, BarnListDto, LessonDto, LessonListDto } from "./contracts";
+import { buildHomeDashboard } from "./home-service";
+import {
+  parseLimit,
+  parseOptionalDate,
+  parseOptionalNumber,
+  parseOptionalString,
+  parseRequiredId,
+} from "./validators";
 
 admin.initializeApp();
 
@@ -122,6 +131,57 @@ function buildDto(snapshotData: FirebaseFirestore.DocumentData, fallbackEmail: s
   };
 }
 
+function parseDateMs(value: unknown): number {
+  if (value instanceof admin.firestore.Timestamp) {
+    return value.toMillis();
+  }
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === "string") {
+    const ms = Date.parse(value);
+    return Number.isNaN(ms) ? 0 : ms;
+  }
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "seconds" in value &&
+    typeof (value as { seconds: unknown }).seconds === "number"
+  ) {
+    return (value as { seconds: number }).seconds * 1000;
+  }
+  return 0;
+}
+
+function normalizeBarnDto(id: string, data: FirebaseFirestore.DocumentData): BarnDto {
+  return {
+    id,
+    name: normalizeString(data.name, 120),
+    description: normalizeString(data.description, 500),
+    location: normalizeString(data.location, 180),
+    lat: typeof data.lat === "number" ? data.lat : 0,
+    lng: typeof data.lng === "number" ? data.lng : 0,
+    tags: Array.isArray(data.tags) ? data.tags.filter((x): x is string => typeof x === "string") : [],
+    amenities: Array.isArray(data.amenities)
+      ? data.amenities.filter((x): x is string => typeof x === "string")
+      : [],
+    rating: typeof data.rating === "number" ? data.rating : 0,
+    reviewCount: typeof data.reviewCount === "number" ? data.reviewCount : 0,
+  };
+}
+
+function normalizeLessonDto(id: string, data: FirebaseFirestore.DocumentData): LessonDto {
+  return {
+    id,
+    date: normalizeString(data.date, 40),
+    title: normalizeString(data.title, 160),
+    instructorName: normalizeString(data.instructorName, 120),
+    durationMin: typeof data.durationMin === "number" ? data.durationMin : 0,
+    level: normalizeString(data.level, 40),
+    price: typeof data.price === "number" ? data.price : 0,
+  };
+}
+
 export const getUserProfile = onCall({ region: "us-central1" }, async (request) => {
   const auth = request.auth;
   if (!auth?.uid) {
@@ -183,4 +243,103 @@ export const updateUserProfile = onCall({ region: "us-central1" }, async (reques
   await db.collection("users").doc(auth.uid).set(updates, { merge: true });
 
   return { success: true };
+});
+
+export const getHomeDashboard = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
+  }
+
+  const limit = parseLimit((request.data || {}).limit, 6, 20);
+  const ridesSnap = await db
+    .collection("rides")
+    .where("uid", "==", request.auth.uid)
+    .orderBy("startedAt", "desc")
+    .limit(200)
+    .get();
+
+  const rides = ridesSnap.docs.map((doc) => {
+    const data = doc.data();
+    const durationMinRaw = typeof data.durationMin === "number"
+      ? data.durationMin
+      : (typeof data.durationSec === "number" ? data.durationSec / 60 : 0);
+
+    return {
+      id: doc.id,
+      distanceKm: typeof data.distanceKm === "number" ? data.distanceKm : 0,
+      durationMin: durationMinRaw,
+      calories: typeof data.calories === "number" ? data.calories : 0,
+      barnName: normalizeString(data.barnName, 120),
+      startedAtMs: parseDateMs(data.startedAt || data.createdAt || data.dateMillis),
+    };
+  });
+
+  return buildHomeDashboard(rides, limit);
+});
+
+export const getBarns = onCall({ region: "us-central1" }, async (request): Promise<BarnListDto> => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
+  }
+
+  const data = request.data || {};
+  parseOptionalNumber((data as { lat?: unknown }).lat, "lat");
+  parseOptionalNumber((data as { lng?: unknown }).lng, "lng");
+  parseOptionalNumber((data as { radiusKm?: unknown }).radiusKm, "radiusKm");
+
+  const snapshot = await db.collection("barns").get();
+  const items = snapshot.docs.map((doc) => normalizeBarnDto(doc.id, doc.data()));
+  return { items };
+});
+
+export const getBarnDetail = onCall({ region: "us-central1" }, async (request): Promise<BarnDto> => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
+  }
+
+  const id = parseRequiredId((request.data || {}).id, "id");
+  const doc = await db.collection("barns").doc(id).get();
+  if (!doc.exists) {
+    throw new HttpsError("not-found", "Barn not found");
+  }
+  return normalizeBarnDto(doc.id, doc.data() || {});
+});
+
+export const getLessons = onCall({ region: "us-central1" }, async (request): Promise<LessonListDto> => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
+  }
+
+  const fromDate = parseOptionalDate((request.data || {}).from, "from");
+  const toDate = parseOptionalDate((request.data || {}).to, "to");
+
+  const snapshot = await db.collection("lessons").get();
+  let items = snapshot.docs.map((doc) => normalizeLessonDto(doc.id, doc.data()));
+
+  if (fromDate) {
+    items = items.filter((item) => item.date.slice(0, 10) >= fromDate);
+  }
+  if (toDate) {
+    items = items.filter((item) => item.date.slice(0, 10) <= toDate);
+  }
+
+  items.sort((a, b) => a.date.localeCompare(b.date));
+  return { items };
+});
+
+export const getAppContent = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
+  }
+
+  const locale = parseOptionalString((request.data || {}).locale, 10) || "tr";
+  const doc = await db.collection("app_content").doc(locale).get();
+  if (!doc.exists) {
+    return { locale, home: null, barn: null, common: null, auth: null, onboarding: null };
+  }
+
+  return {
+    locale,
+    ...(doc.data() || {}),
+  };
 });
