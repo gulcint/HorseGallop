@@ -11,8 +11,10 @@ This folder contains backend code used by the Android app.
 - `getLessons`: returns lesson list (optional date range)
 - `getAppContent`: returns locale-based dynamic content blocks
   - `home`: hero title/subtitle
-  - `auth`: login and forgot-password copy
-  - `onboarding`: onboarding hero copy
+  - `auth`: login, email-login, enroll, forgot-password copy
+  - `onboarding`: hero + help copy
+  - `ride`: live header + permission copy
+  - `settings`: section subtitle/help copy
   - `common`: offline help text
 
 ## Firestore Collections (contract)

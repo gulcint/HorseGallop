@@ -211,6 +211,18 @@ fun OnboardingScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                uiState.helpText?.takeIf { it.isNotBlank() }?.let { helpText ->
+                    Text(
+                        text = helpText,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = semantic.onImageOverlay.copy(alpha = 0.86f),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp)
+                    )
+                }
+
                 // Action buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),

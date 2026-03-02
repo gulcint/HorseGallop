@@ -8,6 +8,7 @@ import com.horsegallop.domain.auth.usecase.GetLottieConfigUseCase
 import com.horsegallop.domain.auth.usecase.ResendVerificationEmailUseCase
 import com.horsegallop.domain.auth.usecase.SaveUserToRemoteUseCase
 import com.horsegallop.domain.auth.usecase.SignUpWithEmailUseCase
+import com.horsegallop.domain.content.usecase.GetAppContentUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +18,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.horsegallop.BuildConfig
 import com.horsegallop.domain.auth.model.UserProfile
+import java.util.Locale
 
 data class EnrollmentUiState(
   val firstName: String = "",
@@ -44,7 +46,9 @@ data class EnrollmentUiState(
   val verificationCode: String = "",
   val successLottieUrl: String = "",
   val errorLottieUrl: String = "",
-  val errorMessage: String? = null
+  val errorMessage: String? = null,
+  val enrollTitle: String? = null,
+  val enrollSubtitle: String? = null
 
 )
 
@@ -54,10 +58,15 @@ class EnrollmentViewModel @Inject constructor(
   private val resendVerificationEmail: ResendVerificationEmailUseCase,
   private val checkEmailVerifiedUseCase: CheckEmailVerifiedUseCase,
   private val saveUserToRemoteUseCase: SaveUserToRemoteUseCase,
-  private val getLottieConfigUseCase: GetLottieConfigUseCase
+  private val getLottieConfigUseCase: GetLottieConfigUseCase,
+  private val getAppContentUseCase: GetAppContentUseCase
 ) : ViewModel() {
   private val _ui = MutableStateFlow(EnrollmentUiState())
   val ui: StateFlow<EnrollmentUiState> = _ui
+
+  init {
+    loadDynamicContent(Locale.getDefault().language)
+  }
 
   fun updateFirstName(v: String) { 
     _ui.value = _ui.value.copy(firstName = v)
@@ -259,6 +268,19 @@ class EnrollmentViewModel @Inject constructor(
                 // Error checking verification status
             }
         }
+    }
+  }
+
+  private fun loadDynamicContent(locale: String) {
+    viewModelScope.launch {
+      getAppContentUseCase(locale).collect { result ->
+        result.onSuccess { content ->
+          _ui.value = _ui.value.copy(
+            enrollTitle = content.enrollTitle,
+            enrollSubtitle = content.enrollSubtitle
+          )
+        }
+      }
     }
   }
 }

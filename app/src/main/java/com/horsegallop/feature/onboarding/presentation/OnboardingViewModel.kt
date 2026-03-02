@@ -12,7 +12,8 @@ import java.util.Locale
 
 data class OnboardingUiState(
     val heroTitle: String? = null,
-    val heroSubtitle: String? = null
+    val heroSubtitle: String? = null,
+    val helpText: String? = null
 )
 
 @HiltViewModel
@@ -33,7 +34,8 @@ class OnboardingViewModel @Inject constructor(
                 result.onSuccess { content ->
                     _uiState.value = _uiState.value.copy(
                         heroTitle = content.onboardingHeroTitle,
-                        heroSubtitle = content.onboardingHeroSubtitle
+                        heroSubtitle = content.onboardingHeroSubtitle,
+                        helpText = content.onboardingHelpText
                     )
                 }
             }

@@ -155,7 +155,9 @@ class LoginViewModel @Inject constructor(
                 result.onSuccess { content ->
                     _uiState.value = _uiState.value.copy(
                         title = content.loginTitle,
-                        subtitle = content.loginSubtitle
+                        subtitle = content.loginSubtitle,
+                        emailLoginTitle = content.emailLoginTitle,
+                        emailLoginSubtitle = content.emailLoginSubtitle
                     )
                 }
             }
@@ -172,7 +174,9 @@ data class LoginUiState(
     val isFormValid: Boolean = false,
     val showResendVerification: Boolean = false,
     val title: String? = null,
-    val subtitle: String? = null
+    val subtitle: String? = null,
+    val emailLoginTitle: String? = null,
+    val emailLoginSubtitle: String? = null
 )
 
 sealed class LoginEffect {

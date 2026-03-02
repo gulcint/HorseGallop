@@ -66,6 +66,7 @@ fun SettingsScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val privacyState by viewModel.privacyState.collectAsState()
+    val contentState by viewModel.contentState.collectAsState()
     val feedback = LocalAppFeedbackController.current
     val clipboard = LocalClipboardManager.current
     var showDeleteConfirm by remember { mutableStateOf(false) }
@@ -115,6 +116,7 @@ fun SettingsScreen(
         ) {
             SettingsSectionCard(
                 title = stringResource(id = R.string.setting_theme_title),
+                subtitle = contentState.themeSubtitle,
                 icon = Icons.Filled.Palette
             ) {
                 SettingsRadioRow(
@@ -136,6 +138,7 @@ fun SettingsScreen(
 
             SettingsSectionCard(
                 title = stringResource(id = R.string.setting_language_title),
+                subtitle = contentState.languageSubtitle,
                 icon = Icons.Filled.Language
             ) {
                 SettingsRadioRow(
@@ -157,6 +160,7 @@ fun SettingsScreen(
 
             SettingsSectionCard(
                 title = stringResource(id = R.string.setting_notifications_title),
+                subtitle = contentState.notificationsSubtitle,
                 icon = Icons.Filled.Notifications
             ) {
                 SettingsSwitchRow(
@@ -168,6 +172,7 @@ fun SettingsScreen(
 
             SettingsSectionCard(
                 title = stringResource(id = R.string.setting_privacy_title),
+                subtitle = contentState.privacySubtitle,
                 icon = Icons.Filled.Shield
             ) {
                 SettingsActionRow(
@@ -219,6 +224,7 @@ fun SettingsScreen(
 @Composable
 private fun SettingsSectionCard(
     title: String,
+    subtitle: String? = null,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     content: @Composable () -> Unit
 ) {
@@ -248,6 +254,16 @@ private fun SettingsSectionCard(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
+                )
+            }
+            subtitle?.takeIf { it.isNotBlank() }?.let {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))

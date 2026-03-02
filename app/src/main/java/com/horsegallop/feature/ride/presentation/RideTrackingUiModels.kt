@@ -45,6 +45,12 @@ data class RideUiState(
     val savedRideSummary: SavedRideSummary? = null,
     val pendingSyncCount: Int = 0,
     val lastStopSyncStatus: RideSyncStatus? = null,
+    val liveTitle: String? = null,
+    val liveSubtitleIdle: String? = null,
+    val liveSubtitleActive: String? = null,
+    val permissionTitle: String? = null,
+    val permissionHint: String? = null,
+    val grantLocationCta: String? = null,
     @StringRes val errorMessageResId: Int? = null
 )
 

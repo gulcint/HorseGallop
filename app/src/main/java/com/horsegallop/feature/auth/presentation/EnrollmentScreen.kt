@@ -84,7 +84,10 @@ fun EnrollmentScreen(
                         .padding(horizontal = dimensionResource(CoreR.dimen.padding_screen_horizontal)),
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(CoreR.dimen.spacing_lg))
                 ) {
-                    AuthHeader()
+                    AuthHeader(
+                        title = uiState.enrollTitle ?: stringResource(CoreR.string.login_title_brand),
+                        subtitle = uiState.enrollSubtitle ?: stringResource(CoreR.string.signup_prompt)
+                    )
 
                     Surface(
                         shape = RoundedCornerShape(24.dp),
@@ -155,7 +158,10 @@ fun EnrollmentScreen(
 }
 
 @Composable
-private fun AuthHeader() {
+private fun AuthHeader(
+    title: String,
+    subtitle: String
+) {
     val primary = MaterialTheme.colorScheme.primary
     val secondary = MaterialTheme.colorScheme.secondary
     val semantic = LocalSemanticColors.current
@@ -173,14 +179,14 @@ private fun AuthHeader() {
     ) {
         Column(horizontalAlignment = Alignment.Start) {
             Text(
-                text = stringResource(CoreR.string.login_title_brand),
+                text = title,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = semantic.onImageOverlay
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = stringResource(CoreR.string.signup_prompt),
+                text = subtitle,
                 style = MaterialTheme.typography.bodyMedium,
                 color = semantic.onImageOverlay.copy(alpha = 0.9f)
             )

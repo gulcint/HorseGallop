@@ -216,7 +216,12 @@ fun RideTrackingContent(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                RideHeader(isRiding = state.isRiding)
+                RideHeader(
+                    isRiding = state.isRiding,
+                    liveTitle = state.liveTitle,
+                    liveSubtitleIdle = state.liveSubtitleIdle,
+                    liveSubtitleActive = state.liveSubtitleActive
+                )
             }
 
             item {
@@ -231,6 +236,9 @@ fun RideTrackingContent(
             if (!hasLocationPermission) {
                 item {
                     PermissionCard(
+                        title = state.permissionTitle,
+                        hint = state.permissionHint,
+                        grantCta = state.grantLocationCta,
                         onGrantPermission = onRequestLocationPermission,
                         modifier = Modifier.testTag(RideTestTags.PermissionCard)
                     )
@@ -304,7 +312,12 @@ fun RideTrackingContent(
 }
 
 @Composable
-private fun RideHeader(isRiding: Boolean) {
+private fun RideHeader(
+    isRiding: Boolean,
+    liveTitle: String?,
+    liveSubtitleIdle: String?,
+    liveSubtitleActive: String?
+) {
     val semantic = LocalSemanticColors.current
     val gradient = Brush.linearGradient(
         colors = listOf(
@@ -325,15 +338,15 @@ private fun RideHeader(isRiding: Boolean) {
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    text = stringResource(id = R.string.ride_live_title),
+                    text = liveTitle ?: stringResource(id = R.string.ride_live_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = if (isRiding) {
-                        stringResource(id = R.string.ride_live_subtitle_active)
+                        liveSubtitleActive ?: stringResource(id = R.string.ride_live_subtitle_active)
                     } else {
-                        stringResource(id = R.string.ride_live_subtitle_idle)
+                        liveSubtitleIdle ?: stringResource(id = R.string.ride_live_subtitle_idle)
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -434,6 +447,9 @@ private fun SyncStatusCard(
 
 @Composable
 private fun PermissionCard(
+    title: String?,
+    hint: String?,
+    grantCta: String?,
     onGrantPermission: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -460,20 +476,20 @@ private fun PermissionCard(
                     tint = MaterialTheme.colorScheme.error
                 )
                 Text(
-                    text = stringResource(id = R.string.ride_permission_required),
+                    text = title ?: stringResource(id = R.string.ride_permission_required),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold
                 )
             }
             Text(
-                text = stringResource(id = R.string.ride_permission_hint),
+                text = hint ?: stringResource(id = R.string.ride_permission_hint),
                 style = MaterialTheme.typography.bodySmall
             )
             Button(
                 onClick = onGrantPermission,
                 shape = RoundedCornerShape(14.dp)
             ) {
-                Text(text = stringResource(id = R.string.ride_grant_location))
+                Text(text = grantCta ?: stringResource(id = R.string.ride_grant_location))
             }
         }
     }

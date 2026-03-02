@@ -9,6 +9,9 @@ import com.horsegallop.domain.auth.usecase.GetUserProfileUseCase
 import com.horsegallop.domain.barn.model.BarnUi
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.barn.repository.BarnRepository
+import com.horsegallop.domain.content.model.AppContent
+import com.horsegallop.domain.content.repository.ContentRepository
+import com.horsegallop.domain.content.usecase.GetAppContentUseCase
 import com.horsegallop.domain.model.User
 import com.horsegallop.domain.model.UserRole
 import com.horsegallop.domain.ride.model.GeoPoint
@@ -184,6 +187,7 @@ class RideTrackingViewModelTest {
         val fakeBarnRepository = FakeBarnRepository()
         val fakeAuthRepository = FakeAuthRepository(currentUserId = "uid-1")
         val fakeProfileRepository = FakeProfileRepository()
+        val fakeContentRepository = FakeContentRepository()
 
         val viewModel = RideTrackingViewModel(
             startRideUseCase = StartRideUseCase(fakeRideRepository),
@@ -195,10 +199,17 @@ class RideTrackingViewModelTest {
             setAutoDetectUseCase = SetAutoDetectUseCase(fakeRideRepository),
             barnRepository = fakeBarnRepository,
             getUserProfileUseCase = GetUserProfileUseCase(fakeProfileRepository),
-            getCurrentUserIdUseCase = GetCurrentUserIdUseCase(fakeAuthRepository)
+            getCurrentUserIdUseCase = GetCurrentUserIdUseCase(fakeAuthRepository),
+            getAppContentUseCase = GetAppContentUseCase(fakeContentRepository)
         )
 
         return viewModel to fakeRideRepository
+    }
+}
+
+private class FakeContentRepository : ContentRepository {
+    override fun getAppContent(locale: String): Flow<Result<AppContent>> {
+        return flowOf(Result.success(AppContent(locale = locale)))
     }
 }
 
