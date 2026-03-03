@@ -23,9 +23,24 @@ class ContentRepositoryImpl @Inject constructor(
                         offlineHelp = content.offlineHelp,
                         loginTitle = content.loginTitle,
                         loginSubtitle = content.loginSubtitle,
+                        emailLoginTitle = content.emailLoginTitle,
+                        emailLoginSubtitle = content.emailLoginSubtitle,
+                        enrollTitle = content.enrollTitle,
+                        enrollSubtitle = content.enrollSubtitle,
                         forgotPasswordSubtitle = content.forgotPasswordSubtitle,
                         onboardingHeroTitle = content.onboardingHeroTitle,
-                        onboardingHeroSubtitle = content.onboardingHeroSubtitle
+                        onboardingHeroSubtitle = content.onboardingHeroSubtitle,
+                        onboardingHelpText = content.onboardingHelpText,
+                        rideLiveTitle = content.rideLiveTitle,
+                        rideLiveSubtitleIdle = content.rideLiveSubtitleIdle,
+                        rideLiveSubtitleActive = content.rideLiveSubtitleActive,
+                        ridePermissionTitle = content.ridePermissionTitle,
+                        ridePermissionHint = content.ridePermissionHint,
+                        rideGrantLocationCta = content.rideGrantLocationCta,
+                        settingsThemeSubtitle = content.settingsThemeSubtitle,
+                        settingsLanguageSubtitle = content.settingsLanguageSubtitle,
+                        settingsNotificationsSubtitle = content.settingsNotificationsSubtitle,
+                        settingsPrivacySubtitle = content.settingsPrivacySubtitle
                     )
                 )
             )

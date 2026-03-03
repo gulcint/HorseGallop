@@ -102,7 +102,7 @@ fun EmailLoginScreen(
         containerColor = semantic.screenBase,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(text = stringResource(R.string.signin_email)) },
+                title = { Text(text = uiState.emailLoginTitle ?: stringResource(R.string.signin_email)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -121,6 +121,7 @@ fun EmailLoginScreen(
     ) { innerPadding ->
         EmailLoginContent(
             uiState = uiState,
+            subtitle = uiState.emailLoginSubtitle ?: stringResource(R.string.login_subtitle),
             onEmailChange = viewModel::updateEmail,
             onPasswordChange = viewModel::updatePassword,
             onTogglePasswordVisibility = viewModel::togglePasswordVisibility,
@@ -135,6 +136,7 @@ fun EmailLoginScreen(
 @Composable
 fun EmailLoginContent(
     uiState: LoginUiState,
+    subtitle: String,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onTogglePasswordVisibility: () -> Unit,
@@ -185,7 +187,7 @@ fun EmailLoginContent(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.login_subtitle),
+                        text = subtitle,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -286,6 +288,7 @@ private fun PreviewEmailLoginScreen() {
     MaterialTheme {
         EmailLoginContent(
             uiState = LoginUiState(),
+            subtitle = "Sign in with your account credentials",
             onEmailChange = {},
             onPasswordChange = {},
             onTogglePasswordVisibility = {},

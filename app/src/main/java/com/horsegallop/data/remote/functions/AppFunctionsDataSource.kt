@@ -96,6 +96,8 @@ class AppFunctionsDataSource @Inject constructor(
         val common = payload["common"] as? Map<*, *> ?: emptyMap<String, Any?>()
         val auth = payload["auth"] as? Map<*, *> ?: emptyMap<String, Any?>()
         val onboarding = payload["onboarding"] as? Map<*, *> ?: emptyMap<String, Any?>()
+        val ride = payload["ride"] as? Map<*, *> ?: emptyMap<String, Any?>()
+        val settings = payload["settings"] as? Map<*, *> ?: emptyMap<String, Any?>()
 
         return AppContentFunctionsDto(
             locale = (payload["locale"] as? String) ?: locale,
@@ -104,9 +106,24 @@ class AppFunctionsDataSource @Inject constructor(
             offlineHelp = common["offlineHelp"] as? String,
             loginTitle = auth["loginTitle"] as? String,
             loginSubtitle = auth["loginSubtitle"] as? String,
+            emailLoginTitle = auth["emailLoginTitle"] as? String,
+            emailLoginSubtitle = auth["emailLoginSubtitle"] as? String,
+            enrollTitle = auth["enrollTitle"] as? String,
+            enrollSubtitle = auth["enrollSubtitle"] as? String,
             forgotPasswordSubtitle = auth["forgotPasswordSubtitle"] as? String,
             onboardingHeroTitle = onboarding["heroTitle"] as? String,
-            onboardingHeroSubtitle = onboarding["heroSubtitle"] as? String
+            onboardingHeroSubtitle = onboarding["heroSubtitle"] as? String,
+            onboardingHelpText = onboarding["helpText"] as? String,
+            rideLiveTitle = ride["liveTitle"] as? String,
+            rideLiveSubtitleIdle = ride["liveSubtitleIdle"] as? String,
+            rideLiveSubtitleActive = ride["liveSubtitleActive"] as? String,
+            ridePermissionTitle = ride["permissionTitle"] as? String,
+            ridePermissionHint = ride["permissionHint"] as? String,
+            rideGrantLocationCta = ride["grantLocationCta"] as? String,
+            settingsThemeSubtitle = settings["themeSubtitle"] as? String,
+            settingsLanguageSubtitle = settings["languageSubtitle"] as? String,
+            settingsNotificationsSubtitle = settings["notificationsSubtitle"] as? String,
+            settingsPrivacySubtitle = settings["privacySubtitle"] as? String
         )
     }
 

@@ -7,6 +7,7 @@ import com.horsegallop.domain.auth.usecase.GetCurrentUserIdUseCase
 import com.horsegallop.domain.auth.usecase.GetUserProfileUseCase
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.barn.repository.BarnRepository
+import com.horsegallop.domain.content.usecase.GetAppContentUseCase
 import com.horsegallop.domain.ride.model.RideSyncStatus
 import com.horsegallop.domain.ride.usecase.ObserveIsRidingUseCase
 import com.horsegallop.domain.ride.usecase.ObservePendingRideSyncCountUseCase
@@ -26,6 +27,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @HiltViewModel
 class RideTrackingViewModel @Inject constructor(
@@ -38,7 +40,8 @@ class RideTrackingViewModel @Inject constructor(
     private val setAutoDetectUseCase: SetAutoDetectUseCase,
     private val barnRepository: BarnRepository,
     private val getUserProfileUseCase: GetUserProfileUseCase,
-    private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase
+    private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase,
+    private val getAppContentUseCase: GetAppContentUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RideUiState())
@@ -100,6 +103,7 @@ class RideTrackingViewModel @Inject constructor(
         }
 
         loadUserProfileWeight()
+        loadDynamicContent()
     }
 
     fun onRideTypeSelected(rideType: RideType) {
@@ -222,6 +226,26 @@ class RideTrackingViewModel @Inject constructor(
             getUserProfileUseCase(uid).collect { result ->
                 result.onSuccess { profile ->
                     userWeightKg = profile.weight ?: 70f
+                }
+            }
+        }
+    }
+
+    private fun loadDynamicContent() {
+        val locale = Locale.getDefault().language
+        viewModelScope.launch {
+            getAppContentUseCase(locale).collect { result ->
+                result.onSuccess { content ->
+                    _uiState.update {
+                        it.copy(
+                            liveTitle = content.rideLiveTitle,
+                            liveSubtitleIdle = content.rideLiveSubtitleIdle,
+                            liveSubtitleActive = content.rideLiveSubtitleActive,
+                            permissionTitle = content.ridePermissionTitle,
+                            permissionHint = content.ridePermissionHint,
+                            grantLocationCta = content.rideGrantLocationCta
+                        )
+                    }
                 }
             }
         }

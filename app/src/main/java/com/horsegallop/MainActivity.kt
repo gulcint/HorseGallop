@@ -318,24 +318,30 @@ fun SplashScreen(
         var isSoundCompleted by remember { mutableStateOf(false) }
         var isAnimationCompleted by remember { mutableStateOf(false) }
         var finished by remember { mutableStateOf(false) }
+        val splashTimeoutMs = 2200L
 
-        fun finishOnce() {
+        fun finishOnce(reason: String) {
             if (finished) return
+            AppLog.i("SplashScreen", "splash_finished reason=$reason")
             finished = true
             onFinished()
         }
         
         DisposableEffect(Unit) {
+            AppLog.i("SplashScreen", "splash_started")
             val mp = runCatching { MediaPlayer.create(ctx, com.horsegallop.R.raw.horse_gallop) }.getOrNull()
             mediaPlayer = mp
             if (mp == null) {
+                AppLog.w("SplashScreen", "audio_unavailable")
                 isSoundCompleted = true
             } else {
                 mp.setVolume(1.0f, 1.0f)
                 mp.setOnCompletionListener {
+                    AppLog.i("SplashScreen", "audio_completed")
                     isSoundCompleted = true
                 }
-                mp.setOnErrorListener { _, _, _ ->
+                mp.setOnErrorListener { _, what, extra ->
+                    AppLog.e("SplashScreen", "audio_error what=$what extra=$extra")
                     isSoundCompleted = true
                     true
                 }
@@ -349,7 +355,7 @@ fun SplashScreen(
                     mp?.release()
                     mediaPlayer = null
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    AppLog.e("SplashScreen", "audio_release_error: ${e.message}")
                 }
             }
         }
@@ -357,8 +363,11 @@ fun SplashScreen(
         LaunchedEffect(mediaPlayer) {
             val player = mediaPlayer ?: return@LaunchedEffect
             try {
-                player.seekTo(0)
-                player.start()
+                withContext(Dispatchers.Main.immediate) {
+                    player.seekTo(0)
+                    player.start()
+                }
+                AppLog.i("SplashScreen", "audio_started")
             } catch (e: Exception) {
                 AppLog.e("SplashScreen", "Splash sound playback error: ${e.message}")
                 isSoundCompleted = true
@@ -375,6 +384,7 @@ fun SplashScreen(
             } catch (e: Exception) {
                 AppLog.e("SplashScreen", "Splash lottie playback error: ${e.message}")
             } finally {
+                AppLog.i("SplashScreen", "lottie_completed")
                 isAnimationCompleted = true
             }
         }
@@ -382,15 +392,15 @@ fun SplashScreen(
         LaunchedEffect(isSoundCompleted, isAnimationCompleted) {
             if (finished) return@LaunchedEffect
             if (isSoundCompleted && isAnimationCompleted) {
-                finishOnce()
+                finishOnce("media_lottie_completed")
             }
         }
 
         LaunchedEffect(Unit) {
-            kotlinx.coroutines.delay(5500)
+            kotlinx.coroutines.delay(splashTimeoutMs)
             if (!finished) {
-                AppLog.w("SplashScreen", "Forced finish after startup timeout")
-                finishOnce()
+                AppLog.w("SplashScreen", "forced_timeout_triggered")
+                finishOnce("timeout")
             }
         }
         
