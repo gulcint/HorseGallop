@@ -13,6 +13,11 @@ on:
         required: false
         type: boolean
         default: false
+      run_emulator_diagnostics:
+        description: "Run emulator stability diagnostics (non-blocking)"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -146,6 +151,53 @@ jobs:
             app/build/reports/lint-results-debug.html
             app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt
           if-no-files-found: warn
+
+  emulator-stability-diagnostics:
+    name: emulator-stability-diagnostics
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    continue-on-error: true
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_emulator_diagnostics == 'true' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run emulator diagnostics
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: |
+            chmod +x scripts/emulator/stabilize_emulator.sh
+            scripts/emulator/stabilize_emulator.sh
+            adb logcat -d > emulator-logcat.txt
+            if grep -En "ANR in com.android.systemui|device is not responding|Input dispatching timed out" emulator-logcat.txt; then
+              echo "::warning::Detected emulator/system ANR markers in diagnostics run."
+            else
+              echo "No emulator/system ANR markers detected."
+            fi
+
+      - name: Upload emulator diagnostics logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: emulator-diagnostics-logcat
+          path: emulator-logcat.txt
+          if-no-files-found: warn
+
+      - name: Publish diagnostics summary
+        if: ${{ always() }}
+        run: |
+          {
+            echo "## Emulator Stability Diagnostics"
+            echo ""
+            echo "- Non-blocking diagnostics run completed."
+            echo "- Logcat artifact: emulator-diagnostics-logcat"
+          } >> "${GITHUB_STEP_SUMMARY}"
 
   backend-check:
     name: backend-check
