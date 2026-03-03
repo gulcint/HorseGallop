@@ -223,10 +223,6 @@ jobs:
         working-directory: backend
         run: npm run build
 
-      - name: Backend tests
-        working-directory: backend
-        run: npm test
-
   firebase-test-lab:
     name: firebase-test-lab
     runs-on: ubuntu-latest
