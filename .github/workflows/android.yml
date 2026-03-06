@@ -21,13 +21,73 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  android-build-test:
-    name: android-build-test
+  android-pr-check:
+    name: android-pr-check
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    if: ${{ github.event_name == 'pull_request' }}
+    env:
+      GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: wrapper
+          cache-disabled: false
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork }}
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Setup google-services.json
+        run: |
+          if [ -z "${GOOGLE_SERVICES_JSON:-}" ]; then
+            echo "::error::GOOGLE_SERVICES_JSON secret is required for Android build."
+            exit 1
+          fi
+          mkdir -p app
+          printf "%s" "$GOOGLE_SERVICES_JSON" > app/google-services.json
+          test -s app/google-services.json && echo "google-services.json written" || (echo "google-services.json missing" && exit 1)
+
+      - name: Verify Google Maps API key
+        run: |
+          if [ -z "${GOOGLE_MAPS_API_KEY:-}" ]; then
+            echo "::error::GOOGLE_MAPS_API_KEY secret is required for Android build."
+            exit 1
+          fi
+
+      - name: Unit Tests (PR fast path)
+        run: ./gradlew testDebugUnitTest --no-daemon --stacktrace
+
+      - name: Cache Behavior Note
+        if: ${{ always() }}
+        run: |
+          {
+            echo "## Android CI Mode"
+            echo ""
+            echo "- PR fast path: unit tests + lint (no APK build)."
+            echo "- Main/dispatch full gate: APK build + unit tests + lint + FTL."
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+  android-main-build:
+    name: android-main-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
     env:
       GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
       GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
@@ -79,14 +139,14 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
 
-      - name: Cache Behavior Note
+      - name: Main Gate Note
         if: ${{ always() }}
         run: |
           {
-            echo "## Gradle Cache"
+            echo "## Android CI Mode"
             echo ""
-            echo "- Cache restore/save warnings are non-fatal."
-            echo "- Build fails only on compile/test/lint failures."
+            echo "- Main/dispatch full gate enabled."
+            echo "- APK artifact produced for Firebase Test Lab."
           } >> "${GITHUB_STEP_SUMMARY}"
 
   android-lint:
@@ -180,7 +240,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs:
-      - android-build-test
+      - android-main-build
       - android-lint
     if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_ftl == 'true') }}
     env:
