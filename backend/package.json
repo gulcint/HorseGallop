@@ -7,10 +7,13 @@
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc",
-    "test": "npm run build && node --test \"lib/__tests__/**/*.test.js\"",
+    "test": "npm run build && node --test lib/__tests__/*.test.js",
     "seed": "npm run build && node lib/scripts/seed.js",
     "serve": "firebase emulators:start --only functions",
+    "serve:web": "firebase emulators:start --only hosting",
     "deploy": "npm run build && firebase deploy --only functions",
+    "deploy:web": "firebase deploy --only hosting",
+    "deploy:all": "npm run build && firebase deploy --only functions,hosting",
     "lint": "echo 'No lint configured'"
   },
   "dependencies": {

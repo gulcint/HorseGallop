@@ -255,6 +255,14 @@ jobs:
           name: app-debug
           path: app/build/outputs/apk/debug
 
+      - name: Verify APK artifact exists
+        run: |
+          set -euo pipefail
+          if [ ! -s app/build/outputs/apk/debug/app-debug.apk ]; then
+            echo "::error::Expected APK artifact not found at app/build/outputs/apk/debug/app-debug.apk"
+            exit 1
+          fi
+
       - name: Check GCP Secrets
         id: gcp_precheck
         run: |
