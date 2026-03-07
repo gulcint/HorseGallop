@@ -4,12 +4,6 @@ on:
   push:
     branches: ["main"]
   workflow_dispatch:
-    inputs:
-      run_ftl:
-        description: "Run Firebase Test Lab after Android CI"
-        required: false
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -164,12 +158,12 @@ jobs:
     needs:
       - android-main-build
       - android-lint
-    if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_ftl == 'true') }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
     env:
       GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
       FTL_RESULTS_BUCKET: ${{ secrets.FTL_RESULTS_BUCKET }}
-      FTL_STRICT_GATE: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_ftl == 'true') }}
+      FTL_STRICT_GATE: true
       FTL_MODEL_ID: oriole
       FTL_VERSION_ID: "33"
       FTL_LOCALE: en
