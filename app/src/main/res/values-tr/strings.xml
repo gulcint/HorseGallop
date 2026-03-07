@@ -94,6 +94,8 @@
     <string name="qa_start_ride_subtitle">Yeni bir binicilik deneyimi</string>
     <string name="qa_view_barns_title">Çiftlikleri Görüntüle</string>
     <string name="qa_view_barns_subtitle">Yakındaki çiftlikleri keşfet</string>
+    <string name="qa_training_title">Antrenman Planları</string>
+    <string name="qa_training_subtitle">Haftalık hedeflerini takip et</string>
     <string name="stats_yours_title">İstatistikleriniz</string>
     <string name="stats_total_rides">Toplam Sürüş</string>
     <string name="stats_hours_suffix">saat</string>
@@ -396,4 +398,24 @@
     <string name="activity_type_training">Training</string>
     <string name="chart_total_label">Total</string>
     <string name="default_user_name">User</string>
+    <string name="training_plans_title">Antrenman Planları</string>
+    <string name="training_hero_title">HorseGallop Pro Antrenman</string>
+    <string name="training_hero_subtitle">Yapılandırılmış görevlerle istikrarlı şekilde ilerleyin.</string>
+    <string name="training_status_free">Ücretsiz Plan</string>
+    <string name="training_status_pro">Pro Aktif</string>
+    <string name="training_upgrade_monthly">Aylık Pro'ya Geç</string>
+    <string name="training_upgrade_yearly">Yıllık Pro'ya Geç</string>
+    <string name="training_progress_format">%1$d%% tamamlandı • Hedef %2$d/hafta • %3$d gün seri</string>
+    <string name="training_mark_done">Tamamlandı İşaretle</string>
+    <string name="training_task_done">Tamamlandı</string>
+    <string name="training_task_locked">Kilitli</string>
+    <string name="training_task_in_progress">Devam Ediyor</string>
+    <string name="training_task_pending">Bekliyor</string>
+    <string name="training_task_meta_format">%1$d dk • %2$s</string>
+    <string name="training_plan_not_started">Başlamadı</string>
+    <string name="training_plan_in_progress">Devam Ediyor</string>
+    <string name="training_plan_completed">Tamamlandı</string>
+    <string name="training_plan_locked">Sadece Pro</string>
+    <string name="training_pro_required">Bu plan için HorseGallop Pro gerekli.</string>
+    <string name="training_update_failed">Antrenman görevi güncellenemedi.</string>
 </resources>

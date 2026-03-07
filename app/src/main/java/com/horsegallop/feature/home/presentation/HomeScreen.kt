@@ -35,6 +35,7 @@ fun HomeScreen(
   currentRoute: String? = null,
   onStartRide: () -> Unit,
   onViewBarns: () -> Unit,
+  onOpenTrainingPlans: () -> Unit = {},
   onProfileClick: () -> Unit,
   onOpenRideDetail: (String) -> Unit = {},
   onViewAllActivities: (() -> Unit)? = null,
@@ -44,6 +45,7 @@ fun HomeScreen(
   HomeDashboard(
     onStartRide = onStartRide,
     onViewBarns = onViewBarns,
+    onOpenTrainingPlans = onOpenTrainingPlans,
     onProfileClick = onProfileClick,
     onOpenRideDetail = onOpenRideDetail,
     onViewAllActivities = onViewAllActivities,
@@ -59,6 +61,7 @@ private fun PreviewHomeScreen() {
     HomeScreen(
       onStartRide = {},
       onViewBarns = {},
+      onOpenTrainingPlans = {},
       onProfileClick = {}
     )
   }
@@ -68,6 +71,7 @@ private fun PreviewHomeScreen() {
 private fun HomeDashboard(
   onStartRide: () -> Unit,
   onViewBarns: () -> Unit,
+  onOpenTrainingPlans: () -> Unit,
   onProfileClick: () -> Unit,
   onOpenRideDetail: (String) -> Unit = {},
   onViewAllActivities: (() -> Unit)? = null,
@@ -109,7 +113,11 @@ private fun HomeDashboard(
       }
 
       item {
-        QuickActionsSection(onStartRide = onStartRide, onViewBarns = onViewBarns)
+        QuickActionsSection(
+          onStartRide = onStartRide,
+          onViewBarns = onViewBarns,
+          onOpenTrainingPlans = onOpenTrainingPlans
+        )
       }
       
       item {
@@ -230,7 +238,11 @@ private fun WelcomeHeader(
 }
 
 @Composable
-private fun QuickActionsSection(onStartRide: () -> Unit, onViewBarns: () -> Unit) {
+private fun QuickActionsSection(
+  onStartRide: () -> Unit,
+  onViewBarns: () -> Unit,
+  onOpenTrainingPlans: () -> Unit
+) {
   Column {
     Text(
       text = stringResource(id = com.horsegallop.R.string.quick_actions_title),
@@ -260,6 +272,16 @@ private fun QuickActionsSection(onStartRide: () -> Unit, onViewBarns: () -> Unit
         modifier = Modifier.weight(1f)
       )
     }
+
+    Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.R.dimen.spacing_md)))
+    QuickActionCard(
+      title = stringResource(id = R.string.qa_training_title),
+      subtitle = stringResource(id = R.string.qa_training_subtitle),
+      icon = Icons.AutoMirrored.Filled.TrendingUp,
+      color = MaterialTheme.colorScheme.tertiary,
+      onClick = onOpenTrainingPlans,
+      modifier = Modifier.fillMaxWidth()
+    )
   }
 }
 
