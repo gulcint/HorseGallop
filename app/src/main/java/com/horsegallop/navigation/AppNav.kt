@@ -51,6 +51,7 @@ import com.horsegallop.feature.ride.presentation.RideTrackingRoute
 import com.horsegallop.feature.ride.presentation.RideTrackingViewModel
 
 import com.horsegallop.feature.ride.presentation.RideDetailScreen
+import com.horsegallop.feature.training.presentation.TrainingPlansScreen
 import com.horsegallop.ui.theme.LocalSemanticColors
 
 sealed class Dest(val route: String) {
@@ -64,6 +65,7 @@ sealed class Dest(val route: String) {
   object ForgotPassword : Dest("forgotPassword")
   object Enroll : Dest("enroll")
   object Profile : Dest("profile")
+  object Training : Dest("training")
   object ProfileEdit : Dest("profile/edit")
   object Settings : Dest("settings")
   object BarnDetail : Dest("barnDetail/{id}") {
@@ -278,11 +280,17 @@ fun AppNavHost(
         currentRoute = currentRoute,
         onStartRide = { navController.navigate(Dest.Ride.route) },
         onViewBarns = { navController.navigate(Dest.Barns.route) },
+        onOpenTrainingPlans = { navController.navigate(Dest.Training.route) },
         onProfileClick = { navController.navigate(Dest.Profile.route) },
         onOpenRideDetail = { rideId ->
           navController.navigate(Dest.RideDetail.routeWithId(rideId))
         },
         onViewAllActivities = { navController.navigate(Dest.RecentActivityDetail.route) }
+      )
+    }
+    composable(Dest.Training.route) {
+      TrainingPlansScreen(
+        onBack = { navController.popBackStack() }
       )
     }
     composable(Dest.Profile.route) {
