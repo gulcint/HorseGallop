@@ -75,6 +75,8 @@
     <string name="qa_start_ride_subtitle">Begin your horse riding session</string>
     <string name="qa_view_barns_title">View Barns</string>
     <string name="qa_view_barns_subtitle">Find nearby horse facilities</string>
+    <string name="qa_training_title">Training Plans</string>
+    <string name="qa_training_subtitle">Follow your weekly goals</string>
     <string name="stats_yours_title">Your Stats</string>
     <string name="stats_total_rides">Total Rides</string>
     <string name="stats_hours_suffix">h</string>
@@ -426,4 +428,26 @@
     <string name="activity_type_training">Training</string>
     <string name="chart_total_label">Total</string>
     <string name="default_user_name">User</string>
+    
+    <!-- Training Plans -->
+    <string name="training_plans_title">Training Plans</string>
+    <string name="training_hero_title">HorseGallop Pro Training</string>
+    <string name="training_hero_subtitle">Stay consistent with structured tasks and weekly goals.</string>
+    <string name="training_status_free">Free Plan</string>
+    <string name="training_status_pro">Pro Active</string>
+    <string name="training_upgrade_monthly">Go Pro Monthly</string>
+    <string name="training_upgrade_yearly">Go Pro Yearly</string>
+    <string name="training_progress_format">%1$d%% completed • Goal %2$d/week • %3$d day streak</string>
+    <string name="training_mark_done">Mark Done</string>
+    <string name="training_task_done">Done</string>
+    <string name="training_task_locked">Locked</string>
+    <string name="training_task_in_progress">In Progress</string>
+    <string name="training_task_pending">Pending</string>
+    <string name="training_task_meta_format">%1$d min • %2$s</string>
+    <string name="training_plan_not_started">Not Started</string>
+    <string name="training_plan_in_progress">In Progress</string>
+    <string name="training_plan_completed">Completed</string>
+    <string name="training_plan_locked">Pro Only</string>
+    <string name="training_pro_required">This plan requires HorseGallop Pro.</string>
+    <string name="training_update_failed">Could not update training task.</string>
 </resources>
