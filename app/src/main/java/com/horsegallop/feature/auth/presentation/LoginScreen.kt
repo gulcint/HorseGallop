@@ -50,6 +50,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.horsegallop.R
 import com.horsegallop.core.components.HorseLoadingOverlay
 import com.horsegallop.core.debug.AppLog
@@ -171,8 +173,12 @@ fun LoginScreen(
             // ── Hero ──────────────────────────────────────────────────────────
             Spacer(modifier = Modifier.weight(0.45f))
 
-            Image(
-                painter = painterResource(id = R.mipmap.ic_launcher),
+            // Coil handles adaptive icons (API 26+ XML) correctly — painterResource crashes on them
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(R.mipmap.ic_launcher)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = stringResource(R.string.app_name),
                 modifier = Modifier.size(96.dp)
             )
