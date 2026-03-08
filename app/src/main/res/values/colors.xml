@@ -1,20 +1,21 @@
 <resources>
-    <color name="primary">#CB997E</color>
-    <color name="primary_dark">#6B705C</color>
-    <color name="primary_light">#DDBEA9</color>
+    <!-- White Elegance + Saddle Brown Brand Palette -->
+    <color name="primary">#8B4513</color>
+    <color name="primary_dark">#5C2C0A</color>
+    <color name="primary_light">#FFD9C3</color>
 
-    <color name="secondary">#A5A58D</color>
-    <color name="secondary_variant">#B7B7A4</color>
-    <color name="secondary_light">#DDBEA9</color>
+    <color name="secondary">#7A7873</color>
+    <color name="secondary_variant">#DADDD8</color>
+    <color name="secondary_light">#ECEBE4</color>
 
-    <color name="background">#FFE8D6</color>
-    <color name="surface">#FFF3EA</color>
-    <color name="on_background">#2E3229</color>
-    <color name="on_primary">#2E3229</color>
+    <color name="background">#FAFAFF</color>
+    <color name="surface">#FAFAFF</color>
+    <color name="on_background">#1C1C1E</color>
+    <color name="on_primary">#FFFFFF</color>
 
-    <color name="error">#8B6958</color>
-    <color name="error_light">#CB997E</color>
+    <color name="error">#BA1A1A</color>
+    <color name="error_light">#FFDAD6</color>
 
-    <color name="splash_background">#FFE8D6</color>
-    <color name="ic_launcher_background">#CB997E</color>
+    <color name="splash_background">#FAFAFF</color>
+    <color name="ic_launcher_background">#8B4513</color>
 </resources>

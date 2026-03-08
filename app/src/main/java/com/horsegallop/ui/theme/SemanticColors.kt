@@ -47,9 +47,10 @@ val LocalSemanticColors = staticCompositionLocalOf {
 }
 
 fun semanticColorsFrom(colorScheme: ColorScheme, isDark: Boolean): SemanticColors {
-    val successTone = if (isDark) DrySage else DustyOlive
-    val warningTone = if (isDark) DesertSand else LightBronze
-    val infoTone = if (isDark) AshGrey else DrySage
+    // Semantic tones derived from the White Elegance + Saddle Brown palette
+    val successTone = if (isDark) Color(0xFF6FCF97) else Color(0xFF27AE60)   // clean green
+    val warningTone = if (isDark) Color(0xFFFFB74D) else SaddleBrown          // saddle brown warmth
+    val infoTone    = if (isDark) Color(0xFF90A4AE) else Color(0xFF455A64)    // cool blue-grey
 
     return SemanticColors(
         screenBase = colorScheme.background,
