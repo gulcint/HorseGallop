@@ -7,6 +7,8 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
+import com.google.firebase.messaging.FirebaseMessaging
+import com.horsegallop.core.debug.AppLog
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
@@ -27,6 +29,13 @@ class HorseGallopApp : Application() {
         // Follow device language by default; later we can persist a user choice.
         val appLocales: LocaleListCompat = LocaleListCompat.getEmptyLocaleList()
         AppCompatDelegate.setApplicationLocales(appLocales)
+
+        // Initialize FCM token on app start (PushService.onNewToken handles updates)
+        FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+            AppLog.i("HorseGallopApp", "FCM token ready: ${token.take(20)}...")
+        }.addOnFailureListener {
+            AppLog.e("HorseGallopApp", "FCM token fetch failed: $it")
+        }
     }
 }
 

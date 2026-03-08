@@ -403,8 +403,8 @@
     <string name="training_hero_subtitle">Yapılandırılmış görevlerle istikrarlı şekilde ilerleyin.</string>
     <string name="training_status_free">Ücretsiz Plan</string>
     <string name="training_status_pro">Pro Aktif</string>
-    <string name="training_upgrade_monthly">Aylık Pro'ya Geç</string>
-    <string name="training_upgrade_yearly">Yıllık Pro'ya Geç</string>
+    <string name="training_upgrade_monthly">Aylık Pro\'ya Geç</string>
+    <string name="training_upgrade_yearly">Yıllık Pro\'ya Geç</string>
     <string name="training_progress_format">%1$d%% tamamlandı • Hedef %2$d/hafta • %3$d gün seri</string>
     <string name="training_mark_done">Tamamlandı İşaretle</string>
     <string name="training_task_done">Tamamlandı</string>

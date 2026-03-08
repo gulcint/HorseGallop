@@ -449,6 +449,7 @@ private fun HomeDashboardPreview() {
     HomeDashboard(
       onStartRide = {},
       onViewBarns = {},
+      onOpenTrainingPlans = {},
       onProfileClick = {}
     )
   }

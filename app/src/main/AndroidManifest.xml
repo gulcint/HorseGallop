@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
         android:icon="@mipmap/ic_launcher"
         android:name=".HorseGallopApp"
@@ -35,5 +36,15 @@
 				<data android:scheme="https" android:host="horsegallop.page.link" android:pathPrefix="/verify" />
 			</intent-filter>
 		</activity>
+        <service
+            android:name=".PushService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="horsegallop_general" />
 	</application>
 </manifest>

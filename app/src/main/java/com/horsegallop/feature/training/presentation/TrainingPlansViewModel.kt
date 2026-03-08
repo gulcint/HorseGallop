@@ -1,7 +1,10 @@
 package com.horsegallop.feature.training.presentation
 
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.horsegallop.data.billing.BillingManager
+import com.horsegallop.data.billing.PurchaseState
 import com.horsegallop.domain.subscription.model.SubscriptionStatus
 import com.horsegallop.domain.subscription.model.SubscriptionTier
 import com.horsegallop.domain.subscription.usecase.ObserveSubscriptionStatusUseCase
@@ -21,14 +24,21 @@ class TrainingPlansViewModel @Inject constructor(
     private val getTrainingPlansUseCase: GetTrainingPlansUseCase,
     private val completeTrainingTaskUseCase: CompleteTrainingTaskUseCase,
     private val observeSubscriptionStatusUseCase: ObserveSubscriptionStatusUseCase,
-    private val startSubscriptionPurchaseUseCase: StartSubscriptionPurchaseUseCase
+    private val startSubscriptionPurchaseUseCase: StartSubscriptionPurchaseUseCase,
+    private val billingManager: BillingManager
 ) : ViewModel() {
 
     private val _ui = MutableStateFlow(TrainingPlansUiState())
     val ui: StateFlow<TrainingPlansUiState> = _ui
 
+    companion object {
+        const val PRODUCT_PRO_MONTHLY = "horsegallop_pro_monthly"
+        const val PRODUCT_PRO_YEARLY = "horsegallop_pro_yearly"
+    }
+
     init {
         observeSubscription()
+        observeBillingState()
         refresh()
     }
 
@@ -38,11 +48,7 @@ class TrainingPlansViewModel @Inject constructor(
             getTrainingPlansUseCase()
                 .onSuccess { plans ->
                     _ui.update { state ->
-                        state.copy(
-                            isLoading = false,
-                            plans = plans,
-                            error = null
-                        )
+                        state.copy(isLoading = false, plans = plans, error = null)
                     }
                 }
                 .onFailure { error ->
@@ -65,16 +71,21 @@ class TrainingPlansViewModel @Inject constructor(
         }
     }
 
-    fun upgradeToProMonthly() {
-        startPurchase("pro_monthly")
+    fun upgradeToProMonthly(activity: Activity) {
+        launchBillingFlow(activity, PRODUCT_PRO_MONTHLY)
     }
 
-    fun upgradeToProYearly() {
-        startPurchase("pro_yearly")
+    fun upgradeToProYearly(activity: Activity) {
+        launchBillingFlow(activity, PRODUCT_PRO_YEARLY)
     }
 
     fun clearError() {
         _ui.update { it.copy(error = null) }
+    }
+
+    private fun launchBillingFlow(activity: Activity, productId: String) {
+        _ui.update { it.copy(isPurchasing = true, error = null) }
+        billingManager.launchBillingFlow(activity, productId)
     }
 
     private fun observeSubscription() {
@@ -85,16 +96,23 @@ class TrainingPlansViewModel @Inject constructor(
         }
     }
 
-    private fun startPurchase(productId: String) {
+    private fun observeBillingState() {
         viewModelScope.launch {
-            _ui.update { it.copy(isPurchasing = true, error = null) }
-            startSubscriptionPurchaseUseCase(productId)
-                .onSuccess {
-                    _ui.update { it.copy(isPurchasing = false) }
+            billingManager.purchaseState.collect { state ->
+                when (state) {
+                    is PurchaseState.Purchased -> {
+                        startSubscriptionPurchaseUseCase(state.productId)
+                        _ui.update { it.copy(isPurchasing = false) }
+                    }
+                    is PurchaseState.Error -> {
+                        _ui.update { it.copy(isPurchasing = false, error = "purchase_failed") }
+                    }
+                    is PurchaseState.Cancelled -> {
+                        _ui.update { it.copy(isPurchasing = false) }
+                    }
+                    else -> {}
                 }
-                .onFailure { error ->
-                    _ui.update { it.copy(isPurchasing = false, error = error.message ?: "purchase_failed") }
-                }
+            }
         }
     }
 }

@@ -42,7 +42,42 @@ data class LessonFunctionsDto(
     val instructorName: String,
     val durationMin: Int,
     val level: String,
-    val price: Double
+    val price: Double,
+    val spotsTotal: Int = 0,
+    val spotsAvailable: Int = 0,
+    val isBookedByMe: Boolean = false
+)
+
+data class ReviewFunctionsDto(
+    val id: String,
+    val targetId: String,
+    val targetType: String,
+    val targetName: String,
+    val rating: Int,
+    val comment: String,
+    val createdAt: String = "",
+    val authorName: String = ""
+)
+
+data class HorseFunctionsDto(
+    val id: String,
+    val name: String,
+    val breed: String = "",
+    val birthYear: Int = 0,
+    val color: String = "",
+    val gender: String = "",
+    val weightKg: Int = 0,
+    val imageUrl: String = ""
+)
+
+data class ReservationFunctionsDto(
+    val id: String,
+    val lessonId: String,
+    val lessonTitle: String,
+    val lessonDate: String,
+    val instructorName: String,
+    val status: String,
+    val createdAt: String = ""
 )
 
 data class AppContentFunctionsDto(

@@ -70,6 +70,7 @@ fun ProfileScreen(
     onSettings: () -> Unit,
     onLogout: () -> Unit,
     onEditProfile: () -> Unit,
+    onMyHorses: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -229,6 +230,18 @@ fun ProfileScreen(
                             Icon(imageVector = Icons.Filled.Edit, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(text = stringResource(id = R.string.edit_profile_title))
+                        }
+
+                        OutlinedButton(
+                            onClick = onMyHorses,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Text("🐴", style = MaterialTheme.typography.bodyLarge)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = "Atlarım")
                         }
 
                         OutlinedButton(
