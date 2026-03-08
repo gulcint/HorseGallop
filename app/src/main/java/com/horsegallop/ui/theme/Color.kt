@@ -4,97 +4,117 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
-// Brand palette (single source)
-val LightBronze = Color(0xFFCB997E)
-val DesertSand = Color(0xFFDDBEA9)
-val AlmondCream = Color(0xFFFFE8D6)
-val AshGrey = Color(0xFFB7B7A4)
-val DrySage = Color(0xFFA5A58D)
-val DustyOlive = Color(0xFF6B705C)
+// ─── White Elegance + Saddle Brown Brand Palette ───────────────────────────
+// Crisp whites punctuated by warm Saddle Brown → clean, sophisticated, modern.
 
-// Accessible derived tones from the same palette
-private val Olive900 = Color(0xFF2E3229)
-private val Olive800 = Color(0xFF3A3F33)
-private val Olive700 = Color(0xFF4A4F41)
-private val CreamSoft = Color(0xFFFFF3EA)
-private val CreamWarm = Color(0xFFF7E1D0)
-private val BronzeDeep = Color(0xFF8B6958)
-private val BronzeDark = Color(0xFF6E5345)
+val SaddleBrown     = Color(0xFF8B4513) // Primary brand — rich equestrian warmth
+val DustGrey        = Color(0xFFDADDD8) // Subtle dusted-stone surface tone
+val Parchment       = Color(0xFFECEBE4) // Heritage elegance — card surfaces
+val Platinum        = Color(0xFFEEF0F2) // Understated silver-white — elevated surfaces
+val GhostWhite      = Color(0xFFFAFAFF) // Pristine clean background
+
+// Derived accessible tones
+private val BrownDark       = Color(0xFF5C2C0A) // Deep brown — containers / on-colors
+private val BrownDeep       = Color(0xFF2D1300) // Near-black brown — on primary container
+private val BrownLight      = Color(0xFFFFD9C3) // Warm apricot — primary container light
+private val BrownMid        = Color(0xFFFFB78B) // Warm orange-brown — primary dark mode
+private val WarmCharcoal    = Color(0xFF1C1C1E) // Near-black with warmth — primary text
+private val WarmGrey70      = Color(0xFF7A7873) // Warm mid-grey — secondary light
+private val WarmGrey30      = Color(0xFF49473F) // Dark warm grey — secondary container dark
+private val WarmGrey15      = Color(0xFF323028) // Very dark warm grey — onSecondary dark
 
 val LightColorScheme = lightColorScheme(
-    primary = LightBronze,
-    onPrimary = Olive900,
-    primaryContainer = DesertSand,
-    onPrimaryContainer = Olive900,
-    secondary = DrySage,
-    onSecondary = Olive900,
-    secondaryContainer = AshGrey,
-    onSecondaryContainer = Olive900,
-    tertiary = DustyOlive,
-    onTertiary = AlmondCream,
-    tertiaryContainer = DrySage,
-    onTertiaryContainer = Olive900,
-    error = BronzeDeep,
-    onError = CreamSoft,
-    errorContainer = CreamWarm,
-    onErrorContainer = Olive900,
-    background = AlmondCream,
-    onBackground = Olive900,
-    surface = CreamSoft,
-    onSurface = Olive900,
-    surfaceVariant = DesertSand,
-    onSurfaceVariant = Olive700,
-    outline = DustyOlive,
-    inverseOnSurface = AlmondCream,
-    inverseSurface = Olive800,
-    inversePrimary = DesertSand,
-    surfaceDim = DesertSand,
-    surfaceBright = CreamSoft,
-    surfaceContainerLowest = CreamSoft,
-    surfaceContainerLow = AlmondCream,
-    surfaceContainer = DesertSand,
-    surfaceContainerHigh = AshGrey,
-    surfaceContainerHighest = DrySage,
-    surfaceTint = LightBronze,
-    outlineVariant = AshGrey,
-    scrim = Olive900
+    primary                = SaddleBrown,
+    onPrimary              = Color.White,
+    primaryContainer       = BrownLight,
+    onPrimaryContainer     = BrownDeep,
+
+    secondary              = WarmGrey70,
+    onSecondary            = Color.White,
+    secondaryContainer     = DustGrey,
+    onSecondaryContainer   = WarmCharcoal,
+
+    tertiary               = Color(0xFF6B6A61),
+    onTertiary             = Color.White,
+    tertiaryContainer      = Parchment,
+    onTertiaryContainer    = WarmCharcoal,
+
+    error                  = Color(0xFFBA1A1A),
+    onError                = Color.White,
+    errorContainer         = Color(0xFFFFDAD6),
+    onErrorContainer       = Color(0xFF410002),
+
+    background             = GhostWhite,
+    onBackground           = WarmCharcoal,
+
+    surface                = GhostWhite,
+    onSurface              = WarmCharcoal,
+    surfaceVariant         = Platinum,
+    onSurfaceVariant       = Color(0xFF47464B),
+
+    outline                = Color(0xFF787680),
+    outlineVariant         = DustGrey,
+
+    inverseSurface         = WarmCharcoal,
+    inverseOnSurface       = GhostWhite,
+    inversePrimary         = BrownMid,
+
+    surfaceDim             = DustGrey,
+    surfaceBright          = GhostWhite,
+    surfaceContainerLowest = Color.White,
+    surfaceContainerLow    = GhostWhite,
+    surfaceContainer       = Platinum,
+    surfaceContainerHigh   = Parchment,
+    surfaceContainerHighest= DustGrey,
+
+    surfaceTint            = SaddleBrown,
+    scrim                  = WarmCharcoal
 )
 
 val DarkColorScheme = darkColorScheme(
-    primary = DesertSand,
-    onPrimary = Olive900,
-    primaryContainer = BronzeDark,
-    onPrimaryContainer = CreamSoft,
-    secondary = DrySage,
-    onSecondary = Olive900,
-    secondaryContainer = Olive700,
-    onSecondaryContainer = AlmondCream,
-    tertiary = AshGrey,
-    onTertiary = Olive900,
-    tertiaryContainer = DustyOlive,
-    onTertiaryContainer = CreamSoft,
-    error = LightBronze,
-    onError = Olive900,
-    errorContainer = BronzeDark,
-    onErrorContainer = CreamSoft,
-    background = Olive900,
-    onBackground = AlmondCream,
-    surface = Olive800,
-    onSurface = AlmondCream,
-    surfaceVariant = Olive700,
-    onSurfaceVariant = AshGrey,
-    outline = DrySage,
-    inverseOnSurface = Olive900,
-    inverseSurface = AlmondCream,
-    inversePrimary = LightBronze,
-    surfaceDim = Olive900,
-    surfaceBright = Olive700,
-    surfaceContainerLowest = Olive900,
-    surfaceContainerLow = Olive800,
-    surfaceContainer = Olive700,
-    surfaceContainerHigh = DustyOlive,
-    surfaceContainerHighest = DrySage,
-    surfaceTint = DesertSand,
-    outlineVariant = DustyOlive,
-    scrim = Olive900
+    primary                = BrownMid,
+    onPrimary              = Color(0xFF4E2000),
+    primaryContainer       = BrownDark,
+    onPrimaryContainer     = BrownLight,
+
+    secondary              = Color(0xFFC5C3BC),
+    onSecondary            = WarmGrey15,
+    secondaryContainer     = WarmGrey30,
+    onSecondaryContainer   = Color(0xFFE1DFD7),
+
+    tertiary               = Color(0xFFCAC7BA),
+    onTertiary             = Color(0xFF322F21),
+    tertiaryContainer      = Color(0xFF494536),
+    onTertiaryContainer    = Color(0xFFE6E3D5),
+
+    error                  = Color(0xFFFFB4AB),
+    onError                = Color(0xFF690005),
+    errorContainer         = Color(0xFF93000A),
+    onErrorContainer       = Color(0xFFFFDAD6),
+
+    background             = Color(0xFF131318),
+    onBackground           = Color(0xFFE5E1E9),
+
+    surface                = Color(0xFF131318),
+    onSurface              = Color(0xFFE5E1E9),
+    surfaceVariant         = Color(0xFF47464F),
+    onSurfaceVariant       = Color(0xFFC8C6D0),
+
+    outline                = Color(0xFF918F9A),
+    outlineVariant         = Color(0xFF47464F),
+
+    inverseSurface         = Color(0xFFE5E1E9),
+    inverseOnSurface       = Color(0xFF313033),
+    inversePrimary         = SaddleBrown,
+
+    surfaceDim             = Color(0xFF0F0F14),
+    surfaceBright          = Color(0xFF39383E),
+    surfaceContainerLowest = Color(0xFF0A0A0F),
+    surfaceContainerLow    = Color(0xFF1C1B22),
+    surfaceContainer       = Color(0xFF201F26),
+    surfaceContainerHigh   = Color(0xFF2B2930),
+    surfaceContainerHighest= Color(0xFF36343B),
+
+    surfaceTint            = BrownMid,
+    scrim                  = Color(0xFF000000)
 )
