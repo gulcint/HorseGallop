@@ -43,7 +43,12 @@ import com.horsegallop.feature.auth.presentation.ProfileViewModel
 import com.horsegallop.feature.barn.presentation.BarnDetailScreen
 import com.horsegallop.feature.home.presentation.HomeScreen
 import com.horsegallop.feature.onboarding.presentation.OnboardingScreen
+import com.horsegallop.feature.horse.presentation.AddHorseScreen
+import com.horsegallop.feature.horse.presentation.HorseListScreen
+import com.horsegallop.feature.review.presentation.WriteReviewScreen
+import com.horsegallop.feature.schedule.presentation.MyReservationsScreen
 import com.horsegallop.feature.schedule.presentation.ScheduleRoute
+import com.horsegallop.domain.review.model.ReviewTargetType
 
 import androidx.navigation.navDeepLink
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -68,6 +73,13 @@ sealed class Dest(val route: String) {
   object Training : Dest("training")
   object ProfileEdit : Dest("profile/edit")
   object Settings : Dest("settings")
+  object MyReservations : Dest("myReservations")
+  object MyHorses : Dest("myHorses")
+  object AddHorse : Dest("addHorse")
+  object WriteReview : Dest("writeReview/{targetId}/{targetType}/{targetName}") {
+    fun route(targetId: String, targetType: String, targetName: String) =
+      "writeReview/$targetId/$targetType/${android.net.Uri.encode(targetName)}"
+  }
   object BarnDetail : Dest("barnDetail/{id}") {
     fun routeWithId(id: String): String = "barnDetail/$id"
   }
@@ -299,6 +311,7 @@ fun AppNavHost(
         onBack = { navController.popBackStack() },
         onSettings = { navController.navigate(Dest.Settings.route) },
         onEditProfile = { navController.navigate(Dest.ProfileEdit.route) },
+        onMyHorses = { navController.navigate(Dest.MyHorses.route) },
         onLogout = {
           navController.navigate(Dest.Onboarding.route) {
             popUpTo(Dest.Home.route) { inclusive = true }
@@ -334,7 +347,47 @@ fun AppNavHost(
       )
     }
     composable(Dest.Schedule.route) {
-      ScheduleRoute()
+      ScheduleRoute(onMyReservations = { navController.navigate(Dest.MyReservations.route) })
+    }
+    composable(Dest.MyReservations.route) {
+      BackHandler { navController.popBackStack() }
+      MyReservationsScreen(
+        onBack = { navController.popBackStack() },
+        onWriteReview = { lessonId, lessonTitle ->
+          navController.navigate(Dest.WriteReview.route(lessonId, "lesson", lessonTitle))
+        }
+      )
+    }
+    composable(Dest.MyHorses.route) {
+      BackHandler { navController.popBackStack() }
+      HorseListScreen(
+        onAddHorse = { navController.navigate(Dest.AddHorse.route) },
+        onBack = { navController.popBackStack() }
+      )
+    }
+    composable(Dest.AddHorse.route) {
+      BackHandler { navController.popBackStack() }
+      AddHorseScreen(onBack = { navController.popBackStack() })
+    }
+    composable(
+      route = Dest.WriteReview.route,
+      arguments = listOf(
+        navArgument("targetId") { type = NavType.StringType },
+        navArgument("targetType") { type = NavType.StringType },
+        navArgument("targetName") { type = NavType.StringType }
+      )
+    ) { backStackEntry ->
+      BackHandler { navController.popBackStack() }
+      val targetId = backStackEntry.arguments?.getString("targetId") ?: ""
+      val targetType = if (backStackEntry.arguments?.getString("targetType") == "instructor")
+        ReviewTargetType.INSTRUCTOR else ReviewTargetType.LESSON
+      val targetName = android.net.Uri.decode(backStackEntry.arguments?.getString("targetName") ?: "")
+      WriteReviewScreen(
+        targetId = targetId,
+        targetType = targetType,
+        targetName = targetName,
+        onBack = { navController.popBackStack() }
+      )
     }
     composable(Dest.Barns.route) {
       // Barns ekranında geri tuşu Home'a döner

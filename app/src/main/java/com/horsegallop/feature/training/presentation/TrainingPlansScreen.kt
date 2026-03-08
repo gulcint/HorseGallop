@@ -32,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,6 +46,7 @@ import com.horsegallop.domain.training.model.TrainingTask
 import com.horsegallop.domain.training.model.TrainingTaskStatus
 import com.horsegallop.ui.theme.LocalSemanticColors
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun TrainingPlansScreen(
     onBack: () -> Unit,
@@ -53,13 +55,17 @@ fun TrainingPlansScreen(
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     val semantic = LocalSemanticColors.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val activity = LocalContext.current as? android.app.Activity
+    val msgProRequired = stringResource(id = R.string.training_pro_required)
+    val msgUpdateFailed = stringResource(id = R.string.training_update_failed)
+    val msgUnknown = stringResource(id = R.string.error_unknown)
 
     LaunchedEffect(ui.error) {
         val message = when (ui.error) {
-            "pro_required" -> stringResource(id = R.string.training_pro_required)
-            "plan_not_found", "task_not_found" -> stringResource(id = R.string.training_update_failed)
+            "pro_required" -> msgProRequired
+            "plan_not_found", "task_not_found" -> msgUpdateFailed
             null -> null
-            else -> stringResource(id = R.string.error_unknown)
+            else -> msgUnknown
         }
         if (message != null) {
             snackbarHostState.showSnackbar(message)
@@ -103,8 +109,8 @@ fun TrainingPlansScreen(
                     HeroCard(
                         isPro = ui.subscription.tier != SubscriptionTier.FREE,
                         isPurchasing = ui.isPurchasing,
-                        onUpgradeMonthly = viewModel::upgradeToProMonthly,
-                        onUpgradeYearly = viewModel::upgradeToProYearly
+                        onUpgradeMonthly = { activity?.let { viewModel.upgradeToProMonthly(it) } },
+                        onUpgradeYearly = { activity?.let { viewModel.upgradeToProYearly(it) } }
                     )
                 }
 

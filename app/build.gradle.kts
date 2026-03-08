@@ -167,6 +167,7 @@ dependencies {
     implementation(libs.okhttp.logging)
     implementation(libs.moshi.kotlin)
     implementation("javax.inject:javax.inject:1")
+    implementation("com.android.billingclient:billing-ktx:7.1.1")
 	debugImplementation(libs.compose.tooling)
 	testImplementation("junit:junit:4.13.2")
 	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")

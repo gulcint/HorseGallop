@@ -3,7 +3,11 @@ package com.horsegallop.feature.schedule.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.horsegallop.domain.schedule.model.Lesson
+import com.horsegallop.domain.schedule.model.Reservation
+import com.horsegallop.domain.schedule.usecase.BookLessonUseCase
+import com.horsegallop.domain.schedule.usecase.CancelReservationUseCase
 import com.horsegallop.domain.schedule.usecase.GetLessonsUseCase
+import com.horsegallop.domain.schedule.usecase.GetMyReservationsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +17,10 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class ScheduleViewModel @Inject constructor(
-    private val getLessonsUseCase: GetLessonsUseCase
+    private val getLessonsUseCase: GetLessonsUseCase,
+    private val bookLessonUseCase: BookLessonUseCase,
+    private val cancelReservationUseCase: CancelReservationUseCase,
+    private val getMyReservationsUseCase: GetMyReservationsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ScheduleUiState())
@@ -21,6 +28,7 @@ class ScheduleViewModel @Inject constructor(
 
     init {
         refresh()
+        loadReservations()
     }
 
     fun refresh() {
@@ -44,11 +52,60 @@ class ScheduleViewModel @Inject constructor(
             }
         }
     }
+
+    private fun loadReservations() {
+        viewModelScope.launch {
+            try {
+                getMyReservationsUseCase().collect { reservations ->
+                    _uiState.value = _uiState.value.copy(reservations = reservations)
+                }
+            } catch (_: Exception) { }
+        }
+    }
+
+    fun bookLesson(lessonId: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(bookingInProgress = true, bookingError = null)
+            bookLessonUseCase(lessonId)
+                .onSuccess {
+                    _uiState.value = _uiState.value.copy(
+                        bookingInProgress = false,
+                        bookingSuccess = true
+                    )
+                    refresh()
+                    loadReservations()
+                }
+                .onFailure { e ->
+                    _uiState.value = _uiState.value.copy(
+                        bookingInProgress = false,
+                        bookingError = e.localizedMessage ?: "Rezervasyon başarısız"
+                    )
+                }
+        }
+    }
+
+    fun cancelReservation(reservationId: String) {
+        viewModelScope.launch {
+            cancelReservationUseCase(reservationId)
+                .onSuccess {
+                    loadReservations()
+                    refresh()
+                }
+        }
+    }
+
+    fun clearBookingState() {
+        _uiState.value = _uiState.value.copy(bookingSuccess = false, bookingError = null)
+    }
 }
 
 data class ScheduleUiState(
     val loading: Boolean = true,
     val lessons: List<Lesson> = emptyList(),
+    val reservations: List<Reservation> = emptyList(),
     val isEmpty: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val bookingInProgress: Boolean = false,
+    val bookingSuccess: Boolean = false,
+    val bookingError: String? = null
 )

@@ -18,18 +18,29 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,7 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
@@ -48,13 +59,15 @@ import com.horsegallop.ui.theme.LocalSemanticColors
 @Composable
 fun ScheduleRoute(
     viewModel: ScheduleViewModel = hiltViewModel(),
-    onLessonClick: (Lesson) -> Unit = {}
+    onMyReservations: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     ScheduleScreen(
         uiState = uiState,
-        onLessonClick = onLessonClick,
-        onRetry = { viewModel.refresh() }
+        onRetry = { viewModel.refresh() },
+        onBookLesson = { lessonId -> viewModel.bookLesson(lessonId) },
+        onClearBookingState = { viewModel.clearBookingState() },
+        onMyReservations = onMyReservations
     )
 }
 
@@ -62,140 +75,119 @@ fun ScheduleRoute(
 @Composable
 fun ScheduleScreen(
     uiState: ScheduleUiState,
-    onLessonClick: (Lesson) -> Unit = {},
-    onRetry: () -> Unit = {}
+    onRetry: () -> Unit = {},
+    onBookLesson: (String) -> Unit = {},
+    onClearBookingState: () -> Unit = {},
+    onMyReservations: () -> Unit = {}
 ) {
     val semantic = LocalSemanticColors.current
     var selectedLesson by remember { mutableStateOf<Lesson?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    if (uiState.loading) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            androidx.compose.material3.CircularProgressIndicator()
+    LaunchedEffect(uiState.bookingSuccess) {
+        if (uiState.bookingSuccess) {
+            snackbarHostState.showSnackbar(
+                message = "Rezervasyon başarıyla oluşturuldu!",
+                duration = SnackbarDuration.Short
+            )
+            selectedLesson = null
+            onClearBookingState()
         }
-        return
     }
 
-    if (uiState.error != null) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = semantic.calloutErrorContainer),
-                border = BorderStroke(1.dp, semantic.calloutBorderError)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+    LaunchedEffect(uiState.bookingError) {
+        uiState.bookingError?.let {
+            snackbarHostState.showSnackbar(message = it, duration = SnackbarDuration.Short)
+            onClearBookingState()
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = semantic.screenBase
+    ) { innerPadding ->
+        when {
+            uiState.loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) { CircularProgressIndicator() }
+            }
+
+            uiState.error != null -> {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = uiState.error ?: stringResource(R.string.backend_error_generic),
-                        color = semantic.calloutOnContainer
-                    )
-                    Button(onClick = onRetry) {
-                        Text(text = stringResource(R.string.retry))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = semantic.calloutErrorContainer),
+                        border = BorderStroke(1.dp, semantic.calloutBorderError)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Text(
+                                text = uiState.error ?: stringResource(R.string.backend_error_generic),
+                                color = semantic.calloutOnContainer
+                            )
+                            Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+                        }
                     }
                 }
             }
-        }
-        return
-    }
 
-    if (uiState.isEmpty) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
-                border = BorderStroke(1.dp, semantic.cardStroke)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+            uiState.isEmpty -> {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(text = stringResource(R.string.schedule_empty_title))
-                    Button(onClick = onRetry) {
-                        Text(text = stringResource(R.string.retry))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+                        border = BorderStroke(1.dp, semantic.cardStroke)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Text(text = stringResource(R.string.schedule_empty_title))
+                            Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+                        }
                     }
                 }
             }
-        }
-        return
-    }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        items(uiState.lessons, key = { it.id }) { lesson ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        selectedLesson = lesson
-                        onLessonClick(lesson)
-                    },
-                shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
-                border = BorderStroke(1.dp, semantic.cardStroke)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+            else -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().padding(innerPadding),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text(
-                        text = lesson.title,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CalendarToday,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = lesson.date,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    if (uiState.reservations.isNotEmpty()) {
+                        item {
+                            OutlinedButton(
+                                onClick = onMyReservations,
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.size(8.dp))
+                                Text(
+                                    "Rezervasyonlarım (${uiState.reservations.size})",
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
                     }
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.secondary
-                        )
-                        Text(
-                            text = lesson.instructorName,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    items(uiState.lessons, key = { it.id }) { lesson ->
+                        LessonCard(lesson = lesson, onClick = { selectedLesson = lesson })
                     }
                 }
             }
@@ -214,26 +206,77 @@ fun ScheduleScreen(
                     .padding(horizontal = 20.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    text = lesson.title,
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Text(
-                    text = stringResource(R.string.lesson_details, lesson.date, lesson.instructorName),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Text(text = lesson.title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.CalendarToday, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
+                    Text(lesson.date, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Person, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.secondary)
+                    Text(lesson.instructorName, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (lesson.durationMin > 0) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Schedule, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.tertiary)
+                        Text("${lesson.durationMin} dakika", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                if (lesson.level.isNotBlank()) {
+                    Text("Seviye: ${lesson.level}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (lesson.price > 0) {
+                    Text("₺${lesson.price.toInt()}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+                }
+                if (lesson.spotsTotal > 0) {
+                    val spotsColor = if (lesson.isFull) MaterialTheme.colorScheme.error else semantic.success
+                    Text(
+                        text = if (lesson.isFull) "Kontenjan dolu" else "${lesson.spotsAvailable}/${lesson.spotsTotal} yer mevcut",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = spotsColor,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
                 HorizontalDivider(color = semantic.dividerSoft)
-                Text(
-                    text = "${stringResource(R.string.lesson_title)} #${lesson.id}",
-                    style = MaterialTheme.typography.labelLarge
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Button(
-                    onClick = { selectedLesson = null },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = stringResource(R.string.ok))
+
+                when {
+                    lesson.isBookedByMe -> {
+                        Button(
+                            onClick = {},
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = false,
+                            colors = ButtonDefaults.buttonColors(
+                                disabledContainerColor = semantic.stateOverlaySuccess
+                            )
+                        ) {
+                            Icon(Icons.Default.CheckCircle, null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.size(8.dp))
+                            Text("Rezervasyon Yapıldı", color = semantic.success)
+                        }
+                    }
+                    lesson.isFull -> {
+                        Button(onClick = {}, modifier = Modifier.fillMaxWidth(), enabled = false) {
+                            Text("Kontenjan Dolu")
+                        }
+                    }
+                    else -> {
+                        Button(
+                            onClick = { onBookLesson(lesson.id) },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !uiState.bookingInProgress
+                        ) {
+                            if (uiState.bookingInProgress) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                                Spacer(Modifier.size(8.dp))
+                            }
+                            Text("Rezervasyon Yap")
+                        }
+                    }
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }
@@ -241,18 +284,46 @@ fun ScheduleScreen(
     }
 }
 
-@Preview
 @Composable
-private fun SchedulePreview() {
-    MaterialTheme {
-        ScheduleScreen(
-            uiState = ScheduleUiState(
-                loading = false,
-                lessons = listOf(
-                Lesson("l1", "2025-10-01 10:00", "Beginner Ride", "Alice"),
-                Lesson("l2", "2025-10-02 14:00", "Trail Basics", "Bob")
-                )
-            )
+private fun LessonCard(lesson: Lesson, onClick: () -> Unit) {
+    val semantic = LocalSemanticColors.current
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+        border = BorderStroke(
+            1.dp,
+            if (lesson.isBookedByMe) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+            else semantic.cardStroke
         )
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(lesson.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                when {
+                    lesson.isBookedByMe -> Badge(containerColor = MaterialTheme.colorScheme.primaryContainer) {
+                        Text("✓ Rezerve", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                    }
+                    lesson.isFull -> Badge(containerColor = MaterialTheme.colorScheme.errorContainer) {
+                        Text("Dolu", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                    }
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.CalendarToday, null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.primary)
+                Text(lesson.date, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Person, null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.secondary)
+                Text(lesson.instructorName, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
     }
 }

@@ -6,7 +6,10 @@ import com.horsegallop.data.remote.dto.AppContentFunctionsDto
 import com.horsegallop.data.remote.dto.HomeDashboardFunctionsDto
 import com.horsegallop.data.remote.dto.HomeRecentActivityFunctionsDto
 import com.horsegallop.data.remote.dto.HomeStatsFunctionsDto
+import com.horsegallop.data.remote.dto.HorseFunctionsDto
 import com.horsegallop.data.remote.dto.LessonFunctionsDto
+import com.horsegallop.data.remote.dto.ReservationFunctionsDto
+import com.horsegallop.data.remote.dto.ReviewFunctionsDto
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.tasks.await
@@ -124,6 +127,132 @@ class AppFunctionsDataSource @Inject constructor(
             settingsLanguageSubtitle = settings["languageSubtitle"] as? String,
             settingsNotificationsSubtitle = settings["notificationsSubtitle"] as? String,
             settingsPrivacySubtitle = settings["privacySubtitle"] as? String
+        )
+    }
+
+    suspend fun submitReview(
+        targetId: String, targetType: String, targetName: String,
+        rating: Int, comment: String
+    ): ReviewFunctionsDto {
+        val result = functions.getHttpsCallable("submitReview").call(
+            hashMapOf(
+                "targetId" to targetId, "targetType" to targetType,
+                "targetName" to targetName, "rating" to rating, "comment" to comment
+            )
+        ).await()
+        val map = result.data as? Map<*, *> ?: error("Invalid response")
+        return ReviewFunctionsDto(
+            id = map["id"] as? String ?: error("No id"),
+            targetId = (map["targetId"] as? String).orEmpty(),
+            targetType = (map["targetType"] as? String).orEmpty(),
+            targetName = (map["targetName"] as? String).orEmpty(),
+            rating = (map["rating"] as? Number)?.toInt() ?: rating,
+            comment = (map["comment"] as? String).orEmpty(),
+            createdAt = (map["createdAt"] as? String).orEmpty(),
+            authorName = (map["authorName"] as? String).orEmpty()
+        )
+    }
+
+    suspend fun getMyReviews(): List<ReviewFunctionsDto> {
+        val result = functions.getHttpsCallable("getMyReviews").call().await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        val items = payload["items"] as? List<*> ?: emptyList<Any?>()
+        return items.mapNotNull { item ->
+            val map = item as? Map<*, *> ?: return@mapNotNull null
+            ReviewFunctionsDto(
+                id = map["id"] as? String ?: return@mapNotNull null,
+                targetId = (map["targetId"] as? String).orEmpty(),
+                targetType = (map["targetType"] as? String).orEmpty(),
+                targetName = (map["targetName"] as? String).orEmpty(),
+                rating = (map["rating"] as? Number)?.toInt() ?: 0,
+                comment = (map["comment"] as? String).orEmpty(),
+                createdAt = (map["createdAt"] as? String).orEmpty(),
+                authorName = (map["authorName"] as? String).orEmpty()
+            )
+        }
+    }
+
+    suspend fun getMyHorses(): List<HorseFunctionsDto> {
+        val result = functions.getHttpsCallable("getMyHorses").call().await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        val items = payload["items"] as? List<*> ?: emptyList<Any?>()
+        return items.mapNotNull { item ->
+            val map = item as? Map<*, *> ?: return@mapNotNull null
+            HorseFunctionsDto(
+                id = map["id"] as? String ?: return@mapNotNull null,
+                name = (map["name"] as? String).orEmpty(),
+                breed = (map["breed"] as? String).orEmpty(),
+                birthYear = (map["birthYear"] as? Number)?.toInt() ?: 0,
+                color = (map["color"] as? String).orEmpty(),
+                gender = (map["gender"] as? String).orEmpty(),
+                weightKg = (map["weightKg"] as? Number)?.toInt() ?: 0,
+                imageUrl = (map["imageUrl"] as? String).orEmpty()
+            )
+        }
+    }
+
+    suspend fun addHorse(
+        name: String, breed: String, birthYear: Int,
+        color: String, gender: String, weightKg: Int
+    ): HorseFunctionsDto {
+        val result = functions.getHttpsCallable("addHorse").call(
+            hashMapOf(
+                "name" to name, "breed" to breed, "birthYear" to birthYear,
+                "color" to color, "gender" to gender, "weightKg" to weightKg
+            )
+        ).await()
+        val map = result.data as? Map<*, *> ?: error("Invalid response")
+        return HorseFunctionsDto(
+            id = map["id"] as? String ?: error("No id"),
+            name = (map["name"] as? String).orEmpty(),
+            breed = (map["breed"] as? String).orEmpty(),
+            birthYear = (map["birthYear"] as? Number)?.toInt() ?: 0,
+            color = (map["color"] as? String).orEmpty(),
+            gender = (map["gender"] as? String).orEmpty(),
+            weightKg = (map["weightKg"] as? Number)?.toInt() ?: 0,
+            imageUrl = (map["imageUrl"] as? String).orEmpty()
+        )
+    }
+
+    suspend fun deleteHorse(horseId: String) {
+        functions.getHttpsCallable("deleteHorse")
+            .call(hashMapOf("horseId" to horseId))
+            .await()
+    }
+
+    suspend fun bookLesson(lessonId: String): ReservationFunctionsDto {
+        val result = functions.getHttpsCallable("bookLesson")
+            .call(hashMapOf("lessonId" to lessonId))
+            .await()
+        val map = result.data as? Map<*, *> ?: error("Invalid response")
+        return mapReservation(map) ?: error("Invalid reservation payload")
+    }
+
+    suspend fun cancelReservation(reservationId: String) {
+        functions.getHttpsCallable("cancelReservation")
+            .call(hashMapOf("reservationId" to reservationId))
+            .await()
+    }
+
+    suspend fun getMyReservations(): List<ReservationFunctionsDto> {
+        val result = functions.getHttpsCallable("getMyReservations").call().await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        val items = payload["items"] as? List<*> ?: emptyList<Any?>()
+        return items.mapNotNull { item ->
+            val map = item as? Map<*, *> ?: return@mapNotNull null
+            mapReservation(map)
+        }
+    }
+
+    private fun mapReservation(map: Map<*, *>): ReservationFunctionsDto? {
+        return ReservationFunctionsDto(
+            id = map["id"] as? String ?: return null,
+            lessonId = (map["lessonId"] as? String).orEmpty(),
+            lessonTitle = (map["lessonTitle"] as? String).orEmpty(),
+            lessonDate = (map["lessonDate"] as? String).orEmpty(),
+            instructorName = (map["instructorName"] as? String).orEmpty(),
+            status = (map["status"] as? String).orEmpty(),
+            createdAt = (map["createdAt"] as? String).orEmpty()
         )
     }
 
