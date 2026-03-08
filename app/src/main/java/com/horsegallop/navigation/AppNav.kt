@@ -268,6 +268,7 @@ fun AppNavHost(
       EmailLoginScreen(
         onBack = { navController.popBackStack() },
         onSignup = { navController.navigate(Dest.Enroll.route) },
+        onForgotPassword = { navController.navigate(Dest.ForgotPassword.route) },
         onSignedIn = {
           navController.navigate(Dest.Home.route) {
             popUpTo(Dest.Login.route) { inclusive = true }
