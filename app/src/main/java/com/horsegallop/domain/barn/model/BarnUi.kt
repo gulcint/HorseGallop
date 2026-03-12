@@ -12,5 +12,9 @@ data class BarnUi(
     val reviewCount: Int = 0,
     val heroImageUrl: String? = null,
     val ownerUserId: String? = null,
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val capacity: Int = 0,
+    val phone: String? = null,
+    val instructors: List<Instructor> = emptyList(),
+    val recentReviews: List<BarnReview> = emptyList()
 )

@@ -46,6 +46,7 @@ import com.horsegallop.feature.onboarding.presentation.OnboardingScreen
 import com.horsegallop.feature.horse.presentation.AddHorseScreen
 import com.horsegallop.feature.horse.presentation.HorseListScreen
 import com.horsegallop.feature.review.presentation.WriteReviewScreen
+import com.horsegallop.feature.notifications.presentation.NotificationsScreen
 import com.horsegallop.feature.schedule.presentation.MyReservationsScreen
 import com.horsegallop.feature.schedule.presentation.ScheduleRoute
 import com.horsegallop.domain.review.model.ReviewTargetType
@@ -88,6 +89,7 @@ sealed class Dest(val route: String) {
   object RideDetail : Dest("rideDetail/{id}") {
     fun routeWithId(id: String): String = "rideDetail/$id"
   }
+  object Notifications : Dest("notifications")
 }
 
 @Composable
@@ -313,6 +315,7 @@ fun AppNavHost(
         onSettings = { navController.navigate(Dest.Settings.route) },
         onEditProfile = { navController.navigate(Dest.ProfileEdit.route) },
         onMyHorses = { navController.navigate(Dest.MyHorses.route) },
+        onNotifications = { navController.navigate(Dest.Notifications.route) },
         onLogout = {
           navController.navigate(Dest.Onboarding.route) {
             popUpTo(Dest.Home.route) { inclusive = true }
@@ -429,6 +432,12 @@ fun AppNavHost(
       BackHandler { navController.popBackStack() }
       com.horsegallop.feature.barn.presentation.BarnsMapViewScreen(
         navController = navController
+      )
+    }
+    composable(Dest.Notifications.route) {
+      BackHandler { navController.popBackStack() }
+      NotificationsScreen(
+        onBack = { navController.popBackStack() }
       )
     }
   }

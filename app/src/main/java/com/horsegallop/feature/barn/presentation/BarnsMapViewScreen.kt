@@ -268,21 +268,20 @@ private fun BarnsMapCanvas(
     val textStyle = MaterialTheme.typography.labelSmall.copy(color = onPrimaryColor, fontWeight = FontWeight.Bold)
     
     Canvas(modifier = Modifier.fillMaxSize()) {
+        val w = this.size.width
+        val h = this.size.height
+        // Always draw the grid for map feel
+        drawGrid(this, w, h, gridColor)
         if (allBarnsBounds.isEmpty()) return@Canvas
-        
+
         val minLat = allBarnsBounds.minOfOrNull { it.lat } ?: 0.0
         val maxLat = allBarnsBounds.maxOfOrNull { it.lat } ?: 1.0
         val minLng = allBarnsBounds.minOfOrNull { it.lng } ?: 0.0
         val maxLng = allBarnsBounds.maxOfOrNull { it.lng } ?: 1.0
-        
-        val w = this.size.width
-        val h = this.size.height
+
         val centerXNorm = 0.5f
         val centerYNorm = 0.5f
-        
-        // Draw Grid
-        drawGrid(this, w, h, gridColor)
-        
+
         groups.forEach { group ->
             val nx = if (maxLng != minLng) ((group.centerLng - minLng) / (maxLng - minLng)).toFloat() else 0.5f
             val ny = if (maxLat != minLat) (1f - ((group.centerLat - minLat) / (maxLat - minLat)).toFloat()) else 0.5f

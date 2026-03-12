@@ -18,16 +18,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,10 +41,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.horsegallop.domain.auth.model.UserProfile
+import com.horsegallop.domain.horse.model.Horse
+import com.horsegallop.domain.home.model.RideSession
 import com.horsegallop.ui.theme.LocalSemanticColors
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 object ProfileTestTags {
     const val EditButton = "profile_edit_button"
@@ -288,5 +296,297 @@ fun formatWeight(weight: Float?): String {
         "${weight.toInt()} kg"
     } else {
         "${weight} kg"
+    }
+}
+
+// ─── Stats Row ───────────────────────────────────────────────────────────────
+
+@Composable
+fun ProfileStatsRow(
+    totalRides: Int,
+    totalKm: Double,
+    totalHours: Double,
+    avgRating: Double,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        StatChip(
+            value = totalRides.toString(),
+            label = "Sürüş",
+            emoji = "🏇",
+            modifier = Modifier.weight(1f)
+        )
+        StatChip(
+            value = String.format(Locale.US, "%.1f", totalKm),
+            label = "km",
+            emoji = "📏",
+            modifier = Modifier.weight(1f)
+        )
+        StatChip(
+            value = String.format(Locale.US, "%.1f", totalHours),
+            label = "Saat",
+            emoji = "⏱",
+            modifier = Modifier.weight(1f)
+        )
+        StatChip(
+            value = if (avgRating > 0.0) String.format(Locale.US, "%.1f", avgRating) else "-",
+            label = "Puan",
+            emoji = "⭐",
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+private fun StatChip(
+    value: String,
+    label: String,
+    emoji: String,
+    modifier: Modifier = Modifier
+) {
+    val semantic = LocalSemanticColors.current
+    Surface(
+        modifier = modifier,
+        color = semantic.cardElevated,
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, semantic.cardStroke),
+        tonalElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(vertical = 10.dp, horizontal = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(
+                text = emoji,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1
+            )
+        }
+    }
+}
+
+// ─── Horses Mini Card ─────────────────────────────────────────────────────────
+
+@Composable
+fun HorsesMiniCard(
+    horses: List<Horse>,
+    onSeeAll: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val semantic = LocalSemanticColors.current
+    ElevatedCard(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = semantic.cardElevated),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 3.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Atlarım",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                TextButton(onClick = onSeeAll) {
+                    Text(
+                        text = "Tümünü Gör",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(Modifier.width(2.dp))
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            if (horses.isEmpty()) {
+                Text(
+                    text = "Henüz at eklemediniz.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                horses.forEach { horse ->
+                    HorseMiniRow(horse = horse)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HorseMiniRow(horse: Horse) {
+    val semantic = LocalSemanticColors.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(semantic.cardSubtle, RoundedCornerShape(10.dp))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Text("🐴", style = MaterialTheme.typography.titleMedium)
+        Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+            Text(
+                text = horse.name,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (horse.breed.isNotBlank()) {
+                Text(
+                    text = horse.breed,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+// ─── Recent Activities Section ────────────────────────────────────────────────
+
+@Composable
+fun RecentActivitiesSection(
+    activities: List<RideSession>,
+    modifier: Modifier = Modifier
+) {
+    val semantic = LocalSemanticColors.current
+    ElevatedCard(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = semantic.cardElevated),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 3.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(
+                text = "Son Aktiviteler",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            if (activities.isEmpty()) {
+                Text(
+                    text = "Henüz sürüş kaydınız yok.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                activities.forEachIndexed { index, ride ->
+                    RecentActivityRow(ride = ride)
+                    if (index < activities.lastIndex) {
+                        HorizontalDivider(
+                            color = semantic.dividerSoft,
+                            thickness = 0.5.dp
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecentActivityRow(ride: RideSession) {
+    val dateLabel = ride.timestamp?.let {
+        SimpleDateFormat("d MMM", Locale.getDefault()).format(it)
+    } ?: "-"
+
+    val durationLabel = buildString {
+        val h = ride.durationMin / 60
+        val m = ride.durationMin % 60
+        if (h > 0) append("${h}s ")
+        append("${m}dk")
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.weight(1f)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.75f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("🏇", style = MaterialTheme.typography.bodySmall)
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                Text(
+                    text = ride.title ?: "Sürüş",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = dateLabel,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(1.dp)) {
+            Text(
+                text = String.format(Locale.US, "%.1f km", ride.distanceKm),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = durationLabel,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }

@@ -98,6 +98,8 @@
     <string name="barn_search_results">%1$d of %2$d barns</string>
     <string name="barn_empty_title">No barns found</string>
     <string name="barn_empty_subtitle">Try adjusting your search or filters</string>
+    <string name="barn_no_barns_title">No barns yet</string>
+    <string name="barn_no_barns_subtitle">Barns and stables will appear here once available</string>
     <string name="barn_clear_filters">Clear Filters</string>
     <string name="barn_filter_cafe">Cafe</string>
     <string name="barn_filter_indoor_arena">Indoor Arena</string>
@@ -362,6 +364,8 @@
     <string name="barn_detail_amenities">Amenities</string>
     <string name="barn_detail_book_now">Book Now</string>
     <string name="barn_detail_top_rated">Top rated</string>
+    <string name="barn_detail_instructors">Instructors</string>
+    <string name="barn_detail_reviews">Reviews</string>
     <string name="unknown_location">Unknown Location</string>
     <string name="label_location">Location</string>
 

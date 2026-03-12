@@ -11,6 +11,11 @@ import com.horsegallop.domain.auth.usecase.GetUserProfileUseCase
 import com.horsegallop.domain.auth.usecase.SignOutUseCase
 import com.horsegallop.domain.auth.usecase.UpdateProfileImageUseCase
 import com.horsegallop.domain.auth.usecase.UpdateUserProfileUseCase
+import com.horsegallop.domain.horse.model.Horse
+import com.horsegallop.domain.horse.usecase.GetMyHorsesUseCase
+import com.horsegallop.domain.home.usecase.GetUserStatsUseCase
+import com.horsegallop.domain.home.usecase.GetRecentActivitiesUseCase
+import com.horsegallop.domain.home.model.RideSession
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,7 +46,16 @@ data class ProfileUiState(
     val errorMessageResId: Int? = null,
     val successMessageResId: Int? = null,
     val isEditSessionActive: Boolean = false,
-    val countryCodes: List<String> = listOf("+90", "+1", "+44", "+49", "+33", "+34", "+39", "+61", "+81", "+86", "+971", "+7")
+    val countryCodes: List<String> = listOf("+90", "+1", "+44", "+49", "+33", "+34", "+39", "+61", "+81", "+86", "+971", "+7"),
+    // Stats dashboard
+    val totalRides: Int = 0,
+    val totalKm: Double = 0.0,
+    val totalHours: Double = 0.0,
+    val avgRating: Double = 0.0,
+    // My Horses (first 2)
+    val myHorses: List<Horse> = emptyList(),
+    // Recent activities (last 3 rides)
+    val recentActivities: List<RideSession> = emptyList()
 )
 
 @HiltViewModel
@@ -50,7 +64,10 @@ class ProfileViewModel @Inject constructor(
     private val getUserProfileUseCase: GetUserProfileUseCase,
     private val updateUserProfileUseCase: UpdateUserProfileUseCase,
     private val updateProfileImageUseCase: UpdateProfileImageUseCase,
-    private val signOutUseCase: SignOutUseCase
+    private val signOutUseCase: SignOutUseCase,
+    private val getMyHorsesUseCase: GetMyHorsesUseCase,
+    private val getUserStatsUseCase: GetUserStatsUseCase,
+    private val getRecentActivitiesUseCase: GetRecentActivitiesUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -58,6 +75,9 @@ class ProfileViewModel @Inject constructor(
 
     init {
         loadProfile()
+        loadHorses()
+        loadStats()
+        loadRecentActivities()
     }
 
     fun loadProfile() {
@@ -81,6 +101,46 @@ class ProfileViewModel @Inject constructor(
                         errorMessageResId = mapProfileErrorRes(e)
                     )
                 }
+            }
+        }
+    }
+
+    private fun loadHorses() {
+        viewModelScope.launch {
+            try {
+                getMyHorsesUseCase().collect { horses ->
+                    _uiState.value = _uiState.value.copy(myHorses = horses.take(2))
+                }
+            } catch (_: Exception) {
+                // Non-critical: leave empty
+            }
+        }
+    }
+
+    private fun loadStats() {
+        val uid = getCurrentUserIdUseCase() ?: return
+        viewModelScope.launch {
+            getUserStatsUseCase(uid).collect { result ->
+                result.onSuccess { stats ->
+                    _uiState.value = _uiState.value.copy(
+                        totalRides = stats.totalRides,
+                        totalKm = stats.totalDistance,
+                        totalHours = stats.totalDurationMin / 60.0
+                    )
+                }
+                // On failure, keep default zeros — non-critical
+            }
+        }
+    }
+
+    private fun loadRecentActivities() {
+        val uid = getCurrentUserIdUseCase() ?: return
+        viewModelScope.launch {
+            getRecentActivitiesUseCase(uid, 3).collect { result ->
+                result.onSuccess { activities ->
+                    _uiState.value = _uiState.value.copy(recentActivities = activities)
+                }
+                // On failure, keep empty list — non-critical
             }
         }
     }

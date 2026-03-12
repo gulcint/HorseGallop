@@ -203,6 +203,7 @@ fun BarnListScreen(
           }
         }
       } else if (uiState.filteredBarns.isEmpty()) {
+        val hasActiveSearch = uiState.selectedFilters.isNotEmpty() || uiState.query.isNotBlank()
         Spacer(modifier = Modifier.height(12.dp))
         Card(
           shape = RoundedCornerShape(24.dp),
@@ -233,21 +234,31 @@ fun BarnListScreen(
               }
             }
             Text(
-              text = stringResource(com.horsegallop.R.string.barn_empty_title),
+              text = stringResource(
+                if (hasActiveSearch) com.horsegallop.R.string.barn_empty_title
+                else com.horsegallop.R.string.barn_no_barns_title
+              ),
               style = MaterialTheme.typography.titleMedium,
               color = MaterialTheme.colorScheme.primary,
               fontWeight = FontWeight.Bold,
               textAlign = TextAlign.Center
             )
             Text(
-              text = stringResource(com.horsegallop.R.string.barn_empty_subtitle),
+              text = stringResource(
+                if (hasActiveSearch) com.horsegallop.R.string.barn_empty_subtitle
+                else com.horsegallop.R.string.barn_no_barns_subtitle
+              ),
               style = MaterialTheme.typography.bodyMedium,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
               textAlign = TextAlign.Center
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (hasActiveSearch) {
               OutlinedButton(onClick = viewModel::clearFilters) {
-                Text(text = stringResource(com.horsegallop.R.string.barn_clear_filters), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                Text(
+                  text = stringResource(com.horsegallop.R.string.barn_clear_filters),
+                  color = MaterialTheme.colorScheme.primary,
+                  style = MaterialTheme.typography.labelLarge
+                )
               }
             }
           }

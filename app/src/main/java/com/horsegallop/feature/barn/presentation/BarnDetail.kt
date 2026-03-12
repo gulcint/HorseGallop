@@ -8,11 +8,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,7 +31,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.horsegallop.domain.barn.model.BarnReview
 import com.horsegallop.domain.barn.model.BarnWithLocation
+import com.horsegallop.domain.barn.model.Instructor
 import com.horsegallop.R
 import com.horsegallop.core.feedback.LocalAppFeedbackController
 import com.valentinilk.shimmer.shimmer
@@ -411,6 +416,18 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                 }
             }
 
+            if (barn.barn.instructors.isNotEmpty()) {
+                item {
+                    BarnInstructorsSection(instructors = barn.barn.instructors)
+                }
+            }
+
+            if (barn.barn.recentReviews.isNotEmpty()) {
+                item {
+                    BarnReviewsSection(reviews = barn.barn.recentReviews)
+                }
+            }
+
             item { Spacer(modifier = Modifier.height(32.dp)) }
         }
 
@@ -633,6 +650,223 @@ fun ReservationContent(onConfirm: () -> Unit) {
         ) {
             Text(stringResource(id = com.horsegallop.R.string.confirm_booking))
         }
+    }
+}
+
+@Composable
+fun BarnInstructorsSection(instructors: List<Instructor>) {
+    val semantic = LocalSemanticColors.current
+    Surface(
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        color = semantic.cardElevated,
+        tonalElevation = 2.dp,
+        border = androidx.compose.foundation.BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Text(
+                text = stringResource(id = R.string.barn_detail_instructors),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(instructors) { instructor ->
+                    InstructorCard(instructor = instructor)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun InstructorCard(instructor: Instructor) {
+    val semantic = LocalSemanticColors.current
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = semantic.cardSubtle,
+        border = androidx.compose.foundation.BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
+        ),
+        modifier = Modifier.width(130.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            if (instructor.photoUrl != null) {
+                AsyncImage(
+                    model = instructor.photoUrl,
+                    contentDescription = instructor.name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Person,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
+            }
+            Text(
+                text = instructor.name,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.8f)
+            ) {
+                Text(
+                    text = instructor.specialty,
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Star,
+                    contentDescription = null,
+                    tint = semantic.ratingStar,
+                    modifier = Modifier.size(13.dp)
+                )
+                Text(
+                    text = String.format(Locale.US, "%.1f", instructor.rating),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun BarnReviewsSection(reviews: List<BarnReview>) {
+    val semantic = LocalSemanticColors.current
+    Surface(
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        color = semantic.cardElevated,
+        tonalElevation = 2.dp,
+        border = androidx.compose.foundation.BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Text(
+                text = stringResource(id = R.string.barn_detail_reviews),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                reviews.take(3).forEachIndexed { index, review ->
+                    BarnReviewItem(review = review)
+                    if (index < reviews.take(3).lastIndex) {
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                            thickness = 1.dp
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun BarnReviewItem(review: BarnReview) {
+    val semantic = LocalSemanticColors.current
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = review.authorName.first().uppercase(),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+                Column {
+                    Text(
+                        text = review.authorName,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = review.dateLabel,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                repeat(5) { index ->
+                    Icon(
+                        imageVector = if (index < review.rating) Icons.Filled.Star else Icons.Filled.StarBorder,
+                        contentDescription = null,
+                        tint = if (index < review.rating) semantic.ratingStar
+                        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+            }
+        }
+        Text(
+            text = review.comment,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 

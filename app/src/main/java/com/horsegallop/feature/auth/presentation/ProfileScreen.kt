@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -71,6 +72,7 @@ fun ProfileScreen(
     onLogout: () -> Unit,
     onEditProfile: () -> Unit,
     onMyHorses: () -> Unit = {},
+    onNotifications: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -135,6 +137,12 @@ fun ProfileScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onNotifications) {
+                        Icon(
+                            imageVector = Icons.Filled.Notifications,
+                            contentDescription = "Bildirimler"
+                        )
+                    }
                     IconButton(onClick = onSettings) {
                         Icon(
                             imageVector = Icons.Filled.Settings,
@@ -176,6 +184,28 @@ fun ProfileScreen(
                         profile = profile,
                         fullName = fullName,
                         onPhotoClick = openImagePicker
+                    )
+                }
+
+                item {
+                    ProfileStatsRow(
+                        totalRides = state.totalRides,
+                        totalKm = state.totalKm,
+                        totalHours = state.totalHours,
+                        avgRating = state.avgRating
+                    )
+                }
+
+                item {
+                    HorsesMiniCard(
+                        horses = state.myHorses,
+                        onSeeAll = onMyHorses
+                    )
+                }
+
+                item {
+                    RecentActivitiesSection(
+                        activities = state.recentActivities
                     )
                 }
 
