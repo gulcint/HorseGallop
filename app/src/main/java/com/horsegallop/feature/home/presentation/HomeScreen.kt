@@ -4,6 +4,7 @@ package com.horsegallop.feature.home.presentation
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,6 +29,7 @@ import com.horsegallop.core.components.ActivityItem
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
 import com.horsegallop.core.components.HomeDashboardSkeleton
+import com.horsegallop.domain.horse.model.HorseTip
 import com.horsegallop.ui.theme.LocalSemanticColors
 
 @Composable
@@ -142,7 +144,7 @@ private fun HomeDashboard(
       }
       
       item {
-        TipsSection()
+        TipsSection(tip = uiState.currentTip)
       }
     }
   }
@@ -395,7 +397,8 @@ private fun RecentActivitySection(
 
 
 @Composable
-private fun TipsSection() {
+private fun TipsSection(tip: HorseTip? = null) {
+  val semantic = LocalSemanticColors.current
   Column {
     Text(
       text = stringResource(id = com.horsegallop.R.string.riding_tips_title),
@@ -403,36 +406,53 @@ private fun TipsSection() {
       fontWeight = FontWeight.Bold,
       modifier = Modifier.padding(top = dimensionResource(id = com.horsegallop.R.dimen.spacing_sm), bottom = dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
     )
-    
+
     Card(
-      modifier = Modifier
-        .fillMaxWidth()
-        .clickable { /* Navigate to tips section */ },
-      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-      shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg))
+      modifier = Modifier.fillMaxWidth(),
+      colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+      shape = RoundedCornerShape(dimensionResource(id = com.horsegallop.R.dimen.radius_lg)),
+      border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke)
     ) {
       Row(
         modifier = Modifier.padding(dimensionResource(id = com.horsegallop.R.dimen.padding_card_md)),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
       ) {
-        Icon(
-          Icons.Filled.Lightbulb,
-          contentDescription = null,
-          tint = MaterialTheme.colorScheme.onSecondaryContainer,
-          modifier = Modifier.size(dimensionResource(id = com.horsegallop.R.dimen.icon_md))
-        )
+        Box(
+          modifier = Modifier
+            .size(40.dp)
+            .background(
+              MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+              CircleShape
+            ),
+          contentAlignment = Alignment.Center
+        ) {
+          Icon(
+            Icons.Filled.Lightbulb,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
+          )
+        }
         Column(modifier = Modifier.weight(1f)) {
           Text(
-            text = stringResource(id = com.horsegallop.R.string.tip_safe_riding_title),
+            text = if (tip != null) tip.title else stringResource(id = com.horsegallop.R.string.tip_safe_riding_title),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSecondaryContainer
+            color = MaterialTheme.colorScheme.onSurface
           )
+          Spacer(modifier = Modifier.height(4.dp))
           Text(
-            text = stringResource(id = com.horsegallop.R.string.tip_safe_riding_subtitle),
+            text = if (tip != null) tip.body else stringResource(id = com.horsegallop.R.string.tip_safe_riding_subtitle),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+          )
+          Spacer(modifier = Modifier.height(6.dp))
+          Text(
+            text = tip?.categoryLabel ?: stringResource(id = com.horsegallop.R.string.horse_tip_default_category),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Medium
           )
         }
       }

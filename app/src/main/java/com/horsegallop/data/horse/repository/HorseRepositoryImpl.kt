@@ -4,9 +4,11 @@ import com.horsegallop.data.remote.dto.HorseFunctionsDto
 import com.horsegallop.data.remote.functions.AppFunctionsDataSource
 import com.horsegallop.domain.horse.model.Horse
 import com.horsegallop.domain.horse.model.HorseGender
+import com.horsegallop.domain.horse.model.HorseTip
 import com.horsegallop.domain.horse.repository.HorseRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import java.util.Locale
 import javax.inject.Inject
 
 class HorseRepositoryImpl @Inject constructor(
@@ -35,6 +37,20 @@ class HorseRepositoryImpl @Inject constructor(
 
     override suspend fun deleteHorse(horseId: String): Result<Unit> = runCatching {
         functionsDataSource.deleteHorse(horseId)
+    }
+
+    override suspend fun getBreeds(locale: String): Result<List<String>> = runCatching {
+        val dtos = functionsDataSource.getBreeds(locale)
+        val isTurkish = locale.startsWith("tr", ignoreCase = true)
+        dtos.map { breed ->
+            if (isTurkish && breed.nameTr.isNotBlank()) breed.nameTr else breed.nameEn
+        }
+    }
+
+    override suspend fun getHorseTips(locale: String): Result<List<HorseTip>> = runCatching {
+        functionsDataSource.getHorseTips(locale).map { dto ->
+            HorseTip(id = dto.id, title = dto.title, body = dto.body, category = dto.category)
+        }
     }
 
     private fun HorseFunctionsDto.toDomain() = Horse(

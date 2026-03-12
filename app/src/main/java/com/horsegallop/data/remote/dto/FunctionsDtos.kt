@@ -80,6 +80,21 @@ data class ReservationFunctionsDto(
     val createdAt: String = ""
 )
 
+data class HorseTipFunctionsDto(
+    val id: String,
+    val title: String,
+    val body: String,
+    val category: String = "",
+    val locale: String = "en"
+)
+
+data class BreedFunctionsDto(
+    val id: String,
+    val nameEn: String,
+    val nameTr: String,
+    val sortOrder: Int = 99
+)
+
 data class AppContentFunctionsDto(
     val locale: String,
     val homeHeroTitle: String? = null,

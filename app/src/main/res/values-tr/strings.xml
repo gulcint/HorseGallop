@@ -108,6 +108,7 @@
     <string name="riding_tips_title">Binicilik İpuçları</string>
     <string name="tip_safe_riding_title">Güvenli Binicilik</string>
     <string name="tip_safe_riding_subtitle">Her zaman kask takın ve güvenlik ekipmanlarınızı kontrol edin.</string>
+    <string name="horse_tip_default_category">At Bilgisi</string>
     <string name="barn_search_placeholder">Search barns...</string>
     <string name="search_placeholder">Search...</string>
     <string name="barn_map_title">Map View</string>

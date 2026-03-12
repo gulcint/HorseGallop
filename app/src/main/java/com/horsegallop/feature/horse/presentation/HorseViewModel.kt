@@ -6,8 +6,10 @@ import com.horsegallop.domain.horse.model.Horse
 import com.horsegallop.domain.horse.model.HorseGender
 import com.horsegallop.domain.horse.usecase.AddHorseUseCase
 import com.horsegallop.domain.horse.usecase.DeleteHorseUseCase
+import com.horsegallop.domain.horse.usecase.GetBreedsUseCase
 import com.horsegallop.domain.horse.usecase.GetMyHorsesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,13 +20,17 @@ import kotlinx.coroutines.launch
 class HorseViewModel @Inject constructor(
     private val getMyHorsesUseCase: GetMyHorsesUseCase,
     private val addHorseUseCase: AddHorseUseCase,
-    private val deleteHorseUseCase: DeleteHorseUseCase
+    private val deleteHorseUseCase: DeleteHorseUseCase,
+    private val getBreedsUseCase: GetBreedsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HorseUiState())
     val uiState: StateFlow<HorseUiState> = _uiState.asStateFlow()
 
-    init { loadHorses() }
+    init {
+        loadHorses()
+        loadBreeds()
+    }
 
     private fun loadHorses() {
         viewModelScope.launch {
@@ -36,6 +42,16 @@ class HorseViewModel @Inject constructor(
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(loading = false, error = e.localizedMessage)
             }
+        }
+    }
+
+    private fun loadBreeds() {
+        val locale = Locale.getDefault().language
+        viewModelScope.launch {
+            getBreedsUseCase(locale).onSuccess { breeds ->
+                _uiState.value = _uiState.value.copy(breeds = breeds)
+            }
+            // Non-critical: fallback hardcoded list shown if backend fails
         }
     }
 
@@ -79,5 +95,6 @@ data class HorseUiState(
     val error: String? = null,
     val saving: Boolean = false,
     val savedSuccess: Boolean = false,
-    val saveError: String? = null
+    val saveError: String? = null,
+    val breeds: List<String> = emptyList()
 )

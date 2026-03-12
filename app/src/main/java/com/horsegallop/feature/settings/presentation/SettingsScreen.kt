@@ -207,7 +207,7 @@ fun SettingsScreen(
                         showDeleteConfirm = false
                         viewModel.requestAccountDeletion(onAccountDeleted)
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.buttonColors(containerColor = semantic.destructive)
                 ) {
                     Text(text = stringResource(id = R.string.delete))
                 }
@@ -327,6 +327,7 @@ private fun SettingsActionRow(
     enabled: Boolean,
     onClick: () -> Unit
 ) {
+    val semantic = LocalSemanticColors.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -347,7 +348,7 @@ private fun SettingsActionRow(
         }
         Spacer(modifier = Modifier.width(12.dp))
         val buttonColors = if (isDestructive) {
-            ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            ButtonDefaults.buttonColors(containerColor = semantic.destructive)
         } else {
             ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         }

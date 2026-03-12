@@ -3,10 +3,12 @@ package com.horsegallop.data.remote.functions
 import com.google.firebase.functions.FirebaseFunctions
 import com.horsegallop.data.remote.dto.BarnFunctionsDto
 import com.horsegallop.data.remote.dto.AppContentFunctionsDto
+import com.horsegallop.data.remote.dto.BreedFunctionsDto
 import com.horsegallop.data.remote.dto.HomeDashboardFunctionsDto
 import com.horsegallop.data.remote.dto.HomeRecentActivityFunctionsDto
 import com.horsegallop.data.remote.dto.HomeStatsFunctionsDto
 import com.horsegallop.data.remote.dto.HorseFunctionsDto
+import com.horsegallop.data.remote.dto.HorseTipFunctionsDto
 import com.horsegallop.data.remote.dto.LessonFunctionsDto
 import com.horsegallop.data.remote.dto.ReservationFunctionsDto
 import com.horsegallop.data.remote.dto.ReviewFunctionsDto
@@ -86,6 +88,41 @@ class AppFunctionsDataSource @Inject constructor(
                 durationMin = (map["durationMin"] as? Number)?.toInt() ?: 0,
                 level = (map["level"] as? String).orEmpty(),
                 price = (map["price"] as? Number)?.toDouble() ?: 0.0
+            )
+        }
+    }
+
+    suspend fun getHorseTips(locale: String): List<HorseTipFunctionsDto> {
+        val result = functions.getHttpsCallable("getHorseTips")
+            .call(hashMapOf("locale" to locale))
+            .await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        val items = payload["items"] as? List<*> ?: emptyList<Any?>()
+        return items.mapNotNull { item ->
+            val map = item as? Map<*, *> ?: return@mapNotNull null
+            HorseTipFunctionsDto(
+                id = map["id"] as? String ?: return@mapNotNull null,
+                title = (map["title"] as? String).orEmpty(),
+                body = (map["body"] as? String).orEmpty(),
+                category = (map["category"] as? String).orEmpty(),
+                locale = (map["locale"] as? String).orEmpty()
+            )
+        }
+    }
+
+    suspend fun getBreeds(locale: String): List<BreedFunctionsDto> {
+        val result = functions.getHttpsCallable("getBreeds")
+            .call(hashMapOf("locale" to locale))
+            .await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        val items = payload["items"] as? List<*> ?: emptyList<Any?>()
+        return items.mapNotNull { item ->
+            val map = item as? Map<*, *> ?: return@mapNotNull null
+            BreedFunctionsDto(
+                id = map["id"] as? String ?: return@mapNotNull null,
+                nameEn = (map["nameEn"] as? String).orEmpty(),
+                nameTr = (map["nameTr"] as? String).orEmpty(),
+                sortOrder = (map["sortOrder"] as? Number)?.toInt() ?: 99
             )
         }
     }

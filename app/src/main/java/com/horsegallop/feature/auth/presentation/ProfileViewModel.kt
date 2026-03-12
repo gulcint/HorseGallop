@@ -96,10 +96,17 @@ class ProfileViewModel @Inject constructor(
                     )
                 }.onFailure { e ->
                     FeedbackErrorMapper.logTechnicalError("ProfileViewModel.loadProfile", e)
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        errorMessageResId = mapProfileErrorRes(e)
-                    )
+                    val rawMsg = (e.message ?: e.localizedMessage ?: "").lowercase(Locale.US)
+                    val isNotFound = rawMsg.contains("not found") || rawMsg.contains("not_found") || rawMsg.contains("not-found")
+                    if (isNotFound) {
+                        // Firebase Function not yet deployed — show empty profile silently
+                        _uiState.value = _uiState.value.copy(isLoading = false)
+                    } else {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            errorMessageResId = mapProfileErrorRes(e)
+                        )
+                    }
                 }
             }
         }

@@ -89,6 +89,7 @@
     <string name="riding_tips_title">Riding Tips</string>
     <string name="tip_safe_riding_title">Safe Riding Practices</string>
     <string name="tip_safe_riding_subtitle">Always wear proper safety gear</string>
+    <string name="horse_tip_default_category">Horse Fact</string>
     
     <!-- Barn Screen -->
     <string name="barn_search_placeholder">Search barns...</string>

@@ -1,6 +1,6 @@
 import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import type { BarnDto, BarnListDto, LessonDto, LessonListDto } from "./contracts";
+import type { BarnDto, BarnListDto, LessonDto, LessonListDto, HorseTipDto, HorseTipListDto, BreedDto, BreedListDto } from "./contracts";
 import { buildHomeDashboard } from "./home-service";
 import {
   parseLimit,
@@ -324,6 +324,49 @@ export const getLessons = onCall({ region: "us-central1" }, async (request): Pro
   }
 
   items.sort((a, b) => a.date.localeCompare(b.date));
+  return { items };
+});
+
+export const getHorseTips = onCall({ region: "us-central1" }, async (request): Promise<HorseTipListDto> => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
+  }
+
+  const locale = parseOptionalString((request.data || {}).locale, 10) || "en";
+
+  const normalizeHorseTip = (id: string, data: FirebaseFirestore.DocumentData): HorseTipDto => ({
+    id,
+    title: normalizeString(data.title, 200),
+    body: normalizeString(data.body, 600),
+    category: normalizeString(data.category, 50),
+    locale: normalizeString(data.locale, 10),
+  });
+
+  let snapshot = await db.collection("horse_tips").where("locale", "==", locale).get();
+  if (snapshot.empty && locale !== "en") {
+    snapshot = await db.collection("horse_tips").where("locale", "==", "en").get();
+  }
+
+  const items = snapshot.docs.map((doc) => normalizeHorseTip(doc.id, doc.data()));
+  return { items };
+});
+
+export const getBreeds = onCall({ region: "us-central1" }, async (request): Promise<BreedListDto> => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
+  }
+
+  const snapshot = await db.collection("horse_breeds").orderBy("sortOrder").get();
+  const items: BreedDto[] = snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      nameEn: normalizeString(data.nameEn, 80),
+      nameTr: normalizeString(data.nameTr, 80),
+      sortOrder: typeof data.sortOrder === "number" ? data.sortOrder : 99,
+    };
+  });
+
   return { items };
 });
 

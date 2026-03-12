@@ -6,6 +6,8 @@ import com.horsegallop.domain.auth.usecase.GetCurrentUserIdUseCase
 import com.horsegallop.domain.home.usecase.GetRecentActivitiesUseCase
 import com.horsegallop.domain.home.usecase.GetUserStatsUseCase
 import com.horsegallop.domain.content.usecase.GetAppContentUseCase
+import com.horsegallop.domain.horse.model.HorseTip
+import com.horsegallop.domain.horse.usecase.GetHorseTipsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +23,8 @@ class HomeViewModel @Inject constructor(
   private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase,
   private val getRecentActivitiesUseCase: GetRecentActivitiesUseCase,
   private val getUserStatsUseCase: GetUserStatsUseCase,
-  private val getAppContentUseCase: GetAppContentUseCase
+  private val getAppContentUseCase: GetAppContentUseCase,
+  private val getHorseTipsUseCase: GetHorseTipsUseCase
 ) : ViewModel() {
 
   private val _ui = MutableStateFlow(HomeUiState())
@@ -33,6 +36,7 @@ class HomeViewModel @Inject constructor(
 
   fun refresh(limit: Int = 5) {
     loadDynamicContent()
+    loadHorseTips()
     val uid = getCurrentUserIdUseCase()
     if (uid == null) {
       _ui.update {
@@ -48,6 +52,17 @@ class HomeViewModel @Inject constructor(
     _ui.update { it.copy(loading = true, error = null) }
     loadStats(uid)
     loadRecentActivities(uid, limit)
+  }
+
+  private fun loadHorseTips() {
+    val locale = Locale.getDefault().language
+    viewModelScope.launch {
+      getHorseTipsUseCase(locale).onSuccess { tips ->
+        val selected = tips.randomOrNull()
+        _ui.update { it.copy(currentTip = selected, allTips = tips) }
+      }
+      // Non-critical: ignore failure, static fallback will show
+    }
   }
 
   private fun loadDynamicContent() {
@@ -198,7 +213,9 @@ data class HomeUiState(
   val totalCalories: String = "0",
   val favoriteBarn: String = "-",
   val activityDistribution: List<Pair<String?, Float>> = emptyList(),
-  val dailyDistance: List<Float> = emptyList()
+  val dailyDistance: List<Float> = emptyList(),
+  val currentTip: HorseTip? = null,
+  val allTips: List<HorseTip> = emptyList()
 )
 
 data class ActivityUi(

@@ -50,3 +50,26 @@ export type LessonDto = {
 export type LessonListDto = {
   items: LessonDto[];
 };
+
+export type HorseTipDto = {
+  id: string;
+  title: string;
+  body: string;
+  category: string;
+  locale: string;
+};
+
+export type HorseTipListDto = {
+  items: HorseTipDto[];
+};
+
+export type BreedDto = {
+  id: string;
+  nameEn: string;
+  nameTr: string;
+  sortOrder: number;
+};
+
+export type BreedListDto = {
+  items: BreedDto[];
+};

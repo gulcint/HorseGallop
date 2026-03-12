@@ -50,11 +50,14 @@ fun AddHorseScreen(
     val uiState by viewModel.uiState.collectAsState()
     val semantic = LocalSemanticColors.current
 
-    val breedOptions = listOf(
-        "Arabian", "Thoroughbred", "Holsteiner", "KWPB", "Hanoverian",
-        "Trakehner", "Lusitano", "Andalusian", "Pony", "Selle Français",
-        "Quarter Horse", "Mustang", "Akhal-Teke", "Turkish Horse", "Other"
-    )
+    // Breeds loaded dynamically from backend — fallback list shown while loading
+    val breedOptions = uiState.breeds.ifEmpty {
+        listOf(
+            "Arabian", "Thoroughbred", "Holsteiner", "KWPB", "Hanoverian",
+            "Trakehner", "Lusitano", "Andalusian", "Pony", "Selle Français",
+            "Quarter Horse", "Mustang", "Akhal-Teke", "Turkish Horse", "Other"
+        )
+    }
     var name by remember { mutableStateOf("") }
     var selectedBreed by remember { mutableStateOf("") }
     var breedExpanded by remember { mutableStateOf(false) }

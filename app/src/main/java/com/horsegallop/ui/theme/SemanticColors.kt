@@ -48,9 +48,11 @@ val LocalSemanticColors = staticCompositionLocalOf {
 
 fun semanticColorsFrom(colorScheme: ColorScheme, isDark: Boolean): SemanticColors {
     // Semantic tones derived from the White Elegance + Saddle Brown palette
-    val successTone = if (isDark) Color(0xFF6FCF97) else Color(0xFF27AE60)   // clean green
-    val warningTone = if (isDark) Color(0xFFFFB74D) else SaddleBrown          // saddle brown warmth
-    val infoTone    = if (isDark) Color(0xFF90A4AE) else Color(0xFF455A64)    // cool blue-grey
+    val successTone     = if (isDark) Color(0xFF6FCF97) else Color(0xFF27AE60)   // clean green
+    val warningTone     = if (isDark) Color(0xFFFFB74D) else SaddleBrown          // saddle brown warmth
+    val infoTone        = if (isDark) Color(0xFF90A4AE) else Color(0xFF455A64)    // cool blue-grey
+    // Replace harsh red with warm amber — keeps "caution" feel without red
+    val destructiveTone = if (isDark) Color(0xFFE8A000) else Color(0xFFB45309)    // warm amber/burnt sienna
 
     return SemanticColors(
         screenBase = colorScheme.background,
@@ -58,7 +60,7 @@ fun semanticColorsFrom(colorScheme: ColorScheme, isDark: Boolean): SemanticColor
         success = successTone,
         warning = warningTone,
         info = infoTone,
-        destructive = colorScheme.error,
+        destructive = destructiveTone,
         badgeNeutral = colorScheme.surfaceContainerHigh,
         badgePositive = if (isDark) colorScheme.tertiaryContainer else colorScheme.secondaryContainer,
         badgeWarning = if (isDark) colorScheme.primaryContainer else colorScheme.primaryContainer.copy(alpha = 0.85f),
@@ -82,11 +84,11 @@ fun semanticColorsFrom(colorScheme: ColorScheme, isDark: Boolean): SemanticColor
         calloutInfoContainer = colorScheme.secondaryContainer,
         calloutSuccessContainer = colorScheme.tertiaryContainer,
         calloutWarningContainer = colorScheme.primaryContainer,
-        calloutErrorContainer = colorScheme.errorContainer,
+        calloutErrorContainer = destructiveTone.copy(alpha = if (isDark) 0.22f else 0.12f),
         calloutOnContainer = colorScheme.onSurface,
         calloutBorderInfo = infoTone,
         calloutBorderSuccess = successTone,
         calloutBorderWarning = warningTone,
-        calloutBorderError = colorScheme.error
+        calloutBorderError = destructiveTone
     )
 }

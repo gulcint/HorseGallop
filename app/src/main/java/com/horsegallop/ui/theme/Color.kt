@@ -39,10 +39,11 @@ val LightColorScheme = lightColorScheme(
     tertiaryContainer      = Parchment,
     onTertiaryContainer    = WarmCharcoal,
 
-    error                  = Color(0xFFBA1A1A),
+    // Warm amber replaces red — brand-aligned "caution" without harsh red
+    error                  = Color(0xFFB45309),   // Burnt sienna / warm amber
     onError                = Color.White,
-    errorContainer         = Color(0xFFFFDAD6),
-    onErrorContainer       = Color(0xFF410002),
+    errorContainer         = Color(0xFFFFF3E0),   // Very light amber tint
+    onErrorContainer       = Color(0xFF2D1300),   // Deep brown on amber
 
     background             = GhostWhite,
     onBackground           = WarmCharcoal,
@@ -87,10 +88,11 @@ val DarkColorScheme = darkColorScheme(
     tertiaryContainer      = Color(0xFF494536),
     onTertiaryContainer    = Color(0xFFE6E3D5),
 
-    error                  = Color(0xFFFFB4AB),
-    onError                = Color(0xFF690005),
-    errorContainer         = Color(0xFF93000A),
-    onErrorContainer       = Color(0xFFFFDAD6),
+    // Warm amber replaces red in dark mode too
+    error                  = Color(0xFFE8A000),   // Warm amber for dark mode
+    onError                = Color(0xFF2D1300),   // Deep brown on amber
+    errorContainer         = Color(0xFF3D2200),   // Dark amber container
+    onErrorContainer       = Color(0xFFFFF3E0),   // Light amber tint text
 
     background             = Color(0xFF131318),
     onBackground           = Color(0xFFE5E1E9),
