@@ -454,4 +454,36 @@
     <string name="training_plan_locked">Pro Only</string>
     <string name="training_pro_required">This plan requires HorseGallop Pro.</string>
     <string name="training_update_failed">Could not update training task.</string>
+
+    <!-- Schedule / Booking -->
+    <string name="schedule_no_sessions_title">No sessions yet</string>
+    <string name="schedule_no_sessions_subtitle">Upcoming lessons and sessions will appear here</string>
+    <string name="booking_success">Reservation successfully created!</string>
+    <string name="my_reservations_count">My Reservations (%1$d)</string>
+    <string name="lesson_full_label">Full</string>
+    <string name="lesson_booked_label">Reserved</string>
+    <string name="lesson_booked_badge">✓ Booked</string>
+    <string name="lesson_full_badge">Full</string>
+    <string name="lesson_duration_min">%1$d min</string>
+    <string name="lesson_level_label">Level: %1$s</string>
+    <string name="lesson_spots_full">No spots left</string>
+    <string name="lesson_spots_available">%1$d / %2$d spots available</string>
+
+    <!-- Horse breeds -->
+    <string name="horse_breed_label">Breed</string>
+    <string name="horse_breed_arab">Arabian</string>
+    <string name="horse_breed_english">Thoroughbred</string>
+    <string name="horse_breed_holsteiner">Holsteiner</string>
+    <string name="horse_breed_kwpb">KWPB</string>
+    <string name="horse_breed_hannoveraner">Hanoverian</string>
+    <string name="horse_breed_trakehner">Trakehner</string>
+    <string name="horse_breed_lusitano">Lusitano</string>
+    <string name="horse_breed_andaluz">Andalusian</string>
+    <string name="horse_breed_pony">Pony</string>
+    <string name="horse_breed_selle_francais">Selle Français</string>
+    <string name="horse_breed_quarter">Quarter Horse</string>
+    <string name="horse_breed_mustang">Mustang</string>
+    <string name="horse_breed_akhal_teke">Akhal-Teke</string>
+    <string name="horse_breed_turk">Turkish Horse</string>
+    <string name="horse_breed_other">Other</string>
 </resources>

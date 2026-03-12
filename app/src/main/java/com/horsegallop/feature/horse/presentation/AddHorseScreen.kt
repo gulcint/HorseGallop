@@ -50,8 +50,14 @@ fun AddHorseScreen(
     val uiState by viewModel.uiState.collectAsState()
     val semantic = LocalSemanticColors.current
 
+    val breedOptions = listOf(
+        "Arabian", "Thoroughbred", "Holsteiner", "KWPB", "Hanoverian",
+        "Trakehner", "Lusitano", "Andalusian", "Pony", "Selle Français",
+        "Quarter Horse", "Mustang", "Akhal-Teke", "Turkish Horse", "Other"
+    )
     var name by remember { mutableStateOf("") }
-    var breed by remember { mutableStateOf("") }
+    var selectedBreed by remember { mutableStateOf("") }
+    var breedExpanded by remember { mutableStateOf(false) }
     var birthYear by remember { mutableStateOf("") }
     var color by remember { mutableStateOf("") }
     var weightKg by remember { mutableStateOf("") }
@@ -101,15 +107,32 @@ fun AddHorseScreen(
                 shape = MaterialTheme.shapes.medium
             )
 
-            OutlinedTextField(
-                value = breed,
-                onValueChange = { breed = it },
-                label = { Text("Irk") },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Örn: Arap, İngiliz, Holsteiner") },
-                singleLine = true,
-                shape = MaterialTheme.shapes.medium
-            )
+            ExposedDropdownMenuBox(
+                expanded = breedExpanded,
+                onExpandedChange = { breedExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = selectedBreed,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Irk") },
+                    placeholder = { Text("Seçiniz") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = breedExpanded) },
+                    modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                    shape = MaterialTheme.shapes.medium
+                )
+                ExposedDropdownMenu(
+                    expanded = breedExpanded,
+                    onDismissRequest = { breedExpanded = false }
+                ) {
+                    breedOptions.forEach { breed ->
+                        DropdownMenuItem(
+                            text = { Text(breed) },
+                            onClick = { selectedBreed = breed; breedExpanded = false }
+                        )
+                    }
+                }
+            }
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
@@ -173,7 +196,7 @@ fun AddHorseScreen(
             Button(
                 onClick = {
                     if (name.isBlank()) { nameError = true; return@Button }
-                    viewModel.addHorse(name, breed, birthYear, color, selectedGender, weightKg)
+                    viewModel.addHorse(name, selectedBreed, birthYear, color, selectedGender, weightKg)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.saving

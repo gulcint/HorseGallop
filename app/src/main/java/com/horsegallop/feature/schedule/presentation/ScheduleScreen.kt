@@ -1,6 +1,7 @@
 package com.horsegallop.feature.schedule.presentation
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
@@ -85,10 +87,11 @@ fun ScheduleScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val snackbarHostState = remember { SnackbarHostState() }
 
+    val bookingSuccessMsg = stringResource(R.string.booking_success)
     LaunchedEffect(uiState.bookingSuccess) {
         if (uiState.bookingSuccess) {
             snackbarHostState.showSnackbar(
-                message = "Rezervasyon başarıyla oluşturuldu!",
+                message = bookingSuccessMsg,
                 duration = SnackbarDuration.Short
             )
             selectedLesson = null
@@ -143,22 +146,46 @@ fun ScheduleScreen(
 
             uiState.isEmpty -> {
                 Box(
-                    modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp),
+                    modifier = Modifier.fillMaxSize().padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
-                        border = BorderStroke(1.dp, semantic.cardStroke)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        Box(
+                            modifier = Modifier
+                                .size(88.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                                    CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text(text = stringResource(R.string.schedule_empty_title))
-                            Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+                            Icon(
+                                Icons.Default.CalendarToday,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(40.dp)
+                            )
+                        }
+                        Text(
+                            text = stringResource(R.string.schedule_no_sessions_title),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.schedule_no_sessions_subtitle),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        OutlinedButton(onClick = onRetry) {
+                            Text(stringResource(R.string.retry))
                         }
                     }
                 }
@@ -180,7 +207,7 @@ fun ScheduleScreen(
                                 Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.size(8.dp))
                                 Text(
-                                    "Rezervasyonlarım (${uiState.reservations.size})",
+                                    stringResource(R.string.my_reservations_count, uiState.reservations.size),
                                     fontWeight = FontWeight.Medium
                                 )
                             }
@@ -219,11 +246,11 @@ fun ScheduleScreen(
                 if (lesson.durationMin > 0) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Schedule, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.tertiary)
-                        Text("${lesson.durationMin} dakika", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.lesson_duration_min, lesson.durationMin), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
                 if (lesson.level.isNotBlank()) {
-                    Text("Seviye: ${lesson.level}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.lesson_level_label, lesson.level), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 if (lesson.price > 0) {
                     Text("₺${lesson.price.toInt()}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
@@ -231,7 +258,8 @@ fun ScheduleScreen(
                 if (lesson.spotsTotal > 0) {
                     val spotsColor = if (lesson.isFull) MaterialTheme.colorScheme.error else semantic.success
                     Text(
-                        text = if (lesson.isFull) "Kontenjan dolu" else "${lesson.spotsAvailable}/${lesson.spotsTotal} yer mevcut",
+                        text = if (lesson.isFull) stringResource(R.string.lesson_spots_full)
+                               else stringResource(R.string.lesson_spots_available, lesson.spotsAvailable, lesson.spotsTotal),
                         style = MaterialTheme.typography.bodySmall,
                         color = spotsColor,
                         fontWeight = FontWeight.Medium
@@ -252,12 +280,12 @@ fun ScheduleScreen(
                         ) {
                             Icon(Icons.Default.CheckCircle, null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.size(8.dp))
-                            Text("Rezervasyon Yapıldı", color = semantic.success)
+                            Text(stringResource(R.string.lesson_booked_label), color = semantic.success)
                         }
                     }
                     lesson.isFull -> {
                         Button(onClick = {}, modifier = Modifier.fillMaxWidth(), enabled = false) {
-                            Text("Kontenjan Dolu")
+                            Text(stringResource(R.string.lesson_full_label))
                         }
                     }
                     else -> {
@@ -274,7 +302,7 @@ fun ScheduleScreen(
                                 )
                                 Spacer(Modifier.size(8.dp))
                             }
-                            Text("Rezervasyon Yap")
+                            Text(stringResource(R.string.book_lesson))
                         }
                     }
                 }
@@ -309,10 +337,10 @@ private fun LessonCard(lesson: Lesson, onClick: () -> Unit) {
                 Text(lesson.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 when {
                     lesson.isBookedByMe -> Badge(containerColor = MaterialTheme.colorScheme.primaryContainer) {
-                        Text("✓ Rezerve", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                        Text(stringResource(R.string.lesson_booked_badge), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                     }
                     lesson.isFull -> Badge(containerColor = MaterialTheme.colorScheme.errorContainer) {
-                        Text("Dolu", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                        Text(stringResource(R.string.lesson_full_badge), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }

@@ -52,6 +52,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -62,6 +69,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -281,15 +290,32 @@ fun RideTrackingContent(
                     )
                 }
                 item {
+                    val pulseTransition = rememberInfiniteTransition(label = "start_pulse")
+                    val pulseScale by pulseTransition.animateFloat(
+                        initialValue = 1f,
+                        targetValue = if (hasLocationPermission) 1.03f else 1f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(900, easing = FastOutSlowInEasing),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = "scale"
+                    )
                     Button(
                         onClick = onToggleRide,
                         enabled = hasLocationPermission,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp)
+                            .height(56.dp)
+                            .scale(pulseScale)
                             .testTag(RideTestTags.StartButton),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(18.dp)
                     ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.DirectionsRun,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.size(8.dp))
                         Text(
                             text = stringResource(id = R.string.start_ride),
                             style = MaterialTheme.typography.titleMedium
@@ -973,42 +999,64 @@ private fun LiveActions(
     onFinishRide: () -> Unit
 ) {
     val semantic = LocalSemanticColors.current
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Column(
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
+        // Finish button — Saddle Brown (primary), full width
         Button(
             onClick = onFinishRide,
             modifier = Modifier
-                .weight(1f)
-                .height(52.dp)
+                .fillMaxWidth()
+                .height(56.dp)
                 .testTag(RideTestTags.FinishButton),
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            shape = RoundedCornerShape(18.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
         ) {
+            Icon(
+                Icons.Filled.Check,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+            Spacer(modifier = Modifier.size(8.dp))
             Text(
                 text = stringResource(id = R.string.ride_finish_and_save),
                 style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onError
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
+        // Auto detection toggle — separate row, no cramping
         Card(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(14.dp),
             colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
             border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = stringResource(id = R.string.auto_ride_detection),
-                    style = MaterialTheme.typography.labelMedium
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(id = R.string.auto_ride_detection),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = if (autoDetect) "On — detects ride start automatically"
+                               else "Off — start ride manually",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Spacer(modifier = Modifier.size(12.dp))
                 Switch(
                     checked = autoDetect,
                     onCheckedChange = onSetAutoDetect
