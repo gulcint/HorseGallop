@@ -80,11 +80,9 @@ class HomeViewModel @Inject constructor(
             )
           }
         }.onFailure { error ->
-          _ui.update {
-            it.copy(
-              error = error.localizedMessage ?: "Failed to load stats"
-            )
-          }
+          // Backend not yet deployed or unavailable — fail silently with defaults
+          com.horsegallop.core.debug.AppLog.w("HomeViewModel", "Stats unavailable: ${error.message}")
+          _ui.update { it.copy(loading = false) }
         }
       }
     }
@@ -130,10 +128,11 @@ class HomeViewModel @Inject constructor(
             )
           }
         }.onFailure { e ->
+          // Backend not yet deployed or unavailable — show empty state without error card
+          com.horsegallop.core.debug.AppLog.w("HomeViewModel", "Activities unavailable: ${e.message}")
           _ui.update {
             it.copy(
               loading = false,
-              error = e.localizedMessage ?: "Failed to load activities",
               isEmpty = true
             )
           }
