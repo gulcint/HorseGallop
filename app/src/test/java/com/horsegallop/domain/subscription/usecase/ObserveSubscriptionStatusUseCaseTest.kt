@@ -20,6 +20,7 @@ class ObserveSubscriptionStatusUseCaseTest {
             override suspend fun getSubscriptionStatus(): Result<SubscriptionStatus> = Result.success(flow.value)
             override suspend fun startSubscriptionPurchase(productId: String): Result<Unit> = Result.success(Unit)
             override suspend fun refreshEntitlements(): Result<SubscriptionStatus> = Result.success(flow.value)
+            override suspend fun restorePurchases(): Result<SubscriptionStatus> = Result.success(flow.value)
         }
         val useCase = ObserveSubscriptionStatusUseCase(repository)
 
