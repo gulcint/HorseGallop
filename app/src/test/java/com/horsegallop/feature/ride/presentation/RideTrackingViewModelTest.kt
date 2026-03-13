@@ -19,6 +19,7 @@ import com.horsegallop.domain.ride.model.RideMetrics
 import com.horsegallop.domain.ride.model.RideSyncStatus
 import com.horsegallop.domain.ride.model.StopRideResult
 import com.horsegallop.domain.ride.repository.RideRepository
+import com.horsegallop.domain.ride.usecase.ObserveAutoStopSignalUseCase
 import com.horsegallop.domain.ride.usecase.ObserveIsRidingUseCase
 import com.horsegallop.domain.ride.usecase.ObservePendingRideSyncCountUseCase
 import com.horsegallop.domain.ride.usecase.ObserveRideMetricsUseCase
@@ -197,6 +198,7 @@ class RideTrackingViewModelTest {
             observePendingRideSyncCountUseCase = ObservePendingRideSyncCountUseCase(fakeRideRepository),
             retryPendingRideSyncUseCase = RetryPendingRideSyncUseCase(fakeRideRepository),
             setAutoDetectUseCase = SetAutoDetectUseCase(fakeRideRepository),
+            observeAutoStopSignalUseCase = ObserveAutoStopSignalUseCase(fakeRideRepository),
             barnRepository = fakeBarnRepository,
             getUserProfileUseCase = GetUserProfileUseCase(fakeProfileRepository),
             getCurrentUserIdUseCase = GetCurrentUserIdUseCase(fakeAuthRepository),
@@ -244,6 +246,7 @@ private class FakeRideRepository : RideRepository {
     override val isRiding: Flow<Boolean> = isRidingFlow
     override val rideMetrics: Flow<RideMetrics> = metricsFlow
     override val pendingSyncCount: Flow<Int> = pendingSyncCountFlow
+    override val autoStopSignal: Flow<Unit> = kotlinx.coroutines.flow.emptyFlow()
 
     override suspend fun startRide(weightKg: Float, rideType: String?) {
         lastStartRideType = rideType
@@ -279,7 +282,7 @@ private class FakeBarnRepository : BarnRepository {
         )
     )
 
-    override fun getBarns(): Flow<List<BarnWithLocation>> = flowOf(barns)
+    override fun getBarns(lat: Double?, lng: Double?): Flow<List<BarnWithLocation>> = flowOf(barns)
 
     override fun getBarnById(barnId: String): Flow<BarnWithLocation?> =
         flowOf(barns.firstOrNull { it.barn.id == barnId })

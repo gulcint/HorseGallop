@@ -273,6 +273,7 @@ fun BarnListScreen(
             items(uiState.filteredBarns) { barnWithLocation ->
                 BarnCard(
                     barn = barnWithLocation.barn,
+                    distanceKm = barnWithLocation.distanceKm.takeIf { it < Double.MAX_VALUE },
                     onClick = { onBarnClick(barnWithLocation.barn) },
                     onFavoriteClick = { viewModel.toggleFavorite(barnWithLocation.barn.id) }
                 )
@@ -283,7 +284,7 @@ fun BarnListScreen(
 }
 
 @Composable
-fun BarnCard(barn: BarnUi, onClick: () -> Unit, onFavoriteClick: () -> Unit) {
+fun BarnCard(barn: BarnUi, distanceKm: Double? = null, onClick: () -> Unit, onFavoriteClick: () -> Unit) {
     val semantic = LocalSemanticColors.current
     Card(
         modifier = Modifier
@@ -346,6 +347,14 @@ fun BarnCard(barn: BarnUi, onClick: () -> Unit, onFavoriteClick: () -> Unit) {
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        if (distanceKm != null) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "· ${if (distanceKm < 1.0) "${(distanceKm * 1000).toInt()} m" else "${distanceKm.toInt()} km"}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 }
                 

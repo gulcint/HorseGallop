@@ -92,6 +92,7 @@ private class FakeRideRepository : RideRepository {
     override val isRiding: Flow<Boolean> = isRidingFlow
     override val rideMetrics: Flow<RideMetrics> = rideMetricsFlow
     override val pendingSyncCount: Flow<Int> = pendingSyncCountFlow
+    override val autoStopSignal: Flow<Unit> = kotlinx.coroutines.flow.emptyFlow()
 
     override suspend fun startRide(weightKg: Float, rideType: String?) = Unit
 

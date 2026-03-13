@@ -112,6 +112,7 @@ jobs:
 
       - name: Upload Lint Reports
         if: ${{ always() }}
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: lint-debug-reports

@@ -1,6 +1,6 @@
 import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import type { BarnDto, BarnListDto, LessonDto, LessonListDto, HorseTipDto, HorseTipListDto, BreedDto, BreedListDto } from "./contracts";
+import type { BarnDto, BarnInstructorDto, BarnReviewDto, BarnListDto, LessonDto, LessonListDto, HorseTipDto, HorseTipListDto, BreedDto, BreedListDto } from "./contracts";
 import { buildHomeDashboard } from "./home-service";
 import {
   parseLimit,
@@ -153,7 +153,12 @@ function parseDateMs(value: unknown): number {
   return 0;
 }
 
-function normalizeBarnDto(id: string, data: FirebaseFirestore.DocumentData): BarnDto {
+function normalizeBarnDto(
+  id: string,
+  data: FirebaseFirestore.DocumentData,
+  instructors: BarnInstructorDto[] = [],
+  reviews: BarnReviewDto[] = []
+): BarnDto {
   return {
     id,
     name: normalizeString(data.name, 120),
@@ -167,6 +172,11 @@ function normalizeBarnDto(id: string, data: FirebaseFirestore.DocumentData): Bar
       : [],
     rating: typeof data.rating === "number" ? data.rating : 0,
     reviewCount: typeof data.reviewCount === "number" ? data.reviewCount : 0,
+    heroImageUrl: typeof data.heroImageUrl === "string" ? data.heroImageUrl : undefined,
+    capacity: typeof data.capacity === "number" ? data.capacity : undefined,
+    phone: typeof data.phone === "string" ? data.phone : undefined,
+    instructors,
+    reviews,
   };
 }
 
@@ -298,11 +308,40 @@ export const getBarnDetail = onCall({ region: "us-central1" }, async (request): 
   }
 
   const id = parseRequiredId((request.data || {}).id, "id");
-  const doc = await db.collection("barns").doc(id).get();
+  const [doc, instructorSnap, reviewSnap] = await Promise.all([
+    db.collection("barns").doc(id).get(),
+    db.collection("barns").doc(id).collection("instructors").orderBy("rating", "desc").limit(5).get(),
+    db.collection("reviews")
+      .where("targetId", "==", id)
+      .where("targetType", "==", "barn")
+      .orderBy("createdAt", "desc")
+      .limit(5)
+      .get(),
+  ]);
   if (!doc.exists) {
     throw new HttpsError("not-found", "Barn not found");
   }
-  return normalizeBarnDto(doc.id, doc.data() || {});
+  const instructors: BarnInstructorDto[] = instructorSnap.docs.map((d) => {
+    const x = d.data();
+    return {
+      id: d.id,
+      name: normalizeString(x.name, 120),
+      photoUrl: typeof x.photoUrl === "string" ? x.photoUrl : "",
+      specialty: normalizeString(x.specialty, 80),
+      rating: typeof x.rating === "number" ? x.rating : 0,
+    };
+  });
+  const reviews: BarnReviewDto[] = reviewSnap.docs.map((d) => {
+    const x = d.data();
+    return {
+      id: d.id,
+      authorName: normalizeString(x.authorName, 120),
+      rating: typeof x.rating === "number" ? x.rating : 0,
+      comment: normalizeString(x.comment, 500),
+      dateLabel: normalizeString(x.dateLabel, 40),
+    };
+  });
+  return normalizeBarnDto(doc.id, doc.data() || {}, instructors, reviews);
 });
 
 export const getLessons = onCall({ region: "us-central1" }, async (request): Promise<LessonListDto> => {

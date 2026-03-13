@@ -8,7 +8,7 @@ import javax.inject.Inject
 class GetBarnsUseCase @Inject constructor(
     private val repository: BarnRepository
 ) {
-    operator fun invoke(): Flow<List<BarnWithLocation>> {
-        return repository.getBarns()
+    operator fun invoke(lat: Double? = null, lng: Double? = null): Flow<List<BarnWithLocation>> {
+        return repository.getBarns(lat, lng)
     }
 }

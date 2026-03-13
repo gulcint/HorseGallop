@@ -1,6 +1,7 @@
 package com.horsegallop.feature.ride.presentation
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,6 +47,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -118,6 +122,11 @@ fun RideDetailScreen(
                     }
                     item {
                         RideStatsCard(ride = ride)
+                    }
+                    if (ride.pathPoints.any { it.altitudeM != 0f }) {
+                        item {
+                            ElevationProfileCard(pathPoints = ride.pathPoints)
+                        }
                     }
                     if (!ride.rideType.isNullOrBlank()) {
                         item {
@@ -572,6 +581,93 @@ private fun DetailGaitDot(color: Color, label: String) {
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Medium
         )
+    }
+}
+
+@Composable
+private fun ElevationProfileCard(pathPoints: List<GeoPoint>) {
+    val semantic = LocalSemanticColors.current
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val outlineColor = MaterialTheme.colorScheme.outline
+
+    val altitudes = remember(pathPoints) { pathPoints.map { it.altitudeM } }
+    val minAlt = remember(altitudes) { altitudes.minOrNull() ?: 0f }
+    val maxAlt = remember(altitudes) { altitudes.maxOrNull() ?: 0f }
+    val altRange = (maxAlt - minAlt).coerceAtLeast(1f)
+
+    Card(
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+        border = BorderStroke(1.dp, semantic.cardStroke)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Rakım Profili",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "↑ ${maxAlt.toInt()} m  ↓ ${minAlt.toInt()} m",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = primaryColor
+                )
+            }
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(72.dp)
+            ) {
+                val w = size.width
+                val h = size.height
+                val n = (pathPoints.size - 1).coerceAtLeast(1)
+                val linePath = androidx.compose.ui.graphics.Path()
+                pathPoints.forEachIndexed { i, point ->
+                    val x = w * i / n
+                    val y = h - h * (point.altitudeM - minAlt) / altRange
+                    if (i == 0) linePath.moveTo(x, y) else linePath.lineTo(x, y)
+                }
+                val fillPath = androidx.compose.ui.graphics.Path().apply {
+                    addPath(linePath)
+                    lineTo(w, h)
+                    lineTo(0f, h)
+                    close()
+                }
+                drawPath(
+                    fillPath,
+                    brush = Brush.verticalGradient(
+                        listOf(primaryColor.copy(alpha = 0.22f), primaryColor.copy(alpha = 0.03f)),
+                        startY = 0f, endY = h
+                    )
+                )
+                drawPath(
+                    linePath,
+                    color = primaryColor,
+                    style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("0 km", style = MaterialTheme.typography.labelSmall, color = outlineColor)
+                Text(
+                    text = String.format(Locale.getDefault(), "%.1f km", pathPoints.size * 0.002f),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = outlineColor
+                )
+            }
+        }
     }
 }
 

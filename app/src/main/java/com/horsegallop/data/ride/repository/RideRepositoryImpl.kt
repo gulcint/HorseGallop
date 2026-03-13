@@ -10,6 +10,7 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority
 import androidx.core.content.ContextCompat
 import com.horsegallop.core.debug.AppLog
+import com.horsegallop.core.util.haversineKm
 import com.horsegallop.data.remote.dto.GeoPointDto
 import com.horsegallop.data.remote.dto.StartRideRequestDto
 import com.horsegallop.data.remote.dto.StopRideRequestDto
@@ -22,7 +23,9 @@ import com.horsegallop.domain.ride.repository.RideRepository
 import com.horsegallop.domain.ride.util.GaitThresholds
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.util.UUID
@@ -53,7 +56,11 @@ class RideRepositoryImpl @Inject constructor(
     override val rideMetrics = _rideMetrics.asStateFlow()
     override val pendingSyncCount: Flow<Int> = stopSyncOrchestrator.pendingSyncCount
 
+    private val _autoStopSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    override val autoStopSignal: Flow<Unit> = _autoStopSignal.asSharedFlow()
+
     private var isAutoDetectEnabled = false
+    private var stillnessStartMillis: Long? = null
 
     private var locationCallback: LocationCallback? = null
     private var lastLocationTimeMillis: Long? = null
@@ -86,6 +93,7 @@ class RideRepositoryImpl @Inject constructor(
         speedSum = 0.0
         maxSpeed = 0.0
         speedWindow.clear()
+        stillnessStartMillis = null
         // Clear previous path
         _rideMetrics.value = RideMetrics(pathPoints = emptyList())
         currentRideId = try {
@@ -207,7 +215,7 @@ class RideRepositoryImpl @Inject constructor(
                 _rideMetrics.update { cur ->
                     val lastPoint = cur.pathPoints.lastOrNull()
                     val distanceDeltaKm = if (lastPoint != null) {
-                        distanceKm(
+                        haversineKm(
                             lastPoint.latitude,
                             lastPoint.longitude,
                             lat,
@@ -267,6 +275,20 @@ class RideRepositoryImpl @Inject constructor(
                         accumulatedHorseCalories += horseKcalPerHour * hoursDelta
                     }
 
+                    // Auto-stop: 5 min stillness detection (speed below walk threshold)
+                    if (isAutoDetectEnabled) {
+                        if (smoothedSpeed < GaitThresholds.WALK_MAX_KMH * 0.3f) {
+                            if (stillnessStartMillis == null) {
+                                stillnessStartMillis = now
+                            } else if (now - stillnessStartMillis!! >= 5 * 60 * 1000L) {
+                                _autoStopSignal.tryEmit(Unit)
+                                stillnessStartMillis = null
+                            }
+                        } else {
+                            stillnessStartMillis = null
+                        }
+                    }
+
                     val newPoint = GeoPoint(lat, lng, smoothedSpeed, altM)
                     val updatedPath = cur.pathPoints + newPoint
 
@@ -321,24 +343,6 @@ class RideRepositoryImpl @Inject constructor(
         fusedLocationClient.removeLocationUpdates(callback)
         locationCallback = null
         lastLocationTimeMillis = null
-    }
-
-    private fun distanceKm(
-        lat1: Double,
-        lon1: Double,
-        lat2: Double,
-        lon2: Double
-    ): Double {
-        val radius = 6371.0
-        val dLat = Math.toRadians(lat2 - lat1)
-        val dLon = Math.toRadians(lon2 - lon1)
-        val rLat1 = Math.toRadians(lat1)
-        val rLat2 = Math.toRadians(lat2)
-        val a = sin(dLat / 2) * sin(dLat / 2) +
-            cos(rLat1) * cos(rLat2) *
-            sin(dLon / 2) * sin(dLon / 2)
-        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-        return radius * c
     }
 
     private fun downsamplePath(points: List<GeoPoint>, maxPoints: Int): List<GeoPoint> {

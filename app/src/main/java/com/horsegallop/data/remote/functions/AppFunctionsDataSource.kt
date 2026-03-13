@@ -2,6 +2,8 @@ package com.horsegallop.data.remote.functions
 
 import com.google.firebase.functions.FirebaseFunctions
 import com.horsegallop.data.remote.dto.BarnFunctionsDto
+import com.horsegallop.data.remote.dto.BarnInstructorFunctionsDto
+import com.horsegallop.data.remote.dto.BarnReviewFunctionsDto
 import com.horsegallop.data.remote.dto.AppContentFunctionsDto
 import com.horsegallop.data.remote.dto.BreedFunctionsDto
 import com.horsegallop.data.remote.dto.HomeDashboardFunctionsDto
@@ -53,8 +55,9 @@ class AppFunctionsDataSource @Inject constructor(
         )
     }
 
-    suspend fun getBarns(): List<BarnFunctionsDto> {
-        val result = functions.getHttpsCallable("getBarns").call().await()
+    suspend fun getBarns(lat: Double? = null, lng: Double? = null): List<BarnFunctionsDto> {
+        val params = if (lat != null && lng != null) hashMapOf("lat" to lat, "lng" to lng) else null
+        val result = functions.getHttpsCallable("getBarns").call(params).await()
         val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
         val items = payload["items"] as? List<*> ?: emptyList<Any?>()
         return items.mapNotNull { item ->
@@ -297,6 +300,28 @@ class AppFunctionsDataSource @Inject constructor(
     }
 
     private fun mapBarn(map: Map<*, *>): BarnFunctionsDto? {
+        val instructors = (map["instructors"] as? List<*>)?.mapNotNull { item ->
+            val m = item as? Map<*, *> ?: return@mapNotNull null
+            BarnInstructorFunctionsDto(
+                id = m["id"] as? String ?: return@mapNotNull null,
+                name = (m["name"] as? String).orEmpty(),
+                photoUrl = (m["photoUrl"] as? String).orEmpty(),
+                specialty = (m["specialty"] as? String).orEmpty(),
+                rating = (m["rating"] as? Number)?.toDouble() ?: 0.0
+            )
+        } ?: emptyList()
+
+        val reviews = (map["reviews"] as? List<*>)?.mapNotNull { item ->
+            val m = item as? Map<*, *> ?: return@mapNotNull null
+            BarnReviewFunctionsDto(
+                id = m["id"] as? String ?: return@mapNotNull null,
+                authorName = (m["authorName"] as? String).orEmpty(),
+                rating = (m["rating"] as? Number)?.toInt() ?: 5,
+                comment = (m["comment"] as? String).orEmpty(),
+                dateLabel = (m["dateLabel"] as? String).orEmpty()
+            )
+        } ?: emptyList()
+
         return BarnFunctionsDto(
             id = map["id"] as? String ?: return null,
             name = (map["name"] as? String).orEmpty(),
@@ -310,7 +335,9 @@ class AppFunctionsDataSource @Inject constructor(
             reviewCount = (map["reviewCount"] as? Number)?.toInt() ?: 0,
             heroImageUrl = map["heroImageUrl"] as? String,
             capacity = (map["capacity"] as? Number)?.toInt() ?: 0,
-            phone = map["phone"] as? String
+            phone = map["phone"] as? String,
+            instructors = instructors,
+            reviews = reviews
         )
     }
 }

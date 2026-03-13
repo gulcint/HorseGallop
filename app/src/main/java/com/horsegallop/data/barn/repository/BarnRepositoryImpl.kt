@@ -1,5 +1,6 @@
 package com.horsegallop.data.barn.repository
 
+import com.horsegallop.core.util.haversineKm
 import com.horsegallop.data.remote.functions.AppFunctionsDataSource
 import com.horsegallop.domain.barn.model.BarnReview
 import com.horsegallop.domain.barn.model.BarnUi
@@ -20,9 +21,14 @@ class BarnRepositoryImpl @Inject constructor(
 
     private val cachedBarns = MutableStateFlow<List<BarnWithLocation>>(emptyList())
 
-    override fun getBarns(): Flow<List<BarnWithLocation>> = flow {
+    override fun getBarns(lat: Double?, lng: Double?): Flow<List<BarnWithLocation>> = flow {
         try {
-            val remote = functionsDataSource.getBarns().map { dto ->
+            val remote = functionsDataSource.getBarns(lat, lng).map { dto ->
+                val distKm = if (lat != null && lng != null && dto.lat != 0.0 && dto.lng != 0.0) {
+                    haversineKm(lat, lng, dto.lat, dto.lng)
+                } else {
+                    Double.MAX_VALUE
+                }
                 BarnWithLocation(
                     barn = BarnUi(
                         id = dto.id,
@@ -38,8 +44,15 @@ class BarnRepositoryImpl @Inject constructor(
                     ),
                     lat = dto.lat,
                     lng = dto.lng,
-                    amenities = dto.amenities.toSet()
+                    amenities = dto.amenities.toSet(),
+                    distanceKm = distKm
                 )
+            }.let { barns ->
+                if (lat != null && lng != null) {
+                    barns.sortedBy { it.distanceKm }
+                } else {
+                    barns
+                }
             }
             cachedBarns.value = remote
             emit(remote)
@@ -49,17 +62,18 @@ class BarnRepositoryImpl @Inject constructor(
     }
 
     override fun getBarnById(barnId: String): Flow<BarnWithLocation?> = flow {
+        // Emit cached snapshot first (no instructors/reviews yet — coming from detail call)
         val fromCache = cachedBarns.value.find { it.barn.id == barnId }
-        if (fromCache != null) {
-            emit(fromCache.copy(barn = fromCache.barn.copy(
-                instructors = mockInstructors,
-                recentReviews = mockReviews
-            )))
-            return@flow
-        }
+        if (fromCache != null) emit(fromCache)
 
         try {
             val dto = functionsDataSource.getBarnDetail(barnId)
+            val instructors = dto.instructors.map { i ->
+                Instructor(id = i.id, name = i.name, photoUrl = i.photoUrl.ifBlank { null }, specialty = i.specialty, rating = i.rating)
+            }
+            val reviews = dto.reviews.map { r ->
+                BarnReview(id = r.id, authorName = r.authorName, rating = r.rating, comment = r.comment, dateLabel = r.dateLabel)
+            }
             emit(
                 BarnWithLocation(
                     barn = BarnUi(
@@ -75,9 +89,9 @@ class BarnRepositoryImpl @Inject constructor(
                         heroImageUrl = dto.heroImageUrl,
                         capacity = dto.capacity,
                         phone = dto.phone,
-                        isFavorite = false,
-                        instructors = mockInstructors,
-                        recentReviews = mockReviews
+                        isFavorite = fromCache?.barn?.isFavorite ?: false,
+                        instructors = instructors,
+                        recentReviews = reviews
                     ),
                     lat = dto.lat,
                     lng = dto.lng,
@@ -85,7 +99,7 @@ class BarnRepositoryImpl @Inject constructor(
                 )
             )
         } catch (_: Exception) {
-            emit(null)
+            if (fromCache == null) emit(null)
         }
     }
 

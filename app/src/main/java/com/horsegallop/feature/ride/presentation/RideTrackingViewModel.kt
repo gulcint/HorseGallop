@@ -9,6 +9,7 @@ import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.barn.repository.BarnRepository
 import com.horsegallop.domain.content.usecase.GetAppContentUseCase
 import com.horsegallop.domain.ride.model.RideSyncStatus
+import com.horsegallop.domain.ride.usecase.ObserveAutoStopSignalUseCase
 import com.horsegallop.domain.ride.usecase.ObserveIsRidingUseCase
 import com.horsegallop.domain.ride.usecase.ObservePendingRideSyncCountUseCase
 import com.horsegallop.domain.ride.usecase.ObserveRideMetricsUseCase
@@ -38,6 +39,7 @@ class RideTrackingViewModel @Inject constructor(
     private val observePendingRideSyncCountUseCase: ObservePendingRideSyncCountUseCase,
     private val retryPendingRideSyncUseCase: RetryPendingRideSyncUseCase,
     private val setAutoDetectUseCase: SetAutoDetectUseCase,
+    private val observeAutoStopSignalUseCase: ObserveAutoStopSignalUseCase,
     private val barnRepository: BarnRepository,
     private val getUserProfileUseCase: GetUserProfileUseCase,
     private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase,
@@ -106,6 +108,20 @@ class RideTrackingViewModel @Inject constructor(
 
         loadUserProfileWeight()
         loadDynamicContent()
+
+        // Auto-stop: show dialog when stillness signal fires
+        observeAutoStopSignalUseCase()
+            .onEach { _uiState.update { it.copy(showAutoStopDialog = true) } }
+            .launchIn(viewModelScope)
+    }
+
+    fun dismissAutoStopDialog() {
+        _uiState.update { it.copy(showAutoStopDialog = false) }
+    }
+
+    fun confirmAutoStop() {
+        _uiState.update { it.copy(showAutoStopDialog = false) }
+        finishRide()
     }
 
     fun onRideTypeSelected(rideType: RideType) {

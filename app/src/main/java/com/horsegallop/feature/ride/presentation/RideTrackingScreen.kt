@@ -145,6 +145,24 @@ fun RideTrackingScreen(
         viewModel.clearError()
     }
 
+    if (state.showAutoStopDialog) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissAutoStopDialog,
+            title = { Text("Binişi Tamamla?") },
+            text = { Text("5 dakikadır hareket tespit edilmedi. Binişi tamamlamak ister misin?") },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = viewModel::confirmAutoStop) {
+                    Text("Evet, Bitir")
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = viewModel::dismissAutoStopDialog) {
+                    Text("Devam Et")
+                }
+            }
+        )
+    }
+
     Scaffold(
         containerColor = semantic.screenBase
     ) { innerPadding ->
@@ -290,10 +308,11 @@ fun RideTrackingContent(
                     )
                 }
                 item {
+                    val canStart = hasLocationPermission && state.selectedBarn != null
                     val pulseTransition = rememberInfiniteTransition(label = "start_pulse")
                     val pulseScale by pulseTransition.animateFloat(
                         initialValue = 1f,
-                        targetValue = if (hasLocationPermission) 1.03f else 1f,
+                        targetValue = if (canStart) 1.03f else 1f,
                         animationSpec = infiniteRepeatable(
                             animation = tween(900, easing = FastOutSlowInEasing),
                             repeatMode = RepeatMode.Reverse
@@ -302,11 +321,11 @@ fun RideTrackingContent(
                     )
                     Button(
                         onClick = onToggleRide,
-                        enabled = hasLocationPermission,
+                        enabled = canStart,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp)
-                            .scale(pulseScale)
+                            .scale(if (canStart) pulseScale else 1f)
                             .testTag(RideTestTags.StartButton),
                         shape = RoundedCornerShape(18.dp)
                     ) {
