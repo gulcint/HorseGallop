@@ -915,16 +915,23 @@ interface TjkRaceDayResponse {
 }
 
 async function scrapeTjkRaceDay(dateStr: string, cityId: number): Promise<TjkRaceDayResponse> {
-  // dateStr expected as DD/MM/YYYY to match tjk.org parameter
-  const url = `https://www.tjk.org/TR/YarisSever/Info/Page/GunlukYarisSonuclari` +
-    `?SehirId=${cityId}&QueryParameter_Tarih=${encodeURIComponent(dateStr)}&SehirAdi=${encodeURIComponent(TJK_CITIES[cityId] ?? "")}`;
+  // Fetch the AJAX endpoint for a specific city — this returns the full race data for that city.
+  // Verified URL pattern from tjk.org inspection (13/03/2026).
+  const cityName = TJK_CITIES[cityId] ?? "";
+  const url =
+    `https://www.tjk.org/TR/YarisSever/Info/Sehir/GunlukYarisSonuclari` +
+    `?SehirId=${cityId}` +
+    `&QueryParameter_Tarih=${encodeURIComponent(dateStr)}` +
+    `&SehirAdi=${encodeURIComponent(cityName)}` +
+    `&Era=today`;
 
   const response = await fetch(url, {
     headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; HorseGallopApp/1.0)",
-      "Accept-Language": "tr-TR,tr;q=0.9",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml",
+      "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.8",
+      "Referer": "https://www.tjk.org/",
     },
-    timeout: 10000,
   } as Record<string, unknown>);
 
   if (!response.ok) {
@@ -935,33 +942,99 @@ async function scrapeTjkRaceDay(dateStr: string, cityId: number): Promise<TjkRac
   const $ = cheerio.load(html);
   const races: TjkRaceEntry[] = [];
 
-  // TJK race result pages contain a table per race.
-  // Each race section has a header with race number/title/distance/surface/time,
-  // followed by a results table with columns: position, horse, jockey, trainer, weight, time.
-  $(".race-result-table, table.table-race, .kosu-sonuc").each((_idx, raceEl) => {
-    const header = $(raceEl).find(".race-header, .kosu-baslik, thead tr").first();
-    const raceNoText = header.find(".race-no, .kosu-no, td:nth-child(1)").first().text().trim();
-    const raceNo = parseInt(raceNoText.replace(/[^0-9]/g, ""), 10) || (_idx + 1);
-    const raceTitle = header.find(".race-title, .kosu-adi, td:nth-child(2)").first().text().trim();
-    const distance = header.find(".distance, .mesafe, td:nth-child(3)").first().text().trim();
-    const surface = header.find(".surface, .pist, td:nth-child(4)").first().text().trim();
-    const startTime = header.find(".start-time, .saat, td:nth-child(5)").first().text().trim();
+  // ── Confirmed HTML structure (verified 13/03/2026) ──────────────────────────
+  //
+  // <div class="races-panes races-panes{SehirId}">
+  //   <div>   ← one div per race
+  //     <h3 class="race-no">
+  //       <a href="#223638" id="anc223638">1. Koşu 14.30</a>
+  //     </h3>
+  //     <table summary="Kosular" class="tablesorter">
+  //       <thead><tr>
+  //         <th>Forma</th><th>S</th><th>At İsmi</th><th>Yaş</th>
+  //         <th>Orijin</th><th>Sıklet</th><th>Jokey</th><th>Sahip</th>
+  //         <th>Antrenör</th><th>Derece</th>...
+  //       </tr></thead>
+  //       <tbody>
+  //         <tr class="odd|even">
+  //           <td class="gunluk-GunlukYarisSonuclari-FormaKodu">…</td>
+  //           <td class="gunluk-GunlukYarisSonuclari-SONUCNO">1</td>
+  //           <td class="gunluk-GunlukYarisSonuclari-AtAdi3"><a>DİLŞAHKAYA(1)</a></td>
+  //           <td class="gunluk-GunlukYarisSonuclari-Yas">4y k k</td>
+  //           <td class="gunluk-GunlukYarisSonuclari-Baba">…</td>
+  //           <td class="gunluk-GunlukYarisSonuclari-Kilo">58</td>
+  //           <td class="gunluk-GunlukYarisSonuclari-JokeAdi"><a>Y.GÖKÇE</a></td>
+  //           <td class="gunluk-GunlukYarisSonuclari-SahipAdi"><a>ELİF KAYA</a></td>
+  //           <td class="gunluk-GunlukYarisSonuclari-AntronorAdi"><a>RAM. KAYA</a></td>
+  //           <td class="gunluk-GunlukYarisSonuclari-Derece">1.34.43</td>
+  //           …
+  //         </tr>
+  //       </tbody>
+  //     </table>
+  //   </div>
+  // </div>
 
+  // Find the races-panes container (class contains "races-panes")
+  const racesPanes = $(`[class*="races-panes${cityId}"], .races-panes`).first();
+  const container = racesPanes.length ? racesPanes : $("body");
+
+  // Each direct child div of races-panes is one race
+  container.children("div").each((_idx, raceDiv) => {
+    const $raceDiv = $(raceDiv);
+
+    // ── Race header: "1. Koşu 14.30" ──────────────────────────────────────
+    const headingText = $raceDiv.find("h3.race-no a").first().text().trim();
+    // Matches "1. Koşu 14.30" or "1. Koşu: 14.30"
+    const headingMatch = headingText.match(/(\d+)\.\s*Ko[şs]u[:\s]+(\d{1,2}[.:]\d{2})/i);
+    const raceNo = headingMatch ? parseInt(headingMatch[1], 10) : (_idx + 1);
+    const startTime = headingMatch ? headingMatch[2].replace(".", ":") : "";
+
+    // ── Race details: look for sibling/child elements with distance & surface ──
+    // Some pages show these in a <ul> or <p> near the heading.
+    // We'll try common patterns and fall back to empty string.
+    const detailsText = $raceDiv.find(".race-details, .kosu-bilgi, .race-info-row, ul.race-info li")
+      .text().trim();
+    // Try to extract distance (e.g., "1400 m") and surface ("Kum", "Çim", "Sentetik")
+    const distanceMatch = detailsText.match(/(\d{3,5})\s*m/i);
+    const surfaceMatch = detailsText.match(/\b(Kum|Çim|Sentetik|Turf|Sand|Grass)\b/i);
+    const distance = distanceMatch ? `${distanceMatch[1]} m` : "";
+    const surface = surfaceMatch ? surfaceMatch[1] : "";
+
+    // Race title: the link text may include a name after the "Koşu" label
+    // e.g., "1. Koşu — Uğur Koşusu 14.30" — extract the named part if present
+    const raceTitleMatch = headingText.match(/Ko[şs]u[:\s—–-]+(.+?)\s+\d{1,2}[.:]\d{2}/i);
+    const raceTitle = raceTitleMatch ? raceTitleMatch[1].trim() : "";
+
+    // ── Result rows ────────────────────────────────────────────────────────
     const results: TjkRaceResultEntry[] = [];
-    $(raceEl).find("tbody tr, .result-row").each((_ri, row) => {
-      const cells = $(row).find("td");
-      if (cells.length < 4) return;
-      results.push({
-        position: $(cells[0]).text().trim(),
-        horseName: $(cells[1]).text().trim(),
-        jockey: $(cells[2]).text().trim(),
-        trainer: $(cells[3]).text().trim(),
-        weight: cells.length > 4 ? $(cells[4]).text().trim() : "",
-        time: cells.length > 5 ? $(cells[5]).text().trim() : "",
-      });
+    $raceDiv.find("table.tablesorter tbody tr").each((_ri, row) => {
+      const $row = $(row);
+
+      // Skip rows without enough cells (e.g., spacer rows)
+      const position = $row.find("td.gunluk-GunlukYarisSonuclari-SONUCNO").text().trim();
+      if (!position) return;
+
+      // Horse name: strip "(1)", "(2)" starting-number suffix if present
+      const rawHorse = $row.find("td.gunluk-GunlukYarisSonuclari-AtAdi3 a").first().text().trim();
+      const horseName = rawHorse.replace(/\(\d+\)\s*$/, "").trim();
+
+      // Weight: first text node (before any <sup> bonus/penalty info)
+      const weightRaw = $row.find("td.gunluk-GunlukYarisSonuclari-Kilo").contents().first().text().trim();
+
+      // Jockey: link text
+      const jockey = $row.find("td.gunluk-GunlukYarisSonuclari-JokeAdi a").first().text().trim();
+
+      // Trainer
+      const trainer = $row.find("td.gunluk-GunlukYarisSonuclari-AntronorAdi a").first().text().trim();
+
+      // Finishing time (e.g., "1.34.43")
+      const time = $row.find("td.gunluk-GunlukYarisSonuclari-Derece").text().trim();
+
+      results.push({ position, horseName, jockey, trainer, weight: weightRaw, time });
     });
 
-    if (raceTitle || results.length > 0) {
+    // Only include races that have at least one result row
+    if (results.length > 0 || headingMatch) {
       races.push({ raceNo, raceTitle, distance, surface, startTime, results });
     }
   });
@@ -969,7 +1042,7 @@ async function scrapeTjkRaceDay(dateStr: string, cityId: number): Promise<TjkRac
   return {
     date: dateStr,
     cityId,
-    cityName: TJK_CITIES[cityId] ?? `City ${cityId}`,
+    cityName: cityName || `City ${cityId}`,
     races,
   };
 }
