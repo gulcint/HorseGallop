@@ -10,6 +10,15 @@ import com.horsegallop.domain.auth.usecase.GetUserProfileUseCase
 import com.horsegallop.domain.auth.usecase.SignOutUseCase
 import com.horsegallop.domain.auth.usecase.UpdateProfileImageUseCase
 import com.horsegallop.domain.auth.usecase.UpdateUserProfileUseCase
+import com.horsegallop.domain.home.model.RideSession
+import com.horsegallop.domain.home.model.UserStats
+import com.horsegallop.domain.home.repository.HomeRepository
+import com.horsegallop.domain.home.usecase.GetRecentActivitiesUseCase
+import com.horsegallop.domain.home.usecase.GetUserStatsUseCase
+import com.horsegallop.domain.horse.model.Horse
+import com.horsegallop.domain.horse.model.HorseTip
+import com.horsegallop.domain.horse.repository.HorseRepository
+import com.horsegallop.domain.horse.usecase.GetMyHorsesUseCase
 import com.horsegallop.domain.model.User
 import com.horsegallop.domain.model.UserRole
 import kotlinx.coroutines.Dispatchers
@@ -147,12 +156,18 @@ class ProfileViewModelTest {
         val fakeAuthRepository = FakeAuthRepository(currentUserId = "uid-1")
         val fakeProfileRepository = FakeProfileRepository(seedProfile)
 
+        val fakeHorseRepository = FakeHorseRepository()
+        val fakeHomeRepository = FakeHomeRepository()
+
         val viewModel = ProfileViewModel(
             getCurrentUserIdUseCase = GetCurrentUserIdUseCase(fakeAuthRepository),
             getUserProfileUseCase = GetUserProfileUseCase(fakeProfileRepository),
             updateUserProfileUseCase = UpdateUserProfileUseCase(fakeProfileRepository),
             updateProfileImageUseCase = UpdateProfileImageUseCase(fakeProfileRepository),
-            signOutUseCase = SignOutUseCase(fakeAuthRepository)
+            signOutUseCase = SignOutUseCase(fakeAuthRepository),
+            getMyHorsesUseCase = GetMyHorsesUseCase(fakeHorseRepository),
+            getUserStatsUseCase = GetUserStatsUseCase(fakeHomeRepository),
+            getRecentActivitiesUseCase = GetRecentActivitiesUseCase(fakeHomeRepository)
         )
 
         return viewModel to fakeProfileRepository
@@ -231,4 +246,19 @@ private class FakeAuthRepository(
     override fun getSplashTexts(locale: String): Flow<Result<Pair<String, String>>> = flowOf(Result.success("" to ""))
 
     override fun getCurrentUserId(): String? = currentUserId
+}
+
+private class FakeHorseRepository : HorseRepository {
+    override fun getMyHorses(): kotlinx.coroutines.flow.Flow<List<Horse>> = kotlinx.coroutines.flow.flowOf(emptyList())
+    override suspend fun addHorse(horse: Horse): Result<Horse> = Result.success(horse)
+    override suspend fun deleteHorse(horseId: String): Result<Unit> = Result.success(Unit)
+    override suspend fun getBreeds(locale: String): Result<List<String>> = Result.success(emptyList())
+    override suspend fun getHorseTips(locale: String): Result<List<HorseTip>> = Result.success(emptyList())
+}
+
+private class FakeHomeRepository : HomeRepository {
+    override fun getRecentActivities(userId: String, limit: Int): kotlinx.coroutines.flow.Flow<Result<List<RideSession>>> =
+        kotlinx.coroutines.flow.flowOf(Result.success(emptyList()))
+    override fun getUserStats(userId: String): kotlinx.coroutines.flow.Flow<Result<UserStats>> =
+        kotlinx.coroutines.flow.flowOf(Result.success(UserStats(totalRides = 0, totalDistance = 0.0)))
 }
