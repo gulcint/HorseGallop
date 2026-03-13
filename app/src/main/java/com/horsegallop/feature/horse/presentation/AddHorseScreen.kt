@@ -1,5 +1,8 @@
 package com.horsegallop.feature.horse.presentation
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,11 +32,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -57,6 +60,7 @@ import com.horsegallop.core.components.HorseGallopButton
 import com.horsegallop.core.components.HorseGallopDatePicker
 import com.horsegallop.core.components.HorseGallopDropdown
 import com.horsegallop.core.components.HorseGallopTextField
+import com.horsegallop.core.components.HorseLoadingOverlay
 import com.horsegallop.domain.horse.model.HorseGender
 import com.horsegallop.ui.theme.AppTheme
 import com.horsegallop.ui.theme.LocalSemanticColors
@@ -75,7 +79,26 @@ fun AddHorseScreen(
     onBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    AddHorseContent(
+        uiState = uiState,
+        onSave = { name, breed, birthYear, color, gender, weightKg ->
+            viewModel.addHorse(name, breed, birthYear, color, gender, weightKg)
+        },
+        onClearSaveState = viewModel::clearSaveState,
+        onBack = onBack
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AddHorseContent(
+    uiState: HorseUiState,
+    onSave: (name: String, breed: String, birthYear: String, color: String, gender: HorseGender, weightKg: String) -> Unit,
+    onClearSaveState: () -> Unit,
+    onBack: () -> Unit
+) {
     val semantic = LocalSemanticColors.current
+    val currentYear = remember { java.util.Calendar.getInstance().get(java.util.Calendar.YEAR) }
 
     val breedOptions = uiState.breeds.ifEmpty {
         listOf(
@@ -95,9 +118,15 @@ fun AddHorseScreen(
     var selectedGender by remember { mutableStateOf(HorseGender.UNKNOWN) }
     var nameError by remember { mutableStateOf(false) }
 
+    // Doğum yılı alanında yıl + yaş göster ("2018 (8 yaşında)")
+    val birthYearDisplay = selectedBirthYear?.let { year ->
+        val age = currentYear - year
+        if (age in 0..50) "$year ($age yaşında)" else "$year"
+    } ?: ""
+
     LaunchedEffect(uiState.savedSuccess) {
         if (uiState.savedSuccess) {
-            viewModel.clearSaveState()
+            onClearSaveState()
             onBack()
         }
     }
@@ -143,8 +172,13 @@ fun AddHorseScreen(
         ) {
             Spacer(Modifier.height(4.dp))
 
-            // Hero — at avatarı + motivasyon metni
-            AddHorseHeroSection(name = name)
+            // Hero — canlı at kartı: isim + ırk + yaş dinamik güncellenir
+            AddHorseHeroSection(
+                name = name,
+                breed = selectedBreed,
+                birthYear = selectedBirthYear,
+                currentYear = currentYear
+            )
 
             // Temel Bilgiler Kartı
             AddHorseSection(title = stringResource(R.string.add_horse_section_basic)) {
@@ -155,7 +189,7 @@ fun AddHorseScreen(
                     modifier = Modifier.fillMaxWidth(),
                     isError = nameError
                 )
-                if (nameError) {
+                AnimatedVisibility(visible = nameError, enter = fadeIn(), exit = fadeOut()) {
                     Text(
                         text = stringResource(R.string.add_horse_name_error),
                         color = MaterialTheme.colorScheme.error,
@@ -164,7 +198,6 @@ fun AddHorseScreen(
                     )
                 }
 
-                // Irk — HorseGallopDropdown
                 HorseGallopDropdown(
                     value = selectedBreed,
                     onValueChange = { selectedBreed = it },
@@ -174,7 +207,6 @@ fun AddHorseScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Cinsiyet
                 ChipSelector(
                     title = stringResource(R.string.add_horse_gender_label),
                     options = HorseGender.entries,
@@ -186,7 +218,6 @@ fun AddHorseScreen(
 
             // Fiziksel Özellikler Kartı
             AddHorseSection(title = stringResource(R.string.add_horse_section_physical)) {
-                // Renk
                 ChipSelector(
                     title = stringResource(R.string.add_horse_color_label),
                     options = COAT_COLORS,
@@ -195,16 +226,15 @@ fun AddHorseScreen(
                     label = { it }
                 )
 
-                // Doğum yılı — HorseGallopDatePicker stilinde tıklanabilir alan
+                // Doğum yılı — seçildikten sonra yaş da gösterir
                 HorseGallopDatePicker(
-                    value = selectedBirthYear?.toString() ?: "",
+                    value = birthYearDisplay,
                     onDateSelected = { showYearPicker = true },
                     label = stringResource(R.string.add_horse_birth_year_label),
                     placeholder = stringResource(R.string.add_horse_select_hint),
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Ağırlık slider
                 WeightSection(
                     weightEnabled = weightEnabled,
                     weightSlider = weightSlider,
@@ -213,14 +243,28 @@ fun AddHorseScreen(
                 )
             }
 
-            // Hata + Kaydet
-            uiState.saveError?.let { error ->
-                Text(
-                    text = error,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(horizontal = 4.dp)
-                )
+            // Hata kartı — daha görünür ve bilgilendirici
+            AnimatedVisibility(
+                visible = uiState.saveError != null,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                uiState.saveError?.let { error ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Text(
+                            text = error,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
+                        )
+                    }
+                }
             }
 
             HorseGallopButton(
@@ -230,13 +274,13 @@ fun AddHorseScreen(
                         nameError = true
                         return@HorseGallopButton
                     }
-                    viewModel.addHorse(
-                        name = name,
-                        breed = selectedBreed,
-                        birthYear = selectedBirthYear?.toString() ?: "",
-                        color = selectedColor ?: "",
-                        gender = selectedGender,
-                        weightKg = if (weightEnabled) weightSlider.toInt().toString() else ""
+                    onSave(
+                        name,
+                        selectedBreed,
+                        selectedBirthYear?.toString() ?: "",
+                        selectedColor ?: "",
+                        selectedGender,
+                        if (weightEnabled) weightSlider.toInt().toString() else ""
                     )
                 },
                 isLoading = uiState.saving,
@@ -247,15 +291,37 @@ fun AddHorseScreen(
             Spacer(Modifier.height(24.dp))
         }
     }
+
+    // Kaydetme sırasında tam ekran yükleme overlay'i
+    HorseLoadingOverlay(visible = uiState.saving)
 }
 
-// ─── Hero banner ────────────────────────────────────────────────────────────
+// ─── Hero banner — isim + ırk + yaş canlı güncellenir ──────────────────────
 
 @Composable
-private fun AddHorseHeroSection(name: String) {
+private fun AddHorseHeroSection(
+    name: String,
+    breed: String,
+    birthYear: Int?,
+    currentYear: Int
+) {
     val primary = MaterialTheme.colorScheme.primary
     val secondary = MaterialTheme.colorScheme.secondary
     val semantic = LocalSemanticColors.current
+
+    val displayName = name.ifBlank { "Yeni At" }
+    val detailParts = buildList {
+        if (breed.isNotBlank()) add(breed)
+        if (birthYear != null && birthYear > 0) {
+            val age = currentYear - birthYear
+            if (age in 0..50) add("$birthYear ($age yaşında)")
+        }
+    }
+    val displayDetail = if (detailParts.isNotEmpty()) {
+        detailParts.joinToString(" · ")
+    } else {
+        "Bilgileri doldurun"
+    }
 
     Box(
         modifier = Modifier
@@ -272,7 +338,6 @@ private fun AddHorseHeroSection(name: String) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // At avatarı — baş harf veya 🐴 emoji
             Box(
                 modifier = Modifier
                     .size(64.dp)
@@ -286,16 +351,15 @@ private fun AddHorseHeroSection(name: String) {
                     color = semantic.onImageOverlay
                 )
             }
-            Column {
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(
-                    text = if (name.isNotBlank()) name
-                    else stringResource(R.string.add_horse_hero_placeholder),
+                    text = displayName,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = semantic.onImageOverlay
                 )
                 Text(
-                    text = stringResource(R.string.add_horse_hero_subtitle),
+                    text = displayDetail,
                     style = MaterialTheme.typography.bodySmall,
                     color = semantic.onImageOverlay.copy(alpha = 0.85f)
                 )
@@ -463,12 +527,34 @@ private fun YearPickerDialog(
     )
 }
 
-// ─── Preview ──────────────────────────────────────────────────────────────────
+// ─── Preview ─────────────────────────────────────────────────────────────────
 
 @Preview(showBackground = true)
 @Composable
 private fun AddHorseScreenPreview() {
     AppTheme {
-        AddHorseScreen(onBack = {})
+        AddHorseContent(
+            uiState = HorseUiState(
+                breeds = listOf("Arabian", "Thoroughbred", "Hanoverian", "KWPB")
+            ),
+            onSave = { _, _, _, _, _, _ -> },
+            onClearSaveState = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "With Error")
+@Composable
+private fun AddHorseScreenErrorPreview() {
+    AppTheme {
+        AddHorseContent(
+            uiState = HorseUiState(
+                saveError = "Sunucu fonksiyonu bulunamadı. Lütfen ağ bağlantınızı kontrol edin."
+            ),
+            onSave = { _, _, _, _, _, _ -> },
+            onClearSaveState = {},
+            onBack = {}
+        )
     }
 }
