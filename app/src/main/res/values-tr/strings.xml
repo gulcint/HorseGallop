@@ -528,4 +528,27 @@
     <!-- ProGate -->
     <string name="pro_gate_requires_pro">Bu özellik Pro üyelik gerektirir</string>
     <string name="pro_gate_upgrade">Pro\'ya Geç</string>
+
+    <!-- Horse Health -->
+    <string name="horse_health_title">Sağlık Takvimi</string>
+    <string name="horse_health_upcoming">Yaklaşan (30 gün)</string>
+    <string name="horse_health_past">Geçmiş</string>
+    <string name="horse_health_add">Kayıt Ekle</string>
+    <string name="horse_health_empty_title">Henüz sağlık kaydı yok</string>
+    <string name="horse_health_empty_subtitle">Nalbant, aşı, veteriner ziyaretleri ve daha fazlasını takip et.</string>
+    <string name="horse_health_type_farrier">Nalbant</string>
+    <string name="horse_health_type_vaccination">Aşı</string>
+    <string name="horse_health_type_dental">Diş Bakımı</string>
+    <string name="horse_health_type_vet">Veteriner</string>
+    <string name="horse_health_type_deworming">Parazit</string>
+    <string name="horse_health_type_other">Diğer</string>
+    <string name="horse_health_days_left">%1$d gün kaldı</string>
+    <string name="horse_health_days_ago">%1$d gün önce</string>
+    <string name="horse_health_today">Bugün</string>
+    <string name="horse_health_date_label">Tarih</string>
+    <string name="horse_health_notes_label">Notlar</string>
+    <string name="horse_health_notes_hint">İsteğe bağlı notlar…</string>
+    <string name="horse_health_save">Kaydet</string>
+    <string name="horse_health_delete_confirm">Bu kaydı silmek istediğinize emin misiniz?</string>
+    <string name="horse_health_type_label">Etkinlik Türü</string>
 </resources>

@@ -617,3 +617,128 @@ export const getMyReviews = onCall({ region: "us-central1" }, async (request) =>
 
   return { items };
 });
+
+// ─── User Settings ─────────────────────────────────────────────────────────
+
+export const getUserSettings = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+
+  const doc = await db.collection("users").doc(uid).collection("settings").doc("preferences").get();
+  if (!doc.exists) {
+    return { themeMode: "SYSTEM", language: "SYSTEM", notificationsEnabled: true, weightUnit: "kg", distanceUnit: "km" };
+  }
+  const d = doc.data()!;
+  return {
+    themeMode: normalizeString(d.themeMode, 20) || "SYSTEM",
+    language: normalizeString(d.language, 20) || "SYSTEM",
+    notificationsEnabled: typeof d.notificationsEnabled === "boolean" ? d.notificationsEnabled : true,
+    weightUnit: normalizeString(d.weightUnit, 10) || "kg",
+    distanceUnit: normalizeString(d.distanceUnit, 10) || "km",
+  };
+});
+
+export const updateUserSettings = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+  const data = request.data as Record<string, unknown>;
+
+  const update: Record<string, unknown> = { updatedAt: admin.firestore.FieldValue.serverTimestamp() };
+  if (typeof data.themeMode === "string") update.themeMode = normalizeString(data.themeMode, 20);
+  if (typeof data.language === "string") update.language = normalizeString(data.language, 20);
+  if (typeof data.notificationsEnabled === "boolean") update.notificationsEnabled = data.notificationsEnabled;
+  if (typeof data.weightUnit === "string") update.weightUnit = normalizeString(data.weightUnit, 10);
+  if (typeof data.distanceUnit === "string") update.distanceUnit = normalizeString(data.distanceUnit, 10);
+
+  await db.collection("users").doc(uid).collection("settings").doc("preferences").set(update, { merge: true });
+  return { success: true };
+});
+
+// ─── Horse Health Events ────────────────────────────────────────────────────
+
+const VALID_HEALTH_EVENT_TYPES = new Set(["FARRIER", "VACCINATION", "DENTAL", "VET", "DEWORMING", "OTHER"]);
+
+export const getHorseHealthEvents = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+  const horseId = parseRequiredId(request.data?.horseId, "horseId");
+
+  const horseDoc = await db.collection("users").doc(uid).collection("horses").doc(horseId).get();
+  if (!horseDoc.exists) throw new HttpsError("not-found", "Horse not found");
+
+  const snapshot = await db.collection("users").doc(uid).collection("horses").doc(horseId)
+    .collection("health_events").orderBy("date", "asc").get();
+
+  const items = snapshot.docs.map((doc) => {
+    const d = doc.data();
+    return {
+      id: doc.id,
+      horseId,
+      type: VALID_HEALTH_EVENT_TYPES.has(d.type) ? d.type as string : "OTHER",
+      date: normalizeString(d.date, 10),
+      notes: normalizeString(d.notes, 500),
+      createdAt: d.createdAt instanceof admin.firestore.Timestamp ? d.createdAt.toDate().toISOString() : "",
+    };
+  });
+
+  return { items };
+});
+
+export const addHorseHealthEvent = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+  const data = request.data as Record<string, unknown>;
+
+  const horseId = parseRequiredId(data.horseId, "horseId");
+  const type = typeof data.type === "string" && VALID_HEALTH_EVENT_TYPES.has(data.type) ? data.type : "OTHER";
+  const date = normalizeString(data.date, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new HttpsError("invalid-argument", "date must be yyyy-MM-dd");
+  const notes = normalizeString(data.notes, 500);
+
+  const horseDoc = await db.collection("users").doc(uid).collection("horses").doc(horseId).get();
+  if (!horseDoc.exists) throw new HttpsError("not-found", "Horse not found");
+
+  const ref = await db.collection("users").doc(uid).collection("horses").doc(horseId)
+    .collection("health_events").add({ type, date, notes, createdAt: admin.firestore.FieldValue.serverTimestamp() });
+
+  return { id: ref.id, horseId, type, date, notes, createdAt: new Date().toISOString() };
+});
+
+export const updateHorseHealthEvent = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+  const data = request.data as Record<string, unknown>;
+
+  const horseId = parseRequiredId(data.horseId, "horseId");
+  const eventId = parseRequiredId(data.id, "id");
+
+  const update: Record<string, unknown> = { updatedAt: admin.firestore.FieldValue.serverTimestamp() };
+  if (typeof data.type === "string" && VALID_HEALTH_EVENT_TYPES.has(data.type)) update.type = data.type;
+  if (typeof data.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(data.date)) update.date = data.date;
+  if (typeof data.notes === "string") update.notes = normalizeString(data.notes, 500);
+
+  const ref = db.collection("users").doc(uid).collection("horses").doc(horseId)
+    .collection("health_events").doc(eventId);
+  const doc = await ref.get();
+  if (!doc.exists) throw new HttpsError("not-found", "Health event not found");
+
+  await ref.update(update);
+  return { success: true };
+});
+
+export const deleteHorseHealthEvent = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+  const data = request.data as Record<string, unknown>;
+
+  const horseId = parseRequiredId(data.horseId, "horseId");
+  const eventId = parseRequiredId(data.id, "id");
+
+  const ref = db.collection("users").doc(uid).collection("horses").doc(horseId)
+    .collection("health_events").doc(eventId);
+  const doc = await ref.get();
+  if (!doc.exists) throw new HttpsError("not-found", "Health event not found");
+
+  await ref.delete();
+  return { success: true };
+});

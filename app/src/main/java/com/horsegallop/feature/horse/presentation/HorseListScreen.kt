@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -52,7 +53,8 @@ import com.horsegallop.ui.theme.LocalSemanticColors
 fun HorseListScreen(
     viewModel: HorseViewModel = hiltViewModel(),
     onAddHorse: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onHorseHealthClick: (horseId: String, horseName: String) -> Unit = { _, _ -> }
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val semantic = LocalSemanticColors.current
@@ -110,7 +112,11 @@ fun HorseListScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(uiState.horses, key = { it.id }) { horse ->
-                        HorseCard(horse = horse, onDelete = { deleteTarget = horse })
+                        HorseCard(
+                            horse = horse,
+                            onDelete = { deleteTarget = horse },
+                            onHealthClick = { onHorseHealthClick(horse.id, horse.name) }
+                        )
                     }
                 }
             }
@@ -139,7 +145,7 @@ fun HorseListScreen(
 }
 
 @Composable
-private fun HorseCard(horse: Horse, onDelete: () -> Unit) {
+private fun HorseCard(horse: Horse, onDelete: () -> Unit, onHealthClick: () -> Unit = {}) {
     val semantic = LocalSemanticColors.current
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -169,8 +175,13 @@ private fun HorseCard(horse: Horse, onDelete: () -> Unit) {
                     }
                 }
             }
-            IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Sil", tint = MaterialTheme.colorScheme.error)
+            Row {
+                IconButton(onClick = onHealthClick) {
+                    Icon(Icons.Default.MedicalServices, contentDescription = "Sağlık", tint = MaterialTheme.colorScheme.primary)
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Default.Delete, contentDescription = "Sil", tint = MaterialTheme.colorScheme.error)
+                }
             }
         }
     }

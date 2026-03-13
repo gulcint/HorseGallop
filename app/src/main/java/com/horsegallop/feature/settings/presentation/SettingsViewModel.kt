@@ -4,6 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.horsegallop.core.feedback.FeedbackErrorMapper
 import com.horsegallop.domain.content.usecase.GetAppContentUseCase
+import com.horsegallop.domain.settings.model.UserSettings
+import com.horsegallop.domain.settings.usecase.GetUserSettingsUseCase
+import com.horsegallop.domain.settings.usecase.UpdateUserSettingsUseCase
 import com.horsegallop.settings.AppLanguage
 import com.horsegallop.settings.SettingsRepository
 import com.horsegallop.settings.SettingsState
@@ -38,7 +41,9 @@ class SettingsViewModel @Inject constructor(
     private val requestDataExportUseCase: RequestDataExportUseCase,
     private val deleteUserDataUseCase: DeleteUserDataUseCase,
     private val signOutUseCase: SignOutUseCase,
-    private val getAppContentUseCase: GetAppContentUseCase
+    private val getAppContentUseCase: GetAppContentUseCase,
+    private val getUserSettingsUseCase: GetUserSettingsUseCase,
+    private val updateUserSettingsUseCase: UpdateUserSettingsUseCase
 ) : ViewModel() {
 
     val uiState: StateFlow<SettingsState> = settingsRepository.state
@@ -49,18 +54,52 @@ class SettingsViewModel @Inject constructor(
 
     init {
         loadContent(Locale.getDefault().language)
+        syncSettingsFromBackend()
     }
 
     fun onThemeSelected(mode: ThemeMode) {
         settingsRepository.setThemeMode(mode)
+        syncSettingToBackend()
     }
 
     fun onLanguageSelected(language: AppLanguage) {
         settingsRepository.setLanguage(language)
+        syncSettingToBackend()
     }
 
     fun onNotificationsChanged(enabled: Boolean) {
         settingsRepository.setNotificationsEnabled(enabled)
+        syncSettingToBackend()
+    }
+
+    private fun syncSettingsFromBackend() {
+        viewModelScope.launch {
+            getUserSettingsUseCase().onSuccess { remote ->
+                // Apply remote theme and language only if they differ from local default
+                val localState = settingsRepository.state.value
+                if (localState.themeMode == ThemeMode.SYSTEM && remote.themeMode != "SYSTEM") {
+                    runCatching { settingsRepository.setThemeMode(ThemeMode.fromId(remote.themeMode)) }
+                }
+                if (localState.language == AppLanguage.SYSTEM && remote.language != "SYSTEM") {
+                    runCatching { settingsRepository.setLanguage(AppLanguage.fromId(remote.language)) }
+                }
+            }
+        }
+    }
+
+    private fun syncSettingToBackend() {
+        viewModelScope.launch {
+            val state = settingsRepository.state.value
+            runCatching {
+                updateUserSettingsUseCase(
+                    UserSettings(
+                        themeMode = state.themeMode.id.uppercase(),
+                        language = state.language.id.uppercase(),
+                        notificationsEnabled = state.notificationsEnabled
+                    )
+                )
+            }
+        }
     }
 
     fun requestDataExport() {

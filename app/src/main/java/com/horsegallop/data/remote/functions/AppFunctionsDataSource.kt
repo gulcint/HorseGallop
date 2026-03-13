@@ -10,10 +10,12 @@ import com.horsegallop.data.remote.dto.HomeDashboardFunctionsDto
 import com.horsegallop.data.remote.dto.HomeRecentActivityFunctionsDto
 import com.horsegallop.data.remote.dto.HomeStatsFunctionsDto
 import com.horsegallop.data.remote.dto.HorseFunctionsDto
+import com.horsegallop.data.remote.dto.HorseHealthEventFunctionsDto
 import com.horsegallop.data.remote.dto.HorseTipFunctionsDto
 import com.horsegallop.data.remote.dto.LessonFunctionsDto
 import com.horsegallop.data.remote.dto.ReservationFunctionsDto
 import com.horsegallop.data.remote.dto.ReviewFunctionsDto
+import com.horsegallop.data.remote.dto.UserSettingsFunctionsDto
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.tasks.await
@@ -339,5 +341,96 @@ class AppFunctionsDataSource @Inject constructor(
             instructors = instructors,
             reviews = reviews
         )
+    }
+
+    // ─── User Settings ────────────────────────────────────────────────────
+
+    suspend fun getUserSettings(): UserSettingsFunctionsDto {
+        val result = functions.getHttpsCallable("getUserSettings").call().await()
+        val map = result.data as? Map<*, *> ?: return UserSettingsFunctionsDto()
+        return UserSettingsFunctionsDto(
+            themeMode = (map["themeMode"] as? String) ?: "SYSTEM",
+            language = (map["language"] as? String) ?: "SYSTEM",
+            notificationsEnabled = (map["notificationsEnabled"] as? Boolean) ?: true,
+            weightUnit = (map["weightUnit"] as? String) ?: "kg",
+            distanceUnit = (map["distanceUnit"] as? String) ?: "km"
+        )
+    }
+
+    suspend fun updateUserSettings(
+        themeMode: String? = null,
+        language: String? = null,
+        notificationsEnabled: Boolean? = null,
+        weightUnit: String? = null,
+        distanceUnit: String? = null
+    ) {
+        val payload = hashMapOf<String, Any?>()
+        if (themeMode != null) payload["themeMode"] = themeMode
+        if (language != null) payload["language"] = language
+        if (notificationsEnabled != null) payload["notificationsEnabled"] = notificationsEnabled
+        if (weightUnit != null) payload["weightUnit"] = weightUnit
+        if (distanceUnit != null) payload["distanceUnit"] = distanceUnit
+        if (payload.isNotEmpty()) {
+            functions.getHttpsCallable("updateUserSettings").call(payload).await()
+        }
+    }
+
+    // ─── Horse Health Events ──────────────────────────────────────────────
+
+    suspend fun getHorseHealthEvents(horseId: String): List<HorseHealthEventFunctionsDto> {
+        val result = functions.getHttpsCallable("getHorseHealthEvents")
+            .call(hashMapOf("horseId" to horseId)).await()
+        val payload = result.data as? Map<*, *> ?: return emptyList()
+        val items = payload["items"] as? List<*> ?: return emptyList()
+        return items.mapNotNull { item ->
+            val m = item as? Map<*, *> ?: return@mapNotNull null
+            HorseHealthEventFunctionsDto(
+                id = m["id"] as? String ?: return@mapNotNull null,
+                horseId = horseId,
+                type = (m["type"] as? String) ?: "OTHER",
+                date = (m["date"] as? String).orEmpty(),
+                notes = (m["notes"] as? String).orEmpty(),
+                createdAt = (m["createdAt"] as? String).orEmpty()
+            )
+        }
+    }
+
+    suspend fun addHorseHealthEvent(
+        horseId: String,
+        type: String,
+        date: String,
+        notes: String
+    ): HorseHealthEventFunctionsDto {
+        val result = functions.getHttpsCallable("addHorseHealthEvent")
+            .call(hashMapOf("horseId" to horseId, "type" to type, "date" to date, "notes" to notes))
+            .await()
+        val map = result.data as? Map<*, *> ?: throw IllegalStateException("Invalid response")
+        return HorseHealthEventFunctionsDto(
+            id = map["id"] as? String ?: throw IllegalStateException("Missing id"),
+            horseId = horseId,
+            type = (map["type"] as? String) ?: type,
+            date = (map["date"] as? String) ?: date,
+            notes = (map["notes"] as? String) ?: notes,
+            createdAt = (map["createdAt"] as? String).orEmpty()
+        )
+    }
+
+    suspend fun updateHorseHealthEvent(
+        id: String,
+        horseId: String,
+        type: String? = null,
+        date: String? = null,
+        notes: String? = null
+    ) {
+        val payload = hashMapOf<String, Any?>("id" to id, "horseId" to horseId)
+        if (type != null) payload["type"] = type
+        if (date != null) payload["date"] = date
+        if (notes != null) payload["notes"] = notes
+        functions.getHttpsCallable("updateHorseHealthEvent").call(payload).await()
+    }
+
+    suspend fun deleteHorseHealthEvent(id: String, horseId: String) {
+        functions.getHttpsCallable("deleteHorseHealthEvent")
+            .call(hashMapOf("id" to id, "horseId" to horseId)).await()
     }
 }

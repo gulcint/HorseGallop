@@ -116,6 +116,23 @@ data class BreedFunctionsDto(
     val sortOrder: Int = 99
 )
 
+data class UserSettingsFunctionsDto(
+    val themeMode: String = "SYSTEM",
+    val language: String = "SYSTEM",
+    val notificationsEnabled: Boolean = true,
+    val weightUnit: String = "kg",
+    val distanceUnit: String = "km"
+)
+
+data class HorseHealthEventFunctionsDto(
+    val id: String,
+    val horseId: String,
+    val type: String,
+    val date: String,
+    val notes: String = "",
+    val createdAt: String = ""
+)
+
 data class AppContentFunctionsDto(
     val locale: String,
     val homeHeroTitle: String? = null,

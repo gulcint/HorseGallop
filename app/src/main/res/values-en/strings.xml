@@ -530,4 +530,27 @@
     <!-- ProGate -->
     <string name="pro_gate_requires_pro">This feature requires Pro membership</string>
     <string name="pro_gate_upgrade">Go Pro</string>
+
+    <!-- Horse Health -->
+    <string name="horse_health_title">Health Calendar</string>
+    <string name="horse_health_upcoming">Upcoming (30 days)</string>
+    <string name="horse_health_past">Past</string>
+    <string name="horse_health_add">Add Record</string>
+    <string name="horse_health_empty_title">No health records yet</string>
+    <string name="horse_health_empty_subtitle">Track farrier visits, vaccinations, vet appointments and more.</string>
+    <string name="horse_health_type_farrier">Farrier</string>
+    <string name="horse_health_type_vaccination">Vaccination</string>
+    <string name="horse_health_type_dental">Dental</string>
+    <string name="horse_health_type_vet">Vet</string>
+    <string name="horse_health_type_deworming">Deworming</string>
+    <string name="horse_health_type_other">Other</string>
+    <string name="horse_health_days_left">%1$d days left</string>
+    <string name="horse_health_days_ago">%1$d days ago</string>
+    <string name="horse_health_today">Today</string>
+    <string name="horse_health_date_label">Date</string>
+    <string name="horse_health_notes_label">Notes</string>
+    <string name="horse_health_notes_hint">Optional notes…</string>
+    <string name="horse_health_save">Save</string>
+    <string name="horse_health_delete_confirm">Are you sure you want to delete this record?</string>
+    <string name="horse_health_type_label">Event Type</string>
 </resources>

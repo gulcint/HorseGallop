@@ -1,11 +1,15 @@
 package com.horsegallop.data.di
 
 import com.horsegallop.data.auth.FirebaseAuthRepository
+import com.horsegallop.data.horse.repository.HorseHealthRepositoryImpl
 import com.horsegallop.data.horse.repository.HorseRepositoryImpl
 import com.horsegallop.data.notification.repository.NotificationRepositoryImpl
+import com.horsegallop.data.settings.repository.UserSettingsRepositoryImpl
 import com.horsegallop.data.review.repository.ReviewRepositoryImpl
+import com.horsegallop.domain.horse.repository.HorseHealthRepository
 import com.horsegallop.domain.horse.repository.HorseRepository
 import com.horsegallop.domain.notification.repository.NotificationRepository
+import com.horsegallop.domain.settings.repository.UserSettingsRepository
 import com.horsegallop.domain.review.repository.ReviewRepository
 import com.horsegallop.data.auth.repository.ProfileRepositoryImpl
 import com.horsegallop.data.barn.repository.BarnRepositoryImpl
@@ -121,4 +125,16 @@ abstract class DataModule {
     abstract fun bindNotificationRepository(
         notificationRepositoryImpl: NotificationRepositoryImpl
     ): NotificationRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserSettingsRepository(
+        userSettingsRepositoryImpl: UserSettingsRepositoryImpl
+    ): UserSettingsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindHorseHealthRepository(
+        horseHealthRepositoryImpl: HorseHealthRepositoryImpl
+    ): HorseHealthRepository
 }
