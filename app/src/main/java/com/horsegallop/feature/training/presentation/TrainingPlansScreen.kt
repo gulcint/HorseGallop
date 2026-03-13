@@ -12,16 +12,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -32,13 +36,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.horsegallop.R
+import com.horsegallop.core.components.ProLockedCard
 import com.horsegallop.domain.subscription.model.SubscriptionTier
 import com.horsegallop.domain.training.model.TrainingPlan
 import com.horsegallop.domain.training.model.TrainingPlanStatus
@@ -46,23 +51,22 @@ import com.horsegallop.domain.training.model.TrainingTask
 import com.horsegallop.domain.training.model.TrainingTaskStatus
 import com.horsegallop.ui.theme.LocalSemanticColors
 
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrainingPlansScreen(
     onBack: () -> Unit,
+    onNavigateToSubscription: () -> Unit,
     viewModel: TrainingPlansViewModel = hiltViewModel()
 ) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     val semantic = LocalSemanticColors.current
     val snackbarHostState = remember { SnackbarHostState() }
-    val activity = LocalContext.current as? android.app.Activity
-    val msgProRequired = stringResource(id = R.string.training_pro_required)
     val msgUpdateFailed = stringResource(id = R.string.training_update_failed)
     val msgUnknown = stringResource(id = R.string.error_unknown)
 
     LaunchedEffect(ui.error) {
         val message = when (ui.error) {
-            "pro_required" -> msgProRequired
+            "pro_required" -> null // artık ProLockedCard yönlendiriyor
             "plan_not_found", "task_not_found" -> msgUpdateFailed
             null -> null
             else -> msgUnknown
@@ -80,8 +84,8 @@ fun TrainingPlansScreen(
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(id = R.string.training_plans_title)) },
                 navigationIcon = {
-                    OutlinedButton(onClick = onBack) {
-                        Text(text = stringResource(id = R.string.back))
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
                 }
             )
@@ -97,6 +101,7 @@ fun TrainingPlansScreen(
                 CircularProgressIndicator()
             }
         } else {
+            val isPro = ui.subscription.tier != SubscriptionTier.FREE && ui.subscription.isActive
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -105,88 +110,18 @@ fun TrainingPlansScreen(
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                item {
-                    HeroCard(
-                        isPro = ui.subscription.tier != SubscriptionTier.FREE,
-                        isPurchasing = ui.isPurchasing,
-                        onUpgradeMonthly = { activity?.let { viewModel.upgradeToProMonthly(it) } },
-                        onUpgradeYearly = { activity?.let { viewModel.upgradeToProYearly(it) } }
-                    )
-                }
-
                 items(ui.plans, key = { it.id }) { plan ->
-                    TrainingPlanCard(
-                        plan = plan,
-                        isCompleting = ui.isCompleting,
-                        onCompleteTask = { taskId -> viewModel.completeTask(plan.id, taskId) }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun HeroCard(
-    isPro: Boolean,
-    isPurchasing: Boolean,
-    onUpgradeMonthly: () -> Unit,
-    onUpgradeYearly: () -> Unit
-) {
-    val semantic = LocalSemanticColors.current
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
-        border = BorderStroke(1.dp, semantic.cardStroke)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Text(
-                text = stringResource(id = R.string.training_hero_title),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = stringResource(id = R.string.training_hero_subtitle),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            AssistChip(
-                onClick = {},
-                enabled = false,
-                label = {
-                    Text(
-                        text = if (isPro) {
-                            stringResource(id = R.string.training_status_pro)
-                        } else {
-                            stringResource(id = R.string.training_status_free)
-                        }
-                    )
-                },
-                colors = AssistChipDefaults.assistChipColors(
-                    containerColor = if (isPro) semantic.calloutSuccessContainer else semantic.calloutWarningContainer,
-                    labelColor = semantic.calloutOnContainer
-                )
-            )
-
-            if (!isPro) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilledTonalButton(
-                        onClick = onUpgradeMonthly,
-                        enabled = !isPurchasing,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(text = stringResource(id = R.string.training_upgrade_monthly))
-                    }
-                    OutlinedButton(
-                        onClick = onUpgradeYearly,
-                        enabled = !isPurchasing,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(text = stringResource(id = R.string.training_upgrade_yearly))
+                    if (plan.status == TrainingPlanStatus.LOCKED && !isPro) {
+                        ProLockedCard(
+                            featureLabel = plan.title,
+                            onNavigateToSubscription = onNavigateToSubscription
+                        )
+                    } else {
+                        TrainingPlanCard(
+                            plan = plan,
+                            isCompleting = ui.isCompleting,
+                            onCompleteTask = { taskId -> viewModel.completeTask(plan.id, taskId) }
+                        )
                     }
                 }
             }
@@ -338,5 +273,16 @@ private fun TrainingTaskRow(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TrainingPlansScreenPreview() {
+    com.horsegallop.ui.theme.AppTheme {
+        TrainingPlansScreen(
+            onBack = {},
+            onNavigateToSubscription = {}
+        )
     }
 }

@@ -8,4 +8,5 @@ interface SubscriptionRepository {
     suspend fun getSubscriptionStatus(): Result<SubscriptionStatus>
     suspend fun startSubscriptionPurchase(productId: String): Result<Unit>
     suspend fun refreshEntitlements(): Result<SubscriptionStatus>
+    suspend fun restorePurchases(): Result<SubscriptionStatus>
 }

@@ -113,4 +113,5 @@ private class FakeSubscriptionRepository(
     override suspend fun startSubscriptionPurchase(productId: String): Result<Unit> = Result.success(Unit)
 
     override suspend fun refreshEntitlements(): Result<SubscriptionStatus> = Result.success(status)
+    override suspend fun restorePurchases(): Result<SubscriptionStatus> = Result.success(status)
 }

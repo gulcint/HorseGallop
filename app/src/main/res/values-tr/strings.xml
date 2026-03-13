@@ -341,10 +341,34 @@
     <string name="barn_detail_top_rated">Top rated</string>
     <string name="unknown_location">Unknown Location</string>
     <string name="label_location">Location</string>
+    <!-- Add Horse -->
+    <string name="add_horse_title">At Ekle</string>
+    <string name="add_horse_hero_placeholder">Atın</string>
+    <string name="add_horse_hero_subtitle">Profiline eklemek için bilgileri doldur</string>
+    <string name="add_horse_section_basic">Temel Bilgiler</string>
+    <string name="add_horse_section_physical">Fiziksel Özellikler</string>
+    <string name="add_horse_name_label">At Adı *</string>
+    <string name="add_horse_name_error">At adı zorunludur</string>
+    <string name="add_horse_breed_label">Irk</string>
+    <string name="add_horse_gender_label">Cinsiyet</string>
+    <string name="add_horse_color_label">Renk</string>
+    <string name="add_horse_birth_year_label">Doğum Yılı</string>
+    <string name="add_horse_birth_year_dialog_title">Doğum Yılı Seç</string>
+    <string name="add_horse_select_hint">Seçiniz</string>
+    <string name="add_horse_select_action">Seç</string>
+    <string name="add_horse_weight_label">Ağırlık</string>
+    <string name="add_horse_weight_add">Ekle</string>
+    <string name="add_horse_save_button">Kaydet</string>
+    <string name="add_horse_cancel">Vazgeç</string>
+
     <string name="enrollment_title">Kayıt Ol</string>
     <string name="verify_email_title">E-postayı Doğrula</string>
     <string name="verification_sent_to_email">Doğrulama e-postası %1$s adresine gönderildi</string>
     <string name="verification_sent_info">Doğrulama e-postası gönderildi.</string>
+    <string name="verification_step_1">Gelen kutunu kontrol et</string>
+    <string name="verification_step_2">E-postadaki bağlantıya tıkla</string>
+    <string name="verification_step_3">Geri dön ve \'Doğruladım\' butonuna bas</string>
+    <string name="verification_resend_countdown">Tekrar Gönder (%1$ds)</string>
     <string name="open_mail_app">Postayı Aç</string>
     <string name="verification_result_success">Email verified successfully!</string>
     <string name="verification_result_error">Verification failed. Please try again.</string>
@@ -473,4 +497,91 @@
     <string name="horse_breed_akhal_teke">Akhal-Teke</string>
     <string name="horse_breed_turk">Türk Atı</string>
     <string name="horse_breed_other">Diğer</string>
+
+    <!-- Subscription Screen -->
+    <string name="subscription_title">Pro\'ya Geç</string>
+    <string name="subscription_hero_title">HorseGallop Pro</string>
+    <string name="subscription_hero_subtitle">Binicilik deneyimini bir üst seviyeye taşı</string>
+    <string name="subscription_features_title">Dahil olan özellikler</string>
+    <string name="subscription_feature_gait">Gait analizi — yürüyüş / tırıs / dörtnal</string>
+    <string name="subscription_feature_training">Kişiselleştirilmiş antrenman planları</string>
+    <string name="subscription_feature_elevation">Rakım profil grafiği</string>
+    <string name="subscription_feature_calories">At ve binici kalori takibi</string>
+    <string name="subscription_feature_safety">Güvenlik takibi (yakında)</string>
+    <string name="subscription_feature_support">Öncelikli destek</string>
+    <string name="subscription_pick_plan">Plan seç</string>
+    <string name="subscription_plan_yearly_title">Yıllık</string>
+    <string name="subscription_plan_yearly_price">₺399,99 / yıl</string>
+    <string name="subscription_plan_yearly_note">~₺33,3/ay · %%44 tasarruf</string>
+    <string name="subscription_plan_best_value">En İyi Değer</string>
+    <string name="subscription_plan_monthly_title">Aylık</string>
+    <string name="subscription_plan_monthly_price">₺59,99 / ay</string>
+    <string name="subscription_cta_yearly">Pro\'ya Geç — ₺399,99/yıl</string>
+    <string name="subscription_cta_monthly">Pro\'ya Geç — ₺59,99/ay</string>
+    <string name="subscription_restore">Satın Alımı Geri Yükle</string>
+    <string name="subscription_terms">Koşullar</string>
+    <string name="subscription_purchase_failed">Satın alma başarısız. Lütfen tekrar dene.</string>
+    <string name="subscription_restore_failed">Geri yükleme başarısız. Tekrar dene.</string>
+    <string name="subscription_already_pro">Zaten Pro üyesin!</string>
+    <string name="subscription_already_pro_title">Pro Üyeliğin Aktif 🎉</string>
+    <string name="subscription_already_pro_subtitle">Tüm özelliklere tam erişimin var.</string>
+    <string name="subscription_plan_yearly_savings">2 ay bedava</string>
+    <string name="subscription_guarantee">30 gün iade garantisi</string>
+    <!-- ProGate -->
+    <string name="pro_gate_requires_pro">Bu özellik Pro üyelik gerektirir</string>
+    <string name="pro_gate_upgrade">Pro\'ya Geç</string>
+
+    <!-- Horse Health -->
+    <string name="horse_health_title">Sağlık Takvimi</string>
+    <string name="horse_health_upcoming">Yaklaşan (30 gün)</string>
+    <string name="horse_health_past">Geçmiş</string>
+    <string name="horse_health_add">Kayıt Ekle</string>
+    <string name="horse_health_empty_title">Henüz sağlık kaydı yok</string>
+    <string name="horse_health_empty_subtitle">Nalbant, aşı, veteriner ziyaretleri ve daha fazlasını takip et.</string>
+    <string name="horse_health_type_farrier">Nalbant</string>
+    <string name="horse_health_type_vaccination">Aşı</string>
+    <string name="horse_health_type_dental">Diş Bakımı</string>
+    <string name="horse_health_type_vet">Veteriner</string>
+    <string name="horse_health_type_deworming">Parazit</string>
+    <string name="horse_health_type_other">Diğer</string>
+    <string name="horse_health_days_left">%1$d gün kaldı</string>
+    <string name="horse_health_days_ago">%1$d gün önce</string>
+    <string name="horse_health_today">Bugün</string>
+    <string name="horse_health_date_label">Tarih</string>
+    <string name="horse_health_notes_label">Notlar</string>
+    <string name="horse_health_notes_hint">İsteğe bağlı notlar…</string>
+    <string name="horse_health_save">Kaydet</string>
+    <string name="horse_health_delete_confirm">Bu kaydı silmek istediğinize emin misiniz?</string>
+    <string name="horse_health_type_label">Etkinlik Türü</string>
+    <string name="verification_spam_hint">💡 Mail gelmemişse spam veya önemsiz klasörünü kontrol et</string>
+
+    <!-- Safety Tracking -->
+    <string name="safety_title">Güvenlik Takibi</string>
+    <string name="safety_subtitle">Yalnız binerken güvende kal</string>
+    <string name="safety_section_tracking">Otomatik Alarm</string>
+    <string name="safety_enable_label">Güvenlik takibini etkinleştir</string>
+    <string name="safety_enable_desc">Sürüş sırasında 5 dakika hareket etmezsen güvenilir kişilerini otomatik olarak uyarır</string>
+    <string name="safety_section_contacts">Güvenilir Kişiler</string>
+    <string name="safety_contacts_desc">Acil durumda uyarılacak en fazla 5 kişi</string>
+    <string name="safety_add_contact">Kişi Ekle</string>
+    <string name="safety_contact_name_label">Ad</string>
+    <string name="safety_contact_phone_label">Telefon</string>
+    <string name="safety_add_contact_title">Güvenilir Kişi Ekle</string>
+    <string name="safety_no_contacts">Henüz güvenilir kişi eklenmedi.\nAcil durumda yardım edebilecek birini ekle.</string>
+    <string name="safety_remove_contact_confirm">Bu kişiyi kaldır?</string>
+    <string name="safety_section_location">Canlı Konum</string>
+    <string name="safety_share_location">Konumumu Paylaş</string>
+    <string name="safety_share_location_desc">WhatsApp veya SMS ile gönderebileceğin anlık konum linki oluştur</string>
+    <string name="safety_location_copied">Konum linki kopyalandı!</string>
+    <string name="safety_location_unavailable">Konum henüz alınamadı</string>
+    <string name="safety_alarm_title">İyi misin? 🛡️</string>
+    <string name="safety_alarm_body">5 dakikadır hareket etmiyorsun. Güvenilir kişilerine uyarı gönderelim mi?</string>
+    <string name="safety_alarm_send">Uyarı Gönder</string>
+    <string name="safety_alarm_dismiss">İyiyim</string>
+    <string name="safety_pro_required">Güvenlik takibi Pro üyelik gerektirir</string>
+    <string name="safety_settings_link">Güvenlik Takibi</string>
+    <string name="safety_max_contacts">En fazla 5 kişi eklenebilir</string>
+    <string name="safety_contact_added">Kişi eklendi</string>
+    <string name="safety_contact_removed">Kişi kaldırıldı</string>
+    <string name="safety_alarm_sent">Kişilerine uyarı gönderildi</string>
 </resources>

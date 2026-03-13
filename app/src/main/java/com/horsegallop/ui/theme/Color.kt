@@ -23,6 +23,15 @@ private val WarmGrey70      = Color(0xFF7A7873) // Warm mid-grey — secondary l
 private val WarmGrey30      = Color(0xFF49473F) // Dark warm grey — secondary container dark
 private val WarmGrey15      = Color(0xFF323028) // Very dark warm grey — onSecondary dark
 
+// ─── Horse Health Event Type Colors ────────────────────────────────────────
+// Semantic accent colors for health event types — used in HorseHealthScreen.
+val HealthColorFarrier    = Color(0xFF795548)   // Brown — farrier/nalbant
+val HealthColorVaccination= Color(0xFF2196F3)   // Blue — vaccination
+val HealthColorDental     = Color(0xFF00BCD4)   // Cyan — dental
+val HealthColorVet        = Color(0xFFF44336)   // Red — vet
+val HealthColorDeworming  = Color(0xFF4CAF50)   // Green — deworming
+val HealthColorOther      = Color(0xFF9E9E9E)   // Grey — other
+
 val LightColorScheme = lightColorScheme(
     primary                = SaddleBrown,
     onPrimary              = Color.White,

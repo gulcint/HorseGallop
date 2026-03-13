@@ -10,7 +10,9 @@ import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
+import com.android.billingclient.api.QueryPurchasesParams
 import com.android.billingclient.api.queryProductDetails
+import com.android.billingclient.api.queryPurchasesAsync
 import com.horsegallop.core.debug.AppLog
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -132,6 +134,19 @@ class BillingManager @Inject constructor(
             launch(Dispatchers.Main) {
                 billingClient.launchBillingFlow(activity, flowParams)
             }
+        }
+    }
+
+    suspend fun queryActivePurchases(): List<Purchase> {
+        if (!billingClient.isReady) return emptyList()
+        val params = QueryPurchasesParams.newBuilder()
+            .setProductType(BillingClient.ProductType.SUBS)
+            .build()
+        val result = billingClient.queryPurchasesAsync(params)
+        return if (result.billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+            result.purchasesList.filter { it.purchaseState == Purchase.PurchaseState.PURCHASED }
+        } else {
+            emptyList()
         }
     }
 

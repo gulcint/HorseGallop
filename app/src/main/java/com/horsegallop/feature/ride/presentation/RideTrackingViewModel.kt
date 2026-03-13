@@ -9,6 +9,8 @@ import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.barn.repository.BarnRepository
 import com.horsegallop.domain.content.usecase.GetAppContentUseCase
 import com.horsegallop.domain.ride.model.RideSyncStatus
+import com.horsegallop.domain.safety.usecase.GetSafetySettingsUseCase
+import com.horsegallop.domain.safety.usecase.TriggerSafetyAlarmUseCase
 import com.horsegallop.domain.ride.usecase.ObserveAutoStopSignalUseCase
 import com.horsegallop.domain.ride.usecase.ObserveIsRidingUseCase
 import com.horsegallop.domain.ride.usecase.ObservePendingRideSyncCountUseCase
@@ -43,7 +45,9 @@ class RideTrackingViewModel @Inject constructor(
     private val barnRepository: BarnRepository,
     private val getUserProfileUseCase: GetUserProfileUseCase,
     private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase,
-    private val getAppContentUseCase: GetAppContentUseCase
+    private val getAppContentUseCase: GetAppContentUseCase,
+    private val getSafetySettingsUseCase: GetSafetySettingsUseCase,
+    private val triggerSafetyAlarmUseCase: TriggerSafetyAlarmUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RideUiState())
@@ -108,10 +112,18 @@ class RideTrackingViewModel @Inject constructor(
 
         loadUserProfileWeight()
         loadDynamicContent()
+        loadSafetySettings()
 
-        // Auto-stop: show dialog when stillness signal fires
+        // Auto-stop + safety alarm: show dialogs when stillness signal fires
         observeAutoStopSignalUseCase()
-            .onEach { _uiState.update { it.copy(showAutoStopDialog = true) } }
+            .onEach {
+                _uiState.update { s ->
+                    s.copy(
+                        showAutoStopDialog = true,
+                        showSafetyAlarmDialog = s.safetyEnabled
+                    )
+                }
+            }
             .launchIn(viewModelScope)
     }
 
@@ -122,6 +134,20 @@ class RideTrackingViewModel @Inject constructor(
     fun confirmAutoStop() {
         _uiState.update { it.copy(showAutoStopDialog = false) }
         finishRide()
+    }
+
+    fun dismissSafetyAlarmDialog() {
+        _uiState.update { it.copy(showSafetyAlarmDialog = false) }
+    }
+
+    fun confirmSafetyAlarm() {
+        _uiState.update { it.copy(showSafetyAlarmDialog = false) }
+        val lastPoint = _uiState.value.pathPoints.lastOrNull()
+        if (lastPoint != null) {
+            viewModelScope.launch {
+                runCatching { triggerSafetyAlarmUseCase(lastPoint.latitude, lastPoint.longitude) }
+            }
+        }
     }
 
     fun onRideTypeSelected(rideType: RideType) {
@@ -266,6 +292,16 @@ class RideTrackingViewModel @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    private fun loadSafetySettings() {
+        viewModelScope.launch {
+            runCatching { getSafetySettingsUseCase() }
+                .getOrNull()
+                ?.onSuccess { settings ->
+                    _uiState.update { it.copy(safetyEnabled = settings.isEnabled) }
+                }
         }
     }
 }

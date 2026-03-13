@@ -194,16 +194,17 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "${GCP_SA_KEY:-}" ] || [ -z "${GCP_PROJECT_ID:-}" ]; then
-            echo "::error::RC gate failed because FTL prerequisites are missing/disabled."
+            echo "::warning::GCP secrets not configured — skipping Firebase Test Lab."
             {
               echo "## Firebase Test Lab"
               echo ""
-              echo "- RC gate failed because FTL prerequisites are missing/disabled."
-              echo "- Missing required GCP secrets (GCP_SA_KEY or GCP_PROJECT_ID)."
+              echo "⚠️ Skipped: GCP_SA_KEY or GCP_PROJECT_ID secrets are not set."
+              echo "Add these repository secrets to enable Firebase Test Lab on main push."
             } >> "${GITHUB_STEP_SUMMARY}"
-            exit 1
+            echo "ready=false" >> "${GITHUB_OUTPUT}"
+          else
+            echo "ready=true" >> "${GITHUB_OUTPUT}"
           fi
-          echo "ready=true" >> "${GITHUB_OUTPUT}"
 
       - name: Authenticate to Google Cloud
         if: ${{ steps.gcp_precheck.outputs.ready == 'true' }}

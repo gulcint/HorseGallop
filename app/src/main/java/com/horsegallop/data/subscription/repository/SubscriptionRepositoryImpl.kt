@@ -47,6 +47,22 @@ class SubscriptionRepositoryImpl @Inject constructor(
     override suspend fun refreshEntitlements(): Result<SubscriptionStatus> =
         Result.success(statusState.value)
 
+    override suspend fun restorePurchases(): Result<SubscriptionStatus> = runCatching {
+        val purchases = billingManager.queryActivePurchases()
+        val activePurchase = purchases.firstOrNull()
+        if (activePurchase != null) {
+            val productId = activePurchase.products.firstOrNull() ?: ""
+            updateStatusFromProductId(productId)
+        } else {
+            statusState.value = SubscriptionStatus(
+                tier = SubscriptionTier.FREE,
+                isActive = true,
+                expiresAtEpochMillis = null
+            )
+        }
+        statusState.value
+    }
+
     private fun observeBillingPurchases() {
         scope.launch {
             billingManager.purchaseState.collect { state ->

@@ -370,11 +370,35 @@
     <string name="unknown_location">Unknown Location</string>
     <string name="label_location">Location</string>
 
+    <!-- Add Horse -->
+    <string name="add_horse_title">Add Horse</string>
+    <string name="add_horse_hero_placeholder">Your Horse</string>
+    <string name="add_horse_hero_subtitle">Fill in the details to add to your profile</string>
+    <string name="add_horse_section_basic">Basic Info</string>
+    <string name="add_horse_section_physical">Physical Details</string>
+    <string name="add_horse_name_label">Horse Name *</string>
+    <string name="add_horse_name_error">Horse name is required</string>
+    <string name="add_horse_breed_label">Breed</string>
+    <string name="add_horse_gender_label">Gender</string>
+    <string name="add_horse_color_label">Coat Color</string>
+    <string name="add_horse_birth_year_label">Birth Year</string>
+    <string name="add_horse_birth_year_dialog_title">Select Birth Year</string>
+    <string name="add_horse_select_hint">Select</string>
+    <string name="add_horse_select_action">Select</string>
+    <string name="add_horse_weight_label">Weight</string>
+    <string name="add_horse_weight_add">Add</string>
+    <string name="add_horse_save_button">Save</string>
+    <string name="add_horse_cancel">Cancel</string>
+
     <!-- Enrollment -->
     <string name="enrollment_title">Sign Up</string>
     <string name="verify_email_title">Verify your email</string>
     <string name="verification_sent_to_email">We sent a verification link to %1$s</string>
     <string name="verification_sent_info">We sent a verification link to your email</string>
+    <string name="verification_step_1">Check your inbox</string>
+    <string name="verification_step_2">Click the link in the email</string>
+    <string name="verification_step_3">Return here and tap \'I Verified\'</string>
+    <string name="verification_resend_countdown">Resend (%1$ds)</string>
     <string name="open_mail_app">Open Mail App</string>
     <string name="verification_result_success">Email verified successfully!</string>
     <string name="verification_result_error">Verification failed. Please try again.</string>
@@ -505,4 +529,91 @@
     <string name="horse_breed_akhal_teke">Akhal-Teke</string>
     <string name="horse_breed_turk">Turkish Horse</string>
     <string name="horse_breed_other">Other</string>
+
+    <!-- Subscription Screen -->
+    <string name="subscription_title">Go Pro</string>
+    <string name="subscription_hero_title">HorseGallop Pro</string>
+    <string name="subscription_hero_subtitle">Take your riding experience to the next level</string>
+    <string name="subscription_features_title">What\'s included</string>
+    <string name="subscription_feature_gait">Gait analysis — walk / trot / canter</string>
+    <string name="subscription_feature_training">Personalized training plans</string>
+    <string name="subscription_feature_elevation">Elevation profile chart</string>
+    <string name="subscription_feature_calories">Horse &amp; rider calorie tracking</string>
+    <string name="subscription_feature_safety">Safety tracking (coming soon)</string>
+    <string name="subscription_feature_support">Priority support</string>
+    <string name="subscription_pick_plan">Choose a plan</string>
+    <string name="subscription_plan_yearly_title">Yearly</string>
+    <string name="subscription_plan_yearly_price">₺399.99 / year</string>
+    <string name="subscription_plan_yearly_note">~₺33.3/mo · Save 44%%</string>
+    <string name="subscription_plan_best_value">Best Value</string>
+    <string name="subscription_plan_monthly_title">Monthly</string>
+    <string name="subscription_plan_monthly_price">₺59.99 / month</string>
+    <string name="subscription_cta_yearly">Go Pro — ₺399.99/year</string>
+    <string name="subscription_cta_monthly">Go Pro — ₺59.99/month</string>
+    <string name="subscription_restore">Restore Purchase</string>
+    <string name="subscription_terms">Terms</string>
+    <string name="subscription_purchase_failed">Purchase failed. Please try again.</string>
+    <string name="subscription_restore_failed">Restore failed. Please try again.</string>
+    <string name="subscription_already_pro">You\'re already Pro!</string>
+    <string name="subscription_already_pro_title">Pro Membership Active 🎉</string>
+    <string name="subscription_already_pro_subtitle">You have full access to all features.</string>
+    <string name="subscription_plan_yearly_savings">2 months free</string>
+    <string name="subscription_guarantee">30-day money-back guarantee</string>
+    <!-- ProGate -->
+    <string name="pro_gate_requires_pro">This feature requires Pro membership</string>
+    <string name="pro_gate_upgrade">Go Pro</string>
+
+    <!-- Horse Health -->
+    <string name="horse_health_title">Health Calendar</string>
+    <string name="horse_health_upcoming">Upcoming (30 days)</string>
+    <string name="horse_health_past">Past</string>
+    <string name="horse_health_add">Add Record</string>
+    <string name="horse_health_empty_title">No health records yet</string>
+    <string name="horse_health_empty_subtitle">Track farrier visits, vaccinations, vet appointments and more.</string>
+    <string name="horse_health_type_farrier">Farrier</string>
+    <string name="horse_health_type_vaccination">Vaccination</string>
+    <string name="horse_health_type_dental">Dental</string>
+    <string name="horse_health_type_vet">Vet</string>
+    <string name="horse_health_type_deworming">Deworming</string>
+    <string name="horse_health_type_other">Other</string>
+    <string name="horse_health_days_left">%1$d days left</string>
+    <string name="horse_health_days_ago">%1$d days ago</string>
+    <string name="horse_health_today">Today</string>
+    <string name="horse_health_date_label">Date</string>
+    <string name="horse_health_notes_label">Notes</string>
+    <string name="horse_health_notes_hint">Optional notes…</string>
+    <string name="horse_health_save">Save</string>
+    <string name="horse_health_delete_confirm">Are you sure you want to delete this record?</string>
+    <string name="horse_health_type_label">Event Type</string>
+    <string name="verification_spam_hint">💡 If you don\'t see the email, check your spam or junk folder</string>
+
+    <!-- Safety Tracking -->
+    <string name="safety_title">Safety Tracking</string>
+    <string name="safety_subtitle">Stay safe while riding alone</string>
+    <string name="safety_section_tracking">Automatic Alarm</string>
+    <string name="safety_enable_label">Enable safety tracking</string>
+    <string name="safety_enable_desc">Automatically alerts your trusted contacts if you stop moving for 5 minutes during a ride</string>
+    <string name="safety_section_contacts">Trusted Contacts</string>
+    <string name="safety_contacts_desc">Up to 5 people who will be alerted in an emergency</string>
+    <string name="safety_add_contact">Add Contact</string>
+    <string name="safety_contact_name_label">Name</string>
+    <string name="safety_contact_phone_label">Phone</string>
+    <string name="safety_add_contact_title">Add Trusted Contact</string>
+    <string name="safety_no_contacts">No trusted contacts yet.\nAdd someone who can help in an emergency.</string>
+    <string name="safety_remove_contact_confirm">Remove this contact?</string>
+    <string name="safety_section_location">Live Location</string>
+    <string name="safety_share_location">Share My Location</string>
+    <string name="safety_share_location_desc">Copy a link to your current location to send via WhatsApp or SMS</string>
+    <string name="safety_location_copied">Location link copied!</string>
+    <string name="safety_location_unavailable">Location not available yet</string>
+    <string name="safety_alarm_title">Are you okay? 🛡️</string>
+    <string name="safety_alarm_body">You haven\'t moved in 5 minutes. Should we send an alert to your trusted contacts?</string>
+    <string name="safety_alarm_send">Send Alert</string>
+    <string name="safety_alarm_dismiss">I\'m Fine</string>
+    <string name="safety_pro_required">Safety tracking requires Pro membership</string>
+    <string name="safety_settings_link">Safety Tracking</string>
+    <string name="safety_max_contacts">Maximum 5 contacts allowed</string>
+    <string name="safety_contact_added">Contact added</string>
+    <string name="safety_contact_removed">Contact removed</string>
+    <string name="safety_alarm_sent">Alert sent to your contacts</string>
 </resources>
