@@ -10,10 +10,12 @@ import com.horsegallop.data.remote.dto.HomeDashboardFunctionsDto
 import com.horsegallop.data.remote.dto.HomeRecentActivityFunctionsDto
 import com.horsegallop.data.remote.dto.HomeStatsFunctionsDto
 import com.horsegallop.data.remote.dto.HorseFunctionsDto
+import com.horsegallop.data.remote.dto.HorseHealthEventFunctionsDto
 import com.horsegallop.data.remote.dto.HorseTipFunctionsDto
 import com.horsegallop.data.remote.dto.LessonFunctionsDto
 import com.horsegallop.data.remote.dto.ReservationFunctionsDto
 import com.horsegallop.data.remote.dto.ReviewFunctionsDto
+import com.horsegallop.data.remote.dto.UserSettingsFunctionsDto
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.tasks.await
@@ -339,5 +341,201 @@ class AppFunctionsDataSource @Inject constructor(
             instructors = instructors,
             reviews = reviews
         )
+    }
+
+    // ─── User Settings ────────────────────────────────────────────────────
+
+    suspend fun getUserSettings(): UserSettingsFunctionsDto {
+        val result = functions.getHttpsCallable("getUserSettings").call().await()
+        val map = result.data as? Map<*, *> ?: return UserSettingsFunctionsDto()
+        return UserSettingsFunctionsDto(
+            themeMode = (map["themeMode"] as? String) ?: "SYSTEM",
+            language = (map["language"] as? String) ?: "SYSTEM",
+            notificationsEnabled = (map["notificationsEnabled"] as? Boolean) ?: true,
+            weightUnit = (map["weightUnit"] as? String) ?: "kg",
+            distanceUnit = (map["distanceUnit"] as? String) ?: "km"
+        )
+    }
+
+    suspend fun updateUserSettings(
+        themeMode: String? = null,
+        language: String? = null,
+        notificationsEnabled: Boolean? = null,
+        weightUnit: String? = null,
+        distanceUnit: String? = null
+    ) {
+        val payload = hashMapOf<String, Any?>()
+        if (themeMode != null) payload["themeMode"] = themeMode
+        if (language != null) payload["language"] = language
+        if (notificationsEnabled != null) payload["notificationsEnabled"] = notificationsEnabled
+        if (weightUnit != null) payload["weightUnit"] = weightUnit
+        if (distanceUnit != null) payload["distanceUnit"] = distanceUnit
+        if (payload.isNotEmpty()) {
+            functions.getHttpsCallable("updateUserSettings").call(payload).await()
+        }
+    }
+
+    // ─── Horse Health Events ──────────────────────────────────────────────
+
+    suspend fun getHorseHealthEvents(horseId: String): List<HorseHealthEventFunctionsDto> {
+        val result = functions.getHttpsCallable("getHorseHealthEvents")
+            .call(hashMapOf("horseId" to horseId)).await()
+        val payload = result.data as? Map<*, *> ?: return emptyList()
+        val items = payload["items"] as? List<*> ?: return emptyList()
+        return items.mapNotNull { item ->
+            val m = item as? Map<*, *> ?: return@mapNotNull null
+            HorseHealthEventFunctionsDto(
+                id = m["id"] as? String ?: return@mapNotNull null,
+                horseId = horseId,
+                type = (m["type"] as? String) ?: "OTHER",
+                date = (m["date"] as? String).orEmpty(),
+                notes = (m["notes"] as? String).orEmpty(),
+                createdAt = (m["createdAt"] as? String).orEmpty()
+            )
+        }
+    }
+
+    suspend fun addHorseHealthEvent(
+        horseId: String,
+        type: String,
+        date: String,
+        notes: String
+    ): HorseHealthEventFunctionsDto {
+        val result = functions.getHttpsCallable("addHorseHealthEvent")
+            .call(hashMapOf("horseId" to horseId, "type" to type, "date" to date, "notes" to notes))
+            .await()
+        val map = result.data as? Map<*, *> ?: throw IllegalStateException("Invalid response")
+        return HorseHealthEventFunctionsDto(
+            id = map["id"] as? String ?: throw IllegalStateException("Missing id"),
+            horseId = horseId,
+            type = (map["type"] as? String) ?: type,
+            date = (map["date"] as? String) ?: date,
+            notes = (map["notes"] as? String) ?: notes,
+            createdAt = (map["createdAt"] as? String).orEmpty()
+        )
+    }
+
+    suspend fun updateHorseHealthEvent(
+        id: String,
+        horseId: String,
+        type: String? = null,
+        date: String? = null,
+        notes: String? = null
+    ) {
+        val payload = hashMapOf<String, Any?>("id" to id, "horseId" to horseId)
+        if (type != null) payload["type"] = type
+        if (date != null) payload["date"] = date
+        if (notes != null) payload["notes"] = notes
+        functions.getHttpsCallable("updateHorseHealthEvent").call(payload).await()
+    }
+
+    suspend fun deleteHorseHealthEvent(id: String, horseId: String) {
+        functions.getHttpsCallable("deleteHorseHealthEvent")
+            .call(hashMapOf("id" to id, "horseId" to horseId)).await()
+    }
+
+    // ─── Safety ──────────────────────────────────────────────────────────────
+
+    suspend fun getSafetySettings(): com.horsegallop.data.remote.dto.SafetySettingsFunctionsDto {
+        val result = functions.getHttpsCallable("getSafetySettings").call().await()
+        val map = result.data as? Map<*, *>
+            ?: return com.horsegallop.data.remote.dto.SafetySettingsFunctionsDto()
+        val rawContacts = map["contacts"] as? List<*> ?: emptyList<Any>()
+        val contacts = rawContacts.mapNotNull { item ->
+            (item as? Map<*, *>)?.let { m ->
+                com.horsegallop.data.remote.dto.SafetyContactFunctionsDto(
+                    id = (m["id"] as? String).orEmpty(),
+                    name = (m["name"] as? String).orEmpty(),
+                    phone = (m["phone"] as? String).orEmpty()
+                )
+            }
+        }
+        return com.horsegallop.data.remote.dto.SafetySettingsFunctionsDto(
+            isEnabled = (map["isEnabled"] as? Boolean) ?: false,
+            contacts = contacts,
+            autoAlarmMinutes = (map["autoAlarmMinutes"] as? Number)?.toInt() ?: 5
+        )
+    }
+
+    suspend fun updateSafetyEnabled(isEnabled: Boolean) {
+        functions.getHttpsCallable("updateSafetySettings")
+            .call(hashMapOf("isEnabled" to isEnabled)).await()
+    }
+
+    suspend fun addSafetyContact(
+        name: String,
+        phone: String
+    ): com.horsegallop.data.remote.dto.SafetyContactFunctionsDto {
+        val result = functions.getHttpsCallable("addSafetyContact")
+            .call(hashMapOf("name" to name, "phone" to phone)).await()
+        val map = result.data as? Map<*, *> ?: throw IllegalStateException("Invalid response")
+        return com.horsegallop.data.remote.dto.SafetyContactFunctionsDto(
+            id = (map["id"] as? String) ?: throw IllegalStateException("Missing id"),
+            name = (map["name"] as? String) ?: name,
+            phone = (map["phone"] as? String) ?: phone
+        )
+    }
+
+    suspend fun removeSafetyContact(contactId: String) {
+        functions.getHttpsCallable("removeSafetyContact")
+            .call(hashMapOf("contactId" to contactId)).await()
+    }
+
+    suspend fun triggerSafetyAlarm(lat: Double, lng: Double) {
+        functions.getHttpsCallable("triggerSafetyAlarm")
+            .call(hashMapOf("lat" to lat, "lng" to lng)).await()
+    }
+
+    // ─── TJK ──────────────────────────────────────────────────────────────────
+
+    suspend fun getTjkRaceDay(
+        date: String,
+        cityId: Int
+    ): com.horsegallop.data.remote.dto.TjkRaceDayFunctionsDto {
+        val result = functions.getHttpsCallable("getTjkRaceDay")
+            .call(hashMapOf("date" to date, "cityId" to cityId)).await()
+        val payload = result.data as? Map<*, *> ?: return com.horsegallop.data.remote.dto.TjkRaceDayFunctionsDto()
+
+        val races = (payload["races"] as? List<*>)?.mapNotNull { raceRaw ->
+            val r = raceRaw as? Map<*, *> ?: return@mapNotNull null
+            val results = (r["results"] as? List<*>)?.mapNotNull { resRaw ->
+                val res = resRaw as? Map<*, *> ?: return@mapNotNull null
+                com.horsegallop.data.remote.dto.TjkRaceResultFunctionsDto(
+                    position = (res["position"] as? String).orEmpty(),
+                    horseName = (res["horseName"] as? String).orEmpty(),
+                    jockey = (res["jockey"] as? String).orEmpty(),
+                    trainer = (res["trainer"] as? String).orEmpty(),
+                    weight = (res["weight"] as? String).orEmpty(),
+                    time = (res["time"] as? String).orEmpty()
+                )
+            } ?: emptyList()
+            com.horsegallop.data.remote.dto.TjkRaceFunctionsDto(
+                raceNo = (r["raceNo"] as? Number)?.toInt() ?: 0,
+                raceTitle = (r["raceTitle"] as? String).orEmpty(),
+                distance = (r["distance"] as? String).orEmpty(),
+                surface = (r["surface"] as? String).orEmpty(),
+                startTime = (r["startTime"] as? String).orEmpty(),
+                results = results
+            )
+        } ?: emptyList()
+
+        return com.horsegallop.data.remote.dto.TjkRaceDayFunctionsDto(
+            date = (payload["date"] as? String).orEmpty(),
+            cityId = (payload["cityId"] as? Number)?.toInt() ?: cityId,
+            cityName = (payload["cityName"] as? String).orEmpty(),
+            races = races
+        )
+    }
+
+    suspend fun getTjkCities(): List<com.horsegallop.data.remote.dto.TjkCityFunctionsDto> {
+        val result = functions.getHttpsCallable("getTjkCities").call(null).await()
+        val list = result.data as? List<*> ?: return emptyList()
+        return list.mapNotNull { item ->
+            val m = item as? Map<*, *> ?: return@mapNotNull null
+            com.horsegallop.data.remote.dto.TjkCityFunctionsDto(
+                id = (m["id"] as? Number)?.toInt() ?: return@mapNotNull null,
+                name = (m["name"] as? String).orEmpty()
+            )
+        }
     }
 }

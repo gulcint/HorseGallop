@@ -249,10 +249,8 @@ fun VerificationSentContent(
 ) {
     val semantic = LocalSemanticColors.current
 
-    val lottieUrl = uiState.successLottieUrl.ifBlank {
-        "https://assets9.lottiefiles.com/packages/lf20_jbrw3hcz.json"
-    }
-    val composition by rememberLottieComposition(LottieCompositionSpec.Url(lottieUrl))
+    // Onboarding'deki at animasyonunu kullan (URL yerine yerel kaynak)
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(AppR.raw.horse))
     val progress by animateLottieCompositionAsState(
         composition = composition,
         iterations = LottieConstants.IterateForever
@@ -340,7 +338,23 @@ fun VerificationSentContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Spam hint
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+        ) {
+            Text(
+                text = stringResource(AppR.string.verification_spam_hint),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         // Primary CTA
         HorseGallopButton(

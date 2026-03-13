@@ -1,6 +1,5 @@
 package com.horsegallop.feature.horse.presentation
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,26 +19,21 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -60,6 +54,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
 import com.horsegallop.core.components.ChipSelector
 import com.horsegallop.core.components.HorseGallopButton
+import com.horsegallop.core.components.HorseGallopDatePicker
+import com.horsegallop.core.components.HorseGallopDropdown
 import com.horsegallop.core.components.HorseGallopTextField
 import com.horsegallop.domain.horse.model.HorseGender
 import com.horsegallop.ui.theme.AppTheme
@@ -91,7 +87,6 @@ fun AddHorseScreen(
 
     var name by remember { mutableStateOf("") }
     var selectedBreed by remember { mutableStateOf("") }
-    var breedExpanded by remember { mutableStateOf(false) }
     var selectedBirthYear by remember { mutableStateOf<Int?>(null) }
     var showYearPicker by remember { mutableStateOf(false) }
     var selectedColor by remember { mutableStateOf<String?>(null) }
@@ -169,43 +164,15 @@ fun AddHorseScreen(
                     )
                 }
 
-                // Irk dropdown
-                ExposedDropdownMenuBox(
-                    expanded = breedExpanded,
-                    onExpandedChange = { breedExpanded = it }
-                ) {
-                    OutlinedTextField(
-                        value = selectedBreed,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text(stringResource(R.string.add_horse_breed_label)) },
-                        placeholder = { Text(stringResource(R.string.add_horse_select_hint)) },
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = breedExpanded)
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(MenuAnchorType.PrimaryNotEditable),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                            focusedContainerColor = semantic.cardElevated,
-                            unfocusedContainerColor = semantic.cardElevated
-                        )
-                    )
-                    ExposedDropdownMenu(
-                        expanded = breedExpanded,
-                        onDismissRequest = { breedExpanded = false }
-                    ) {
-                        breedOptions.forEach { breed ->
-                            DropdownMenuItem(
-                                text = { Text(breed) },
-                                onClick = { selectedBreed = breed; breedExpanded = false }
-                            )
-                        }
-                    }
-                }
+                // Irk — HorseGallopDropdown
+                HorseGallopDropdown(
+                    value = selectedBreed,
+                    onValueChange = { selectedBreed = it },
+                    options = breedOptions,
+                    label = stringResource(R.string.add_horse_breed_label),
+                    placeholder = stringResource(R.string.add_horse_select_hint),
+                    modifier = Modifier.fillMaxWidth()
+                )
 
                 // Cinsiyet
                 ChipSelector(
@@ -228,29 +195,13 @@ fun AddHorseScreen(
                     label = { it }
                 )
 
-                // Doğum yılı
-                OutlinedTextField(
+                // Doğum yılı — HorseGallopDatePicker stilinde tıklanabilir alan
+                HorseGallopDatePicker(
                     value = selectedBirthYear?.toString() ?: "",
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text(stringResource(R.string.add_horse_birth_year_label)) },
-                    placeholder = { Text(stringResource(R.string.add_horse_select_hint)) },
-                    trailingIcon = {
-                        TextButton(onClick = { showYearPicker = true }) {
-                            Text(
-                                stringResource(R.string.add_horse_select_action),
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                        focusedContainerColor = semantic.cardElevated,
-                        unfocusedContainerColor = semantic.cardElevated
-                    )
+                    onDateSelected = { showYearPicker = true },
+                    label = stringResource(R.string.add_horse_birth_year_label),
+                    placeholder = stringResource(R.string.add_horse_select_hint),
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 // Ağırlık slider

@@ -77,6 +77,8 @@
     <string name="qa_view_barns_subtitle">Find nearby horse facilities</string>
     <string name="qa_training_title">Training Plans</string>
     <string name="qa_training_subtitle">Follow your weekly goals</string>
+    <string name="qa_tjk_title">TJK Races</string>
+    <string name="qa_tjk_subtitle">Daily race results</string>
     <string name="stats_yours_title">Your Stats</string>
     <string name="stats_total_rides">Total Rides</string>
     <string name="stats_hours_suffix">h</string>
@@ -557,7 +559,77 @@
     <string name="subscription_already_pro">You\'re already Pro!</string>
     <string name="subscription_already_pro_title">Pro Membership Active 🎉</string>
     <string name="subscription_already_pro_subtitle">You have full access to all features.</string>
+    <string name="subscription_plan_yearly_savings">2 months free</string>
+    <string name="subscription_guarantee">30-day money-back guarantee</string>
     <!-- ProGate -->
     <string name="pro_gate_requires_pro">This feature requires Pro membership</string>
     <string name="pro_gate_upgrade">Go Pro</string>
+
+    <!-- Horse Health -->
+    <string name="horse_health_title">Health Calendar</string>
+    <string name="horse_health_upcoming">Upcoming (30 days)</string>
+    <string name="horse_health_past">Past</string>
+    <string name="horse_health_add">Add Record</string>
+    <string name="horse_health_empty_title">No health records yet</string>
+    <string name="horse_health_empty_subtitle">Track farrier visits, vaccinations, vet appointments and more.</string>
+    <string name="horse_health_type_farrier">Farrier</string>
+    <string name="horse_health_type_vaccination">Vaccination</string>
+    <string name="horse_health_type_dental">Dental</string>
+    <string name="horse_health_type_vet">Vet</string>
+    <string name="horse_health_type_deworming">Deworming</string>
+    <string name="horse_health_type_other">Other</string>
+    <string name="horse_health_days_left">%1$d days left</string>
+    <string name="horse_health_days_ago">%1$d days ago</string>
+    <string name="horse_health_today">Today</string>
+    <string name="horse_health_date_label">Date</string>
+    <string name="horse_health_notes_label">Notes</string>
+    <string name="horse_health_notes_hint">Optional notes…</string>
+    <string name="horse_health_save">Save</string>
+    <string name="horse_health_delete_confirm">Are you sure you want to delete this record?</string>
+    <string name="horse_health_type_label">Event Type</string>
+    <string name="verification_spam_hint">💡 If you don\'t see the email, check your spam or junk folder</string>
+
+    <!-- Safety Tracking -->
+    <string name="safety_title">Safety Tracking</string>
+    <string name="safety_subtitle">Stay safe while riding alone</string>
+    <string name="safety_section_tracking">Automatic Alarm</string>
+    <string name="safety_enable_label">Enable safety tracking</string>
+    <string name="safety_enable_desc">Automatically alerts your trusted contacts if you stop moving for 5 minutes during a ride</string>
+    <string name="safety_section_contacts">Trusted Contacts</string>
+    <string name="safety_contacts_desc">Up to 5 people who will be alerted in an emergency</string>
+    <string name="safety_add_contact">Add Contact</string>
+    <string name="safety_contact_name_label">Name</string>
+    <string name="safety_contact_phone_label">Phone</string>
+    <string name="safety_add_contact_title">Add Trusted Contact</string>
+    <string name="safety_no_contacts">No trusted contacts yet.\nAdd someone who can help in an emergency.</string>
+    <string name="safety_remove_contact_confirm">Remove this contact?</string>
+    <string name="safety_section_location">Live Location</string>
+    <string name="safety_share_location">Share My Location</string>
+    <string name="safety_share_location_desc">Copy a link to your current location to send via WhatsApp or SMS</string>
+    <string name="safety_location_copied">Location link copied!</string>
+    <string name="safety_location_unavailable">Location not available yet</string>
+    <string name="safety_alarm_title">Are you okay? 🛡️</string>
+    <string name="safety_alarm_body">You haven\'t moved in 5 minutes. Should we send an alert to your trusted contacts?</string>
+    <string name="safety_alarm_send">Send Alert</string>
+    <string name="safety_alarm_dismiss">I\'m Fine</string>
+    <string name="safety_pro_required">Safety tracking requires Pro membership</string>
+    <string name="safety_settings_link">Safety Tracking</string>
+    <string name="safety_max_contacts">Maximum 5 contacts allowed</string>
+    <string name="safety_contact_added">Contact added</string>
+    <string name="safety_contact_removed">Contact removed</string>
+    <string name="safety_alarm_sent">Alert sent to your contacts</string>
+    <string name="elevation_profile_title">Elevation Profile</string>
+
+    <!-- TJK Race Integration -->
+    <string name="tjk_title">TJK Race Results</string>
+    <string name="tjk_date_label">Date: %s</string>
+    <string name="tjk_results_header" formatted="false">%s — %s</string>
+    <string name="tjk_race_number">Race %d</string>
+    <string name="tjk_no_races">No race data available for this date</string>
+    <string name="tjk_error_load">Could not load race results</string>
+    <string name="tjk_col_pos">Pos</string>
+    <string name="tjk_col_horse">Horse</string>
+    <string name="tjk_col_jockey">Jockey</string>
+    <string name="tjk_col_time">Time</string>
+    <string name="refresh">Refresh</string>
 </resources>

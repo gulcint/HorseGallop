@@ -44,6 +44,7 @@ import com.horsegallop.feature.barn.presentation.BarnDetailScreen
 import com.horsegallop.feature.home.presentation.HomeScreen
 import com.horsegallop.feature.onboarding.presentation.OnboardingScreen
 import com.horsegallop.feature.horse.presentation.AddHorseScreen
+import com.horsegallop.feature.horse.presentation.HorseHealthScreen
 import com.horsegallop.feature.horse.presentation.HorseListScreen
 import com.horsegallop.feature.review.presentation.WriteReviewScreen
 import com.horsegallop.feature.notifications.presentation.NotificationsScreen
@@ -57,6 +58,8 @@ import com.horsegallop.feature.ride.presentation.RideTrackingRoute
 import com.horsegallop.feature.ride.presentation.RideTrackingViewModel
 
 import com.horsegallop.feature.ride.presentation.RideDetailScreen
+import com.horsegallop.feature.safety.presentation.SafetyScreen
+import com.horsegallop.feature.tjk.presentation.TjkRacesScreen
 import com.horsegallop.feature.subscription.presentation.SubscriptionScreen
 import com.horsegallop.feature.training.presentation.TrainingPlansScreen
 import com.horsegallop.ui.theme.LocalSemanticColors
@@ -92,6 +95,12 @@ sealed class Dest(val route: String) {
   }
   object Notifications : Dest("notifications")
   object Subscription : Dest("subscription")
+  object HorseHealth : Dest("horseHealth/{horseId}/{horseName}") {
+    fun route(horseId: String, horseName: String): String =
+      "horseHealth/$horseId/${android.net.Uri.encode(horseName)}"
+  }
+  object Safety : Dest("safety")
+  object TjkRaces : Dest("tjkRaces")
 }
 
 @Composable
@@ -298,6 +307,7 @@ fun AppNavHost(
         onStartRide = { navController.navigate(Dest.Ride.route) },
         onViewBarns = { navController.navigate(Dest.Barns.route) },
         onOpenTrainingPlans = { navController.navigate(Dest.Training.route) },
+        onOpenTjkRaces = { navController.navigate(Dest.TjkRaces.route) },
         onProfileClick = { navController.navigate(Dest.Profile.route) },
         onOpenRideDetail = { rideId ->
           navController.navigate(Dest.RideDetail.routeWithId(rideId))
@@ -349,8 +359,17 @@ fun AppNavHost(
           navController.navigate(Dest.Onboarding.route) {
             popUpTo(Dest.Home.route) { inclusive = true }
           }
-        }
+        },
+        onSafety = { navController.navigate(Dest.Safety.route) }
       )
+    }
+    composable(Dest.Safety.route) {
+      BackHandler { navController.popBackStack() }
+      SafetyScreen(onBack = { navController.popBackStack() })
+    }
+    composable(Dest.TjkRaces.route) {
+      BackHandler { navController.popBackStack() }
+      TjkRacesScreen(onBack = { navController.popBackStack() })
     }
     composable(Dest.Ride.route) {
       com.horsegallop.feature.ride.presentation.RideTrackingRoute(
@@ -374,12 +393,31 @@ fun AppNavHost(
       BackHandler { navController.popBackStack() }
       HorseListScreen(
         onAddHorse = { navController.navigate(Dest.AddHorse.route) },
-        onBack = { navController.popBackStack() }
+        onBack = { navController.popBackStack() },
+        onHorseHealthClick = { horseId, horseName ->
+          navController.navigate(Dest.HorseHealth.route(horseId, horseName))
+        }
       )
     }
     composable(Dest.AddHorse.route) {
       BackHandler { navController.popBackStack() }
       AddHorseScreen(onBack = { navController.popBackStack() })
+    }
+    composable(
+      route = Dest.HorseHealth.route,
+      arguments = listOf(
+        navArgument("horseId") { type = NavType.StringType },
+        navArgument("horseName") { type = NavType.StringType }
+      )
+    ) { backStackEntry ->
+      BackHandler { navController.popBackStack() }
+      val horseId = backStackEntry.arguments?.getString("horseId") ?: ""
+      val horseName = android.net.Uri.decode(backStackEntry.arguments?.getString("horseName") ?: "")
+      HorseHealthScreen(
+        horseId = horseId,
+        horseName = horseName,
+        onBack = { navController.popBackStack() }
+      )
     }
     composable(
       route = Dest.WriteReview.route,

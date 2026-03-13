@@ -116,6 +116,23 @@ data class BreedFunctionsDto(
     val sortOrder: Int = 99
 )
 
+data class UserSettingsFunctionsDto(
+    val themeMode: String = "SYSTEM",
+    val language: String = "SYSTEM",
+    val notificationsEnabled: Boolean = true,
+    val weightUnit: String = "kg",
+    val distanceUnit: String = "km"
+)
+
+data class HorseHealthEventFunctionsDto(
+    val id: String,
+    val horseId: String,
+    val type: String,
+    val date: String,
+    val notes: String = "",
+    val createdAt: String = ""
+)
+
 data class AppContentFunctionsDto(
     val locale: String,
     val homeHeroTitle: String? = null,
@@ -141,4 +158,50 @@ data class AppContentFunctionsDto(
     val settingsLanguageSubtitle: String? = null,
     val settingsNotificationsSubtitle: String? = null,
     val settingsPrivacySubtitle: String? = null
+)
+
+// ─── Safety DTOs ──────────────────────────────────────────────────────────────
+
+data class SafetyContactFunctionsDto(
+    val id: String = "",
+    val name: String = "",
+    val phone: String = ""
+)
+
+data class SafetySettingsFunctionsDto(
+    val isEnabled: Boolean = false,
+    val contacts: List<SafetyContactFunctionsDto> = emptyList(),
+    val autoAlarmMinutes: Int = 5
+)
+
+// ─── TJK DTOs ─────────────────────────────────────────────────────────────────
+
+data class TjkCityFunctionsDto(
+    val id: Int = 0,
+    val name: String = ""
+)
+
+data class TjkRaceResultFunctionsDto(
+    val position: String = "",
+    val horseName: String = "",
+    val jockey: String = "",
+    val trainer: String = "",
+    val weight: String = "",
+    val time: String = ""
+)
+
+data class TjkRaceFunctionsDto(
+    val raceNo: Int = 0,
+    val raceTitle: String = "",
+    val distance: String = "",
+    val surface: String = "",
+    val startTime: String = "",
+    val results: List<TjkRaceResultFunctionsDto> = emptyList()
+)
+
+data class TjkRaceDayFunctionsDto(
+    val date: String = "",
+    val cityId: Int = 0,
+    val cityName: String = "",
+    val races: List<TjkRaceFunctionsDto> = emptyList()
 )
