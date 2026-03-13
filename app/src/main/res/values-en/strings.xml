@@ -475,4 +475,35 @@
     <string name="horse_breed_akhal_teke">Akhal-Teke</string>
     <string name="horse_breed_turk">Turkish Horse</string>
     <string name="horse_breed_other">Other</string>
+
+    <!-- Subscription Screen -->
+    <string name="subscription_title">Go Pro</string>
+    <string name="subscription_hero_title">HorseGallop Pro</string>
+    <string name="subscription_hero_subtitle">Take your riding experience to the next level</string>
+    <string name="subscription_features_title">What\'s included</string>
+    <string name="subscription_feature_gait">Gait analysis — walk / trot / canter</string>
+    <string name="subscription_feature_training">Personalized training plans</string>
+    <string name="subscription_feature_elevation">Elevation profile chart</string>
+    <string name="subscription_feature_calories">Horse &amp; rider calorie tracking</string>
+    <string name="subscription_feature_safety">Safety tracking (coming soon)</string>
+    <string name="subscription_feature_support">Priority support</string>
+    <string name="subscription_pick_plan">Choose a plan</string>
+    <string name="subscription_plan_yearly_title">Yearly</string>
+    <string name="subscription_plan_yearly_price">₺399.99 / year</string>
+    <string name="subscription_plan_yearly_note">~₺33.3/mo · Save 44%%</string>
+    <string name="subscription_plan_best_value">Best Value</string>
+    <string name="subscription_plan_monthly_title">Monthly</string>
+    <string name="subscription_plan_monthly_price">₺59.99 / month</string>
+    <string name="subscription_cta_yearly">Go Pro — ₺399.99/year</string>
+    <string name="subscription_cta_monthly">Go Pro — ₺59.99/month</string>
+    <string name="subscription_restore">Restore Purchase</string>
+    <string name="subscription_terms">Terms</string>
+    <string name="subscription_purchase_failed">Purchase failed. Please try again.</string>
+    <string name="subscription_restore_failed">Restore failed. Please try again.</string>
+    <string name="subscription_already_pro">You\'re already Pro!</string>
+    <string name="subscription_already_pro_title">Pro Membership Active 🎉</string>
+    <string name="subscription_already_pro_subtitle">You have full access to all features.</string>
+    <!-- ProGate -->
+    <string name="pro_gate_requires_pro">This feature requires Pro membership</string>
+    <string name="pro_gate_upgrade">Go Pro</string>
 </resources>

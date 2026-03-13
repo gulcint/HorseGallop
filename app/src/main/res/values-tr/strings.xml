@@ -473,4 +473,35 @@
     <string name="horse_breed_akhal_teke">Akhal-Teke</string>
     <string name="horse_breed_turk">Türk Atı</string>
     <string name="horse_breed_other">Diğer</string>
+
+    <!-- Subscription Screen -->
+    <string name="subscription_title">Pro\'ya Geç</string>
+    <string name="subscription_hero_title">HorseGallop Pro</string>
+    <string name="subscription_hero_subtitle">Binicilik deneyimini bir üst seviyeye taşı</string>
+    <string name="subscription_features_title">Dahil olan özellikler</string>
+    <string name="subscription_feature_gait">Gait analizi — yürüyüş / tırıs / dörtnal</string>
+    <string name="subscription_feature_training">Kişiselleştirilmiş antrenman planları</string>
+    <string name="subscription_feature_elevation">Rakım profil grafiği</string>
+    <string name="subscription_feature_calories">At ve binici kalori takibi</string>
+    <string name="subscription_feature_safety">Güvenlik takibi (yakında)</string>
+    <string name="subscription_feature_support">Öncelikli destek</string>
+    <string name="subscription_pick_plan">Plan seç</string>
+    <string name="subscription_plan_yearly_title">Yıllık</string>
+    <string name="subscription_plan_yearly_price">₺399,99 / yıl</string>
+    <string name="subscription_plan_yearly_note">~₺33,3/ay · %%44 tasarruf</string>
+    <string name="subscription_plan_best_value">En İyi Değer</string>
+    <string name="subscription_plan_monthly_title">Aylık</string>
+    <string name="subscription_plan_monthly_price">₺59,99 / ay</string>
+    <string name="subscription_cta_yearly">Pro\'ya Geç — ₺399,99/yıl</string>
+    <string name="subscription_cta_monthly">Pro\'ya Geç — ₺59,99/ay</string>
+    <string name="subscription_restore">Satın Alımı Geri Yükle</string>
+    <string name="subscription_terms">Koşullar</string>
+    <string name="subscription_purchase_failed">Satın alma başarısız. Lütfen tekrar dene.</string>
+    <string name="subscription_restore_failed">Geri yükleme başarısız. Tekrar dene.</string>
+    <string name="subscription_already_pro">Zaten Pro üyesin!</string>
+    <string name="subscription_already_pro_title">Pro Üyeliğin Aktif 🎉</string>
+    <string name="subscription_already_pro_subtitle">Tüm özelliklere tam erişimin var.</string>
+    <!-- ProGate -->
+    <string name="pro_gate_requires_pro">Bu özellik Pro üyelik gerektirir</string>
+    <string name="pro_gate_upgrade">Pro\'ya Geç</string>
 </resources>

@@ -57,6 +57,7 @@ import com.horsegallop.feature.ride.presentation.RideTrackingRoute
 import com.horsegallop.feature.ride.presentation.RideTrackingViewModel
 
 import com.horsegallop.feature.ride.presentation.RideDetailScreen
+import com.horsegallop.feature.subscription.presentation.SubscriptionScreen
 import com.horsegallop.feature.training.presentation.TrainingPlansScreen
 import com.horsegallop.ui.theme.LocalSemanticColors
 
@@ -90,6 +91,7 @@ sealed class Dest(val route: String) {
     fun routeWithId(id: String): String = "rideDetail/$id"
   }
   object Notifications : Dest("notifications")
+  object Subscription : Dest("subscription")
 }
 
 @Composable
@@ -305,6 +307,12 @@ fun AppNavHost(
     }
     composable(Dest.Training.route) {
       TrainingPlansScreen(
+        onBack = { navController.popBackStack() },
+        onNavigateToSubscription = { navController.navigate(Dest.Subscription.route) }
+      )
+    }
+    composable(Dest.Subscription.route) {
+      SubscriptionScreen(
         onBack = { navController.popBackStack() }
       )
     }
