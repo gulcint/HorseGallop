@@ -18,8 +18,10 @@ play-services-location = "21.2.0"
 maps-compose = "4.3.0"
 kotlin = "2.0.0"
 skydoves-stability = "0.6.6"
+desugar-jdk = "2.1.2"
 
 [libraries]
+desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar-jdk" }
 androidx-core-ktx = "androidx.core:core-ktx:1.13.1"
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
 compose-ui = { module = "androidx.compose.ui:ui" }

@@ -173,3 +173,35 @@ data class SafetySettingsFunctionsDto(
     val contacts: List<SafetyContactFunctionsDto> = emptyList(),
     val autoAlarmMinutes: Int = 5
 )
+
+// ─── TJK DTOs ─────────────────────────────────────────────────────────────────
+
+data class TjkCityFunctionsDto(
+    val id: Int = 0,
+    val name: String = ""
+)
+
+data class TjkRaceResultFunctionsDto(
+    val position: String = "",
+    val horseName: String = "",
+    val jockey: String = "",
+    val trainer: String = "",
+    val weight: String = "",
+    val time: String = ""
+)
+
+data class TjkRaceFunctionsDto(
+    val raceNo: Int = 0,
+    val raceTitle: String = "",
+    val distance: String = "",
+    val surface: String = "",
+    val startTime: String = "",
+    val results: List<TjkRaceResultFunctionsDto> = emptyList()
+)
+
+data class TjkRaceDayFunctionsDto(
+    val date: String = "",
+    val cityId: Int = 0,
+    val cityName: String = "",
+    val races: List<TjkRaceFunctionsDto> = emptyList()
+)

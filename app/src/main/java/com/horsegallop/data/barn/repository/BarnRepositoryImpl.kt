@@ -103,56 +103,6 @@ class BarnRepositoryImpl @Inject constructor(
         }
     }
 
-    companion object {
-        val mockInstructors = listOf(
-            Instructor(
-                id = "i1",
-                name = "Ahmet Yilmaz",
-                photoUrl = null,
-                specialty = "Dressage",
-                rating = 4.9
-            ),
-            Instructor(
-                id = "i2",
-                name = "Ayse Kaya",
-                photoUrl = null,
-                specialty = "Show Jumping",
-                rating = 4.8
-            ),
-            Instructor(
-                id = "i3",
-                name = "Mehmet Demir",
-                photoUrl = null,
-                specialty = "Trail Riding",
-                rating = 4.7
-            )
-        )
-
-        val mockReviews = listOf(
-            BarnReview(
-                id = "r1",
-                authorName = "Selin A.",
-                rating = 5,
-                comment = "Wonderful experience! The instructors are very professional and caring.",
-                dateLabel = "March 2026"
-            ),
-            BarnReview(
-                id = "r2",
-                authorName = "Kemal T.",
-                rating = 4,
-                comment = "Great facilities and well-maintained horses. Would highly recommend.",
-                dateLabel = "February 2026"
-            ),
-            BarnReview(
-                id = "r3",
-                authorName = "Deniz M.",
-                rating = 5,
-                comment = "Best barn in the area. My kids love coming here every weekend.",
-                dateLabel = "January 2026"
-            )
-        )
-    }
-
     override suspend fun toggleFavorite(barnId: String) {
         cachedBarns.update { current ->
             current.map { barnWithLoc ->
