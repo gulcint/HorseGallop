@@ -38,7 +38,7 @@ fun HomeScreen(
   onStartRide: () -> Unit,
   onViewBarns: () -> Unit,
   onOpenTrainingPlans: () -> Unit = {},
-  onOpenTjkRaces: () -> Unit = {},
+  onOpenEquestrianAgenda: () -> Unit = {},
   onProfileClick: () -> Unit,
   onOpenRideDetail: (String) -> Unit = {},
   onViewAllActivities: (() -> Unit)? = null,
@@ -49,7 +49,7 @@ fun HomeScreen(
     onStartRide = onStartRide,
     onViewBarns = onViewBarns,
     onOpenTrainingPlans = onOpenTrainingPlans,
-    onOpenTjkRaces = onOpenTjkRaces,
+    onOpenEquestrianAgenda = onOpenEquestrianAgenda,
     onProfileClick = onProfileClick,
     onOpenRideDetail = onOpenRideDetail,
     onViewAllActivities = onViewAllActivities,
@@ -76,7 +76,7 @@ private fun HomeDashboard(
   onStartRide: () -> Unit,
   onViewBarns: () -> Unit,
   onOpenTrainingPlans: () -> Unit,
-  onOpenTjkRaces: () -> Unit = {},
+  onOpenEquestrianAgenda: () -> Unit = {},
   onProfileClick: () -> Unit,
   onOpenRideDetail: (String) -> Unit = {},
   onViewAllActivities: (() -> Unit)? = null,
@@ -122,7 +122,7 @@ private fun HomeDashboard(
           onStartRide = onStartRide,
           onViewBarns = onViewBarns,
           onOpenTrainingPlans = onOpenTrainingPlans,
-          onOpenTjkRaces = onOpenTjkRaces
+          onOpenEquestrianAgenda = onOpenEquestrianAgenda
         )
       }
       
@@ -248,7 +248,7 @@ private fun QuickActionsSection(
   onStartRide: () -> Unit,
   onViewBarns: () -> Unit,
   onOpenTrainingPlans: () -> Unit,
-  onOpenTjkRaces: () -> Unit = {}
+  onOpenEquestrianAgenda: () -> Unit = {}
 ) {
   Column {
     Text(
@@ -294,11 +294,11 @@ private fun QuickActionsSection(
         modifier = Modifier.weight(1f)
       )
       QuickActionCard(
-        title = stringResource(id = R.string.qa_tjk_title),
-        subtitle = stringResource(id = R.string.qa_tjk_subtitle),
+        title = stringResource(id = R.string.qa_equestrian_agenda_title),
+        subtitle = stringResource(id = R.string.qa_equestrian_agenda_subtitle),
         icon = Icons.Filled.EmojiEvents,
         color = MaterialTheme.colorScheme.error,
-        onClick = onOpenTjkRaces,
+        onClick = onOpenEquestrianAgenda,
         modifier = Modifier.weight(1f)
       )
     }

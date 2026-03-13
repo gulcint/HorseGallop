@@ -83,6 +83,8 @@
     <string name="setting_language_turkish">Türkçe</string>
     <string name="setting_notifications_title">Bildirimler</string>
     <string name="setting_notifications_subtitle">Uygulama bildirimlerini etkinleştir</string>
+    <string name="settings_sync_loading">Kayıtlı ayarların yükleniyor…</string>
+    <string name="settings_sync_saving">Değişikliklerin kaydediliyor…</string>
     <string name="setting_privacy_title">Gizlilik &amp; Veri</string>
     <string name="privacy_export_title">Verilerini dışa aktar</string>
     <string name="privacy_export_subtitle">KVKK için hesabınızın JSON kopyasını alın.</string>
@@ -96,8 +98,8 @@
     <string name="qa_view_barns_subtitle">Yakındaki çiftlikleri keşfet</string>
     <string name="qa_training_title">Antrenman Planları</string>
     <string name="qa_training_subtitle">Haftalık hedeflerini takip et</string>
-    <string name="qa_tjk_title">TJK Yarışları</string>
-    <string name="qa_tjk_subtitle">Günlük yarış sonuçları</string>
+    <string name="qa_equestrian_agenda_title">Binicilik Gündemi</string>
+    <string name="qa_equestrian_agenda_subtitle">Duyurular ve yarışmalar</string>
     <string name="stats_yours_title">İstatistikleriniz</string>
     <string name="stats_total_rides">Toplam Sürüş</string>
     <string name="stats_hours_suffix">saat</string>
@@ -175,22 +177,22 @@
     <string name="onboarding_feature_sharing">Paylaşım ve yorumlar</string>
     <string name="onboarding_feature_leaderboard">Haftalık liderlik tablosu</string>
     <string name="onboarding_feature_nearby">Yakındaki Biniciler</string>
-    <string name="onboarding_title_ranch">Güvenli Binicilik Deneyimi</string>
-    <string name="onboarding_subtitle_ranch">Onaylı ahırlar, uzman eğitmenler ve net güvenlik kuralları.</string>
-    <string name="onboarding_title_packages">Nasıl Kullanılır?</string>
-    <string name="onboarding_subtitle_packages">Üye ol, ahır seç, dersi planla ve anında rezervasyon yap.</string>
-    <string name="onboarding_title_boarding">Kurallar &amp; Sorumluluklar</string>
-    <string name="onboarding_subtitle_boarding">Kask zorunluluğu, iptal koşulları ve hayvan refahı.</string>
-    <string name="onboarding_title_cafe">Topluluk &amp; Gelişim</string>
-    <string name="onboarding_subtitle_cafe">Yorumlar, puanlar ve biniş gelişim takibi.</string>
-    <string name="onboarding_feature_signup">Hızlı üyelik</string>
-    <string name="onboarding_feature_barn_select">Onaylı ahır seçimi</string>
-    <string name="onboarding_feature_reserve">Anında rezervasyon</string>
-    <string name="onboarding_feature_safety">Öncelik güvenlik</string>
-    <string name="onboarding_feature_kvkk">KVKK veri kontrolleri</string>
-    <string name="onboarding_feature_reviews">Topluluk yorumları</string>
-    <string name="onboarding_feature_support">Destek ve yönlendirme</string>
-    <string name="onboarding_feature_progress">Gelişim takibi</string>
+    <string name="onboarding_title_ranch">Güvenle Başla</string>
+    <string name="onboarding_subtitle_ranch">Onaylı ahırları seç, uzman eğitmenleri keşfet ve güvenlik araçları hazır şekilde sürüşe başla.</string>
+    <string name="onboarding_title_packages">Her Sürüşü Ölç</string>
+    <string name="onboarding_subtitle_packages">Rota, rakım ve performansını takip et; antrenman planlarıyla düzenli ilerle.</string>
+    <string name="onboarding_title_boarding">Güvenlik ve Yarış İçgörüleri</string>
+    <string name="onboarding_subtitle_boarding">Güvenilen kişiler, canlı konum paylaşımı ve federasyon duyuruları tek yerde.</string>
+    <string name="onboarding_title_cafe">Atın ve Gelişimin Tek Yerde</string>
+    <string name="onboarding_subtitle_cafe">At sağlığı kayıtlarını tut, gelişimini izle ve gerçek binici yorumlarından yararlan.</string>
+    <string name="onboarding_feature_signup">Hızlı hesap kurulumu</string>
+    <string name="onboarding_feature_barn_select">Onaylı ahırlar ve eğitmenler</string>
+    <string name="onboarding_feature_reserve">Yapılandırılmış antrenman planları</string>
+    <string name="onboarding_feature_safety">Yalnız sürüşler için güvenlik takibi</string>
+    <string name="onboarding_feature_kvkk">Federasyon gündemi</string>
+    <string name="onboarding_feature_reviews">Güvenilir binici yorumları</string>
+    <string name="onboarding_feature_support">At sağlığı ve bakım takibi</string>
+    <string name="onboarding_feature_progress">Rota, rakım ve gelişim içgörüleri</string>
     <string name="onboarding_progress">%1$d / %2$d</string>
     <string name="onboarding_skip">Atla</string>
     <string name="onboarding_start">Başla</string>
@@ -588,16 +590,17 @@
     <string name="safety_alarm_sent">Kişilerine uyarı gönderildi</string>
     <string name="elevation_profile_title">Rakım Profili</string>
 
-    <!-- TJK Yarış Entegrasyonu -->
-    <string name="tjk_title">TJK Yarış Sonuçları</string>
-    <string name="tjk_date_label">Tarih: %s</string>
-    <string name="tjk_results_header" formatted="false">%s — %s</string>
-    <string name="tjk_race_number">%d. Koşu</string>
-    <string name="tjk_no_races">Bu tarihte yarış bilgisi bulunamadı</string>
-    <string name="tjk_error_load">Yarış sonuçları yüklenemedi</string>
-    <string name="tjk_col_pos">Sıra</string>
-    <string name="tjk_col_horse">At</string>
-    <string name="tjk_col_jockey">Jokey</string>
-    <string name="tjk_col_time">Süre</string>
+    <string name="equestrian_agenda_title">Binicilik Gündemi</string>
+    <string name="equestrian_agenda_tab_announcements">Duyurular</string>
+    <string name="equestrian_agenda_tab_competitions">Yarışmalar</string>
+    <string name="equestrian_agenda_chip_announcements">Federasyon</string>
+    <string name="equestrian_agenda_chip_competitions">Takvim</string>
+    <string name="equestrian_agenda_sync_title">Federasyon senkronu</string>
+    <string name="equestrian_agenda_sync_loading">Federe kulüpler ve harita konumları hazırlanıyor...</string>
+    <string name="equestrian_agenda_sync_idle">Senkron durumu henüz hazır değil.</string>
+    <string name="equestrian_agenda_sync_success">%1$d federe kulüp senkronlandı. Son güncelleme: %2$s</string>
+    <string name="equestrian_agenda_sync_error">Federasyon senkron durumu yüklenemedi.</string>
+    <string name="equestrian_agenda_empty_announcements">Şu anda gösterilecek duyuru bulunmuyor.</string>
+    <string name="equestrian_agenda_empty_competitions">Şu anda gösterilecek yarışma bulunmuyor.</string>
     <string name="refresh">Yenile</string>
 </resources>

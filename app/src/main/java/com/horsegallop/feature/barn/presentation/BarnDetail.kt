@@ -184,6 +184,7 @@ fun BarnDetailContent(
             contentPadding = PaddingValues(bottom = 118.dp)
         ) {
             item {
+                val hasCoordinates = barn.lat != 0.0 || barn.lng != 0.0
                 val barnLocation = LatLng(barn.lat, barn.lng)
                 val cameraPositionState = rememberCameraPositionState {
                     position = CameraPosition.fromLatLngZoom(barnLocation, 15f)
@@ -208,7 +209,7 @@ fun BarnDetailContent(
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
                         )
-                    } else {
+                    } else if (hasCoordinates) {
                         GoogleMap(
                             modifier = Modifier.fillMaxSize(),
                             cameraPositionState = cameraPositionState,
@@ -227,6 +228,17 @@ fun BarnDetailContent(
                             Marker(
                                 state = MarkerState(position = barnLocation),
                                 title = barn.barn.name
+                            )
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = barn.barn.location.ifEmpty { stringResource(id = R.string.unknown_location) },
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = semantic.onImageOverlay
                             )
                         }
                     }
@@ -346,7 +358,7 @@ fun BarnDetailContent(
                 }
             }
 
-            item {
+            if ((barn.lat != 0.0 || barn.lng != 0.0)) item {
                 val barnLocation = LatLng(barn.lat, barn.lng)
                 val cameraPositionState = rememberCameraPositionState {
                     position = CameraPosition.fromLatLngZoom(barnLocation, 14f)
@@ -421,8 +433,21 @@ fun BarnDetailContent(
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(12.dp))
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(barn.barn.tags.ifEmpty { listOf("Parking", "Cafe", "Lessons", "Trail") }) { tag ->
+                        val detailTags = barn.barn.tags.ifEmpty {
+                            listOfNotNull(
+                                barn.barn.phone?.takeIf { it.isNotBlank() }?.let { "Phone" },
+                                barn.barn.location.takeIf { it.isNotBlank() }?.let { "Federated Club" }
+                            )
+                        }
+                        if (detailTags.isEmpty()) {
+                            Text(
+                                text = stringResource(id = R.string.barn_description_fallback),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                items(detailTags) { tag ->
                                 Surface(
                                     shape = RoundedCornerShape(10.dp),
                                     color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.85f),
@@ -442,6 +467,7 @@ fun BarnDetailContent(
                         }
                     }
                 }
+            }
             }
 
             if (barn.barn.instructors.isNotEmpty()) {

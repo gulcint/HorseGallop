@@ -2,9 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Session Start
+
+- Once `memory.md`, then read `CLAUDE.md`.
+- Treat `memory.md` as the persistent product backlog and project memory file.
+
 ## Build Commands
 
 ```bash
+# One-time git hook setup
+bash scripts/setup-hooks.sh
+
 # Build debug APK
 ./gradlew assembleDebug
 
@@ -19,7 +27,15 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 # Clean build
 ./gradlew clean assembleDebug
+
+# Open PR only after local gate passes
+bash scripts/pr-pipeline-merge.sh
 ```
+
+Git hook policy:
+- `pre-commit`: conflict marker + shell syntax checks
+- `pre-push`: mandatory `lintDebug` + `testDebugUnitTest`
+- PR creation: use `bash scripts/pr-pipeline-merge.sh`; it runs the same local gate, opens/updates the PR, then enables auto-merge
 
 The `enforceSemanticSurfaceTokens` task runs automatically on every `preBuild` and will **fail the build** if direct color usage is detected in the feature/core/navigation layers. Fix by using `LocalSemanticColors.current` tokens instead of `Color(0xFF...)`, `Color.White`, `Color.Black`, or `MaterialTheme.colorScheme.surface/background`.
 

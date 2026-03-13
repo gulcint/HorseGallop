@@ -1,5 +1,6 @@
 import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 import type { BarnDto, BarnInstructorDto, BarnReviewDto, BarnListDto, LessonDto, LessonListDto, HorseTipDto, HorseTipListDto, BreedDto, BreedListDto } from "./contracts";
 import { buildHomeDashboard } from "./home-service";
 import {
@@ -194,6 +195,394 @@ function normalizeLessonDto(id: string, data: FirebaseFirestore.DocumentData): L
   };
 }
 
+const FEDERATION_BASE_URL = "https://www.binicilik.org.tr";
+const SCRAPE_CACHE_COLLECTION = "scrape_cache";
+const GEOCODE_CACHE_COLLECTION = "geocode_cache";
+const FEDERATED_BARNS_SYNC_STATUS_KEY = "federated_barns_sync_status";
+
+type EquestrianAnnouncementDto = {
+  id: string;
+  title: string;
+  summary: string;
+  publishedAtLabel: string;
+  detailUrl: string;
+  imageUrl?: string;
+};
+
+type EquestrianCompetitionDto = {
+  id: string;
+  title: string;
+  location: string;
+  dateLabel: string;
+  detailUrl: string;
+};
+
+type CoordinatesDto = {
+  lat: number;
+  lng: number;
+};
+
+type FederatedBarnSyncStatusDto = {
+  status: string;
+  syncedAt: string;
+  itemCount: number;
+  errorMessage?: string;
+};
+
+const TURKEY_CITY_COORDS: Record<string, CoordinatesDto> = {
+  "İSTANBUL": { lat: 41.0082, lng: 28.9784 },
+  "ANKARA": { lat: 39.9334, lng: 32.8597 },
+  "İZMİR": { lat: 38.4237, lng: 27.1428 },
+  "BURSA": { lat: 40.1885, lng: 29.0610 },
+  "ADANA": { lat: 37.0000, lng: 35.3213 },
+  "KOCAELİ": { lat: 40.7654, lng: 29.9408 },
+  "ANTALYA": { lat: 36.8969, lng: 30.7133 },
+  "KONYA": { lat: 37.8746, lng: 32.4932 },
+  "KAYSERİ": { lat: 38.7205, lng: 35.4826 },
+  "ÇORUM": { lat: 40.5506, lng: 34.9556 },
+  "ESKİŞEHİR": { lat: 39.7667, lng: 30.5256 },
+  "GAZİANTEP": { lat: 37.0662, lng: 37.3833 },
+  "DÜZCE": { lat: 40.8438, lng: 31.1565 },
+  "SAMSUN": { lat: 41.2867, lng: 36.3300 },
+  "NEVŞEHİR": { lat: 38.6244, lng: 34.7240 },
+  "ŞANLIURFA": { lat: 37.1674, lng: 38.7955 },
+};
+
+function toAbsoluteUrl(url: string): string {
+  if (!url) return "";
+  if (/^https?:\/\//i.test(url)) return url;
+  return new URL(url, `${FEDERATION_BASE_URL}/`).toString();
+}
+
+function normalizeHtmlText(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+async function fetchFederationHtml(pathOrUrl: string): Promise<string> {
+  const url = /^https?:\/\//i.test(pathOrUrl) ? pathOrUrl : toAbsoluteUrl(pathOrUrl);
+  const response = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml",
+      "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.8",
+      "Referer": FEDERATION_BASE_URL,
+    },
+  } as Record<string, unknown>);
+
+  if (!response.ok) {
+    throw new HttpsError("unavailable", `Federation returned HTTP ${response.status}`);
+  }
+
+  return response.text();
+}
+
+async function readScrapeCache<T>(key: string): Promise<T | null> {
+  const doc = await db.collection(SCRAPE_CACHE_COLLECTION).doc(key).get();
+  if (!doc.exists) return null;
+  const data = doc.data();
+  return (data?.payload as T | undefined) ?? null;
+}
+
+async function writeScrapeCache<T>(key: string, payload: T): Promise<void> {
+  await db.collection(SCRAPE_CACHE_COLLECTION).doc(key).set({
+    payload,
+    fetchedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
+}
+
+function inferCityFromAddress(address: string): string {
+  const normalized = normalizeHtmlText(address);
+  if (!normalized) return "";
+  const slashParts = normalized.split("/").map((x) => x.trim()).filter(Boolean);
+  if (slashParts.length > 0) {
+    return slashParts[slashParts.length - 1];
+  }
+  const words = normalized.split(/\s+/).filter(Boolean);
+  return words.length > 0 ? words[words.length - 1] : "";
+}
+
+function normalizeCityKey(value: string): string {
+  return normalizeHtmlText(value).toLocaleUpperCase("tr-TR");
+}
+
+async function resolveFederatedBarnCoordinates(
+  barnId: string,
+  address: string
+): Promise<CoordinatesDto> {
+  if (!address) return { lat: 0, lng: 0 };
+
+  const cacheRef = db.collection(GEOCODE_CACHE_COLLECTION).doc(`federated_barn_${barnId}`);
+  const cacheDoc = await cacheRef.get();
+  if (cacheDoc.exists) {
+    const data = cacheDoc.data();
+    if (data?.address === address && typeof data.lat === "number" && typeof data.lng === "number") {
+      return { lat: data.lat, lng: data.lng };
+    }
+  }
+
+  const cityKey = normalizeCityKey(inferCityFromAddress(address));
+  const fallbackCoords = TURKEY_CITY_COORDS[cityKey];
+
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=tr&q=${encodeURIComponent(address)}`,
+      {
+        headers: {
+          "User-Agent": "HorseGallop/1.0 (federated-barns-geocode)",
+          "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.8",
+        },
+      } as Record<string, unknown>
+    );
+
+    if (response.ok) {
+      const results = await response.json() as Array<{ lat?: string; lon?: string }>;
+      const lat = Number(results[0]?.lat);
+      const lng = Number(results[0]?.lon);
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        const coords = { lat, lng };
+        await cacheRef.set({
+          address,
+          ...coords,
+          source: "nominatim",
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+        return coords;
+      }
+    }
+  } catch (_error) {
+    // Fall through to city-level fallback.
+  }
+
+  if (fallbackCoords) {
+    await cacheRef.set({
+      address,
+      ...fallbackCoords,
+      source: "city_fallback",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    return fallbackCoords;
+  }
+
+  return { lat: 0, lng: 0 };
+}
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T, index: number) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let cursor = 0;
+
+  const runners = Array.from({ length: Math.max(1, concurrency) }, async () => {
+    while (cursor < items.length) {
+      const currentIndex = cursor++;
+      results[currentIndex] = await worker(items[currentIndex], currentIndex);
+    }
+  });
+
+  await Promise.all(runners);
+  return results;
+}
+
+function buildBarnDescription(address: string, email: string, website: string): string {
+  return [
+    address && `Adres: ${address}`,
+    email && `E-posta: ${email}`,
+    website && `Web: ${website}`,
+  ].filter(Boolean).join(" • ");
+}
+
+async function scrapeFederatedBarns(): Promise<BarnDto[]> {
+  const html = await fetchFederationHtml("/Kulup/11/Federe-kulupler");
+  const $ = cheerio.load(html);
+  const modals = $("div.modal[id^='federedetail']").toArray();
+
+  const barns = await mapWithConcurrency(modals, 3, async (modal) => {
+    const $modal = $(modal);
+    const id = ($modal.attr("id") || "").replace("federedetail", "").trim();
+    if (!id) {
+      return {
+        id: "",
+        name: "",
+        description: "",
+        location: "",
+        lat: 0,
+        lng: 0,
+        tags: [],
+        amenities: [],
+        rating: 0,
+        reviewCount: 0,
+        instructors: [],
+        reviews: [],
+      } satisfies BarnDto;
+    }
+
+    const title = normalizeHtmlText($modal.find(".modal-title").first().text());
+    const imageUrl = toAbsoluteUrl($modal.find("img").first().attr("src") || "");
+
+    const fields: Record<string, string> = {};
+    $modal.find("table tr").each((_rowIndex, row) => {
+      const cells = $(row).find("td");
+      const key = normalizeHtmlText(cells.eq(0).text()).toLowerCase();
+      const rawValueCell = cells.eq(2);
+      let value = normalizeHtmlText(rawValueCell.text());
+      if (key.includes("web")) {
+        const link = rawValueCell.find("a").attr("href") || "";
+        value = normalizeHtmlText(link || value);
+      }
+      if (key) {
+        fields[key] = value;
+      }
+    });
+
+    const address = fields["adres"] || "";
+    const email = fields["e posta"] || "";
+    const website = fields["web sitesi"] || "";
+    const phone = fields["telefon"] || "";
+    const city = inferCityFromAddress(address);
+    const coords = await resolveFederatedBarnCoordinates(id, address);
+
+    return {
+      id,
+      name: title,
+      description: buildBarnDescription(address, email, website),
+      location: city || address,
+      lat: coords.lat,
+      lng: coords.lng,
+      tags: [],
+      amenities: [],
+      rating: 0,
+      reviewCount: 0,
+      heroImageUrl: imageUrl || undefined,
+      capacity: 0,
+      phone: phone || undefined,
+      instructors: [],
+      reviews: [],
+    };
+  });
+
+  return barns
+    .filter((item) => item.id.trim().length > 0)
+    .sort((a, b) => a.name.localeCompare(b.name, "tr"));
+}
+
+async function getFederatedBarnsPayload(): Promise<BarnListDto> {
+  const cacheKey = "federated_barns";
+  try {
+    const items = await scrapeFederatedBarns();
+    const payload = { items };
+    await writeScrapeCache(cacheKey, payload);
+    return payload;
+  } catch (error) {
+    const cached = await readScrapeCache<BarnListDto>(cacheKey);
+    if (cached) return cached;
+    throw error;
+  }
+}
+
+async function getFederatedBarnDetailPayload(id: string): Promise<BarnDto> {
+  const cacheKey = "federated_barns";
+  try {
+    const items = await scrapeFederatedBarns();
+    const payload = { items };
+    await writeScrapeCache(cacheKey, payload);
+    const barn = items.find((item) => item.id === id);
+    if (!barn) throw new HttpsError("not-found", "Barn not found");
+    return barn;
+  } catch (error) {
+    const cached = await readScrapeCache<BarnListDto>(cacheKey);
+    const barn = cached?.items.find((item) => item.id === id);
+    if (barn) return barn;
+    throw error;
+  }
+}
+
+async function syncFederatedBarnDirectory(): Promise<BarnListDto> {
+  const items = await scrapeFederatedBarns();
+  const payload = { items };
+  await writeScrapeCache("federated_barns", payload);
+  await db.collection(SCRAPE_CACHE_COLLECTION).doc(FEDERATED_BARNS_SYNC_STATUS_KEY).set({
+    status: "success",
+    itemCount: items.length,
+    syncedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
+  return payload;
+}
+
+async function getFederatedBarnSyncStatusPayload(): Promise<FederatedBarnSyncStatusDto> {
+  const doc = await db.collection(SCRAPE_CACHE_COLLECTION).doc(FEDERATED_BARNS_SYNC_STATUS_KEY).get();
+  const data = doc.data() || {};
+  const syncedAtValue = data.syncedAt;
+  let syncedAt = "";
+  if (syncedAtValue instanceof admin.firestore.Timestamp) {
+    syncedAt = syncedAtValue.toDate().toISOString();
+  } else if (typeof syncedAtValue === "string") {
+    syncedAt = syncedAtValue;
+  }
+
+  return {
+    status: typeof data.status === "string" ? data.status : "idle",
+    syncedAt,
+    itemCount: typeof data.itemCount === "number" ? data.itemCount : 0,
+    errorMessage: typeof data.errorMessage === "string" ? data.errorMessage : undefined,
+  };
+}
+
+async function scrapeEquestrianAnnouncements(): Promise<EquestrianAnnouncementDto[]> {
+  const html = await fetchFederationHtml("/Anasayfa/Duyuruarsiv");
+  const $ = cheerio.load(html);
+
+  return $("article.post.haber").map((_index, article) => {
+    const $article = $(article);
+    const linkEl = $article.find("h4.entry-title a").first();
+    const title = normalizeHtmlText(linkEl.text());
+    const detailUrl = toAbsoluteUrl(linkEl.attr("href") || "");
+    const summary = normalizeHtmlText($article.find("p.mt-5").first().clone().find("a").remove().end().text());
+    const imageUrl = toAbsoluteUrl($article.find(".post-thumb img").first().attr("src") || "");
+    const day = normalizeHtmlText($article.find(".entry-date .day").text());
+    const month = normalizeHtmlText($article.find(".entry-date .month").text());
+    const year = normalizeHtmlText($article.find(".entry-date .year").text());
+    const publishedAtLabel = normalizeHtmlText([day, month, year].filter(Boolean).join(" "));
+    const idMatch = detailUrl.match(/\/Duyuru\/(\d+)\//i);
+    const id = idMatch?.[1] || title;
+
+    return {
+      id,
+      title,
+      summary,
+      publishedAtLabel,
+      detailUrl,
+      imageUrl: imageUrl || undefined,
+    };
+  }).get();
+}
+
+async function scrapeEquestrianCompetitions(): Promise<EquestrianCompetitionDto[]> {
+  const html = await fetchFederationHtml("/Anasayfa/Yarislar");
+  const $ = cheerio.load(html);
+
+  return $("table.table-telefon-rehberi tbody tr").map((_index, row) => {
+    const cells = $(row).find("td");
+    const titleLink = cells.eq(0).find("a").first();
+    const title = normalizeHtmlText(titleLink.text());
+    if (!title) return null;
+    const detailUrl = toAbsoluteUrl(titleLink.attr("href") || "");
+    const dateLabel = normalizeHtmlText(cells.eq(1).text());
+    const location = normalizeHtmlText(cells.eq(2).text());
+    const idMatch = detailUrl.match(/\/Yarisma\/(\d+)\//i);
+    const id = idMatch?.[1] || title;
+
+    return {
+      id,
+      title,
+      location,
+      dateLabel,
+      detailUrl,
+    };
+  }).get().filter((item): item is EquestrianCompetitionDto => item !== null);
+}
+
 export const getUserProfile = onCall({ region: "us-central1" }, async (request) => {
   const auth = request.auth;
   if (!auth?.uid) {
@@ -298,10 +687,7 @@ export const getBarns = onCall({ region: "us-central1" }, async (request): Promi
   parseOptionalNumber((data as { lat?: unknown }).lat, "lat");
   parseOptionalNumber((data as { lng?: unknown }).lng, "lng");
   parseOptionalNumber((data as { radiusKm?: unknown }).radiusKm, "radiusKm");
-
-  const snapshot = await db.collection("barns").get();
-  const items = snapshot.docs.map((doc) => normalizeBarnDto(doc.id, doc.data()));
-  return { items };
+  return getFederatedBarnsPayload();
 });
 
 export const getBarnDetail = onCall({ region: "us-central1" }, async (request): Promise<BarnDto> => {
@@ -310,41 +696,55 @@ export const getBarnDetail = onCall({ region: "us-central1" }, async (request): 
   }
 
   const id = parseRequiredId((request.data || {}).id, "id");
-  const [doc, instructorSnap, reviewSnap] = await Promise.all([
-    db.collection("barns").doc(id).get(),
-    db.collection("barns").doc(id).collection("instructors").orderBy("rating", "desc").limit(5).get(),
-    db.collection("reviews")
-      .where("targetId", "==", id)
-      .where("targetType", "==", "barn")
-      .orderBy("createdAt", "desc")
-      .limit(5)
-      .get(),
-  ]);
-  if (!doc.exists) {
-    throw new HttpsError("not-found", "Barn not found");
-  }
-  const instructors: BarnInstructorDto[] = instructorSnap.docs.map((d) => {
-    const x = d.data();
-    return {
-      id: d.id,
-      name: normalizeString(x.name, 120),
-      photoUrl: typeof x.photoUrl === "string" ? x.photoUrl : "",
-      specialty: normalizeString(x.specialty, 80),
-      rating: typeof x.rating === "number" ? x.rating : 0,
-    };
-  });
-  const reviews: BarnReviewDto[] = reviewSnap.docs.map((d) => {
-    const x = d.data();
-    return {
-      id: d.id,
-      authorName: normalizeString(x.authorName, 120),
-      rating: typeof x.rating === "number" ? x.rating : 0,
-      comment: normalizeString(x.comment, 500),
-      dateLabel: normalizeString(x.dateLabel, 40),
-    };
-  });
-  return normalizeBarnDto(doc.id, doc.data() || {}, instructors, reviews);
+  return getFederatedBarnDetailPayload(id);
 });
+
+export const getFederatedBarns = onCall({ region: "us-central1" }, async (request): Promise<BarnListDto> => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
+  }
+  return getFederatedBarnsPayload();
+});
+
+export const getFederatedBarnDetail = onCall({ region: "us-central1" }, async (request): Promise<BarnDto> => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
+  }
+  const id = parseRequiredId((request.data || {}).id, "id");
+  return getFederatedBarnDetailPayload(id);
+});
+
+export const syncFederatedBarns = onSchedule(
+  {
+    region: "us-central1",
+    schedule: "every day 04:00",
+    timeZone: "Europe/Istanbul",
+    retryCount: 1,
+  },
+  async () => {
+    try {
+      await syncFederatedBarnDirectory();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown sync error";
+      await db.collection(SCRAPE_CACHE_COLLECTION).doc(FEDERATED_BARNS_SYNC_STATUS_KEY).set({
+        status: "error",
+        errorMessage,
+        syncedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+      throw error;
+    }
+  }
+);
+
+export const getFederatedBarnsSyncStatus = onCall(
+  { region: "us-central1" },
+  async (request): Promise<FederatedBarnSyncStatusDto> => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "Authentication required");
+    }
+    return getFederatedBarnSyncStatusPayload();
+  }
+);
 
 export const getLessons = onCall({ region: "us-central1" }, async (request): Promise<LessonListDto> => {
   if (!request.auth?.uid) {
@@ -874,207 +1274,40 @@ export const triggerSafetyAlarm = onCall({ region: "us-central1" }, async (reque
   return { success: true, locationLink };
 });
 
-// ─── TJK Yarış Entegrasyonu ──────────────────────────────────────────────────
+// ─── Equestrian Agenda ───────────────────────────────────────────────────────
 
-// City ID → name mapping from tjk.org
-const TJK_CITIES: Record<number, string> = {
-  1: "Adana",
-  2: "İzmir",
-  3: "İstanbul",
-  4: "Bursa",
-  5: "Ankara",
-  6: "Urfa",
-  7: "Elazığ",
-  8: "Diyarbakır",
-  9: "Kocaeli",
-};
-
-interface TjkRaceResultEntry {
-  position: string;
-  horseName: string;
-  jockey: string;
-  trainer: string;
-  weight: string;
-  time: string;
-}
-
-interface TjkRaceEntry {
-  raceNo: number;
-  raceTitle: string;
-  distance: string;
-  surface: string;
-  startTime: string;
-  results: TjkRaceResultEntry[];
-}
-
-interface TjkRaceDayResponse {
-  date: string;
-  cityId: number;
-  cityName: string;
-  races: TjkRaceEntry[];
-}
-
-async function scrapeTjkRaceDay(dateStr: string, cityId: number): Promise<TjkRaceDayResponse> {
-  // Fetch the AJAX endpoint for a specific city — this returns the full race data for that city.
-  // Verified URL pattern from tjk.org inspection (13/03/2026).
-  const cityName = TJK_CITIES[cityId] ?? "";
-  const url =
-    `https://www.tjk.org/TR/YarisSever/Info/Sehir/GunlukYarisSonuclari` +
-    `?SehirId=${cityId}` +
-    `&QueryParameter_Tarih=${encodeURIComponent(dateStr)}` +
-    `&SehirAdi=${encodeURIComponent(cityName)}` +
-    `&Era=today`;
-
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36",
-      "Accept": "text/html,application/xhtml+xml",
-      "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.8",
-      "Referer": "https://www.tjk.org/",
-    },
-  } as Record<string, unknown>);
-
-  if (!response.ok) {
-    throw new HttpsError("unavailable", `TJK returned HTTP ${response.status}`);
+export const getEquestrianAnnouncements = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
   }
 
-  const html = await response.text();
-  const $ = cheerio.load(html);
-  const races: TjkRaceEntry[] = [];
-
-  // ── Confirmed HTML structure (verified 13/03/2026) ──────────────────────────
-  //
-  // <div class="races-panes races-panes{SehirId}">
-  //   <div>   ← one div per race
-  //     <h3 class="race-no">
-  //       <a href="#223638" id="anc223638">1. Koşu 14.30</a>
-  //     </h3>
-  //     <table summary="Kosular" class="tablesorter">
-  //       <thead><tr>
-  //         <th>Forma</th><th>S</th><th>At İsmi</th><th>Yaş</th>
-  //         <th>Orijin</th><th>Sıklet</th><th>Jokey</th><th>Sahip</th>
-  //         <th>Antrenör</th><th>Derece</th>...
-  //       </tr></thead>
-  //       <tbody>
-  //         <tr class="odd|even">
-  //           <td class="gunluk-GunlukYarisSonuclari-FormaKodu">…</td>
-  //           <td class="gunluk-GunlukYarisSonuclari-SONUCNO">1</td>
-  //           <td class="gunluk-GunlukYarisSonuclari-AtAdi3"><a>DİLŞAHKAYA(1)</a></td>
-  //           <td class="gunluk-GunlukYarisSonuclari-Yas">4y k k</td>
-  //           <td class="gunluk-GunlukYarisSonuclari-Baba">…</td>
-  //           <td class="gunluk-GunlukYarisSonuclari-Kilo">58</td>
-  //           <td class="gunluk-GunlukYarisSonuclari-JokeAdi"><a>Y.GÖKÇE</a></td>
-  //           <td class="gunluk-GunlukYarisSonuclari-SahipAdi"><a>ELİF KAYA</a></td>
-  //           <td class="gunluk-GunlukYarisSonuclari-AntronorAdi"><a>RAM. KAYA</a></td>
-  //           <td class="gunluk-GunlukYarisSonuclari-Derece">1.34.43</td>
-  //           …
-  //         </tr>
-  //       </tbody>
-  //     </table>
-  //   </div>
-  // </div>
-
-  // Find the races-panes container (class contains "races-panes")
-  const racesPanes = $(`[class*="races-panes${cityId}"], .races-panes`).first();
-  const container = racesPanes.length ? racesPanes : $("body");
-
-  // Each direct child div of races-panes is one race
-  container.children("div").each((_idx, raceDiv) => {
-    const $raceDiv = $(raceDiv);
-
-    // ── Race header: "1. Koşu 14.30" ──────────────────────────────────────
-    const headingText = $raceDiv.find("h3.race-no a").first().text().trim();
-    // Matches "1. Koşu 14.30" or "1. Koşu: 14.30"
-    const headingMatch = headingText.match(/(\d+)\.\s*Ko[şs]u[:\s]+(\d{1,2}[.:]\d{2})/i);
-    const raceNo = headingMatch ? parseInt(headingMatch[1], 10) : (_idx + 1);
-    const startTime = headingMatch ? headingMatch[2].replace(".", ":") : "";
-
-    // ── Race details: look for sibling/child elements with distance & surface ──
-    // Some pages show these in a <ul> or <p> near the heading.
-    // We'll try common patterns and fall back to empty string.
-    const detailsText = $raceDiv.find(".race-details, .kosu-bilgi, .race-info-row, ul.race-info li")
-      .text().trim();
-    // Try to extract distance (e.g., "1400 m") and surface ("Kum", "Çim", "Sentetik")
-    const distanceMatch = detailsText.match(/(\d{3,5})\s*m/i);
-    const surfaceMatch = detailsText.match(/\b(Kum|Çim|Sentetik|Turf|Sand|Grass)\b/i);
-    const distance = distanceMatch ? `${distanceMatch[1]} m` : "";
-    const surface = surfaceMatch ? surfaceMatch[1] : "";
-
-    // Race title: the link text may include a name after the "Koşu" label
-    // e.g., "1. Koşu — Uğur Koşusu 14.30" — extract the named part if present
-    const raceTitleMatch = headingText.match(/Ko[şs]u[:\s—–-]+(.+?)\s+\d{1,2}[.:]\d{2}/i);
-    const raceTitle = raceTitleMatch ? raceTitleMatch[1].trim() : "";
-
-    // ── Result rows ────────────────────────────────────────────────────────
-    const results: TjkRaceResultEntry[] = [];
-    $raceDiv.find("table.tablesorter tbody tr").each((_ri, row) => {
-      const $row = $(row);
-
-      // Skip rows without enough cells (e.g., spacer rows)
-      const position = $row.find("td.gunluk-GunlukYarisSonuclari-SONUCNO").text().trim();
-      if (!position) return;
-
-      // Horse name: strip "(1)", "(2)" starting-number suffix if present
-      const rawHorse = $row.find("td.gunluk-GunlukYarisSonuclari-AtAdi3 a").first().text().trim();
-      const horseName = rawHorse.replace(/\(\d+\)\s*$/, "").trim();
-
-      // Weight: first text node (before any <sup> bonus/penalty info)
-      const weightRaw = $row.find("td.gunluk-GunlukYarisSonuclari-Kilo").contents().first().text().trim();
-
-      // Jockey: link text
-      const jockey = $row.find("td.gunluk-GunlukYarisSonuclari-JokeAdi a").first().text().trim();
-
-      // Trainer
-      const trainer = $row.find("td.gunluk-GunlukYarisSonuclari-AntronorAdi a").first().text().trim();
-
-      // Finishing time (e.g., "1.34.43")
-      const time = $row.find("td.gunluk-GunlukYarisSonuclari-Derece").text().trim();
-
-      results.push({ position, horseName, jockey, trainer, weight: weightRaw, time });
-    });
-
-    // Only include races that have at least one result row
-    if (results.length > 0 || headingMatch) {
-      races.push({ raceNo, raceTitle, distance, surface, startTime, results });
-    }
-  });
-
-  return {
-    date: dateStr,
-    cityId,
-    cityName: cityName || `City ${cityId}`,
-    races,
-  };
-}
-
-/**
- * getTjkRaceDay — Scrapes tjk.org for daily race results.
- *
- * Input: { date: "DD/MM/YYYY", cityId: number }
- * Output: { date, cityId, cityName, races: [ { raceNo, raceTitle, distance, surface, startTime, results: [...] } ] }
- */
-export const getTjkRaceDay = onCall({ region: "us-central1" }, async (request) => {
-  const data = request.data as Record<string, unknown>;
-  const dateStr = typeof data.date === "string" ? data.date.trim() : "";
-  const cityId = typeof data.cityId === "number" ? data.cityId : 3; // default: İstanbul
-
-  if (!dateStr || !/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
-    throw new HttpsError("invalid-argument", "date must be in DD/MM/YYYY format");
+  const cacheKey = "equestrian_announcements";
+  try {
+    const items = await scrapeEquestrianAnnouncements();
+    const payload = { items };
+    await writeScrapeCache(cacheKey, payload);
+    return payload;
+  } catch (error) {
+    const cached = await readScrapeCache<{ items: EquestrianAnnouncementDto[] }>(cacheKey);
+    if (cached) return cached;
+    throw error;
   }
-  if (!TJK_CITIES[cityId]) {
-    throw new HttpsError("invalid-argument", `Unknown cityId: ${cityId}`);
-  }
-
-  const result = await scrapeTjkRaceDay(dateStr, cityId);
-  return result;
 });
 
-/**
- * getTjkCities — Returns the list of TJK cities with their IDs.
- */
-export const getTjkCities = onCall({ region: "us-central1" }, async (_request) => {
-  return Object.entries(TJK_CITIES).map(([id, name]) => ({
-    id: parseInt(id, 10),
-    name,
-  }));
+export const getEquestrianCompetitions = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
+  }
+
+  const cacheKey = "equestrian_competitions";
+  try {
+    const items = await scrapeEquestrianCompetitions();
+    const payload = { items };
+    await writeScrapeCache(cacheKey, payload);
+    return payload;
+  } catch (error) {
+    const cached = await readScrapeCache<{ items: EquestrianCompetitionDto[] }>(cacheKey);
+    if (cached) return cached;
+    throw error;
+  }
 });

@@ -15,6 +15,7 @@ import com.horsegallop.domain.settings.repository.UserSettingsRepository
 import com.horsegallop.domain.review.repository.ReviewRepository
 import com.horsegallop.data.auth.repository.ProfileRepositoryImpl
 import com.horsegallop.data.barn.repository.BarnRepositoryImpl
+import com.horsegallop.data.equestrian.repository.EquestrianAgendaRepositoryImpl
 import com.horsegallop.data.ride.repository.RideRepositoryImpl
 import com.horsegallop.data.ride.repository.RideHistoryRepositoryImpl
 import com.horsegallop.data.schedule.repository.ScheduleRepositoryImpl
@@ -22,6 +23,7 @@ import com.horsegallop.data.subscription.repository.SubscriptionRepositoryImpl
 import com.horsegallop.data.training.repository.TrainingRepositoryImpl
 import com.horsegallop.data.privacy.repository.PrivacyRepositoryImpl
 import com.horsegallop.domain.barn.repository.BarnRepository
+import com.horsegallop.domain.equestrian.repository.EquestrianAgendaRepository
 import com.horsegallop.domain.ride.repository.RideRepository
 import com.horsegallop.domain.ride.repository.RideHistoryRepository
 import com.horsegallop.domain.schedule.repository.ScheduleRepository
@@ -148,7 +150,7 @@ abstract class DataModule {
 
     @Binds
     @Singleton
-    abstract fun bindTjkRepository(
-        tjkRepositoryImpl: com.horsegallop.data.tjk.repository.TjkRepositoryImpl
-    ): com.horsegallop.domain.tjk.repository.TjkRepository
+    abstract fun bindEquestrianAgendaRepository(
+        equestrianAgendaRepositoryImpl: EquestrianAgendaRepositoryImpl
+    ): EquestrianAgendaRepository
 }

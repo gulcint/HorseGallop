@@ -174,34 +174,26 @@ data class SafetySettingsFunctionsDto(
     val autoAlarmMinutes: Int = 5
 )
 
-// ─── TJK DTOs ─────────────────────────────────────────────────────────────────
-
-data class TjkCityFunctionsDto(
-    val id: Int = 0,
-    val name: String = ""
+data class EquestrianAnnouncementFunctionsDto(
+    val id: String = "",
+    val title: String = "",
+    val summary: String = "",
+    val publishedAtLabel: String = "",
+    val detailUrl: String = "",
+    val imageUrl: String? = null
 )
 
-data class TjkRaceResultFunctionsDto(
-    val position: String = "",
-    val horseName: String = "",
-    val jockey: String = "",
-    val trainer: String = "",
-    val weight: String = "",
-    val time: String = ""
+data class EquestrianCompetitionFunctionsDto(
+    val id: String = "",
+    val title: String = "",
+    val location: String = "",
+    val dateLabel: String = "",
+    val detailUrl: String = ""
 )
 
-data class TjkRaceFunctionsDto(
-    val raceNo: Int = 0,
-    val raceTitle: String = "",
-    val distance: String = "",
-    val surface: String = "",
-    val startTime: String = "",
-    val results: List<TjkRaceResultFunctionsDto> = emptyList()
-)
-
-data class TjkRaceDayFunctionsDto(
-    val date: String = "",
-    val cityId: Int = 0,
-    val cityName: String = "",
-    val races: List<TjkRaceFunctionsDto> = emptyList()
+data class FederatedBarnSyncStatusFunctionsDto(
+    val status: String = "",
+    val syncedAt: String = "",
+    val itemCount: Int = 0,
+    val errorMessage: String? = null
 )

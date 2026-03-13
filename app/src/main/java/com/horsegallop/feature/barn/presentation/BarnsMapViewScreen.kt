@@ -52,7 +52,7 @@ fun BarnsMapViewScreen(
     viewModel: BarnViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val barns = uiState.filteredBarns
+    val barns = uiState.filteredBarns.filter { it.barn.lat != 0.0 || it.barn.lng != 0.0 }
     val feedback = LocalAppFeedbackController.current
     val coroutineScope = rememberCoroutineScope()
     val semantic = LocalSemanticColors.current

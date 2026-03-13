@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash scripts/setup-hooks.sh)",
+      "Bash(bash scripts/run-android-gate.sh)",
+      "Bash(bash scripts/pr-pipeline-merge.sh)",
+      "Bash(./gradlew lintDebug --no-daemon --stacktrace)",
+      "Bash(./gradlew testDebugUnitTest --no-daemon --stacktrace)",
+      "Bash(./gradlew lintDebug testDebugUnitTest --no-daemon --stacktrace)",
+      "Bash(git push)",
+      "Bash(git push -u origin:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(git rev-parse --abbrev-ref HEAD)",
+      "Bash(git rev-parse --abbrev-ref --symbolic-full-name @{u})"
+    ]
+  }
+}

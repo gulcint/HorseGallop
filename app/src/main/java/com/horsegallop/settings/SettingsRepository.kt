@@ -36,6 +36,18 @@ class SettingsRepository @Inject constructor(
         prefs.edit().putBoolean(KEY_NOTIFICATIONS, enabled).apply()
     }
 
+    fun replaceState(
+        themeMode: ThemeMode,
+        language: AppLanguage,
+        notificationsEnabled: Boolean
+    ) {
+        prefs.edit()
+            .putString(KEY_THEME_MODE, themeMode.id)
+            .putString(KEY_LANGUAGE, language.id)
+            .putBoolean(KEY_NOTIFICATIONS, notificationsEnabled)
+            .apply()
+    }
+
     private fun readState(): SettingsState {
         val themeMode = ThemeMode.fromId(prefs.getString(KEY_THEME_MODE, ThemeMode.SYSTEM.id))
         val language = AppLanguage.fromId(prefs.getString(KEY_LANGUAGE, AppLanguage.SYSTEM.id))
