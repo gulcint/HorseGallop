@@ -40,17 +40,18 @@ Asagidaki plan urun backlog'u gibi ele alinmali. Her bolumde isler bitince durum
 
 ### 2. Harita & Polyline
 
-**Durum:** Bekliyor
+**Durum:** Kismen tamamlandi
 
 **Icerik:**
 - daha iyi ride haritasi goruntusu
 - gait renkli segment kalitesini artirma
 - rota cizimi ve okunabilirlik iyilestirmeleri
+- `RideDetailScreen` icin nokta filtreleme, gait bazli segment cizimi ve start/end marker polish tamamlandi
 
 **Sonraki Adimlar:**
-- mevcut `RideTrackingScreen` ve `RideDetailScreen` polyline pipeline'ini incele
-- gait segmentleri icin veri modelini netlestir
-- harita renk/kalinlik/legend kararlarini ver
+- ayni segment/filter pipeline'ini `RideTrackingScreen` tarafina tasimayi degerlendir
+- canli surus haritasinda ayni legend ve okunabilirlik standartlarini uygula
+- gercek cihazda GPS gurultusu ile rota filtresini tekrar dogrula
 
 **Riskler:**
 - GPS verisi gurultuluysa segment goruntusu kotu olabilir
@@ -91,7 +92,6 @@ Asagidaki plan urun backlog'u gibi ele alinmali. Her bolumde isler bitince durum
 - genel bildirim icin backend entry point eklendi
 
 **Sonraki Adimlar:**
-- notification tap hedef yonlendirmesi ekle
 - genel bildirim girisini admin/panel akisina bagla
 - FCM push ile in-app listeyi ayni event modeli uzerinde birlestir
 

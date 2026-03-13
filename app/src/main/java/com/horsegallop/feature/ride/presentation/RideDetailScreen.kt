@@ -47,7 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeCap as ComposeStrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -57,13 +57,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.RoundCap
+import com.google.maps.android.compose.AdvancedMarker
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.horsegallop.R
@@ -420,15 +419,8 @@ private fun InfoCard(
 @Composable
 fun RideDetailMap(geoPoints: List<GeoPoint>) {
     val semantic = LocalSemanticColors.current
-    val validGeo = geoPoints.filter { it.latitude != 0.0 || it.longitude != 0.0 }
-    val displayedGeo = remember(validGeo) {
-        if (validGeo.size > 500) {
-            val step = validGeo.size / 500
-            validGeo.filterIndexed { i, _ -> i % step == 0 || i == validGeo.lastIndex }
-        } else {
-            validGeo
-        }
-    }
+    val route = remember(geoPoints) { buildRideRoutePresentation(geoPoints) }
+    val displayedGeo = route.filteredPoints
 
     if (displayedGeo.isEmpty()) {
         Box(
@@ -455,15 +447,17 @@ fun RideDetailMap(geoPoints: List<GeoPoint>) {
         if (displayedGeo.size > 1) {
             val builder = LatLngBounds.Builder()
             displayedGeo.forEach { builder.include(LatLng(it.latitude, it.longitude)) }
-            runCatching { cameraPositionState.animate(CameraUpdateFactory.newLatLngBounds(builder.build(), 100)) }
+            runCatching { cameraPositionState.animate(CameraUpdateFactory.newLatLngBounds(builder.build(), 140)) }
         } else {
             val pt = displayedGeo.first()
             cameraPositionState.position = CameraPosition.fromLatLngZoom(LatLng(pt.latitude, pt.longitude), 15f)
         }
     }
 
-    val gaitSegments = remember(displayedGeo) { buildGaitSegments(displayedGeo) }
-    val hasGaitData = displayedGeo.any { it.speedKmh > 0f }
+    val startPoint = displayedGeo.firstOrNull()?.let { LatLng(it.latitude, it.longitude) }
+    val endPoint = displayedGeo.lastOrNull()?.let { LatLng(it.latitude, it.longitude) }
+    val gaitSegments = route.segments
+    val hasGaitData = gaitSegments.isNotEmpty() && displayedGeo.any { it.speedKmh > 0f }
 
     Box(modifier = Modifier.fillMaxSize()) {
         GoogleMap(
@@ -472,37 +466,67 @@ fun RideDetailMap(geoPoints: List<GeoPoint>) {
             uiSettings = MapUiSettings(zoomControlsEnabled = false)
         ) {
             if (hasGaitData) {
-                gaitSegments.forEach { (segPoints, gait) ->
-                    val segColor = when (gait) {
+                gaitSegments.forEach { segment ->
+                    val segColor = when (segment.gait) {
                         "trot"   -> semantic.gaitTrot
                         "canter" -> semantic.gaitCanter
                         else     -> semantic.gaitWalk
                     }
-                    if (segPoints.size >= 2) {
-                        Polyline(points = segPoints, color = segColor.copy(alpha = 0.25f), width = 18f, geodesic = true, jointType = JointType.ROUND)
-                        Polyline(points = segPoints, color = segColor, width = 9f, geodesic = true, jointType = JointType.ROUND)
+                    if (segment.points.size >= 2) {
+                        Polyline(
+                            points = segment.points,
+                            color = segColor.copy(alpha = 0.24f),
+                            width = 16f,
+                            geodesic = true,
+                            startCap = RoundCap(),
+                            endCap = RoundCap(),
+                            jointType = com.google.android.gms.maps.model.JointType.ROUND
+                        )
+                        Polyline(
+                            points = segment.points,
+                            color = segColor,
+                            width = 8f,
+                            geodesic = true,
+                            startCap = RoundCap(),
+                            endCap = RoundCap(),
+                            jointType = com.google.android.gms.maps.model.JointType.ROUND
+                        )
                     }
                 }
             } else {
                 // Fallback: solid primary color for older rides without speed data
                 val allPoints = displayedGeo.map { LatLng(it.latitude, it.longitude) }
-                Polyline(points = allPoints, color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f), width = 18f, geodesic = true, jointType = JointType.ROUND)
-                Polyline(points = allPoints, color = MaterialTheme.colorScheme.primary, width = 9f, geodesic = true, jointType = JointType.ROUND)
+                Polyline(
+                    points = allPoints,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.24f),
+                    width = 16f,
+                    geodesic = true,
+                    startCap = RoundCap(),
+                    endCap = RoundCap(),
+                    jointType = com.google.android.gms.maps.model.JointType.ROUND
+                )
+                Polyline(
+                    points = allPoints,
+                    color = MaterialTheme.colorScheme.primary,
+                    width = 8f,
+                    geodesic = true,
+                    startCap = RoundCap(),
+                    endCap = RoundCap(),
+                    jointType = com.google.android.gms.maps.model.JointType.ROUND
+                )
             }
-            Marker(
-                state = MarkerState(position = LatLng(displayedGeo.first().latitude, displayedGeo.first().longitude)),
-                title = stringResource(R.string.map_start),
-                icon = com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(
-                    com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_GREEN
+            startPoint?.let {
+                AdvancedMarker(
+                    state = com.google.maps.android.compose.MarkerState(position = it),
+                    title = stringResource(R.string.map_start)
                 )
-            )
-            Marker(
-                state = MarkerState(position = LatLng(displayedGeo.last().latitude, displayedGeo.last().longitude)),
-                title = stringResource(R.string.map_end),
-                icon = com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(
-                    com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_RED
+            }
+            if (endPoint != null && endPoint != startPoint) {
+                AdvancedMarker(
+                    state = com.google.maps.android.compose.MarkerState(position = endPoint),
+                    title = stringResource(R.string.map_end)
                 )
-            )
+            }
         }
         // Gait legend overlay — only when speed data is available
         if (hasGaitData) {
@@ -511,9 +535,9 @@ fun RideDetailMap(geoPoints: List<GeoPoint>) {
                     .align(Alignment.TopEnd)
                     .padding(end = 10.dp, top = 10.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(semantic.panelOverlay.copy(alpha = 0.90f))
-                    .padding(horizontal = 8.dp, vertical = 5.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    .background(semantic.panelOverlay.copy(alpha = 0.92f))
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 DetailGaitDot(color = semantic.gaitWalk, label = stringResource(R.string.gait_walk))
@@ -656,7 +680,7 @@ private fun ElevationProfileCard(pathPoints: List<GeoPoint>, totalDistanceKm: Fl
                 drawPath(
                     linePath,
                     color = primaryColor,
-                    style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                    style = Stroke(width = 2.dp.toPx(), cap = ComposeStrokeCap.Round, join = StrokeJoin.Round)
                 )
             }
             Row(
