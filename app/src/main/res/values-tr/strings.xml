@@ -83,6 +83,10 @@
     <string name="setting_language_turkish">Türkçe</string>
     <string name="setting_notifications_title">Bildirimler</string>
     <string name="setting_notifications_subtitle">Uygulama bildirimlerini etkinleştir</string>
+    <string name="notifications_title">Bildirimler</string>
+    <string name="notifications_loading">Bildirimler yükleniyor...</string>
+    <string name="notifications_empty_title">Henüz bildirim yok</string>
+    <string name="notifications_mark_all_read">Tümünü okundu işaretle</string>
     <string name="settings_sync_loading">Kayıtlı ayarların yükleniyor…</string>
     <string name="settings_sync_saving">Değişikliklerin kaydediliyor…</string>
     <string name="setting_privacy_title">Gizlilik &amp; Veri</string>

@@ -82,18 +82,22 @@ Asagidaki plan urun backlog'u gibi ele alinmali. Her bolumde isler bitince durum
 
 ### 4. Gercek Bildirimler
 
-**Durum:** Bekliyor
+**Durum:** Kismen tamamlandi
 
 **Icerik:**
 - hardcoded 5 bildirim yerine Firestore realtime listener
+- rezervasyon bildirimi backend uretimi eklendi
+- horse health yaklasan etkinlik reminder akisi eklendi
+- genel bildirim icin backend entry point eklendi
 
 **Sonraki Adimlar:**
-- mevcut notification repository'yi incele
-- Firestore koleksiyon yapisini belirle
-- read/unread ve ordering davranisini netlestir
+- notification tap hedef yonlendirmesi ekle
+- genel bildirim girisini admin/panel akisina bagla
+- FCM push ile in-app listeyi ayni event modeli uzerinde birlestir
 
 **Riskler:**
 - gereksiz realtime dinleyici pil ve veri tuketimi yaratabilir
+- reminder duplicate mantigi uzun vadede tekrar gozden gecirilmeli
 
 **Bagimliliklar:**
 - FCM

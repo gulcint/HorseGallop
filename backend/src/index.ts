@@ -222,6 +222,15 @@ type CoordinatesDto = {
   lng: number;
 };
 
+type NotificationWriteDto = {
+  type: "general" | "reservation" | "lesson" | "horse_health";
+  title: string;
+  body: string;
+  targetId?: string;
+  targetRoute?: string;
+  notificationKey?: string;
+};
+
 type FederatedBarnSyncStatusDto = {
   status: string;
   syncedAt: string;
@@ -256,6 +265,82 @@ function toAbsoluteUrl(url: string): string {
 
 function normalizeHtmlText(value: string): string {
   return value.replace(/\s+/g, " ").trim();
+}
+
+function sanitizeNotificationKey(value: string): string {
+  return value.replace(/[^a-zA-Z0-9_-]+/g, "_").slice(0, 120);
+}
+
+function horseHealthTypeLabel(type: string): string {
+  switch (type) {
+  case "FARRIER":
+    return "nalbant";
+  case "VACCINATION":
+    return "asi";
+  case "DENTAL":
+    return "dis bakimi";
+  case "VET":
+    return "veteriner kontrolu";
+  case "DEWORMING":
+    return "parazit uygulamasi";
+  default:
+    return "saglik takibi";
+  }
+}
+
+function currentIstanbulDateKey(offsetDays = 0): string {
+  const now = new Date();
+  now.setUTCDate(now.getUTCDate() + offsetDays);
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Europe/Istanbul",
+  }).format(now);
+}
+
+function isWithinUpcomingReminderWindow(date: string): boolean {
+  const today = currentIstanbulDateKey(0);
+  const tomorrow = currentIstanbulDateKey(1);
+  return date >= today && date <= tomorrow;
+}
+
+async function writeUserNotification(uid: string, payload: NotificationWriteDto): Promise<string> {
+  const notificationsRef = db.collection("users").doc(uid).collection("notifications");
+  const notificationKey = payload.notificationKey ? sanitizeNotificationKey(payload.notificationKey) : "";
+  const ref = notificationKey ? notificationsRef.doc(notificationKey) : notificationsRef.doc();
+
+  await ref.set({
+    type: payload.type,
+    title: normalizeString(payload.title, 160),
+    body: normalizeString(payload.body, 500),
+    timestamp: Date.now(),
+    isRead: false,
+    targetId: payload.targetId ? normalizeString(payload.targetId, 120) : null,
+    targetRoute: payload.targetRoute ? normalizeString(payload.targetRoute, 160) : null,
+    notificationKey: notificationKey || null,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
+
+  return ref.id;
+}
+
+async function maybeWriteHorseHealthReminder(
+  uid: string,
+  horseId: string,
+  eventId: string,
+  horseName: string,
+  type: string,
+  date: string
+): Promise<void> {
+  if (!isWithinUpcomingReminderWindow(date)) return;
+
+  const typeLabel = horseHealthTypeLabel(type);
+  await writeUserNotification(uid, {
+    type: "horse_health",
+    title: "Yaklasan saglik randevusu",
+    body: `${horseName || "Atin"} icin ${typeLabel} ${date} tarihinde planlandi.`,
+    targetId: horseId,
+    targetRoute: `horseHealth/${horseId}`,
+    notificationKey: `horse_health_${uid}_${horseId}_${eventId}_${date}`,
+  });
 }
 
 async function fetchFederationHtml(pathOrUrl: string): Promise<string> {
@@ -867,6 +952,15 @@ export const bookLesson = onCall({ region: "us-central1" }, async (request) => {
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
+  await writeUserNotification(uid, {
+    type: "reservation",
+    title: "Rezervasyon olusturuldu",
+    body: `${lessonTitle} dersi ${lessonDate} icin onaylandi.`,
+    targetId: ref.id,
+    targetRoute: "notifications",
+    notificationKey: `reservation_confirmed_${ref.id}`,
+  });
+
   return { id: ref.id, lessonId, lessonTitle, lessonDate, instructorName, status: "confirmed", createdAt: new Date().toISOString() };
 });
 
@@ -1099,9 +1193,12 @@ export const addHorseHealthEvent = onCall({ region: "us-central1" }, async (requ
 
   const horseDoc = await db.collection("users").doc(uid).collection("horses").doc(horseId).get();
   if (!horseDoc.exists) throw new HttpsError("not-found", "Horse not found");
+  const horseName = normalizeString(horseDoc.data()?.name, 80);
 
   const ref = await db.collection("users").doc(uid).collection("horses").doc(horseId)
     .collection("health_events").add({ type, date, notes, createdAt: admin.firestore.FieldValue.serverTimestamp() });
+
+  await maybeWriteHorseHealthReminder(uid, horseId, ref.id, horseName, type, date);
 
   return { id: ref.id, horseId, type, date, notes, createdAt: new Date().toISOString() };
 });
@@ -1125,6 +1222,17 @@ export const updateHorseHealthEvent = onCall({ region: "us-central1" }, async (r
   if (!doc.exists) throw new HttpsError("not-found", "Health event not found");
 
   await ref.update(update);
+  const horseDoc = await db.collection("users").doc(uid).collection("horses").doc(horseId).get();
+  const nextType = typeof update.type === "string" ? update.type : normalizeString(doc.data()?.type, 40) || "OTHER";
+  const nextDate = typeof update.date === "string" ? update.date : normalizeString(doc.data()?.date, 10);
+  await maybeWriteHorseHealthReminder(
+    uid,
+    horseId,
+    eventId,
+    normalizeString(horseDoc.data()?.name, 80),
+    nextType,
+    nextDate
+  );
   return { success: true };
 });
 
@@ -1143,6 +1251,66 @@ export const deleteHorseHealthEvent = onCall({ region: "us-central1" }, async (r
 
   await ref.delete();
   return { success: true };
+});
+
+export const syncHorseHealthReminders = onSchedule(
+  {
+    region: "us-central1",
+    schedule: "every 6 hours",
+    timeZone: "Europe/Istanbul",
+    retryCount: 1,
+  },
+  async () => {
+    const today = currentIstanbulDateKey(0);
+    const tomorrow = currentIstanbulDateKey(1);
+    const snapshot = await db.collectionGroup("health_events")
+      .where("date", ">=", today)
+      .where("date", "<=", tomorrow)
+      .get();
+
+    await mapWithConcurrency(snapshot.docs, 10, async (doc) => {
+      const segments = doc.ref.path.split("/");
+      const uid = segments[1] || "";
+      const horseId = segments[3] || "";
+      const eventId = segments[5] || doc.id;
+      if (!uid || !horseId) return;
+
+      const data = doc.data();
+      const horseDoc = await db.collection("users").doc(uid).collection("horses").doc(horseId).get();
+      await maybeWriteHorseHealthReminder(
+        uid,
+        horseId,
+        eventId,
+        normalizeString(horseDoc.data()?.name, 80),
+        normalizeString(data.type, 40) || "OTHER",
+        normalizeString(data.date, 10)
+      );
+    });
+  }
+);
+
+export const sendGeneralNotification = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+  const data = request.data as Record<string, unknown>;
+
+  const title = normalizeString(data.title, 160);
+  const body = normalizeString(data.body, 500);
+  if (!title || !body) {
+    throw new HttpsError("invalid-argument", "title and body are required");
+  }
+
+  const targetRoute = normalizeString(data.targetRoute, 160);
+  const targetId = normalizeString(data.targetId, 120);
+  const id = await writeUserNotification(uid, {
+    type: "general",
+    title,
+    body,
+    targetId: targetId || undefined,
+    targetRoute: targetRoute || undefined,
+  });
+
+  return { success: true, id };
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

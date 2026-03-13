@@ -62,6 +62,10 @@
     <string name="setting_language_turkish">Turkish</string>
     <string name="setting_notifications_title">Notifications</string>
     <string name="setting_notifications_subtitle">Enable app notifications</string>
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_loading">Loading notifications...</string>
+    <string name="notifications_empty_title">No notifications yet</string>
+    <string name="notifications_mark_all_read">Mark all as read</string>
     <string name="settings_sync_loading">Loading your saved settings...</string>
     <string name="settings_sync_saving">Saving your changes...</string>
     <string name="setting_privacy_title">Privacy &amp; Data</string>
