@@ -9,6 +9,8 @@ import {
   parseOptionalString,
   parseRequiredId,
 } from "./validators";
+import fetch from "node-fetch";
+import * as cheerio from "cheerio";
 
 admin.initializeApp();
 
@@ -870,4 +872,136 @@ export const triggerSafetyAlarm = onCall({ region: "us-central1" }, async (reque
     });
 
   return { success: true, locationLink };
+});
+
+// ─── TJK Yarış Entegrasyonu ──────────────────────────────────────────────────
+
+// City ID → name mapping from tjk.org
+const TJK_CITIES: Record<number, string> = {
+  1: "Adana",
+  2: "İzmir",
+  3: "İstanbul",
+  4: "Bursa",
+  5: "Ankara",
+  6: "Urfa",
+  7: "Elazığ",
+  8: "Diyarbakır",
+  9: "Kocaeli",
+};
+
+interface TjkRaceResultEntry {
+  position: string;
+  horseName: string;
+  jockey: string;
+  trainer: string;
+  weight: string;
+  time: string;
+}
+
+interface TjkRaceEntry {
+  raceNo: number;
+  raceTitle: string;
+  distance: string;
+  surface: string;
+  startTime: string;
+  results: TjkRaceResultEntry[];
+}
+
+interface TjkRaceDayResponse {
+  date: string;
+  cityId: number;
+  cityName: string;
+  races: TjkRaceEntry[];
+}
+
+async function scrapeTjkRaceDay(dateStr: string, cityId: number): Promise<TjkRaceDayResponse> {
+  // dateStr expected as DD/MM/YYYY to match tjk.org parameter
+  const url = `https://www.tjk.org/TR/YarisSever/Info/Page/GunlukYarisSonuclari` +
+    `?SehirId=${cityId}&QueryParameter_Tarih=${encodeURIComponent(dateStr)}&SehirAdi=${encodeURIComponent(TJK_CITIES[cityId] ?? "")}`;
+
+  const response = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (compatible; HorseGallopApp/1.0)",
+      "Accept-Language": "tr-TR,tr;q=0.9",
+    },
+    timeout: 10000,
+  } as Record<string, unknown>);
+
+  if (!response.ok) {
+    throw new HttpsError("unavailable", `TJK returned HTTP ${response.status}`);
+  }
+
+  const html = await response.text();
+  const $ = cheerio.load(html);
+  const races: TjkRaceEntry[] = [];
+
+  // TJK race result pages contain a table per race.
+  // Each race section has a header with race number/title/distance/surface/time,
+  // followed by a results table with columns: position, horse, jockey, trainer, weight, time.
+  $(".race-result-table, table.table-race, .kosu-sonuc").each((_idx, raceEl) => {
+    const header = $(raceEl).find(".race-header, .kosu-baslik, thead tr").first();
+    const raceNoText = header.find(".race-no, .kosu-no, td:nth-child(1)").first().text().trim();
+    const raceNo = parseInt(raceNoText.replace(/[^0-9]/g, ""), 10) || (_idx + 1);
+    const raceTitle = header.find(".race-title, .kosu-adi, td:nth-child(2)").first().text().trim();
+    const distance = header.find(".distance, .mesafe, td:nth-child(3)").first().text().trim();
+    const surface = header.find(".surface, .pist, td:nth-child(4)").first().text().trim();
+    const startTime = header.find(".start-time, .saat, td:nth-child(5)").first().text().trim();
+
+    const results: TjkRaceResultEntry[] = [];
+    $(raceEl).find("tbody tr, .result-row").each((_ri, row) => {
+      const cells = $(row).find("td");
+      if (cells.length < 4) return;
+      results.push({
+        position: $(cells[0]).text().trim(),
+        horseName: $(cells[1]).text().trim(),
+        jockey: $(cells[2]).text().trim(),
+        trainer: $(cells[3]).text().trim(),
+        weight: cells.length > 4 ? $(cells[4]).text().trim() : "",
+        time: cells.length > 5 ? $(cells[5]).text().trim() : "",
+      });
+    });
+
+    if (raceTitle || results.length > 0) {
+      races.push({ raceNo, raceTitle, distance, surface, startTime, results });
+    }
+  });
+
+  return {
+    date: dateStr,
+    cityId,
+    cityName: TJK_CITIES[cityId] ?? `City ${cityId}`,
+    races,
+  };
+}
+
+/**
+ * getTjkRaceDay — Scrapes tjk.org for daily race results.
+ *
+ * Input: { date: "DD/MM/YYYY", cityId: number }
+ * Output: { date, cityId, cityName, races: [ { raceNo, raceTitle, distance, surface, startTime, results: [...] } ] }
+ */
+export const getTjkRaceDay = onCall({ region: "us-central1" }, async (request) => {
+  const data = request.data as Record<string, unknown>;
+  const dateStr = typeof data.date === "string" ? data.date.trim() : "";
+  const cityId = typeof data.cityId === "number" ? data.cityId : 3; // default: İstanbul
+
+  if (!dateStr || !/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+    throw new HttpsError("invalid-argument", "date must be in DD/MM/YYYY format");
+  }
+  if (!TJK_CITIES[cityId]) {
+    throw new HttpsError("invalid-argument", `Unknown cityId: ${cityId}`);
+  }
+
+  const result = await scrapeTjkRaceDay(dateStr, cityId);
+  return result;
+});
+
+/**
+ * getTjkCities — Returns the list of TJK cities with their IDs.
+ */
+export const getTjkCities = onCall({ region: "us-central1" }, async (_request) => {
+  return Object.entries(TJK_CITIES).map(([id, name]) => ({
+    id: parseInt(id, 10),
+    name,
+  }));
 });
