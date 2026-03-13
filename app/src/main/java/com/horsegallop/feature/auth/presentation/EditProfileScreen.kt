@@ -4,11 +4,7 @@ package com.horsegallop.feature.auth.presentation
 
 import android.app.DatePickerDialog
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,15 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Badge
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.ContactPhone
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.MonitorWeight
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
@@ -56,16 +43,23 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
+import com.horsegallop.core.components.HorseGallopButton
 import com.horsegallop.core.components.HorseGallopDatePicker
 import com.horsegallop.core.components.HorseGallopDropdown
+import com.horsegallop.core.components.HorseGallopTextField
 import com.horsegallop.core.components.HorseLoadingOverlay
 import com.horsegallop.core.feedback.LocalAppFeedbackController
+import com.horsegallop.domain.auth.model.UserProfile
+import com.horsegallop.ui.theme.AppTheme
 import com.horsegallop.ui.theme.LocalSemanticColors
 import java.util.Calendar
 import java.util.Locale
+
+// ─── Entry composable ─────────────────────────────────────────────────────────
 
 @Composable
 fun EditProfileScreen(
@@ -74,28 +68,21 @@ fun EditProfileScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    val semantic = LocalSemanticColors.current
     val feedback = LocalAppFeedbackController.current
 
-    val profile = state.draftProfile
     val cities = remember {
         runCatching { context.resources.getStringArray(R.array.city_list).toList() }
             .getOrElse { emptyList() }
     }
 
-    val weightInputRegex = remember { Regex("^\\d{0,3}(\\.\\d{0,2})?$") }
+    val saveLabel = stringResource(id = R.string.button_save)
+    val saveChangesLabel = stringResource(id = R.string.save_changes)
 
-    val saveAction: () -> Unit = {
-        viewModel.saveProfile(onSuccess = onBack)
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.startEditSession()
-    }
+    LaunchedEffect(Unit) { viewModel.startEditSession() }
 
     LaunchedEffect(state.errorMessageResId) {
-        state.errorMessageResId?.let { messageResId ->
-            feedback.showError(messageResId)
+        state.errorMessageResId?.let { resId ->
+            feedback.showError(resId)
             viewModel.clearMessages()
         }
     }
@@ -119,18 +106,59 @@ fun EditProfileScreen(
         )
     }
 
+    EditProfileContent(
+        state = state,
+        cities = cities,
+        saveLabel = saveLabel,
+        saveChangesLabel = saveChangesLabel,
+        onBack = {
+            viewModel.discardEditSession()
+            onBack()
+        },
+        onSave = { viewModel.saveProfile(onSuccess = onBack) },
+        onFirstNameChange = { viewModel.updateDraft(firstName = it) },
+        onLastNameChange = { viewModel.updateDraft(lastName = it) },
+        onCountryCodeChange = { viewModel.updateDraft(countryCode = it) },
+        onPhoneChange = { viewModel.updateDraft(phone = it) },
+        onCityChange = { viewModel.updateDraft(city = it) },
+        onBirthDateClick = { datePickerDialog.show() },
+        onWeightChange = { viewModel.updateDraft(weightInput = it) }
+    )
+}
+
+// ─── Content (Preview-able) ───────────────────────────────────────────────────
+
+@Composable
+private fun EditProfileContent(
+    state: ProfileUiState,
+    cities: List<String>,
+    saveLabel: String,
+    saveChangesLabel: String,
+    onBack: () -> Unit,
+    onSave: () -> Unit,
+    onFirstNameChange: (String) -> Unit,
+    onLastNameChange: (String) -> Unit,
+    onCountryCodeChange: (String) -> Unit,
+    onPhoneChange: (String) -> Unit,
+    onCityChange: (String) -> Unit,
+    onBirthDateClick: () -> Unit,
+    onWeightChange: (String) -> Unit
+) {
+    val semantic = LocalSemanticColors.current
+    val profile = state.draftProfile
+    val weightInputRegex = remember { Regex("^\\d{0,3}(\\.\\d{0,2})?$") }
+
+    val fullName = remember(profile.firstName, profile.lastName) {
+        "${profile.firstName} ${profile.lastName}".trim()
+    }
+
     Scaffold(
         containerColor = semantic.screenBase,
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(text = stringResource(id = R.string.edit_profile_title)) },
                 navigationIcon = {
-                    androidx.compose.material3.IconButton(
-                        onClick = {
-                            viewModel.discardEditSession()
-                            onBack()
-                        }
-                    ) {
+                    androidx.compose.material3.IconButton(onClick = onBack) {
                         androidx.compose.material3.Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(id = R.string.back)
@@ -139,10 +167,10 @@ fun EditProfileScreen(
                 },
                 actions = {
                     TextButton(
-                        onClick = saveAction,
+                        onClick = onSave,
                         enabled = !state.isSaving
                     ) {
-                        Text(text = stringResource(id = R.string.button_save))
+                        Text(text = saveLabel)
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -150,119 +178,121 @@ fun EditProfileScreen(
                     titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
-        },
-        bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Button(
-                    onClick = saveAction,
-                    enabled = !state.isSaving,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(54.dp)
-                        .testTag(ProfileTestTags.SaveButton),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Text(text = stringResource(id = R.string.save_changes))
-                }
-            }
         }
     ) { innerPadding ->
-        Box(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f),
-                            semantic.screenBase
-                        )
-                    )
-                )
+                .padding(innerPadding),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                if (state.isSaving) {
-                    item {
-                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                    }
-                }
+            if (state.isSaving) {
+                item { LinearProgressIndicator(modifier = Modifier.fillMaxWidth()) }
+            }
 
-                item {
-                    ProfileSectionCard(
-                        title = stringResource(id = R.string.profile_section_personal),
-                        subtitle = stringResource(id = R.string.profile_description)
+            // ── Hero kartı ───────────────────────────────────────────────────
+            item {
+                ProfileHeroCard(
+                    profile = profile,
+                    fullName = fullName,
+                    onPhotoClick = { /* TODO: photo picker */ }
+                )
+            }
+
+            // ── Kişisel Bilgiler ─────────────────────────────────────────────
+            item {
+                ProfileSectionCard(
+                    title = stringResource(id = R.string.profile_section_personal),
+                    subtitle = stringResource(id = R.string.profile_description)
+                ) {
+                    // Ad + Soyad yan yana
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        FormSectionTitle(
-                            icon = Icons.Filled.Person,
-                            title = stringResource(id = R.string.label_first_name)
-                        )
-                        OutlinedTextField(
+                        HorseGallopTextField(
                             value = profile.firstName,
-                            onValueChange = { viewModel.updateDraft(firstName = it) },
-                            singleLine = true,
+                            onValueChange = onFirstNameChange,
+                            label = stringResource(id = R.string.label_first_name),
                             isError = state.formErrors.firstNameResId != null,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(min = 52.dp)
-                                .testTag(ProfileTestTags.FirstNameField),
-                            shape = RoundedCornerShape(14.dp),
-                            colors = editFieldColors()
+                                .weight(1f)
+                                .testTag(ProfileTestTags.FirstNameField)
                         )
-                        ValidationMessage(state.formErrors.firstNameResId)
+                        HorseGallopTextField(
+                            value = profile.lastName,
+                            onValueChange = onLastNameChange,
+                            label = stringResource(id = R.string.label_last_name),
+                            isError = state.formErrors.lastNameResId != null,
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag(ProfileTestTags.LastNameField)
+                        )
+                    }
 
-                    FormSectionTitle(
-                        icon = Icons.Filled.Badge,
-                        title = stringResource(id = R.string.label_last_name)
-                    )
-                    OutlinedTextField(
-                        value = profile.lastName,
-                        onValueChange = { viewModel.updateDraft(lastName = it) },
-                        singleLine = true,
-                        isError = state.formErrors.lastNameResId != null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 52.dp)
-                            .testTag(ProfileTestTags.LastNameField),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = editFieldColors()
-                    )
-                    ValidationMessage(state.formErrors.lastNameResId)
+                    // Hata mesajları
+                    val firstErr = state.formErrors.firstNameResId
+                    val lastErr = state.formErrors.lastNameResId
+                    if (firstErr != null || lastErr != null) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            if (firstErr != null) {
+                                Text(
+                                    text = stringResource(id = firstErr),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            } else {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                            if (lastErr != null) {
+                                Text(
+                                    text = stringResource(id = lastErr),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            } else {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
+                    }
 
-                    FormSectionTitle(
-                        icon = Icons.Filled.Email,
-                        title = stringResource(id = R.string.label_email)
-                    )
+                    // E-posta (salt okunur)
                     OutlinedTextField(
                         value = profile.email,
                         onValueChange = {},
                         readOnly = true,
                         singleLine = true,
+                        label = {
+                            Text(
+                                text = stringResource(id = R.string.label_email),
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(min = 52.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = editFieldColors()
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = semantic.cardSubtle,
+                            unfocusedContainerColor = semantic.cardSubtle,
+                            focusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                        )
                     )
                 }
             }
 
+            // ── İletişim ─────────────────────────────────────────────────────
             item {
                 ProfileSectionCard(
                     title = stringResource(id = R.string.profile_section_contact)
                 ) {
-                    FormSectionTitle(
-                        icon = Icons.Filled.ContactPhone,
-                        title = stringResource(id = R.string.label_phone)
-                    )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -270,80 +300,76 @@ fun EditProfileScreen(
                     ) {
                         HorseGallopDropdown(
                             value = profile.countryCode,
-                            onValueChange = { viewModel.updateDraft(countryCode = it) },
+                            onValueChange = onCountryCodeChange,
                             options = state.countryCodes,
                             modifier = Modifier.width(110.dp)
                         )
-
-                        OutlinedTextField(
+                        HorseGallopTextField(
                             value = profile.phone,
-                            onValueChange = {
-                                if (it.length <= 15 && it.all { c -> c.isDigit() }) {
-                                    viewModel.updateDraft(phone = it)
+                            onValueChange = { input ->
+                                if (input.length <= 15 && input.all { c -> c.isDigit() }) {
+                                    onPhoneChange(input)
                                 }
                             },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                            label = stringResource(id = R.string.label_phone),
                             isError = state.formErrors.phoneResId != null,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                             modifier = Modifier
                                 .weight(1f)
-                                .heightIn(min = 52.dp)
-                                .testTag(ProfileTestTags.PhoneField),
-                            shape = RoundedCornerShape(14.dp),
-                            colors = editFieldColors()
+                                .testTag(ProfileTestTags.PhoneField)
                         )
                     }
-                    ValidationMessage(state.formErrors.phoneResId)
+                    state.formErrors.phoneResId?.let { resId ->
+                        Text(
+                            text = stringResource(id = resId),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
 
-                    FormSectionTitle(
-                        icon = Icons.Filled.LocationOn,
-                        title = stringResource(id = R.string.label_city)
-                    )
                     HorseGallopDropdown(
                         value = profile.city,
-                        onValueChange = { viewModel.updateDraft(city = it) },
+                        onValueChange = onCityChange,
                         options = cities,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 52.dp)
+                        label = stringResource(id = R.string.label_city),
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
 
+            // ── Sağlık ───────────────────────────────────────────────────────
             item {
                 ProfileSectionCard(
                     title = stringResource(id = R.string.profile_section_health)
                 ) {
-                    FormSectionTitle(
-                        icon = Icons.Filled.CalendarToday,
-                        title = stringResource(id = R.string.label_birth_date)
-                    )
                     HorseGallopDatePicker(
                         value = profile.birthDate,
-                        onDateSelected = { datePickerDialog.show() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 52.dp)
+                        onDateSelected = onBirthDateClick,
+                        label = stringResource(id = R.string.label_birth_date),
+                        modifier = Modifier.fillMaxWidth()
                     )
 
-                    FormSectionTitle(
-                        icon = Icons.Filled.MonitorWeight,
-                        title = stringResource(id = R.string.label_weight)
-                    )
                     OutlinedTextField(
                         value = state.draftWeightInput,
                         onValueChange = { input ->
                             if (input.isBlank() || weightInputRegex.matches(input)) {
-                                viewModel.updateDraft(weightInput = input)
+                                onWeightChange(input)
                             }
                         },
                         singleLine = true,
+                        label = {
+                            Text(
+                                text = stringResource(id = R.string.label_weight),
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         trailingIcon = {
                             Text(
                                 text = stringResource(id = R.string.unit_kg),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                style = MaterialTheme.typography.bodyMedium
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(end = 8.dp)
                             )
                         },
                         isError = state.formErrors.weightResId != null,
@@ -351,22 +377,45 @@ fun EditProfileScreen(
                             .fillMaxWidth()
                             .heightIn(min = 52.dp)
                             .testTag(ProfileTestTags.WeightField),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = editFieldColors()
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = semantic.cardElevated,
+                            unfocusedContainerColor = semantic.cardElevated,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                            errorBorderColor = MaterialTheme.colorScheme.error,
+                            errorContainerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.08f)
+                        )
                     )
-                    ValidationMessage(state.formErrors.weightResId)
+                    state.formErrors.weightResId?.let { resId ->
+                        Text(
+                            text = stringResource(id = resId),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
 
-                item {
-                    Spacer(
-                        modifier = Modifier.height(
-                            WindowInsets.navigationBars
-                                .asPaddingValues()
-                                .calculateBottomPadding() + 12.dp
-                        )
+            // ── Kaydet Butonu ────────────────────────────────────────────────
+            item {
+                HorseGallopButton(
+                    text = saveChangesLabel,
+                    onClick = onSave,
+                    enabled = !state.isSaving,
+                    isLoading = state.isSaving,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            item {
+                Spacer(
+                    modifier = Modifier.height(
+                        WindowInsets.navigationBars
+                            .asPaddingValues()
+                            .calculateBottomPadding() + 12.dp
                     )
-                }
+                )
             }
         }
     }
@@ -374,22 +423,39 @@ fun EditProfileScreen(
     HorseLoadingOverlay(visible = state.isLoading)
 }
 
-@Composable
-private fun ValidationMessage(messageResId: Int?) {
-    if (messageResId == null) return
-    Text(
-        text = stringResource(id = messageResId),
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.error
-    )
-}
+// ─── Preview ─────────────────────────────────────────────────────────────────
 
+@Preview(showBackground = true)
 @Composable
-private fun editFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedContainerColor = LocalSemanticColors.current.cardElevated,
-    unfocusedContainerColor = LocalSemanticColors.current.cardElevated,
-    focusedBorderColor = MaterialTheme.colorScheme.primary,
-    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-    errorBorderColor = MaterialTheme.colorScheme.error,
-    errorContainerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.08f)
-)
+private fun EditProfileScreenPreview() {
+    AppTheme {
+        val fakeState = ProfileUiState(
+            draftProfile = UserProfile(
+                firstName = "Ayşe",
+                lastName = "Yılmaz",
+                email = "ayse@horsegallop.com",
+                phone = "5551234567",
+                countryCode = "+90",
+                city = "İstanbul",
+                birthDate = "1990-05-15"
+            ),
+            draftWeightInput = "65",
+            countryCodes = listOf("+90", "+1", "+44")
+        )
+        EditProfileContent(
+            state = fakeState,
+            cities = listOf("İstanbul", "Ankara", "İzmir"),
+            saveLabel = "Kaydet",
+            saveChangesLabel = "Değişiklikleri Kaydet",
+            onBack = {},
+            onSave = {},
+            onFirstNameChange = {},
+            onLastNameChange = {},
+            onCountryCodeChange = {},
+            onPhoneChange = {},
+            onCityChange = {},
+            onBirthDateClick = {},
+            onWeightChange = {}
+        )
+    }
+}

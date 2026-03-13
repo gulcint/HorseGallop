@@ -553,4 +553,5 @@
     <string name="horse_health_save">Save</string>
     <string name="horse_health_delete_confirm">Are you sure you want to delete this record?</string>
     <string name="horse_health_type_label">Event Type</string>
+    <string name="verification_spam_hint">💡 If you don\'t see the email, check your spam or junk folder</string>
 </resources>

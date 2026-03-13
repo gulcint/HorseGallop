@@ -551,4 +551,5 @@
     <string name="horse_health_save">Kaydet</string>
     <string name="horse_health_delete_confirm">Bu kaydı silmek istediğinize emin misiniz?</string>
     <string name="horse_health_type_label">Etkinlik Türü</string>
+    <string name="verification_spam_hint">💡 Mail gelmemişse spam veya önemsiz klasörünü kontrol et</string>
 </resources>
