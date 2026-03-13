@@ -54,6 +54,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.horsegallop.R
 import com.horsegallop.core.components.ChipSelector
 import com.horsegallop.core.components.HorseGallopButton
@@ -332,26 +337,26 @@ private fun AddHorseHeroSection(
                     colors = listOf(primary.copy(alpha = 0.92f), secondary.copy(alpha = 0.80f))
                 )
             )
-            .padding(20.dp)
+            .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Lottie at animasyonu — 2x hız, şeffaf arka plan üzerinde hoş görünür
             Box(
                 modifier = Modifier
-                    .size(64.dp)
+                    .size(80.dp)
                     .clip(CircleShape)
-                    .background(semantic.onImageOverlay.copy(alpha = 0.18f)),
+                    .background(semantic.onImageOverlay.copy(alpha = 0.12f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = if (name.isNotBlank()) name.first().uppercaseChar().toString() else "🐴",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = semantic.onImageOverlay
-                )
+                AddHorseLottieAnimation(modifier = Modifier.size(72.dp))
             }
-            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
                     text = displayName,
                     style = MaterialTheme.typography.titleLarge,
@@ -366,6 +371,23 @@ private fun AddHorseHeroSection(
             }
         }
     }
+}
+
+// ─── Lottie at animasyonu (2x hız) ──────────────────────────────────────────
+
+@Composable
+private fun AddHorseLottieAnimation(modifier: Modifier = Modifier) {
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.horse))
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = LottieConstants.IterateForever,
+        speed = 2.0f
+    )
+    LottieAnimation(
+        composition = composition,
+        progress = { progress },
+        modifier = modifier
+    )
 }
 
 // ─── Bölüm kartı ─────────────────────────────────────────────────────────────
