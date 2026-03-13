@@ -623,7 +623,7 @@
     <!-- TJK Race Integration -->
     <string name="tjk_title">TJK Race Results</string>
     <string name="tjk_date_label">Date: %s</string>
-    <string name="tjk_results_header">%s — %s</string>
+    <string name="tjk_results_header" formatted="false">%s — %s</string>
     <string name="tjk_race_number">Race %d</string>
     <string name="tjk_no_races">No race data available for this date</string>
     <string name="tjk_error_load">Could not load race results</string>

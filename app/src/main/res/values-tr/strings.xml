@@ -591,7 +591,7 @@
     <!-- TJK Yarış Entegrasyonu -->
     <string name="tjk_title">TJK Yarış Sonuçları</string>
     <string name="tjk_date_label">Tarih: %s</string>
-    <string name="tjk_results_header">%s — %s</string>
+    <string name="tjk_results_header" formatted="false">%s — %s</string>
     <string name="tjk_race_number">%d. Koşu</string>
     <string name="tjk_no_races">Bu tarihte yarış bilgisi bulunamadı</string>
     <string name="tjk_error_load">Yarış sonuçları yüklenemedi</string>
