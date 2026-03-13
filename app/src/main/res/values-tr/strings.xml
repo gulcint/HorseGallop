@@ -584,4 +584,5 @@
     <string name="safety_contact_added">Kişi eklendi</string>
     <string name="safety_contact_removed">Kişi kaldırıldı</string>
     <string name="safety_alarm_sent">Kişilerine uyarı gönderildi</string>
+    <string name="elevation_profile_title">Rakım Profili</string>
 </resources>

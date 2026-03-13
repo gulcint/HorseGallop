@@ -616,4 +616,5 @@
     <string name="safety_contact_added">Contact added</string>
     <string name="safety_contact_removed">Contact removed</string>
     <string name="safety_alarm_sent">Alert sent to your contacts</string>
+    <string name="elevation_profile_title">Elevation Profile</string>
 </resources>

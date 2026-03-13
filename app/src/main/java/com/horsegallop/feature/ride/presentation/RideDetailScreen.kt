@@ -125,7 +125,10 @@ fun RideDetailScreen(
                     }
                     if (ride.pathPoints.any { it.altitudeM != 0f }) {
                         item {
-                            ElevationProfileCard(pathPoints = ride.pathPoints)
+                            ElevationProfileCard(
+                                pathPoints = ride.pathPoints,
+                                totalDistanceKm = ride.distanceKm
+                            )
                         }
                     }
                     if (!ride.rideType.isNullOrBlank()) {
@@ -585,7 +588,7 @@ private fun DetailGaitDot(color: Color, label: String) {
 }
 
 @Composable
-private fun ElevationProfileCard(pathPoints: List<GeoPoint>) {
+private fun ElevationProfileCard(pathPoints: List<GeoPoint>, totalDistanceKm: Float = 0f) {
     val semantic = LocalSemanticColors.current
     val primaryColor = MaterialTheme.colorScheme.primary
     val outlineColor = MaterialTheme.colorScheme.outline
@@ -612,7 +615,7 @@ private fun ElevationProfileCard(pathPoints: List<GeoPoint>) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Rakım Profili",
+                    text = stringResource(R.string.elevation_profile_title),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -662,7 +665,7 @@ private fun ElevationProfileCard(pathPoints: List<GeoPoint>) {
             ) {
                 Text("0 km", style = MaterialTheme.typography.labelSmall, color = outlineColor)
                 Text(
-                    text = String.format(Locale.getDefault(), "%.1f km", pathPoints.size * 0.002f),
+                    text = String.format(Locale.getDefault(), "%.1f km", totalDistanceKm),
                     style = MaterialTheme.typography.labelSmall,
                     color = outlineColor
                 )
