@@ -6,5 +6,6 @@ data class BarnWithLocation(
     val barn: BarnUi,
     val lat: Double,
     val lng: Double,
-    val amenities: Set<String>
+    val amenities: Set<String>,
+    val distanceKm: Double = Double.MAX_VALUE
 )

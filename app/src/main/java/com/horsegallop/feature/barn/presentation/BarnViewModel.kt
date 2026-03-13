@@ -1,11 +1,17 @@
 package com.horsegallop.feature.barn.presentation
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.LocationManager
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.barn.usecase.GetBarnsUseCase
 import com.horsegallop.domain.barn.usecase.ToggleBarnFavoriteUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,6 +34,7 @@ data class BarnUiState(
 
 @HiltViewModel
 class BarnViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val getBarnsUseCase: GetBarnsUseCase,
     private val toggleBarnFavoriteUseCase: ToggleBarnFavoriteUseCase
 ) : ViewModel() {
@@ -39,11 +46,26 @@ class BarnViewModel @Inject constructor(
         loadBarns()
     }
 
+    private fun userLocation(): Pair<Double, Double>? {
+        val hasPermission = ContextCompat.checkSelfPermission(
+            context, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        if (!hasPermission) return null
+        val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return (lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            ?: lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER))
+            ?.let { it.latitude to it.longitude }
+    }
+
     fun loadBarns() {
         viewModelScope.launch {
             _uiState.update { it.copy(loading = true, error = null) }
+            val loc = userLocation()
             try {
-                getBarnsUseCase().collect { barns ->
+                getBarnsUseCase(lat = loc?.first, lng = loc?.second).collect { barns ->
                     _uiState.update {
                         it.copy(
                             loading = false,

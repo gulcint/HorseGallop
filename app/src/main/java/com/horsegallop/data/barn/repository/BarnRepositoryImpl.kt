@@ -20,9 +20,14 @@ class BarnRepositoryImpl @Inject constructor(
 
     private val cachedBarns = MutableStateFlow<List<BarnWithLocation>>(emptyList())
 
-    override fun getBarns(): Flow<List<BarnWithLocation>> = flow {
+    override fun getBarns(lat: Double?, lng: Double?): Flow<List<BarnWithLocation>> = flow {
         try {
-            val remote = functionsDataSource.getBarns().map { dto ->
+            val remote = functionsDataSource.getBarns(lat, lng).map { dto ->
+                val distKm = if (lat != null && lng != null && dto.lat != 0.0 && dto.lng != 0.0) {
+                    haversineKm(lat, lng, dto.lat, dto.lng)
+                } else {
+                    Double.MAX_VALUE
+                }
                 BarnWithLocation(
                     barn = BarnUi(
                         id = dto.id,
@@ -38,14 +43,31 @@ class BarnRepositoryImpl @Inject constructor(
                     ),
                     lat = dto.lat,
                     lng = dto.lng,
-                    amenities = dto.amenities.toSet()
+                    amenities = dto.amenities.toSet(),
+                    distanceKm = distKm
                 )
+            }.let { barns ->
+                if (lat != null && lng != null) {
+                    barns.sortedBy { it.distanceKm }
+                } else {
+                    barns
+                }
             }
             cachedBarns.value = remote
             emit(remote)
         } catch (_: Exception) {
             emit(cachedBarns.value)
         }
+    }
+
+    private fun haversineKm(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Double {
+        val r = 6371.0
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLng = Math.toRadians(lng2 - lng1)
+        val a = Math.sin(dLat / 2).let { it * it } +
+            Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+            Math.sin(dLng / 2).let { it * it }
+        return r * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
     }
 
     override fun getBarnById(barnId: String): Flow<BarnWithLocation?> = flow {

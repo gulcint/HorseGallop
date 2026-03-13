@@ -290,10 +290,11 @@ fun RideTrackingContent(
                     )
                 }
                 item {
+                    val canStart = hasLocationPermission && state.selectedBarn != null
                     val pulseTransition = rememberInfiniteTransition(label = "start_pulse")
                     val pulseScale by pulseTransition.animateFloat(
                         initialValue = 1f,
-                        targetValue = if (hasLocationPermission) 1.03f else 1f,
+                        targetValue = if (canStart) 1.03f else 1f,
                         animationSpec = infiniteRepeatable(
                             animation = tween(900, easing = FastOutSlowInEasing),
                             repeatMode = RepeatMode.Reverse
@@ -302,11 +303,11 @@ fun RideTrackingContent(
                     )
                     Button(
                         onClick = onToggleRide,
-                        enabled = hasLocationPermission,
+                        enabled = canStart,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp)
-                            .scale(pulseScale)
+                            .scale(if (canStart) pulseScale else 1f)
                             .testTag(RideTestTags.StartButton),
                         shape = RoundedCornerShape(18.dp)
                     ) {

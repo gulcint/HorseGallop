@@ -212,6 +212,9 @@ fun BarnDetailContent(
                         GoogleMap(
                             modifier = Modifier.fillMaxSize(),
                             cameraPositionState = cameraPositionState,
+                            googleMapOptionsFactory = {
+                                GoogleMapOptions().liteMode(true)
+                            },
                             uiSettings = MapUiSettings(
                                 zoomControlsEnabled = false,
                                 scrollGesturesEnabled = false,

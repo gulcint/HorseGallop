@@ -53,8 +53,9 @@ class AppFunctionsDataSource @Inject constructor(
         )
     }
 
-    suspend fun getBarns(): List<BarnFunctionsDto> {
-        val result = functions.getHttpsCallable("getBarns").call().await()
+    suspend fun getBarns(lat: Double? = null, lng: Double? = null): List<BarnFunctionsDto> {
+        val params = if (lat != null && lng != null) hashMapOf("lat" to lat, "lng" to lng) else null
+        val result = functions.getHttpsCallable("getBarns").call(params).await()
         val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
         val items = payload["items"] as? List<*> ?: emptyList<Any?>()
         return items.mapNotNull { item ->

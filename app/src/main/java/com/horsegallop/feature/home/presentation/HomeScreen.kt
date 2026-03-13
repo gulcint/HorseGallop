@@ -450,7 +450,7 @@ private fun TipsSection(tip: HorseTip? = null) {
           Spacer(modifier = Modifier.height(6.dp))
           Text(
             text = tip?.category?.let { horseTipCategoryLabel(it) } ?: stringResource(id = com.horsegallop.R.string.horse_tip_category_default),
-            style = MaterialTheme.typography.labelSmall,
+            style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Medium
           )
