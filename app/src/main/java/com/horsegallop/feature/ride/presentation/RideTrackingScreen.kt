@@ -819,22 +819,17 @@ private fun RideMapCard(
                     myLocationButtonEnabled = hasLocationPermission
                 )
             ) {
-                val polylinePoints = validPath.map { LatLng(it.latitude, it.longitude) }
-                if (polylinePoints.size >= 2) {
-                    Polyline(
-                        points = polylinePoints,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.28f),
-                        width = 18f,
-                        geodesic = true,
-                        jointType = JointType.ROUND
-                    )
-                    Polyline(
-                        points = polylinePoints,
-                        color = MaterialTheme.colorScheme.primary,
-                        width = 9f,
-                        geodesic = true,
-                        jointType = JointType.ROUND
-                    )
+                val gaitSegments = remember(validPath.size) { buildGaitSegments(validPath) }
+                gaitSegments.forEach { (segPoints, gait) ->
+                    val segColor = when (gait) {
+                        "trot"   -> semantic.gaitTrot
+                        "canter" -> semantic.gaitCanter
+                        else     -> semantic.gaitWalk
+                    }
+                    if (segPoints.size >= 2) {
+                        Polyline(points = segPoints, color = segColor.copy(alpha = 0.28f), width = 18f, geodesic = true, jointType = JointType.ROUND)
+                        Polyline(points = segPoints, color = segColor, width = 9f, geodesic = true, jointType = JointType.ROUND)
+                    }
                 }
                 validPath.firstOrNull()?.let { start ->
                     Marker(
@@ -864,6 +859,21 @@ private fun RideMapCard(
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold
                 )
+            }
+            // Gait legend — top right
+            Row(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(end = 10.dp, top = 10.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(semantic.panelOverlay.copy(alpha = 0.90f))
+                    .padding(horizontal = 8.dp, vertical = 5.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                GaitLegendDot(color = semantic.gaitWalk, label = stringResource(R.string.gait_walk))
+                GaitLegendDot(color = semantic.gaitTrot, label = stringResource(R.string.gait_trot))
+                GaitLegendDot(color = semantic.gaitCanter, label = stringResource(R.string.gait_canter))
             }
             Box(
                 modifier = Modifier
@@ -932,6 +942,25 @@ private fun MetricsGrid(state: RideUiState) {
                 value = state.calories.toString(),
                 unit = stringResource(id = R.string.unit_kcal)
             )
+        }
+        if (state.isRiding) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                MetricTile(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.LocationOn,
+                    label = stringResource(id = R.string.metric_altitude),
+                    value = String.format(Locale.US, "%.0f", state.altitudeM),
+                    unit = stringResource(id = R.string.unit_m)
+                )
+                MetricTile(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.LocalFireDepartment,
+                    label = stringResource(id = R.string.metric_horse_calories),
+                    value = state.horseCalories.toString(),
+                    unit = stringResource(id = R.string.unit_kcal)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+            }
         }
     }
 }
@@ -1120,6 +1149,27 @@ private fun SavedRideSummaryCard(
                 Text(text = stringResource(id = R.string.ok))
             }
         }
+    }
+}
+
+
+@Composable
+private fun GaitLegendDot(color: Color, label: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(3.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .clip(CircleShape)
+                .background(color)
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 

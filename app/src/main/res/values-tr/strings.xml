@@ -377,6 +377,13 @@
     <string name="metric_distance">Mesafe</string>
     <string name="metric_time">Süre</string>
     <string name="metric_calories">Yakılan Kalori</string>
+    <string name="metric_horse_calories">At Kalorisi</string>
+    <string name="metric_altitude">Yükseklik</string>
+    <string name="unit_m">m</string>
+    <string name="gait_walk">Yürüyüş</string>
+    <string name="gait_trot">Tırıs</string>
+    <string name="gait_canter">Dörtnal</string>
+    <string name="gait_distribution">Yürüyüş Dağılımı</string>
     <string name="stop_ride">Binişi Bitir</string>
     <string name="hero_track_title">Bir sonraki binişini takip et</string>
     <string name="hero_track_subtitle">Rotanı, hızını ve süreni anlık gör.</string>
@@ -419,4 +426,51 @@
     <string name="training_plan_locked">Sadece Pro</string>
     <string name="training_pro_required">Bu plan için HorseGallop Pro gerekli.</string>
     <string name="training_update_failed">Antrenman görevi güncellenemedi.</string>
+    <string name="lesson_booked_badge">✓ Rezerve Edildi</string>
+    <string name="lesson_full_badge">Dolu</string>
+    <string name="spots_left">yer kaldı</string>
+    <string name="horse_tip_category_breed">Irk</string>
+    <string name="horse_tip_category_physiology">Fizyoloji</string>
+    <string name="horse_tip_category_anatomy">Anatomi</string>
+    <string name="horse_tip_category_care">Bakım</string>
+    <string name="horse_tip_category_speed">Hız</string>
+    <string name="horse_tip_category_vision">Görüş</string>
+    <string name="horse_tip_category_behavior">Davranış</string>
+    <string name="horse_tip_category_default">At Bilgisi</string>
+
+    <!-- Ahır -->
+    <string name="barn_no_barns_title">Henüz ahır yok</string>
+    <string name="barn_no_barns_subtitle">Ahırlar ve stüdyolar hazır olduğunda burada görünecek</string>
+    <string name="barn_detail_instructors">Eğitmenler</string>
+    <string name="barn_detail_reviews">Değerlendirmeler</string>
+
+    <!-- Program / Rezervasyon -->
+    <string name="schedule_no_sessions_title">Henüz seans yok</string>
+    <string name="schedule_no_sessions_subtitle">Yaklaşan dersler ve seanslar burada görünecek</string>
+    <string name="booking_success">Rezervasyon başarıyla oluşturuldu!</string>
+    <string name="my_reservations_count">Rezervasyonlarım (%1$d)</string>
+    <string name="lesson_full_label">Dolu</string>
+    <string name="lesson_booked_label">Rezerve Edildi</string>
+    <string name="lesson_duration_min">%1$d dk</string>
+    <string name="lesson_level_label">Seviye: %1$s</string>
+    <string name="lesson_spots_full">Yer kalmadı</string>
+    <string name="lesson_spots_available">%1$d / %2$d yer mevcut</string>
+
+    <!-- At ırkları -->
+    <string name="horse_breed_label">Irk</string>
+    <string name="horse_breed_arab">Arap</string>
+    <string name="horse_breed_english">İngiliz Safkanı</string>
+    <string name="horse_breed_holsteiner">Holsteiner</string>
+    <string name="horse_breed_kwpb">KWPB</string>
+    <string name="horse_breed_hannoveraner">Hannoveraner</string>
+    <string name="horse_breed_trakehner">Trakehner</string>
+    <string name="horse_breed_lusitano">Lusitano</string>
+    <string name="horse_breed_andaluz">Endülüs</string>
+    <string name="horse_breed_pony">Pony</string>
+    <string name="horse_breed_selle_francais">Selle Français</string>
+    <string name="horse_breed_quarter">Quarter Horse</string>
+    <string name="horse_breed_mustang">Mustang</string>
+    <string name="horse_breed_akhal_teke">Akhal-Teke</string>
+    <string name="horse_breed_turk">Türk Atı</string>
+    <string name="horse_breed_other">Diğer</string>
 </resources>

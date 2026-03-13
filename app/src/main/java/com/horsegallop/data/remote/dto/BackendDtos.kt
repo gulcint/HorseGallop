@@ -33,5 +33,6 @@ data class BackendRideDto(
     val barnName: String?,
     val avgSpeedKmh: Double? = null,
     val maxSpeedKmh: Double? = null,
-    val rideType: String? = null
+    val rideType: String? = null,
+    val pathPoints: List<GeoPointDto>? = null
 )

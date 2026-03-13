@@ -39,7 +39,11 @@ data class SemanticColors(
     val calloutBorderInfo: Color,
     val calloutBorderSuccess: Color,
     val calloutBorderWarning: Color,
-    val calloutBorderError: Color
+    val calloutBorderError: Color,
+    // Gait colors for ride polyline
+    val gaitWalk: Color,
+    val gaitTrot: Color,
+    val gaitCanter: Color
 )
 
 val LocalSemanticColors = staticCompositionLocalOf {
@@ -89,6 +93,9 @@ fun semanticColorsFrom(colorScheme: ColorScheme, isDark: Boolean): SemanticColor
         calloutBorderInfo = infoTone,
         calloutBorderSuccess = successTone,
         calloutBorderWarning = warningTone,
-        calloutBorderError = destructiveTone
+        calloutBorderError = destructiveTone,
+        gaitWalk   = if (isDark) Color(0xFF80C4EE) else Color(0xFF3A8BD1),
+        gaitTrot   = successTone,
+        gaitCanter = if (isDark) Color(0xFFFF9842) else Color(0xFFE07B39)
     )
 }

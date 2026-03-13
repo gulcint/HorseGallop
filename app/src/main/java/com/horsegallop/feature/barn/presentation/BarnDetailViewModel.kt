@@ -5,16 +5,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.barn.usecase.GetBarnDetailUseCase
+import com.horsegallop.domain.schedule.model.Lesson
+import com.horsegallop.domain.schedule.repository.ScheduleRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class BarnDetailViewModel @Inject constructor(
     private val getBarnDetailUseCase: GetBarnDetailUseCase,
+    private val scheduleRepository: ScheduleRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -23,12 +27,17 @@ class BarnDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<BarnDetailUiState>(BarnDetailUiState.Loading)
     val uiState: StateFlow<BarnDetailUiState> = _uiState.asStateFlow()
 
+    private val _bookingState = MutableStateFlow(BookingState())
+    val bookingState: StateFlow<BookingState> = _bookingState.asStateFlow()
+
     init {
         loadBarnDetails()
+        loadLessons()
     }
 
     fun refresh() {
         loadBarnDetails()
+        loadLessons()
     }
 
     private fun loadBarnDetails() {
@@ -43,7 +52,42 @@ class BarnDetailViewModel @Inject constructor(
             }
         }
     }
+
+    private fun loadLessons() {
+        viewModelScope.launch {
+            _bookingState.update { it.copy(isLoadingLessons = true) }
+            scheduleRepository.getLessons().collect { lessons ->
+                _bookingState.update { it.copy(lessons = lessons, isLoadingLessons = false) }
+            }
+        }
+    }
+
+    fun bookLesson(lessonId: String) {
+        viewModelScope.launch {
+            _bookingState.update { it.copy(isBooking = true, bookingError = null, bookingSuccess = false) }
+            scheduleRepository.bookLesson(lessonId)
+                .onSuccess {
+                    _bookingState.update { it.copy(isBooking = false, bookingSuccess = true) }
+                    // Flow zaten backend güncellemesini dinliyor, ek loadLessons() çağrısı gereksiz
+                }
+                .onFailure { e ->
+                    _bookingState.update { it.copy(isBooking = false, bookingError = e.message) }
+                }
+        }
+    }
+
+    fun clearBookingResult() {
+        _bookingState.update { it.copy(bookingSuccess = false, bookingError = null) }
+    }
 }
+
+data class BookingState(
+    val lessons: List<Lesson> = emptyList(),
+    val isLoadingLessons: Boolean = true,
+    val isBooking: Boolean = false,
+    val bookingSuccess: Boolean = false,
+    val bookingError: String? = null
+)
 
 sealed interface BarnDetailUiState {
     data object Loading : BarnDetailUiState

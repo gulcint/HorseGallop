@@ -449,7 +449,7 @@ private fun TipsSection(tip: HorseTip? = null) {
           )
           Spacer(modifier = Modifier.height(6.dp))
           Text(
-            text = tip?.categoryLabel ?: stringResource(id = com.horsegallop.R.string.horse_tip_default_category),
+            text = tip?.category?.let { horseTipCategoryLabel(it) } ?: stringResource(id = com.horsegallop.R.string.horse_tip_category_default),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Medium
@@ -459,6 +459,21 @@ private fun TipsSection(tip: HorseTip? = null) {
     }
     Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.R.dimen.section_spacing_md)))
   }
+}
+
+@Composable
+private fun horseTipCategoryLabel(category: String): String {
+    val resId = when (category.lowercase().trim()) {
+        "breed"      -> R.string.horse_tip_category_breed
+        "physiology" -> R.string.horse_tip_category_physiology
+        "anatomy"    -> R.string.horse_tip_category_anatomy
+        "care"       -> R.string.horse_tip_category_care
+        "speed"      -> R.string.horse_tip_category_speed
+        "vision"     -> R.string.horse_tip_category_vision
+        "behavior"   -> R.string.horse_tip_category_behavior
+        else         -> R.string.horse_tip_category_default
+    }
+    return stringResource(resId)
 }
 
 // Preview Components

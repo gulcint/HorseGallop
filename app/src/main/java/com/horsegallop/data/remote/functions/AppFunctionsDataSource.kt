@@ -87,7 +87,10 @@ class AppFunctionsDataSource @Inject constructor(
                 instructorName = (map["instructorName"] as? String).orEmpty(),
                 durationMin = (map["durationMin"] as? Number)?.toInt() ?: 0,
                 level = (map["level"] as? String).orEmpty(),
-                price = (map["price"] as? Number)?.toDouble() ?: 0.0
+                price = (map["price"] as? Number)?.toDouble() ?: 0.0,
+                spotsTotal = (map["spotsTotal"] as? Number)?.toInt() ?: 0,
+                spotsAvailable = (map["spotsAvailable"] as? Number)?.toInt() ?: 0,
+                isBookedByMe = (map["isBookedByMe"] as? Boolean) ?: false
             )
         }
     }
@@ -304,7 +307,10 @@ class AppFunctionsDataSource @Inject constructor(
             tags = (map["tags"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
             amenities = (map["amenities"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
             rating = (map["rating"] as? Number)?.toDouble() ?: 0.0,
-            reviewCount = (map["reviewCount"] as? Number)?.toInt() ?: 0
+            reviewCount = (map["reviewCount"] as? Number)?.toInt() ?: 0,
+            heroImageUrl = map["heroImageUrl"] as? String,
+            capacity = (map["capacity"] as? Number)?.toInt() ?: 0,
+            phone = map["phone"] as? String
         )
     }
 }

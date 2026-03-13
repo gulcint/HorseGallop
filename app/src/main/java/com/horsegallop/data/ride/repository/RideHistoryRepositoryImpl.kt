@@ -61,7 +61,9 @@ class RideHistoryRepositoryImpl @Inject constructor(
                         durationSec = durationSec,
                         distanceKm = distanceKm,
                         calories = (dto.calories ?: 0.0).toInt(),
-                        pathPoints = emptyList<GeoPoint>(),
+                        pathPoints = dto.pathPoints?.map { pt ->
+                            GeoPoint(latitude = pt.lat, longitude = pt.lng)
+                        } ?: emptyList(),
                         barnName = dto.barnName,
                         avgSpeedKmh = (dto.avgSpeedKmh?.toFloat() ?: avgSpeedFallback),
                         maxSpeedKmh = (dto.maxSpeedKmh?.toFloat() ?: avgSpeedFallback),
