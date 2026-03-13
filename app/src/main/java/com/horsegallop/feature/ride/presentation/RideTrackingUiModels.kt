@@ -38,6 +38,7 @@ data class RideUiState(
     val altitudeM: Float = 0f,
     val isRiding: Boolean = false,
     val autoDetect: Boolean = false,
+    val showAutoStopDialog: Boolean = false,
     val pathPoints: List<GeoPoint> = emptyList(),
     val barns: List<BarnWithLocation> = emptyList(),
     val selectedBarn: BarnWithLocation? = null,

@@ -8,7 +8,9 @@ interface RideRepository {
     val isRiding: Flow<Boolean>
     val rideMetrics: Flow<RideMetrics>
     val pendingSyncCount: Flow<Int>
-    
+    /** Emits when 5+ minutes of stillness detected while auto-detect is ON. */
+    val autoStopSignal: Flow<Unit>
+
     suspend fun startRide(weightKg: Float = 70f, rideType: String? = null)
     suspend fun stopRide(barnName: String? = null): StopRideResult
     suspend fun retryPendingRideSync()

@@ -23,7 +23,9 @@ import com.horsegallop.domain.ride.repository.RideRepository
 import com.horsegallop.domain.ride.util.GaitThresholds
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.util.UUID
@@ -54,7 +56,11 @@ class RideRepositoryImpl @Inject constructor(
     override val rideMetrics = _rideMetrics.asStateFlow()
     override val pendingSyncCount: Flow<Int> = stopSyncOrchestrator.pendingSyncCount
 
+    private val _autoStopSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    override val autoStopSignal: Flow<Unit> = _autoStopSignal.asSharedFlow()
+
     private var isAutoDetectEnabled = false
+    private var stillnessStartMillis: Long? = null
 
     private var locationCallback: LocationCallback? = null
     private var lastLocationTimeMillis: Long? = null
@@ -87,6 +93,7 @@ class RideRepositoryImpl @Inject constructor(
         speedSum = 0.0
         maxSpeed = 0.0
         speedWindow.clear()
+        stillnessStartMillis = null
         // Clear previous path
         _rideMetrics.value = RideMetrics(pathPoints = emptyList())
         currentRideId = try {
@@ -266,6 +273,20 @@ class RideRepositoryImpl @Inject constructor(
                         val hoursDelta = secondsDelta / 3600.0
                         accumulatedCalories += currentMet * userWeightKg * hoursDelta
                         accumulatedHorseCalories += horseKcalPerHour * hoursDelta
+                    }
+
+                    // Auto-stop: 5 min stillness detection (speed below walk threshold)
+                    if (isAutoDetectEnabled) {
+                        if (smoothedSpeed < GaitThresholds.WALK_MAX_KMH * 0.3f) {
+                            if (stillnessStartMillis == null) {
+                                stillnessStartMillis = now
+                            } else if (now - stillnessStartMillis!! >= 5 * 60 * 1000L) {
+                                _autoStopSignal.tryEmit(Unit)
+                                stillnessStartMillis = null
+                            }
+                        } else {
+                            stillnessStartMillis = null
+                        }
                     }
 
                     val newPoint = GeoPoint(lat, lng, smoothedSpeed, altM)

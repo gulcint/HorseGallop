@@ -62,17 +62,18 @@ class BarnRepositoryImpl @Inject constructor(
     }
 
     override fun getBarnById(barnId: String): Flow<BarnWithLocation?> = flow {
+        // Emit cached snapshot first (no instructors/reviews yet — coming from detail call)
         val fromCache = cachedBarns.value.find { it.barn.id == barnId }
-        if (fromCache != null) {
-            emit(fromCache.copy(barn = fromCache.barn.copy(
-                instructors = mockInstructors,
-                recentReviews = mockReviews
-            )))
-            return@flow
-        }
+        if (fromCache != null) emit(fromCache)
 
         try {
             val dto = functionsDataSource.getBarnDetail(barnId)
+            val instructors = dto.instructors.map { i ->
+                Instructor(id = i.id, name = i.name, photoUrl = i.photoUrl.ifBlank { null }, specialty = i.specialty, rating = i.rating)
+            }
+            val reviews = dto.reviews.map { r ->
+                BarnReview(id = r.id, authorName = r.authorName, rating = r.rating, comment = r.comment, dateLabel = r.dateLabel)
+            }
             emit(
                 BarnWithLocation(
                     barn = BarnUi(
@@ -88,9 +89,9 @@ class BarnRepositoryImpl @Inject constructor(
                         heroImageUrl = dto.heroImageUrl,
                         capacity = dto.capacity,
                         phone = dto.phone,
-                        isFavorite = false,
-                        instructors = mockInstructors,
-                        recentReviews = mockReviews
+                        isFavorite = fromCache?.barn?.isFavorite ?: false,
+                        instructors = instructors,
+                        recentReviews = reviews
                     ),
                     lat = dto.lat,
                     lng = dto.lng,
@@ -98,7 +99,7 @@ class BarnRepositoryImpl @Inject constructor(
                 )
             )
         } catch (_: Exception) {
-            emit(null)
+            if (fromCache == null) emit(null)
         }
     }
 

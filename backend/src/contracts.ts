@@ -20,6 +20,22 @@ export type HomeDashboardDto = {
   recentActivities: HomeRecentActivityDto[];
 };
 
+export type BarnInstructorDto = {
+  id: string;
+  name: string;
+  photoUrl: string;
+  specialty: string;
+  rating: number;
+};
+
+export type BarnReviewDto = {
+  id: string;
+  authorName: string;
+  rating: number;
+  comment: string;
+  dateLabel: string;
+};
+
 export type BarnDto = {
   id: string;
   name: string;
@@ -31,6 +47,11 @@ export type BarnDto = {
   amenities: string[];
   rating: number;
   reviewCount: number;
+  heroImageUrl?: string;
+  capacity?: number;
+  phone?: string;
+  instructors: BarnInstructorDto[];
+  reviews: BarnReviewDto[];
 };
 
 export type BarnListDto = {

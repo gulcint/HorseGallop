@@ -145,6 +145,24 @@ fun RideTrackingScreen(
         viewModel.clearError()
     }
 
+    if (state.showAutoStopDialog) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissAutoStopDialog,
+            title = { Text("Binişi Tamamla?") },
+            text = { Text("5 dakikadır hareket tespit edilmedi. Binişi tamamlamak ister misin?") },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = viewModel::confirmAutoStop) {
+                    Text("Evet, Bitir")
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = viewModel::dismissAutoStopDialog) {
+                    Text("Devam Et")
+                }
+            }
+        )
+    }
+
     Scaffold(
         containerColor = semantic.screenBase
     ) { innerPadding ->

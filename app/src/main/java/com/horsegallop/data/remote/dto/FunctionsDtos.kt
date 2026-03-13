@@ -22,6 +22,22 @@ data class HomeDashboardFunctionsDto(
     val recentActivities: List<HomeRecentActivityFunctionsDto>
 )
 
+data class BarnInstructorFunctionsDto(
+    val id: String,
+    val name: String,
+    val photoUrl: String = "",
+    val specialty: String = "",
+    val rating: Double = 0.0
+)
+
+data class BarnReviewFunctionsDto(
+    val id: String,
+    val authorName: String,
+    val rating: Int = 5,
+    val comment: String = "",
+    val dateLabel: String = ""
+)
+
 data class BarnFunctionsDto(
     val id: String,
     val name: String,
@@ -35,7 +51,9 @@ data class BarnFunctionsDto(
     val reviewCount: Int,
     val heroImageUrl: String? = null,
     val capacity: Int = 0,
-    val phone: String? = null
+    val phone: String? = null,
+    val instructors: List<BarnInstructorFunctionsDto> = emptyList(),
+    val reviews: List<BarnReviewFunctionsDto> = emptyList()
 )
 
 data class LessonFunctionsDto(
