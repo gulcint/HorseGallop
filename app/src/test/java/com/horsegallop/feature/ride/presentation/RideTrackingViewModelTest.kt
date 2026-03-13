@@ -13,6 +13,11 @@ import com.horsegallop.domain.content.model.AppContent
 import com.horsegallop.domain.content.repository.ContentRepository
 import com.horsegallop.domain.content.usecase.GetAppContentUseCase
 import com.horsegallop.domain.model.User
+import com.horsegallop.domain.safety.model.SafetyContact
+import com.horsegallop.domain.safety.model.SafetySettings
+import com.horsegallop.domain.safety.repository.SafetyRepository
+import com.horsegallop.domain.safety.usecase.GetSafetySettingsUseCase
+import com.horsegallop.domain.safety.usecase.TriggerSafetyAlarmUseCase
 import com.horsegallop.domain.model.UserRole
 import com.horsegallop.domain.ride.model.GeoPoint
 import com.horsegallop.domain.ride.model.RideMetrics
@@ -189,6 +194,7 @@ class RideTrackingViewModelTest {
         val fakeAuthRepository = FakeAuthRepository(currentUserId = "uid-1")
         val fakeProfileRepository = FakeProfileRepository()
         val fakeContentRepository = FakeContentRepository()
+        val fakeSafetyRepository = FakeSafetyRepository()
 
         val viewModel = RideTrackingViewModel(
             startRideUseCase = StartRideUseCase(fakeRideRepository),
@@ -202,7 +208,9 @@ class RideTrackingViewModelTest {
             barnRepository = fakeBarnRepository,
             getUserProfileUseCase = GetUserProfileUseCase(fakeProfileRepository),
             getCurrentUserIdUseCase = GetCurrentUserIdUseCase(fakeAuthRepository),
-            getAppContentUseCase = GetAppContentUseCase(fakeContentRepository)
+            getAppContentUseCase = GetAppContentUseCase(fakeContentRepository),
+            getSafetySettingsUseCase = GetSafetySettingsUseCase(fakeSafetyRepository),
+            triggerSafetyAlarmUseCase = TriggerSafetyAlarmUseCase(fakeSafetyRepository)
         )
 
         return viewModel to fakeRideRepository
@@ -305,6 +313,23 @@ private class FakeProfileRepository : ProfileRepository {
     override fun deleteAccount(): Flow<Result<Unit>> = flowOf(Result.success(Unit))
 
     override fun signOut() = Unit
+}
+
+private class FakeSafetyRepository : SafetyRepository {
+    override suspend fun getSafetySettings(): Result<SafetySettings> =
+        Result.success(SafetySettings(isEnabled = false, contacts = emptyList()))
+
+    override suspend fun updateSafetyEnabled(isEnabled: Boolean): Result<Unit> =
+        Result.success(Unit)
+
+    override suspend fun addSafetyContact(name: String, phone: String): Result<SafetyContact> =
+        Result.success(SafetyContact(id = "c1", name = name, phone = phone))
+
+    override suspend fun removeSafetyContact(contactId: String): Result<Unit> =
+        Result.success(Unit)
+
+    override suspend fun triggerSafetyAlarm(lat: Double, lng: Double): Result<Unit> =
+        Result.success(Unit)
 }
 
 private class FakeAuthRepository(
