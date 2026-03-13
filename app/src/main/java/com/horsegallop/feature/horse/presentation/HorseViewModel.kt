@@ -2,6 +2,7 @@ package com.horsegallop.feature.horse.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.functions.FirebaseFunctionsException
 import com.horsegallop.domain.horse.model.Horse
 import com.horsegallop.domain.horse.model.HorseGender
 import com.horsegallop.domain.horse.usecase.AddHorseUseCase
@@ -73,7 +74,12 @@ class HorseViewModel @Inject constructor(
                     loadHorses()
                 }
                 .onFailure { e ->
-                    _uiState.value = _uiState.value.copy(saving = false, saveError = e.localizedMessage ?: "At eklenemedi")
+                    val msg = if (e is FirebaseFunctionsException) {
+                        "[${e.code}] ${e.message}"
+                    } else {
+                        e.localizedMessage ?: "At eklenemedi"
+                    }
+                    _uiState.value = _uiState.value.copy(saving = false, saveError = msg)
                 }
         }
     }
