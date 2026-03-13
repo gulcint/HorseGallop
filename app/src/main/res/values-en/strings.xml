@@ -345,6 +345,10 @@
     <string name="verify_email_title">Verify your email</string>
     <string name="verification_sent_to_email">We sent a verification link to %1$s</string>
     <string name="verification_sent_info">We sent a verification link to your email</string>
+    <string name="verification_step_1">Check your inbox</string>
+    <string name="verification_step_2">Click the link in the email</string>
+    <string name="verification_step_3">Return here and tap \'I Verified\'</string>
+    <string name="verification_resend_countdown">Resend (%1$ds)</string>
     <string name="open_mail_app">Open Mail App</string>
     <string name="verification_result_success">Email verified successfully!</string>
     <string name="verification_result_error">Verification failed. Please try again.</string>

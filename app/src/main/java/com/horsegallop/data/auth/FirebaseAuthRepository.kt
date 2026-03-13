@@ -55,10 +55,9 @@ class FirebaseAuthRepository @Inject constructor(
             }
 
             try {
-                // Email doğrulamayı asenkron tetikle; akışı bekletme
-                createdUser.sendEmailVerification()
+                withTimeout(10_000) { createdUser.sendEmailVerification().await() }
             } catch (e: Exception) {
-                // Email gönderimi başlatılamadı; kullanıcı yine de çekmece üzerinden yeniden gönderebilir
+                // Email gönderilemedi; kullanıcı Tekrar Gönder ile deneyebilir
                 e.printStackTrace()
             }
             

@@ -1,25 +1,59 @@
 package com.horsegallop.feature.auth.presentation
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.MarkEmailRead
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.draw.clip
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.horsegallop.core.components.HorseGallopButton
 import com.horsegallop.core.components.HorseGallopTextField
 import com.horsegallop.ui.theme.LocalSemanticColors
@@ -213,61 +247,181 @@ fun VerificationSentContent(
     onVerifiedCheck: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val semantic = LocalSemanticColors.current
+
+    val lottieUrl = uiState.successLottieUrl.ifBlank {
+        "https://assets9.lottiefiles.com/packages/lf20_jbrw3hcz.json"
+    }
+    val composition by rememberLottieComposition(LottieCompositionSpec.Url(lottieUrl))
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = LottieConstants.IterateForever
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(dimensionResource(CoreR.dimen.padding_screen_horizontal)),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .background(semantic.screenBase)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = stringResource(CoreR.string.login_verify_email_sent),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Text(
-            text = stringResource(AppR.string.verification_sent_to_email, uiState.email),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-            style = MaterialTheme.typography.bodyMedium
-        )
-
         Spacer(modifier = Modifier.height(32.dp))
 
-        HorseGallopButton(
-            text = stringResource(AppR.string.btn_confirm_verified),
-            onClick = onVerifiedCheck,
-            modifier = Modifier.fillMaxWidth()
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextButton(
-            onClick = onResendClick,
-            enabled = uiState.resendCooldownRemaining == 0 && !uiState.verifying
+        // Animated horse in circle
+        Box(
+            modifier = Modifier
+                .size(180.dp)
+                .clip(CircleShape)
+                .background(semantic.calloutInfoContainer),
+            contentAlignment = Alignment.Center
         ) {
-            if (uiState.verifying) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+            if (composition != null) {
+                LottieAnimation(
+                    composition = composition,
+                    progress = { progress },
+                    modifier = Modifier.size(150.dp)
+                )
             } else {
-                Text(
-                    text = if (uiState.resendCooldownRemaining > 0) 
-                        "${stringResource(AppR.string.btn_resend_verification)} (${uiState.resendCooldownRemaining}s)" 
-                    else 
-                        stringResource(AppR.string.btn_resend_verification)
+                Icon(
+                    imageVector = Icons.Filled.MarkEmailRead,
+                    contentDescription = null,
+                    tint = semantic.calloutOnContainer,
+                    modifier = Modifier.size(72.dp)
                 )
             }
         }
-        
+
+        Spacer(modifier = Modifier.height(28.dp))
+
+        // Title
+        Text(
+            text = stringResource(CoreR.string.login_verify_email_sent),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Email chip
+        if (uiState.email.isNotBlank()) {
+            Surface(
+                shape = RoundedCornerShape(50),
+                color = semantic.calloutInfoContainer
+            ) {
+                Text(
+                    text = uiState.email,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = semantic.calloutOnContainer,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Steps card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+            border = BorderStroke(1.dp, semantic.cardStroke),
+            shape = RoundedCornerShape(18.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                VerificationStepRow(number = "1", label = stringResource(CoreR.string.verification_step_1))
+                VerificationStepRow(number = "2", label = stringResource(CoreR.string.verification_step_2))
+                VerificationStepRow(number = "3", label = stringResource(CoreR.string.verification_step_3))
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Primary CTA
+        HorseGallopButton(
+            text = stringResource(AppR.string.btn_confirm_verified),
+            onClick = onVerifiedCheck,
+            isLoading = uiState.verifying,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Resend button
+        FilledTonalButton(
+            onClick = onResendClick,
+            enabled = uiState.resendCooldownRemaining == 0 && !uiState.verifying,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = if (uiState.resendCooldownRemaining > 0)
+                    stringResource(AppR.string.verification_resend_countdown, uiState.resendCooldownRemaining)
+                else
+                    stringResource(AppR.string.btn_resend_verification)
+            )
+        }
+
         if (uiState.verificationError != null) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = uiState.verificationError!!,
                 color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center
             )
         }
+
+        Spacer(modifier = Modifier.height(32.dp))
+    }
+}
+
+@Composable
+private fun VerificationStepRow(number: String, label: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = number,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun VerificationSentContentPreview() {
+    com.horsegallop.ui.theme.AppTheme {
+        VerificationSentContent(
+            uiState = EnrollmentUiState(
+                email = "binici@horsegallop.com",
+                verificationSent = true,
+                resendCooldownRemaining = 45
+            ),
+            onResendClick = {},
+            onVerifiedCheck = {},
+            onDismiss = {}
+        )
     }
 }

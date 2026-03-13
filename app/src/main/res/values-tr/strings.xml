@@ -345,6 +345,10 @@
     <string name="verify_email_title">E-postayı Doğrula</string>
     <string name="verification_sent_to_email">Doğrulama e-postası %1$s adresine gönderildi</string>
     <string name="verification_sent_info">Doğrulama e-postası gönderildi.</string>
+    <string name="verification_step_1">Gelen kutunu kontrol et</string>
+    <string name="verification_step_2">E-postadaki bağlantıya tıkla</string>
+    <string name="verification_step_3">Geri dön ve \'Doğruladım\' butonuna bas</string>
+    <string name="verification_resend_countdown">Tekrar Gönder (%1$ds)</string>
     <string name="open_mail_app">Postayı Aç</string>
     <string name="verification_result_success">Email verified successfully!</string>
     <string name="verification_result_error">Verification failed. Please try again.</string>
