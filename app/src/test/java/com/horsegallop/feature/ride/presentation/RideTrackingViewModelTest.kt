@@ -279,7 +279,7 @@ private class FakeBarnRepository : BarnRepository {
         )
     )
 
-    override fun getBarns(): Flow<List<BarnWithLocation>> = flowOf(barns)
+    override fun getBarns(lat: Double?, lng: Double?): Flow<List<BarnWithLocation>> = flowOf(barns)
 
     override fun getBarnById(barnId: String): Flow<BarnWithLocation?> =
         flowOf(barns.firstOrNull { it.barn.id == barnId })
