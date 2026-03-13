@@ -56,6 +56,7 @@ import java.util.concurrent.TimeUnit
 @Composable
 fun NotificationsScreen(
     onBack: () -> Unit,
+    onOpenTargetRoute: (String) -> Unit = {},
     viewModel: NotificationsViewModel = hiltViewModel()
 ) {
     val state by viewModel.ui.collectAsState()
@@ -180,7 +181,12 @@ fun NotificationsScreen(
             items(state.notifications, key = { it.id }) { notification ->
                 NotificationItem(
                     notification = notification,
-                    onTap = { viewModel.onNotificationTap(notification.id) }
+                    onTap = {
+                        viewModel.onNotificationTap(notification)
+                        notification.targetRoute
+                            ?.takeIf { it.isNotBlank() }
+                            ?.let(onOpenTargetRoute)
+                    }
                 )
                 Box(
                     modifier = Modifier

@@ -483,7 +483,10 @@ fun AppNavHost(
     composable(Dest.Notifications.route) {
       BackHandler { navController.popBackStack() }
       NotificationsScreen(
-        onBack = { navController.popBackStack() }
+        onBack = { navController.popBackStack() },
+        onOpenTargetRoute = { route ->
+          navController.navigate(route)
+        }
       )
     }
   }

@@ -338,7 +338,7 @@ async function maybeWriteHorseHealthReminder(
     title: "Yaklasan saglik randevusu",
     body: `${horseName || "Atin"} icin ${typeLabel} ${date} tarihinde planlandi.`,
     targetId: horseId,
-    targetRoute: `horseHealth/${horseId}`,
+    targetRoute: `horseHealth/${horseId}/${encodeURIComponent(horseName || "Saglik")}`,
     notificationKey: `horse_health_${uid}_${horseId}_${eventId}_${date}`,
   });
 }
@@ -957,7 +957,7 @@ export const bookLesson = onCall({ region: "us-central1" }, async (request) => {
     title: "Rezervasyon olusturuldu",
     body: `${lessonTitle} dersi ${lessonDate} icin onaylandi.`,
     targetId: ref.id,
-    targetRoute: "notifications",
+    targetRoute: "myReservations",
     notificationKey: `reservation_confirmed_${ref.id}`,
   });
 

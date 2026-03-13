@@ -45,9 +45,9 @@ class NotificationsViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    fun onNotificationTap(id: String) {
+    fun onNotificationTap(notification: AppNotification) {
         viewModelScope.launch {
-            markNotificationRead(id)
+            markNotificationRead(notification.id)
         }
     }
 
