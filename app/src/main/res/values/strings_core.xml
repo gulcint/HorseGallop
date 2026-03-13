@@ -409,6 +409,13 @@
     <string name="metric_distance">Distance</string>
     <string name="metric_time">Time</string>
     <string name="metric_calories">Calories Burned</string>
+    <string name="metric_horse_calories">Horse Calories</string>
+    <string name="metric_altitude">Altitude</string>
+    <string name="unit_m">m</string>
+    <string name="gait_walk">Walk</string>
+    <string name="gait_trot">Trot</string>
+    <string name="gait_canter">Canter</string>
+    <string name="gait_distribution">Gait Distribution</string>
     <string name="stop_ride">Stop Ride</string>
     <string name="hero_track_title">Track your next ride</string>
     <string name="hero_track_subtitle">See your route, speed and time in real-time.</string>
@@ -469,6 +476,17 @@
     <string name="lesson_level_label">Level: %1$s</string>
     <string name="lesson_spots_full">No spots left</string>
     <string name="lesson_spots_available">%1$d / %2$d spots available</string>
+    <string name="spots_left">spots left</string>
+
+    <!-- Horse tip categories -->
+    <string name="horse_tip_category_breed">Breed</string>
+    <string name="horse_tip_category_physiology">Physiology</string>
+    <string name="horse_tip_category_anatomy">Anatomy</string>
+    <string name="horse_tip_category_care">Care</string>
+    <string name="horse_tip_category_speed">Speed</string>
+    <string name="horse_tip_category_vision">Vision</string>
+    <string name="horse_tip_category_behavior">Behavior</string>
+    <string name="horse_tip_category_default">Horse Fact</string>
 
     <!-- Horse breeds -->
     <string name="horse_breed_label">Breed</string>

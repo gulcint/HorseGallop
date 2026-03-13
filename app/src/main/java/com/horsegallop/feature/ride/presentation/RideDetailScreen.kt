@@ -8,12 +8,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
@@ -60,7 +63,9 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.horsegallop.R
+import com.horsegallop.domain.ride.model.GeoPoint
 import com.horsegallop.domain.ride.model.RideSession
+import com.horsegallop.domain.ride.util.gaitOf
 import com.horsegallop.ui.theme.LocalSemanticColors
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -229,7 +234,7 @@ private fun RideDetailMapCard(ride: RideSession) {
                 .height(280.dp)
                 .clip(RoundedCornerShape(22.dp))
         ) {
-            RideDetailMap(ride.pathPoints.map { LatLng(it.latitude, it.longitude) })
+            RideDetailMap(ride.pathPoints)
         }
     }
 }
@@ -295,6 +300,30 @@ private fun RideStatsCard(ride: RideSession) {
                     label = stringResource(R.string.ride_max_speed)
                 )
                 Spacer(modifier = Modifier.weight(1f))
+            }
+
+            // Gait distribution — only shown for rides with speed data
+            if (ride.pathPoints.isNotEmpty() && ride.pathPoints.any { it.speedKmh > 0f }) {
+                val total = ride.pathPoints.size.toFloat()
+                val walkPct = (ride.pathPoints.count { gaitOf(it.speedKmh) == "walk" } / total * 100).toInt()
+                val trotPct = (ride.pathPoints.count { gaitOf(it.speedKmh) == "trot" } / total * 100).toInt()
+                val canterPct = (ride.pathPoints.count { gaitOf(it.speedKmh) == "canter" } / total * 100).toInt()
+                val semantic = LocalSemanticColors.current
+                HorizontalDivider(color = semantic.cardStroke)
+                Text(
+                    text = stringResource(R.string.gait_distribution),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    GaitBar(modifier = Modifier.weight(1f), color = semantic.gaitWalk, label = stringResource(R.string.gait_walk), pct = walkPct)
+                    GaitBar(modifier = Modifier.weight(1f), color = semantic.gaitTrot, label = stringResource(R.string.gait_trot), pct = trotPct)
+                    GaitBar(modifier = Modifier.weight(1f), color = semantic.gaitCanter, label = stringResource(R.string.gait_canter), pct = canterPct)
+                }
             }
         }
     }
@@ -377,19 +406,19 @@ private fun InfoCard(
 }
 
 @Composable
-fun RideDetailMap(points: List<LatLng>) {
+fun RideDetailMap(geoPoints: List<GeoPoint>) {
     val semantic = LocalSemanticColors.current
-    val validPoints = points.filter { it.latitude != 0.0 || it.longitude != 0.0 }
-    val displayedPoints = remember(validPoints) {
-        if (validPoints.size > 500) {
-            val step = validPoints.size / 500
-            validPoints.filterIndexed { index, _ -> index % step == 0 || index == validPoints.lastIndex }
+    val validGeo = geoPoints.filter { it.latitude != 0.0 || it.longitude != 0.0 }
+    val displayedGeo = remember(validGeo) {
+        if (validGeo.size > 500) {
+            val step = validGeo.size / 500
+            validGeo.filterIndexed { i, _ -> i % step == 0 || i == validGeo.lastIndex }
         } else {
-            validPoints
+            validGeo
         }
     }
 
-    if (displayedPoints.isEmpty()) {
+    if (displayedGeo.isEmpty()) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -405,55 +434,143 @@ fun RideDetailMap(points: List<LatLng>) {
     }
 
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(displayedPoints.first(), 15f)
+        position = CameraPosition.fromLatLngZoom(
+            LatLng(displayedGeo.first().latitude, displayedGeo.first().longitude), 15f
+        )
     }
 
-    LaunchedEffect(displayedPoints) {
-        if (displayedPoints.size > 1) {
+    LaunchedEffect(displayedGeo) {
+        if (displayedGeo.size > 1) {
             val builder = LatLngBounds.Builder()
-            displayedPoints.forEach { builder.include(it) }
-            runCatching {
-                cameraPositionState.animate(
-                    CameraUpdateFactory.newLatLngBounds(builder.build(), 100)
-                )
-            }
+            displayedGeo.forEach { builder.include(LatLng(it.latitude, it.longitude)) }
+            runCatching { cameraPositionState.animate(CameraUpdateFactory.newLatLngBounds(builder.build(), 100)) }
         } else {
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(displayedPoints.first(), 15f)
+            val pt = displayedGeo.first()
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(LatLng(pt.latitude, pt.longitude), 15f)
         }
     }
 
-    GoogleMap(
-        modifier = Modifier.fillMaxSize(),
-        cameraPositionState = cameraPositionState,
-        uiSettings = MapUiSettings(zoomControlsEnabled = false)
+    val gaitSegments = remember(displayedGeo) { buildGaitSegments(displayedGeo) }
+    val hasGaitData = displayedGeo.any { it.speedKmh > 0f }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState,
+            uiSettings = MapUiSettings(zoomControlsEnabled = false)
+        ) {
+            if (hasGaitData) {
+                gaitSegments.forEach { (segPoints, gait) ->
+                    val segColor = when (gait) {
+                        "trot"   -> semantic.gaitTrot
+                        "canter" -> semantic.gaitCanter
+                        else     -> semantic.gaitWalk
+                    }
+                    if (segPoints.size >= 2) {
+                        Polyline(points = segPoints, color = segColor.copy(alpha = 0.25f), width = 18f, geodesic = true, jointType = JointType.ROUND)
+                        Polyline(points = segPoints, color = segColor, width = 9f, geodesic = true, jointType = JointType.ROUND)
+                    }
+                }
+            } else {
+                // Fallback: solid primary color for older rides without speed data
+                val allPoints = displayedGeo.map { LatLng(it.latitude, it.longitude) }
+                Polyline(points = allPoints, color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f), width = 18f, geodesic = true, jointType = JointType.ROUND)
+                Polyline(points = allPoints, color = MaterialTheme.colorScheme.primary, width = 9f, geodesic = true, jointType = JointType.ROUND)
+            }
+            Marker(
+                state = MarkerState(position = LatLng(displayedGeo.first().latitude, displayedGeo.first().longitude)),
+                title = stringResource(R.string.map_start),
+                icon = com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(
+                    com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_GREEN
+                )
+            )
+            Marker(
+                state = MarkerState(position = LatLng(displayedGeo.last().latitude, displayedGeo.last().longitude)),
+                title = stringResource(R.string.map_end),
+                icon = com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(
+                    com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_RED
+                )
+            )
+        }
+        // Gait legend overlay — only when speed data is available
+        if (hasGaitData) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(end = 10.dp, top = 10.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(semantic.panelOverlay.copy(alpha = 0.90f))
+                    .padding(horizontal = 8.dp, vertical = 5.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                DetailGaitDot(color = semantic.gaitWalk, label = stringResource(R.string.gait_walk))
+                DetailGaitDot(color = semantic.gaitTrot, label = stringResource(R.string.gait_trot))
+                DetailGaitDot(color = semantic.gaitCanter, label = stringResource(R.string.gait_canter))
+            }
+        }
+    }
+}
+
+@Composable
+private fun GaitBar(
+    modifier: Modifier = Modifier,
+    color: Color,
+    label: String,
+    pct: Int
+) {
+    val semantic = LocalSemanticColors.current
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Polyline(
-            points = displayedPoints,
-            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
-            width = 18f,
-            geodesic = true,
-            jointType = JointType.ROUND
+        Text(
+            text = "$pct%",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold,
+            color = color
         )
-        Polyline(
-            points = displayedPoints,
-            color = MaterialTheme.colorScheme.primary,
-            width = 9f,
-            geodesic = true,
-            jointType = JointType.ROUND
-        )
-        Marker(
-            state = MarkerState(position = displayedPoints.first()),
-            title = stringResource(R.string.map_start),
-            icon = com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(
-                com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_GREEN
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(6.dp)
+                .clip(RoundedCornerShape(3.dp))
+                .background(semantic.cardSubtle)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(pct / 100f)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(3.dp))
+                    .background(color)
             )
+        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        Marker(
-            state = MarkerState(position = displayedPoints.last()),
-            title = stringResource(R.string.map_end),
-            icon = com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(
-                com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_RED
-            )
+    }
+}
+
+
+@Composable
+private fun DetailGaitDot(color: Color, label: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(3.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .clip(CircleShape)
+                .background(color)
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Medium
         )
     }
 }

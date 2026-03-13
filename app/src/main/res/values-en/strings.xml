@@ -377,6 +377,13 @@
     <string name="metric_distance">Distance</string>
     <string name="metric_time">Time</string>
     <string name="metric_calories">Calories Burned</string>
+    <string name="metric_horse_calories">Horse Calories</string>
+    <string name="metric_altitude">Altitude</string>
+    <string name="unit_m">m</string>
+    <string name="gait_walk">Walk</string>
+    <string name="gait_trot">Trot</string>
+    <string name="gait_canter">Canter</string>
+    <string name="gait_distribution">Gait Distribution</string>
     <string name="stop_ride">Stop Ride</string>
     <string name="hero_track_title">Track your next ride</string>
     <string name="hero_track_subtitle">See your route, speed and time in real-time.</string>
@@ -419,4 +426,7 @@
     <string name="training_plan_locked">Pro Only</string>
     <string name="training_pro_required">This plan requires HorseGallop Pro.</string>
     <string name="training_update_failed">Could not update training task.</string>
+    <string name="lesson_booked_badge">✓ Booked</string>
+    <string name="lesson_full_badge">Full</string>
+    <string name="spots_left">spots left</string>
 </resources>

@@ -71,6 +71,8 @@ class RideTrackingViewModel @Inject constructor(
                     distanceKm = metrics.distanceKm,
                     durationSec = metrics.durationSec,
                     calories = metrics.calories,
+                    horseCalories = metrics.horseCalories,
+                    altitudeM = metrics.altitudeM,
                     pathPoints = metrics.pathPoints
                 )
             }

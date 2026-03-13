@@ -1,79 +1,94 @@
 package com.horsegallop.data.notification.repository
 
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import com.horsegallop.core.debug.AppLog
 import com.horsegallop.domain.notification.model.AppNotification
 import com.horsegallop.domain.notification.model.NotificationType
 import com.horsegallop.domain.notification.repository.NotificationRepository
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class NotificationRepositoryImpl @Inject constructor() : NotificationRepository {
+class NotificationRepositoryImpl @Inject constructor(
+    private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth
+) : NotificationRepository {
 
-    private val _notifications = MutableStateFlow(mockNotifications())
+    override fun getNotifications(): Flow<List<AppNotification>> {
+        val userId = auth.currentUser?.uid ?: return flowOf(emptyList())
 
-    override fun getNotifications(): Flow<List<AppNotification>> = _notifications.asStateFlow()
+        return callbackFlow {
+            val listener = firestore
+                .collection("users").document(userId)
+                .collection("notifications")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .limit(50)
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) {
+                        AppLog.e("NotificationRepo", "Firestore error: ${error.message}")
+                        trySend(emptyList())
+                        return@addSnapshotListener
+                    }
+                    val items = snapshot?.documents?.mapNotNull { doc ->
+                        runCatching {
+                            AppNotification(
+                                id = doc.id,
+                                type = when (doc.getString("type")) {
+                                    "reservation" -> NotificationType.RESERVATION
+                                    "lesson" -> NotificationType.LESSON
+                                    else -> NotificationType.GENERAL
+                                },
+                                title = doc.getString("title").orEmpty(),
+                                body = doc.getString("body").orEmpty(),
+                                timestamp = doc.getLong("timestamp") ?: 0L,
+                                isRead = doc.getBoolean("isRead") ?: false
+                            )
+                        }.getOrNull()
+                    } ?: emptyList()
+                    trySend(items)
+                }
+            awaitClose { listener.remove() }
+        }.buffer(Channel.CONFLATED)
+    }
 
     override suspend fun markAsRead(id: String) {
-        _notifications.update { list ->
-            list.map { if (it.id == id) it.copy(isRead = true) else it }
+        val userId = auth.currentUser?.uid ?: return
+        runCatching {
+            firestore
+                .collection("users").document(userId)
+                .collection("notifications").document(id)
+                .update("isRead", true)
+                .await()
+        }.onFailure {
+            AppLog.e("NotificationRepo", "markAsRead failed: ${it.message}")
         }
     }
 
     override suspend fun markAllAsRead() {
-        _notifications.update { list ->
-            list.map { it.copy(isRead = true) }
+        val userId = auth.currentUser?.uid ?: return
+        runCatching {
+            val docs = firestore
+                .collection("users").document(userId)
+                .collection("notifications")
+                .whereEqualTo("isRead", false)
+                .get()
+                .await()
+            val batch = firestore.batch()
+            docs.documents.forEach { doc ->
+                batch.update(doc.reference, "isRead", true)
+            }
+            batch.commit().await()
+        }.onFailure {
+            AppLog.e("NotificationRepo", "markAllAsRead failed: ${it.message}")
         }
-    }
-
-    private fun mockNotifications(): List<AppNotification> {
-        val now = System.currentTimeMillis()
-        val hour = 3_600_000L
-        val day = 86_400_000L
-        return listOf(
-            AppNotification(
-                id = "notif_1",
-                type = NotificationType.RESERVATION,
-                title = "Rezervasyonunuz Onaylandı",
-                body = "25 Mart Salı günü saat 10:00'daki ders rezervasyonunuz onaylandı.",
-                timestamp = now - 2 * hour,
-                isRead = false
-            ),
-            AppNotification(
-                id = "notif_2",
-                type = NotificationType.LESSON,
-                title = "Ders Yarın Başlıyor",
-                body = "Yarın saat 14:00'te 'İleri Atlama' dersiniz başlıyor. Hazır olun!",
-                timestamp = now - 5 * hour,
-                isRead = false
-            ),
-            AppNotification(
-                id = "notif_3",
-                type = NotificationType.GENERAL,
-                title = "HorseGallop\'a Hoş Geldiniz",
-                body = "Uygulamaya hoş geldiniz! Atlarınızı kaydedin, dersler rezerve edin ve ilerlemenizi takip edin.",
-                timestamp = now - 1 * day,
-                isRead = true
-            ),
-            AppNotification(
-                id = "notif_4",
-                type = NotificationType.LESSON,
-                title = "Ders Değerlendirmesi",
-                body = "Geçen haftaki 'Temel Binicilik' dersinizi değerlendirmeyi unutmayın.",
-                timestamp = now - 2 * day,
-                isRead = false
-            ),
-            AppNotification(
-                id = "notif_5",
-                type = NotificationType.RESERVATION,
-                title = "İptal Bildirimi",
-                body = "28 Mart\'taki ders eğitmenin talebi üzerine iptal edildi. Yeni bir slot seçebilirsiniz.",
-                timestamp = now - 3 * day,
-                isRead = true
-            )
-        )
     }
 }

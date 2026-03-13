@@ -32,7 +32,10 @@ data class BarnFunctionsDto(
     val tags: List<String>,
     val amenities: List<String>,
     val rating: Double,
-    val reviewCount: Int
+    val reviewCount: Int,
+    val heroImageUrl: String? = null,
+    val capacity: Int = 0,
+    val phone: String? = null
 )
 
 data class LessonFunctionsDto(

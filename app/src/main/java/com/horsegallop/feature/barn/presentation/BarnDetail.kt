@@ -34,6 +34,7 @@ import coil.compose.AsyncImage
 import com.horsegallop.domain.barn.model.BarnReview
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.barn.model.Instructor
+import com.horsegallop.domain.schedule.model.Lesson
 import com.horsegallop.R
 import com.horsegallop.core.feedback.LocalAppFeedbackController
 import com.valentinilk.shimmer.shimmer
@@ -47,7 +48,6 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.horsegallop.ui.theme.LocalSemanticColors
 import java.util.Locale
-import kotlinx.coroutines.launch
 
 @Composable
 fun BarnDetailScreen(
@@ -55,6 +55,7 @@ fun BarnDetailScreen(
     viewModel: BarnDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val bookingState by viewModel.bookingState.collectAsState()
     val semantic = LocalSemanticColors.current
     val topBarTitle = when (val state = uiState) {
         is BarnDetailUiState.Success -> state.barn.barn.name
@@ -101,7 +102,12 @@ fun BarnDetailScreen(
         ) {
             when (val state = uiState) {
                 is BarnDetailUiState.Loading -> BarnDetailShimmer()
-                is BarnDetailUiState.Success -> BarnDetailContent(barn = state.barn)
+                is BarnDetailUiState.Success -> BarnDetailContent(
+                    barn = state.barn,
+                    bookingState = bookingState,
+                    onBookLesson = viewModel::bookLesson,
+                    onClearBookingResult = viewModel::clearBookingResult
+                )
                 is BarnDetailUiState.Error -> Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -126,11 +132,30 @@ fun BarnDetailScreen(
 }
 
 @Composable
-fun BarnDetailContent(barn: BarnWithLocation) {
+fun BarnDetailContent(
+    barn: BarnWithLocation,
+    bookingState: BookingState = BookingState(),
+    onBookLesson: (String) -> Unit = {},
+    onClearBookingResult: () -> Unit = {}
+) {
     val feedback = LocalAppFeedbackController.current
-    val coroutineScope = rememberCoroutineScope()
     val semantic = LocalSemanticColors.current
     var showReservationSheet by remember { mutableStateOf(false) }
+
+    LaunchedEffect(bookingState.bookingSuccess) {
+        if (bookingState.bookingSuccess) {
+            showReservationSheet = false
+            feedback.showSuccess(R.string.reservation_request_sent)
+            onClearBookingResult()
+        }
+    }
+
+    LaunchedEffect(bookingState.bookingError) {
+        if (bookingState.bookingError != null) {
+            feedback.showError(R.string.backend_error_generic)
+            onClearBookingResult()
+        }
+    }
     val ratingText = if (barn.barn.rating > 0.0) {
         String.format(Locale.US, "%.1f", barn.barn.rating)
     } else {
@@ -489,12 +514,9 @@ fun BarnDetailContent(barn: BarnWithLocation) {
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
             ) {
                 ReservationContent(
-                    onConfirm = {
-                        showReservationSheet = false
-                        coroutineScope.launch {
-                            feedback.showSuccess(R.string.reservation_request_sent)
-                        }
-                    }
+                    lessons = bookingState.lessons,
+                    isBooking = bookingState.isBooking,
+                    onConfirm = { lessonId -> onBookLesson(lessonId) }
                 )
             }
         }
@@ -502,153 +524,152 @@ fun BarnDetailContent(barn: BarnWithLocation) {
 }
 
 @Composable
-fun ReservationContent(onConfirm: () -> Unit) {
+fun ReservationContent(
+    lessons: List<Lesson>,
+    isBooking: Boolean,
+    onConfirm: (String) -> Unit
+) {
     val semantic = LocalSemanticColors.current
-    var selectedDateIndex by remember { mutableIntStateOf(0) }
-    var selectedTimeIndex by remember { mutableIntStateOf(-1) }
-    var selectedInstructorIndex by remember { mutableIntStateOf(-1) }
-
-    // Mock Instructors - TODO: Fetch from backend
-    val instructors = listOf(
-        "Ahmet Yilmaz" to "Dressage",
-        "Ayse Kaya" to "Show Jumping",
-        "Mehmet Demir" to "Beginner Basics"
-    )
+    var selectedLessonId by remember { mutableStateOf<String?>(null) }
+    val selectedLesson = lessons.find { it.id == selectedLessonId }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(24.dp)
-            .padding(bottom = 32.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+            .padding(horizontal = 24.dp)
+            .padding(top = 4.dp, bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
             stringResource(id = com.horsegallop.R.string.select_date_time),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
-        
-        // Mock Date Selection
-        // TODO: Fetch from backend (This data will be fetched from backend)
-        val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-        Column {
-            Text(stringResource(id = com.horsegallop.R.string.label_date), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(modifier = Modifier.height(12.dp))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(7) { index ->
-                    val isSelected = selectedDateIndex == index
-                    Surface(
-                        onClick = { selectedDateIndex = index },
-                        shape = RoundedCornerShape(16.dp),
-                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainer,
-                        border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                        modifier = Modifier.size(width = 64.dp, height = 76.dp)
-                    ) {
-                        Column(
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                days[index % 7],
-                                style = MaterialTheme.typography.labelMedium,
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                "${25 + index}",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
+
+        when {
+            lessons.isEmpty() -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
             }
-        }
-
-        // Mock Time Selection
-        Column {
-            Text(stringResource(id = com.horsegallop.R.string.label_time), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                // TODO: Fetch from backend (This data will be fetched from backend)
-                listOf("09:00", "11:00", "14:00", "16:00").forEachIndexed { index, time ->
-                    val isSelected = selectedTimeIndex == index
-                    FilterChip(
-                        selected = isSelected,
-                        onClick = { selectedTimeIndex = index },
-                        label = { Text(time) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    )
-                }
-            }
-        }
-
-        // Mock Instructor Selection
-        Column {
-            Text(stringResource(id = com.horsegallop.R.string.label_instructor), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(modifier = Modifier.height(8.dp))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                items(instructors.size) { index ->
-                    val (name, specialty) = instructors[index]
-                    val isSelected = selectedInstructorIndex == index
-                    
-                    Surface(
-                        onClick = { selectedInstructorIndex = index },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else semantic.panelOverlay,
-                        border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                        modifier = Modifier.width(140.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(12.dp)
+            else -> {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    lessons.forEach { lesson ->
+                        val isSelected = lesson.id == selectedLessonId
+                        Surface(
+                            onClick = { if (!lesson.isFull && !lesson.isBookedByMe) selectedLessonId = lesson.id },
+                            shape = RoundedCornerShape(16.dp),
+                            color = when {
+                                lesson.isBookedByMe -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                                isSelected -> MaterialTheme.colorScheme.secondaryContainer
+                                lesson.isFull -> semantic.panelOverlay.copy(alpha = 0.5f)
+                                else -> semantic.panelOverlay
+                            },
+                            border = androidx.compose.foundation.BorderStroke(
+                                width = if (isSelected) 2.dp else 1.dp,
+                                color = if (isSelected) MaterialTheme.colorScheme.secondary
+                                else MaterialTheme.colorScheme.outlineVariant
+                            ),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            // Avatar placeholder
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(androidx.compose.foundation.shape.CircleShape)
-                                    .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant),
-                                contentAlignment = Alignment.Center
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                Text(
-                                    text = name.first().toString(),
-                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                Box(
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (isSelected) MaterialTheme.colorScheme.secondary
+                                            else MaterialTheme.colorScheme.surfaceVariant
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = lesson.instructorName.first().uppercase(),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isSelected) MaterialTheme.colorScheme.onSecondary
+                                        else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = lesson.title,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (lesson.isFull) MaterialTheme.colorScheme.onSurfaceVariant
+                                        else MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = lesson.instructorName,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        text = lesson.date,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                Column(horizontalAlignment = Alignment.End) {
+                                    if (lesson.price > 0) {
+                                        Text(
+                                            text = "₺%.0f".format(lesson.price),
+                                            style = MaterialTheme.typography.labelLarge,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                    when {
+                                        lesson.isBookedByMe -> Text(
+                                            text = stringResource(id = R.string.lesson_booked_badge),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                        lesson.isFull -> Text(
+                                            text = stringResource(id = R.string.lesson_full_badge),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                        lesson.spotsAvailable > 0 -> Text(
+                                            text = "${lesson.spotsAvailable} ${stringResource(id = R.string.spots_left)}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = semantic.success
+                                        )
+                                    }
+                                }
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = name,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = specialty,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
                         }
                     }
                 }
             }
         }
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
+
         Button(
-            onClick = onConfirm,
-            enabled = selectedTimeIndex >= 0 && selectedInstructorIndex >= 0,
+            onClick = { selectedLessonId?.let { onConfirm(it) } },
+            enabled = selectedLesson != null && !selectedLesson.isFull && !selectedLesson.isBookedByMe && !isBooking,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(16.dp)
         ) {
-            Text(stringResource(id = com.horsegallop.R.string.confirm_booking))
+            if (isBooking) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                Text(stringResource(id = com.horsegallop.R.string.confirm_booking))
+            }
         }
     }
 }

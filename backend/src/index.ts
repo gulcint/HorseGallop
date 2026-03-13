@@ -395,3 +395,186 @@ export const getAppContent = onCall({ region: "us-central1" }, async (request) =
     ...(doc.data() || {}),
   };
 });
+
+// ─── Reservation Functions ─────────────────────────────────────────────────
+
+export const bookLesson = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+  const lessonId = parseRequiredId((request.data || {}).lessonId, "lessonId");
+
+  const lessonDoc = await db.collection("lessons").doc(lessonId).get();
+  if (!lessonDoc.exists) throw new HttpsError("not-found", "Lesson not found");
+  const lesson = lessonDoc.data()!;
+
+  const existing = await db.collection("reservations")
+    .where("userId", "==", uid)
+    .where("lessonId", "==", lessonId)
+    .where("status", "!=", "cancelled")
+    .limit(1)
+    .get();
+  if (!existing.empty) throw new HttpsError("already-exists", "Already booked this lesson");
+
+  const ref = db.collection("reservations").doc();
+  const lessonTitle = normalizeString(lesson.title, 160);
+  const lessonDate = normalizeString(lesson.date, 40);
+  const instructorName = normalizeString(lesson.instructorName, 120);
+
+  await ref.set({
+    userId: uid, lessonId, lessonTitle, lessonDate, instructorName,
+    status: "confirmed",
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return { id: ref.id, lessonId, lessonTitle, lessonDate, instructorName, status: "confirmed", createdAt: new Date().toISOString() };
+});
+
+export const cancelReservation = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+  const reservationId = parseRequiredId((request.data || {}).reservationId, "reservationId");
+
+  const ref = db.collection("reservations").doc(reservationId);
+  const doc = await ref.get();
+  if (!doc.exists) throw new HttpsError("not-found", "Reservation not found");
+  if (doc.data()!.userId !== uid) throw new HttpsError("permission-denied", "Not your reservation");
+
+  await ref.update({ status: "cancelled", updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+  return { ok: true };
+});
+
+export const getMyReservations = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+
+  const snapshot = await db.collection("reservations")
+    .where("userId", "==", uid)
+    .orderBy("createdAt", "desc")
+    .get();
+
+  const items = snapshot.docs.map((doc) => {
+    const d = doc.data();
+    return {
+      id: doc.id,
+      lessonId: normalizeString(d.lessonId, 80),
+      lessonTitle: normalizeString(d.lessonTitle, 160),
+      lessonDate: normalizeString(d.lessonDate, 40),
+      instructorName: normalizeString(d.instructorName, 120),
+      status: normalizeString(d.status, 20) || "pending",
+      createdAt: d.createdAt instanceof admin.firestore.Timestamp ? d.createdAt.toDate().toISOString() : "",
+    };
+  });
+
+  return { items };
+});
+
+// ─── Horse Functions ───────────────────────────────────────────────────────
+
+export const getMyHorses = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+
+  const snapshot = await db.collection("horses").where("userId", "==", uid).get();
+  const items = snapshot.docs.map((doc) => {
+    const d = doc.data();
+    return {
+      id: doc.id,
+      name: normalizeString(d.name, 80),
+      breed: normalizeString(d.breed, 80),
+      birthYear: typeof d.birthYear === "number" ? d.birthYear : 0,
+      color: normalizeString(d.color, 40),
+      gender: normalizeString(d.gender, 20),
+      weightKg: typeof d.weightKg === "number" ? d.weightKg : 0,
+      imageUrl: normalizeString(d.imageUrl, 500),
+    };
+  });
+
+  return { items };
+});
+
+export const addHorse = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+  const data = request.data || {};
+
+  const name = parseRequiredId(data.name, "name");
+  const breed = normalizeString(data.breed, 80);
+  const birthYear = typeof data.birthYear === "number" ? Math.floor(data.birthYear) : 0;
+  const color = normalizeString(data.color, 40);
+  const gender = normalizeString(data.gender, 20);
+  const weightKg = typeof data.weightKg === "number" ? Math.floor(data.weightKg) : 0;
+
+  const ref = db.collection("horses").doc();
+  await ref.set({
+    userId: uid, name, breed, birthYear, color, gender, weightKg, imageUrl: "",
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return { id: ref.id, name, breed, birthYear, color, gender, weightKg, imageUrl: "" };
+});
+
+export const deleteHorse = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+  const horseId = parseRequiredId((request.data || {}).horseId, "horseId");
+
+  const ref = db.collection("horses").doc(horseId);
+  const doc = await ref.get();
+  if (!doc.exists) throw new HttpsError("not-found", "Horse not found");
+  if (doc.data()!.userId !== uid) throw new HttpsError("permission-denied", "Not your horse");
+
+  await ref.delete();
+  return { ok: true };
+});
+
+// ─── Review Functions ──────────────────────────────────────────────────────
+
+export const submitReview = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+  const data = request.data || {};
+
+  const targetId = parseRequiredId(data.targetId, "targetId");
+  const targetType = parseRequiredId(data.targetType, "targetType");
+  const targetName = normalizeString(data.targetName, 160);
+  const rating = typeof data.rating === "number" ? Math.min(5, Math.max(1, Math.floor(data.rating))) : 3;
+  const comment = normalizeString(data.comment, 1000);
+
+  const userDoc = await db.collection("users").doc(uid).get();
+  const userData = userDoc.data() || {};
+  const authorName = `${normalizeString(userData.firstName, 60)} ${normalizeString(userData.lastName, 60)}`.trim();
+
+  const ref = db.collection("reviews").doc();
+  await ref.set({
+    userId: uid, targetId, targetType, targetName, rating, comment, authorName,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return { id: ref.id, targetId, targetType, targetName, rating, comment, authorName, createdAt: new Date().toISOString() };
+});
+
+export const getMyReviews = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+
+  const snapshot = await db.collection("reviews")
+    .where("userId", "==", uid)
+    .orderBy("createdAt", "desc")
+    .get();
+
+  const items = snapshot.docs.map((doc) => {
+    const d = doc.data();
+    return {
+      id: doc.id,
+      targetId: normalizeString(d.targetId, 80),
+      targetType: normalizeString(d.targetType, 40),
+      targetName: normalizeString(d.targetName, 160),
+      rating: typeof d.rating === "number" ? d.rating : 0,
+      comment: normalizeString(d.comment, 1000),
+      authorName: normalizeString(d.authorName, 120),
+      createdAt: d.createdAt instanceof admin.firestore.Timestamp ? d.createdAt.toDate().toISOString() : "",
+    };
+  });
+
+  return { items };
+});

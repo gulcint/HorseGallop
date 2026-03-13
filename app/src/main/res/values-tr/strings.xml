@@ -377,6 +377,13 @@
     <string name="metric_distance">Mesafe</string>
     <string name="metric_time">Süre</string>
     <string name="metric_calories">Yakılan Kalori</string>
+    <string name="metric_horse_calories">At Kalorisi</string>
+    <string name="metric_altitude">Yükseklik</string>
+    <string name="unit_m">m</string>
+    <string name="gait_walk">Yürüyüş</string>
+    <string name="gait_trot">Tırıs</string>
+    <string name="gait_canter">Dörtnal</string>
+    <string name="gait_distribution">Yürüyüş Dağılımı</string>
     <string name="stop_ride">Binişi Bitir</string>
     <string name="hero_track_title">Bir sonraki binişini takip et</string>
     <string name="hero_track_subtitle">Rotanı, hızını ve süreni anlık gör.</string>
@@ -419,4 +426,15 @@
     <string name="training_plan_locked">Sadece Pro</string>
     <string name="training_pro_required">Bu plan için HorseGallop Pro gerekli.</string>
     <string name="training_update_failed">Antrenman görevi güncellenemedi.</string>
+    <string name="lesson_booked_badge">✓ Rezerve Edildi</string>
+    <string name="lesson_full_badge">Dolu</string>
+    <string name="spots_left">yer kaldı</string>
+    <string name="horse_tip_category_breed">Irk</string>
+    <string name="horse_tip_category_physiology">Fizyoloji</string>
+    <string name="horse_tip_category_anatomy">Anatomi</string>
+    <string name="horse_tip_category_care">Bakım</string>
+    <string name="horse_tip_category_speed">Hız</string>
+    <string name="horse_tip_category_vision">Görüş</string>
+    <string name="horse_tip_category_behavior">Davranış</string>
+    <string name="horse_tip_category_default">At Bilgisi</string>
 </resources>

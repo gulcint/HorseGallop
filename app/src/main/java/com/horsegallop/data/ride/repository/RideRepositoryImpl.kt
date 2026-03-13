@@ -19,6 +19,7 @@ import com.horsegallop.domain.ride.model.RideSession
 import com.horsegallop.domain.ride.model.StopRideResult
 import com.horsegallop.domain.ride.repository.RideHistoryRepository
 import com.horsegallop.domain.ride.repository.RideRepository
+import com.horsegallop.domain.ride.util.GaitThresholds
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,6 +58,7 @@ class RideRepositoryImpl @Inject constructor(
     private var locationCallback: LocationCallback? = null
     private var lastLocationTimeMillis: Long? = null
     private var accumulatedCalories: Double = 0.0
+    private var accumulatedHorseCalories: Double = 0.0
     private var startTimeMillis: Long = 0L
     private var userWeightKg: Float = 70f
     private var currentRideId: String? = null
@@ -64,6 +66,7 @@ class RideRepositoryImpl @Inject constructor(
     private var speedSum: Double = 0.0
     private var maxSpeed: Double = 0.0
     private var currentRideType: String? = null
+    private val speedWindow = ArrayDeque<Float>(5)
 
     override suspend fun startRide(weightKg: Float, rideType: String?) {
         if (_isRiding.value) return
@@ -78,9 +81,11 @@ class RideRepositoryImpl @Inject constructor(
         startTimeMillis = System.currentTimeMillis()
         lastLocationTimeMillis = null
         accumulatedCalories = 0.0
+        accumulatedHorseCalories = 0.0
         speedSamples = 0
         speedSum = 0.0
         maxSpeed = 0.0
+        speedWindow.clear()
         // Clear previous path
         _rideMetrics.value = RideMetrics(pathPoints = emptyList())
         currentRideId = try {
@@ -147,6 +152,7 @@ class RideRepositoryImpl @Inject constructor(
         }
         _isRiding.value = false
         stopLocationUpdates()
+        speedWindow.clear()
         _rideMetrics.update { it.copy(speedKmh = 0f) }
         currentRideId = null
         currentRideType = null
@@ -196,7 +202,7 @@ class RideRepositoryImpl @Inject constructor(
 
                 val lat = location.latitude
                 val lng = location.longitude
-                val newPoint = GeoPoint(lat, lng)
+                val altM = location.altitude.toFloat()
 
                 _rideMetrics.update { cur ->
                     val lastPoint = cur.pathPoints.lastOrNull()
@@ -204,8 +210,8 @@ class RideRepositoryImpl @Inject constructor(
                         distanceKm(
                             lastPoint.latitude,
                             lastPoint.longitude,
-                            newPoint.latitude,
-                            newPoint.longitude
+                            lat,
+                            lng
                         )
                     } else {
                         0.0
@@ -221,49 +227,56 @@ class RideRepositoryImpl @Inject constructor(
                     val newDuration = cur.durationSec + secondsDelta
                     val newDistance = cur.distanceKm + distanceDeltaKm.toFloat()
 
-                    // Use location.speed if available, otherwise calculate
-                    val currentSpeedKmh = if (location.hasSpeed()) {
+                    // Raw speed from GPS sensor or distance/time calculation
+                    val rawSpeedKmh = if (location.hasSpeed()) {
                         location.speed * 3.6f
                     } else if (secondsDelta > 0 && distanceDeltaKm > 0.0) {
                         ((distanceDeltaKm / secondsDelta.toDouble()) * 3600.0).toFloat()
                     } else {
                         0f
                     }
-                    if (currentSpeedKmh > 0f) {
+
+                    // 5-point moving average to smooth GPS jitter
+                    speedWindow.addLast(rawSpeedKmh)
+                    if (speedWindow.size > 5) speedWindow.removeFirst()
+                    val smoothedSpeed = speedWindow.average().toFloat()
+
+                    if (smoothedSpeed > 0f) {
                         speedSamples += 1
-                        speedSum += currentSpeedKmh
-                        if (currentSpeedKmh > maxSpeed) {
-                            maxSpeed = currentSpeedKmh.toDouble()
-                        }
+                        speedSum += smoothedSpeed
+                        if (smoothedSpeed > maxSpeed) maxSpeed = smoothedSpeed.toDouble()
                     }
 
-                    // Dynamic MET Calculation based on Speed
-                    // Walk: < 6 km/h (~3.8 MET)
-                    // Trot: 6 - 13 km/h (~5.5 MET)
-                    // Canter/Gallop: > 13 km/h (~7.3 MET)
+                    // Dynamic MET based on smoothed speed
                     val currentMet = when {
-                        currentSpeedKmh < 6 -> 3.8f
-                        currentSpeedKmh < 13 -> 5.5f
-                        else -> 7.3f
+                        smoothedSpeed < GaitThresholds.WALK_MAX_KMH -> GaitThresholds.WALK_MET
+                        smoothedSpeed < GaitThresholds.TROT_MAX_KMH -> GaitThresholds.TROT_MET
+                        else -> GaitThresholds.CANTER_MET
                     }
-                    
-                    val weightKg = userWeightKg
-                    
-                    // Calories = MET * Weight * Duration(hours)
-                    // We calculate incrementally for this segment
+
+                    // Horse calorie estimate: avg 500 kg horse, speed-tier kcal/hr
+                    val horseKcalPerHour = when {
+                        smoothedSpeed < GaitThresholds.WALK_MAX_KMH -> GaitThresholds.WALK_HORSE_KCAL_HR
+                        smoothedSpeed < GaitThresholds.TROT_MAX_KMH -> GaitThresholds.TROT_HORSE_KCAL_HR
+                        else -> GaitThresholds.CANTER_HORSE_KCAL_HR
+                    }
+
                     if (secondsDelta > 0) {
                         val hoursDelta = secondsDelta / 3600.0
-                        val caloriesDelta = currentMet * weightKg * hoursDelta
-                        accumulatedCalories += caloriesDelta
+                        accumulatedCalories += currentMet * userWeightKg * hoursDelta
+                        accumulatedHorseCalories += horseKcalPerHour * hoursDelta
                     }
 
-                    val updatedPath = (cur.pathPoints + newPoint) // Keep all points for now or optimize later
+                    val newPoint = GeoPoint(lat, lng, smoothedSpeed, altM)
+                    val updatedPath = cur.pathPoints + newPoint
 
                     cur.copy(
-                        speedKmh = currentSpeedKmh,
+                        speedKmh = smoothedSpeed,
                         distanceKm = newDistance,
                         durationSec = newDuration,
                         calories = accumulatedCalories.toInt(),
+                        horseCalories = accumulatedHorseCalories.toInt(),
+                        altitudeM = altM,
                         pathPoints = updatedPath
                     )
                 }

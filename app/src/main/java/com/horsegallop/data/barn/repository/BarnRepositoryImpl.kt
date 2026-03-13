@@ -72,8 +72,10 @@ class BarnRepositoryImpl @Inject constructor(
                         lng = dto.lng,
                         rating = dto.rating,
                         reviewCount = dto.reviewCount,
+                        heroImageUrl = dto.heroImageUrl,
+                        capacity = dto.capacity,
+                        phone = dto.phone,
                         isFavorite = false,
-                        capacity = 20,
                         instructors = mockInstructors,
                         recentReviews = mockReviews
                     ),
