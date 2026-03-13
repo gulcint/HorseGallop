@@ -341,6 +341,26 @@
     <string name="barn_detail_top_rated">Top rated</string>
     <string name="unknown_location">Unknown Location</string>
     <string name="label_location">Location</string>
+    <!-- Add Horse -->
+    <string name="add_horse_title">At Ekle</string>
+    <string name="add_horse_hero_placeholder">Atın</string>
+    <string name="add_horse_hero_subtitle">Profiline eklemek için bilgileri doldur</string>
+    <string name="add_horse_section_basic">Temel Bilgiler</string>
+    <string name="add_horse_section_physical">Fiziksel Özellikler</string>
+    <string name="add_horse_name_label">At Adı *</string>
+    <string name="add_horse_name_error">At adı zorunludur</string>
+    <string name="add_horse_breed_label">Irk</string>
+    <string name="add_horse_gender_label">Cinsiyet</string>
+    <string name="add_horse_color_label">Renk</string>
+    <string name="add_horse_birth_year_label">Doğum Yılı</string>
+    <string name="add_horse_birth_year_dialog_title">Doğum Yılı Seç</string>
+    <string name="add_horse_select_hint">Seçiniz</string>
+    <string name="add_horse_select_action">Seç</string>
+    <string name="add_horse_weight_label">Ağırlık</string>
+    <string name="add_horse_weight_add">Ekle</string>
+    <string name="add_horse_save_button">Kaydet</string>
+    <string name="add_horse_cancel">Vazgeç</string>
+
     <string name="enrollment_title">Kayıt Ol</string>
     <string name="verify_email_title">E-postayı Doğrula</string>
     <string name="verification_sent_to_email">Doğrulama e-postası %1$s adresine gönderildi</string>

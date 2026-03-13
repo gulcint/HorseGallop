@@ -341,6 +341,26 @@
     <string name="barn_detail_top_rated">Top rated</string>
     <string name="unknown_location">Unknown Location</string>
     <string name="label_location">Location</string>
+    <!-- Add Horse -->
+    <string name="add_horse_title">Add Horse</string>
+    <string name="add_horse_hero_placeholder">Your Horse</string>
+    <string name="add_horse_hero_subtitle">Fill in the details to add to your profile</string>
+    <string name="add_horse_section_basic">Basic Info</string>
+    <string name="add_horse_section_physical">Physical Details</string>
+    <string name="add_horse_name_label">Horse Name *</string>
+    <string name="add_horse_name_error">Horse name is required</string>
+    <string name="add_horse_breed_label">Breed</string>
+    <string name="add_horse_gender_label">Gender</string>
+    <string name="add_horse_color_label">Coat Color</string>
+    <string name="add_horse_birth_year_label">Birth Year</string>
+    <string name="add_horse_birth_year_dialog_title">Select Birth Year</string>
+    <string name="add_horse_select_hint">Select</string>
+    <string name="add_horse_select_action">Select</string>
+    <string name="add_horse_weight_label">Weight</string>
+    <string name="add_horse_weight_add">Add</string>
+    <string name="add_horse_save_button">Save</string>
+    <string name="add_horse_cancel">Cancel</string>
+
     <string name="enrollment_title">Sign Up</string>
     <string name="verify_email_title">Verify your email</string>
     <string name="verification_sent_to_email">We sent a verification link to %1$s</string>
