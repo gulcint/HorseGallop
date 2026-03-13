@@ -1,5 +1,11 @@
 package com.horsegallop.feature.auth.presentation
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,22 +27,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -46,10 +50,10 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.horsegallop.domain.auth.model.UserProfile
 import com.horsegallop.domain.horse.model.Horse
-import com.horsegallop.domain.home.model.RideSession
 import com.horsegallop.ui.theme.LocalSemanticColors
-import java.text.SimpleDateFormat
 import java.util.Locale
+
+// ─── Test Tags ────────────────────────────────────────────────────────────────
 
 object ProfileTestTags {
     const val EditButton = "profile_edit_button"
@@ -60,6 +64,186 @@ object ProfileTestTags {
     const val WeightField = "profile_weight_field"
 }
 
+// ─── Hero Card ────────────────────────────────────────────────────────────────
+
+@Composable
+fun ProfileHeroCard(
+    profile: UserProfile,
+    fullName: String,
+    totalRides: Int = 0,
+    totalKm: Double = 0.0,
+    totalHours: Double = 0.0,
+    avgRating: Double = 0.0,
+    showStats: Boolean = true,
+    modifier: Modifier = Modifier,
+    onPhotoClick: () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.95f),
+                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.90f),
+                        MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.85f)
+                    )
+                )
+            )
+            .padding(horizontal = 20.dp, vertical = 22.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
+            // Avatar + Name row
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                // Avatar
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f))
+                        .clickable(onClick = onPhotoClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (!profile.photoUrl.isNullOrBlank()) {
+                        AsyncImage(
+                            model = profile.photoUrl,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Filled.Person,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(36.dp)
+                        )
+                    }
+                    // Edit badge
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .size(24.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Edit,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(12.dp)
+                        )
+                    }
+                }
+
+                // Name + email
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = fullName,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (profile.email.isNotBlank()) {
+                        Text(
+                            text = profile.email,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    if (profile.city.isNotBlank()) {
+                        Text(
+                            text = "📍 ${profile.city}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.80f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+
+            // Inline stats row — inside the hero banner (only on ProfileScreen, not EditProfile)
+            if (showStats) Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                HeroStatChip(
+                    emoji = "🏇",
+                    value = totalRides.toString(),
+                    label = "Sürüş",
+                    modifier = Modifier.weight(1f)
+                )
+                HeroStatChip(
+                    emoji = "📏",
+                    value = String.format(Locale.US, "%.1f", totalKm),
+                    label = "km",
+                    modifier = Modifier.weight(1f)
+                )
+                HeroStatChip(
+                    emoji = "⏱",
+                    value = String.format(Locale.US, "%.1f", totalHours),
+                    label = "sa",
+                    modifier = Modifier.weight(1f)
+                )
+                HeroStatChip(
+                    emoji = "⭐",
+                    value = if (avgRating > 0.0) String.format(Locale.US, "%.1f", avgRating) else "—",
+                    label = "puan",
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HeroStatChip(
+    emoji: String,
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.22f))
+            .padding(horizontal = 6.dp, vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        Text(text = emoji, style = MaterialTheme.typography.bodySmall)
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.72f),
+            maxLines = 1
+        )
+    }
+}
+
+// ─── Section Card (Info) ──────────────────────────────────────────────────────
+
 @Composable
 fun ProfileSectionCard(
     title: String,
@@ -68,11 +252,11 @@ fun ProfileSectionCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     val semantic = LocalSemanticColors.current
-    ElevatedCard(
+    Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.elevatedCardColors(containerColor = semantic.cardElevated),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+        border = BorderStroke(1.dp, semantic.cardStroke)
     ) {
         Column(
             modifier = Modifier
@@ -80,11 +264,11 @@ fun ProfileSectionCard(
                 .padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 if (!subtitle.isNullOrBlank()) {
@@ -100,122 +284,7 @@ fun ProfileSectionCard(
     }
 }
 
-@Composable
-fun ProfileHeroCard(
-    profile: UserProfile,
-    fullName: String,
-    modifier: Modifier = Modifier,
-    onPhotoClick: () -> Unit
-) {
-    val semantic = LocalSemanticColors.current
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(28.dp),
-        tonalElevation = 5.dp,
-        shadowElevation = 6.dp,
-        border = BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
-        )
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.92f),
-                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.88f),
-                            MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.82f)
-                        )
-                    )
-                )
-                .padding(20.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(96.dp)
-                        .clip(CircleShape)
-                        .background(semantic.cardSubtle.copy(alpha = 0.9f))
-                        .clickable(onClick = onPhotoClick),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (!profile.photoUrl.isNullOrBlank()) {
-                        AsyncImage(
-                            model = profile.photoUrl,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Filled.Person,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(42.dp)
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(4.dp)
-                            .size(28.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Edit,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(14.dp)
-                        )
-                    }
-                }
-
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Text(
-                        text = fullName,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Text(
-                        text = profile.email,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.88f)
-                    )
-
-                    if (profile.city.isNotBlank()) {
-                        AssistChip(
-                            onClick = {},
-                            enabled = false,
-                            label = {
-                                Text(
-                                    text = profile.city,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                            },
-                            colors = AssistChipDefaults.assistChipColors(
-                                disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                disabledLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
+// ─── Info Row ─────────────────────────────────────────────────────────────────
 
 @Composable
 fun ProfileInfoRow(
@@ -229,36 +298,280 @@ fun ProfileInfoRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .size(38.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)),
-            contentAlignment = Alignment.Center
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
+        )
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(1.dp)
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(18.dp)
-            )
-        }
-
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = value.ifBlank { "-" },
-                style = MaterialTheme.typography.bodyLarge,
+                text = value.ifBlank { "—" },
+                style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
 }
+
+// ─── Action Card ─────────────────────────────────────────────────────────────
+
+@Composable
+fun ProfileActionsCard(
+    modifier: Modifier = Modifier,
+    onEditProfile: () -> Unit,
+    onMyHorses: () -> Unit,
+    onSettings: () -> Unit,
+    onLogout: () -> Unit
+) {
+    val semantic = LocalSemanticColors.current
+    val infiniteTransition = rememberInfiniteTransition(label = "edit_cta_pulse")
+    val buttonScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.018f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(900, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "edit_scale"
+    )
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+        border = BorderStroke(1.dp, semantic.cardStroke)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(0.dp)
+        ) {
+            // Primary CTA — gradient Edit button
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+                    .graphicsLayer { scaleX = buttonScale; scaleY = buttonScale }
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.secondary
+                            )
+                        )
+                    )
+                    .clickable(onClick = onEditProfile)
+                    .testTag(ProfileTestTags.EditButton),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = "Profili Düzenle",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(14.dp))
+
+            // Secondary actions — list items with dividers
+            ProfileActionItem(
+                emoji = "🐴",
+                label = "Atlarım",
+                onClick = onMyHorses
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(start = 40.dp),
+                color = semantic.cardStroke,
+                thickness = 0.5.dp
+            )
+            ProfileActionItem(
+                emoji = "⚙️",
+                label = "Ayarlar",
+                onClick = onSettings
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(start = 40.dp),
+                color = semantic.cardStroke,
+                thickness = 0.5.dp
+            )
+            ProfileActionItem(
+                emoji = "🚪",
+                label = "Çıkış Yap",
+                onClick = onLogout,
+                tint = MaterialTheme.colorScheme.error
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProfileActionItem(
+    emoji: String,
+    label: String,
+    onClick: () -> Unit,
+    tint: Color? = null
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 13.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            text = emoji,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.size(24.dp)
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = tint ?: MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+            contentDescription = null,
+            tint = tint?.copy(alpha = 0.7f) ?: MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(16.dp)
+        )
+    }
+}
+
+// ─── Horses Mini Card ─────────────────────────────────────────────────────────
+
+@Composable
+fun HorsesMiniCard(
+    horses: List<Horse>,
+    onSeeAll: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val semantic = LocalSemanticColors.current
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+        border = BorderStroke(1.dp, semantic.cardStroke)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Atlarım",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Row(
+                    modifier = Modifier.clickable(onClick = onSeeAll),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Text(
+                        text = "Tümü",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            if (horses.isEmpty()) {
+                Text(
+                    text = "Henüz at eklemediniz.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                horses.forEachIndexed { index, horse ->
+                    HorseMiniRow(horse = horse)
+                    if (index < horses.lastIndex) {
+                        HorizontalDivider(
+                            color = semantic.cardStroke,
+                            thickness = 0.5.dp
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HorseMiniRow(horse: Horse) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Text("🐴", style = MaterialTheme.typography.bodyLarge)
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(1.dp)
+        ) {
+            Text(
+                text = horse.name,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (horse.breed.isNotBlank()) {
+                Text(
+                    text = horse.breed,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 @Composable
 fun FormSectionTitle(
@@ -287,306 +600,10 @@ fun FormSectionTitle(
 }
 
 fun formatMaskedPhone(countryCode: String, phone: String): String {
-    return if (phone.isNotBlank()) "$countryCode $phone" else "-"
+    return if (phone.isNotBlank()) "$countryCode $phone" else "—"
 }
 
 fun formatWeight(weight: Float?): String {
-    if (weight == null) return "-"
-    return if (weight % 1f == 0f) {
-        "${weight.toInt()} kg"
-    } else {
-        "${weight} kg"
-    }
-}
-
-// ─── Stats Row ───────────────────────────────────────────────────────────────
-
-@Composable
-fun ProfileStatsRow(
-    totalRides: Int,
-    totalKm: Double,
-    totalHours: Double,
-    avgRating: Double,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        StatChip(
-            value = totalRides.toString(),
-            label = "Sürüş",
-            emoji = "🏇",
-            modifier = Modifier.weight(1f)
-        )
-        StatChip(
-            value = String.format(Locale.US, "%.1f", totalKm),
-            label = "km",
-            emoji = "📏",
-            modifier = Modifier.weight(1f)
-        )
-        StatChip(
-            value = String.format(Locale.US, "%.1f", totalHours),
-            label = "Saat",
-            emoji = "⏱",
-            modifier = Modifier.weight(1f)
-        )
-        StatChip(
-            value = if (avgRating > 0.0) String.format(Locale.US, "%.1f", avgRating) else "-",
-            label = "Puan",
-            emoji = "⭐",
-            modifier = Modifier.weight(1f)
-        )
-    }
-}
-
-@Composable
-private fun StatChip(
-    value: String,
-    label: String,
-    emoji: String,
-    modifier: Modifier = Modifier
-) {
-    val semantic = LocalSemanticColors.current
-    Surface(
-        modifier = modifier,
-        color = semantic.cardElevated,
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, semantic.cardStroke),
-        tonalElevation = 2.dp
-    ) {
-        Column(
-            modifier = Modifier.padding(vertical = 10.dp, horizontal = 4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            Text(
-                text = emoji,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1
-            )
-        }
-    }
-}
-
-// ─── Horses Mini Card ─────────────────────────────────────────────────────────
-
-@Composable
-fun HorsesMiniCard(
-    horses: List<Horse>,
-    onSeeAll: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val semantic = LocalSemanticColors.current
-    ElevatedCard(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.elevatedCardColors(containerColor = semantic.cardElevated),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 3.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Atlarım",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                TextButton(onClick = onSeeAll) {
-                    Text(
-                        text = "Tümünü Gör",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(Modifier.width(2.dp))
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = null,
-                        modifier = Modifier.size(14.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            if (horses.isEmpty()) {
-                Text(
-                    text = "Henüz at eklemediniz.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                horses.forEach { horse ->
-                    HorseMiniRow(horse = horse)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun HorseMiniRow(horse: Horse) {
-    val semantic = LocalSemanticColors.current
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(semantic.cardSubtle, RoundedCornerShape(10.dp))
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        Text("🐴", style = MaterialTheme.typography.titleMedium)
-        Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
-            Text(
-                text = horse.name,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            if (horse.breed.isNotBlank()) {
-                Text(
-                    text = horse.breed,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-    }
-}
-
-// ─── Recent Activities Section ────────────────────────────────────────────────
-
-@Composable
-fun RecentActivitiesSection(
-    activities: List<RideSession>,
-    modifier: Modifier = Modifier
-) {
-    val semantic = LocalSemanticColors.current
-    ElevatedCard(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.elevatedCardColors(containerColor = semantic.cardElevated),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 3.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Text(
-                text = "Son Aktiviteler",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            if (activities.isEmpty()) {
-                Text(
-                    text = "Henüz sürüş kaydınız yok.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                activities.forEachIndexed { index, ride ->
-                    RecentActivityRow(ride = ride)
-                    if (index < activities.lastIndex) {
-                        HorizontalDivider(
-                            color = semantic.dividerSoft,
-                            thickness = 0.5.dp
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun RecentActivityRow(ride: RideSession) {
-    val dateLabel = ride.timestamp?.let {
-        SimpleDateFormat("d MMM", Locale.getDefault()).format(it)
-    } ?: "-"
-
-    val durationLabel = buildString {
-        val h = ride.durationMin / 60
-        val m = ride.durationMin % 60
-        if (h > 0) append("${h}s ")
-        append("${m}dk")
-    }
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.weight(1f)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.75f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("🏇", style = MaterialTheme.typography.bodySmall)
-            }
-            Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
-                Text(
-                    text = ride.title ?: "Sürüş",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = dateLabel,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-        Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(1.dp)) {
-            Text(
-                text = String.format(Locale.US, "%.1f km", ride.distanceKm),
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                text = durationLabel,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
+    if (weight == null) return "—"
+    return if (weight % 1f == 0f) "${weight.toInt()} kg" else "$weight kg"
 }

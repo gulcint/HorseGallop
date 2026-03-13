@@ -8,10 +8,7 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -21,28 +18,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.MonitorWeight
-import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -51,18 +39,18 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
 import com.horsegallop.core.components.HorseLoadingOverlay
 import com.horsegallop.core.feedback.LocalAppFeedbackController
+import com.horsegallop.domain.auth.model.UserProfile
+import com.horsegallop.ui.theme.AppTheme
 import com.horsegallop.ui.theme.LocalSemanticColors
 
 @Composable
@@ -104,15 +92,14 @@ fun ProfileScreen(
         .ifBlank { context.getString(R.string.default_user_name) }
 
     LaunchedEffect(state.errorMessageResId) {
-        state.errorMessageResId?.let { messageResId ->
-            feedback.showError(messageResId)
+        state.errorMessageResId?.let {
+            feedback.showError(it)
             viewModel.clearMessages()
         }
     }
-
     LaunchedEffect(state.successMessageResId) {
-        state.successMessageResId?.let { messageResId ->
-            feedback.showSuccess(messageResId)
+        state.successMessageResId?.let {
+            feedback.showSuccess(it)
             viewModel.clearMessages()
         }
     }
@@ -159,163 +146,133 @@ fun ProfileScreen(
             )
         }
     ) { innerPadding ->
-        Box(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.14f),
-                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.08f),
-                            semantic.screenBase
-                        )
+                .padding(innerPadding),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            // 1 — Hero banner (avatar + name + email + city + inline stats)
+            item {
+                ProfileHeroCard(
+                    profile = profile,
+                    fullName = fullName,
+                    totalRides = state.totalRides,
+                    totalKm = state.totalKm,
+                    totalHours = state.totalHours,
+                    avgRating = state.avgRating,
+                    onPhotoClick = openImagePicker
+                )
+            }
+
+            // 2 — Atlarım mini listesi
+            item {
+                HorsesMiniCard(
+                    horses = state.myHorses,
+                    onSeeAll = onMyHorses
+                )
+            }
+
+            // 3 — Hesap Bilgileri (sadece phone, doğum tarihi, kilo)
+            item {
+                ProfileSectionCard(title = stringResource(id = R.string.profile_snapshot_title)) {
+                    ProfileInfoRow(
+                        icon = Icons.Filled.Phone,
+                        label = stringResource(id = R.string.label_phone),
+                        value = formatMaskedPhone(profile.countryCode, profile.phone)
+                    )
+                    ProfileInfoRow(
+                        icon = Icons.Filled.CalendarToday,
+                        label = stringResource(id = R.string.label_birth_date),
+                        value = profile.birthDate
+                    )
+                    ProfileInfoRow(
+                        icon = Icons.Filled.MonitorWeight,
+                        label = stringResource(id = R.string.label_weight),
+                        value = formatWeight(profile.weight)
+                    )
+                }
+            }
+
+            // 4 — Eylemler (gradient CTA + list items)
+            item {
+                ProfileActionsCard(
+                    onEditProfile = {
+                        viewModel.startEditSession(force = true)
+                        onEditProfile()
+                    },
+                    onMyHorses = onMyHorses,
+                    onSettings = onSettings,
+                    onLogout = { viewModel.signOut(onLogout) }
+                )
+            }
+
+            item {
+                Spacer(
+                    modifier = Modifier.height(
+                        WindowInsets.navigationBars
+                            .asPaddingValues()
+                            .calculateBottomPadding() + 16.dp
                     )
                 )
-        ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                item {
-                    ProfileHeroCard(
-                        profile = profile,
-                        fullName = fullName,
-                        onPhotoClick = openImagePicker
-                    )
-                }
-
-                item {
-                    ProfileStatsRow(
-                        totalRides = state.totalRides,
-                        totalKm = state.totalKm,
-                        totalHours = state.totalHours,
-                        avgRating = state.avgRating
-                    )
-                }
-
-                item {
-                    HorsesMiniCard(
-                        horses = state.myHorses,
-                        onSeeAll = onMyHorses
-                    )
-                }
-
-                item {
-                    RecentActivitiesSection(
-                        activities = state.recentActivities
-                    )
-                }
-
-                item {
-                    ProfileSectionCard(
-                        title = stringResource(id = R.string.profile_snapshot_title),
-                        subtitle = stringResource(id = R.string.profile_description)
-                    ) {
-                        ProfileInfoRow(
-                            icon = Icons.Filled.Phone,
-                            label = stringResource(id = R.string.label_phone),
-                            value = formatMaskedPhone(profile.countryCode, profile.phone)
-                        )
-                        ProfileInfoRow(
-                            icon = Icons.Filled.CalendarToday,
-                            label = stringResource(id = R.string.label_birth_date),
-                            value = profile.birthDate
-                        )
-                        ProfileInfoRow(
-                            icon = Icons.Filled.Email,
-                            label = stringResource(id = R.string.label_email),
-                            value = profile.email
-                        )
-                        ProfileInfoRow(
-                            icon = Icons.Filled.LocationOn,
-                            label = stringResource(id = R.string.label_city),
-                            value = profile.city
-                        )
-                        ProfileInfoRow(
-                            icon = Icons.Filled.MonitorWeight,
-                            label = stringResource(id = R.string.label_weight),
-                            value = formatWeight(profile.weight)
-                        )
-                    }
-                }
-
-                item {
-                    ProfileSectionCard(
-                        title = stringResource(id = R.string.profile_actions_title)
-                    ) {
-                        FilledTonalButton(
-                            onClick = {
-                                viewModel.startEditSession(force = true)
-                                onEditProfile()
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(54.dp)
-                                .testTag(ProfileTestTags.EditButton),
-                            shape = RoundedCornerShape(16.dp)
-                        ) {
-                            Icon(imageVector = Icons.Filled.Edit, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = stringResource(id = R.string.edit_profile_title))
-                        }
-
-                        OutlinedButton(
-                            onClick = onMyHorses,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(52.dp),
-                            shape = RoundedCornerShape(16.dp)
-                        ) {
-                            Text("🐴", style = MaterialTheme.typography.bodyLarge)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "Atlarım")
-                        }
-
-                        OutlinedButton(
-                            onClick = onSettings,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(52.dp),
-                            shape = RoundedCornerShape(16.dp)
-                        ) {
-                            Icon(imageVector = Icons.Filled.Settings, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = stringResource(id = R.string.settings))
-                        }
-
-                        OutlinedButton(
-                            onClick = { viewModel.signOut(onLogout) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(52.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.error
-                            ),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
-                        ) {
-                            Icon(imageVector = Icons.Filled.Logout, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = stringResource(id = R.string.logout))
-                        }
-                    }
-                }
-
-                item {
-                    Spacer(
-                        modifier = Modifier.height(
-                            WindowInsets.navigationBars
-                                .asPaddingValues()
-                                .calculateBottomPadding() + 20.dp
-                        )
-                    )
-                }
             }
         }
     }
 
     HorseLoadingOverlay(visible = state.isLoading || state.isSaving)
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ProfileScreenPreview() {
+    AppTheme {
+        val fakeProfile = UserProfile(
+            firstName = "Ayşe",
+            lastName = "Yılmaz",
+            email = "ayse@example.com",
+            city = "İstanbul",
+            phone = "5551234567",
+            countryCode = "+90",
+            birthDate = "15/03/1990",
+            weight = 62f
+        )
+        LazyColumn(
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            item {
+                ProfileHeroCard(
+                    profile = fakeProfile,
+                    fullName = "Ayşe Yılmaz",
+                    totalRides = 24,
+                    totalKm = 312.5,
+                    totalHours = 18.3,
+                    avgRating = 4.7,
+                    onPhotoClick = {}
+                )
+            }
+            item {
+                HorsesMiniCard(
+                    horses = emptyList(),
+                    onSeeAll = {}
+                )
+            }
+            item {
+                ProfileSectionCard(title = "Hesap Bilgileri") {
+                    ProfileInfoRow(Icons.Filled.Phone, "Telefon", "+90 555 123 45 67")
+                    ProfileInfoRow(Icons.Filled.CalendarToday, "Doğum Tarihi", "15/03/1990")
+                    ProfileInfoRow(Icons.Filled.MonitorWeight, "Kilo", "62 kg")
+                }
+            }
+            item {
+                ProfileActionsCard(
+                    onEditProfile = {},
+                    onMyHorses = {},
+                    onSettings = {},
+                    onLogout = {}
+                )
+            }
+        }
+    }
 }

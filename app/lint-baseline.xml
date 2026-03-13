@@ -5,21 +5,21 @@
         id="ObsoleteLintCustomCheck"
         message="Library lint checks reference invalid APIs; these checks **will be skipped**!&#xA;&#xA;Lint found an issue registry (`androidx.navigation.common.lint.NavigationCommonIssueRegistry`)&#xA;which contains some references to invalid API:&#xA;com.android.tools.lint.checks.infrastructure.TestFiles: com.android.tools.lint.checks.infrastructure.TestFile bytecode(java.lang.String,com.android.tools.lint.checks.infrastructure.TestFile,long,java.lang.String[])&#xA;(Referenced from androidx/navigation/lint/common/LintUtilKt.class)&#xA;&#xA;Therefore, this lint check library is **not** included&#xA;in analysis. This affects the following lint checks:&#xA;`EmptyNavDeepLink`,`WrongStartDestinationType`&#xA;&#xA;To use this lint check, upgrade to a more recent version&#xA;of the library.">
         <location
-            file="$GRADLE_USER_HOME/caches/8.14.3/transforms/5e3e13571c358da4eaf7636d0c6c1bdf/transformed/navigation-common-2.8.1/jars/lint.jar"/>
+            file="$GRADLE_USER_HOME/caches/8.14.3/transforms/f16438ed0f6d615a48fd0e7866d6acf0/transformed/navigation-common-2.8.1/jars/lint.jar"/>
     </issue>
 
     <issue
         id="ObsoleteLintCustomCheck"
         message="Library lint checks reference invalid APIs; these checks **will be skipped**!&#xA;&#xA;Lint found an issue registry (`androidx.navigation.compose.lint.NavigationComposeIssueRegistry`)&#xA;which contains some references to invalid API:&#xA;com.android.tools.lint.checks.infrastructure.TestFiles: com.android.tools.lint.checks.infrastructure.TestFile bytecode(java.lang.String,com.android.tools.lint.checks.infrastructure.TestFile,long,java.lang.String[])&#xA;(Referenced from androidx/navigation/lint/common/LintUtilKt.class)&#xA;&#xA;Therefore, this lint check library is **not** included&#xA;in analysis. This affects the following lint checks:&#xA;`ComposableDestinationInComposeScope`,`ComposableNavGraphInComposeScope`,`UnrememberedGetBackStackEntry`,`WrongStartDestinationType`&#xA;&#xA;To use this lint check, upgrade to a more recent version&#xA;of the library.">
         <location
-            file="$GRADLE_USER_HOME/caches/8.14.3/transforms/30aaaa5fb502b9ded3be98a07012292c/transformed/navigation-compose-2.8.1/jars/lint.jar"/>
+            file="$GRADLE_USER_HOME/caches/8.14.3/transforms/b9e10ee641418555f0d940438cbb67b8/transformed/navigation-compose-2.8.1/jars/lint.jar"/>
     </issue>
 
     <issue
         id="ObsoleteLintCustomCheck"
         message="Library lint checks reference invalid APIs; these checks **will be skipped**!&#xA;&#xA;Lint found an issue registry (`androidx.navigation.runtime.lint.NavigationRuntimeIssueRegistry`)&#xA;which contains some references to invalid API:&#xA;com.android.tools.lint.checks.infrastructure.TestFiles: com.android.tools.lint.checks.infrastructure.TestFile bytecode(java.lang.String,com.android.tools.lint.checks.infrastructure.TestFile,long,java.lang.String[])&#xA;(Referenced from androidx/navigation/lint/common/LintUtilKt.class)&#xA;&#xA;Therefore, this lint check library is **not** included&#xA;in analysis. This affects the following lint checks:&#xA;`DeepLinkInActivityDestination`,`WrongStartDestinationType`,`WrongNavigateRouteType`&#xA;&#xA;To use this lint check, upgrade to a more recent version&#xA;of the library.">
         <location
-            file="$GRADLE_USER_HOME/caches/8.14.3/transforms/79cb75e1ef8a68b214c82712f6bf0a2b/transformed/navigation-runtime-2.8.1/jars/lint.jar"/>
+            file="$GRADLE_USER_HOME/caches/8.14.3/transforms/49d9d21d3eef7f87a038321c1aa0b7ae/transformed/navigation-runtime-2.8.1/jars/lint.jar"/>
     </issue>
 
     <issue
@@ -29,7 +29,7 @@
         errorLine2="        ~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="18"
+            line="19"
             column="9"/>
     </issue>
 
@@ -46,66 +46,66 @@
 
     <issue
         id="AndroidGradlePluginVersion"
-        message="A newer version of com.android.application than 8.5.2 is available: 9.0.1"
+        message="A newer version of com.android.application than 8.5.2 is available: 9.1.0"
         errorLine1="agp = &quot;8.5.2&quot;"
         errorLine2="      ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="2"
             column="7"/>
     </issue>
 
     <issue
         id="AndroidGradlePluginVersion"
-        message="A newer version of com.android.application than 8.5.2 is available: 9.0.1"
+        message="A newer version of com.android.application than 8.5.2 is available: 9.1.0"
         errorLine1="agp = &quot;8.5.2&quot;"
         errorLine2="      ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="2"
             column="7"/>
     </issue>
 
     <issue
         id="AndroidGradlePluginVersion"
-        message="A newer version of com.android.application than 8.5.2 is available: 9.0.1"
+        message="A newer version of com.android.application than 8.5.2 is available: 9.1.0"
         errorLine1="agp = &quot;8.5.2&quot;"
         errorLine2="      ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="2"
             column="7"/>
     </issue>
 
     <issue
         id="AndroidGradlePluginVersion"
-        message="A newer version of com.android.library than 8.5.2 is available: 9.0.1"
+        message="A newer version of com.android.library than 8.5.2 is available: 9.1.0"
         errorLine1="agp = &quot;8.5.2&quot;"
         errorLine2="      ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="2"
             column="7"/>
     </issue>
 
     <issue
         id="AndroidGradlePluginVersion"
-        message="A newer version of com.android.library than 8.5.2 is available: 9.0.1"
+        message="A newer version of com.android.library than 8.5.2 is available: 9.1.0"
         errorLine1="agp = &quot;8.5.2&quot;"
         errorLine2="      ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="2"
             column="7"/>
     </issue>
 
     <issue
         id="AndroidGradlePluginVersion"
-        message="A newer version of com.android.library than 8.5.2 is available: 9.0.1"
+        message="A newer version of com.android.library than 8.5.2 is available: 9.1.0"
         errorLine1="agp = &quot;8.5.2&quot;"
         errorLine2="      ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="2"
             column="7"/>
     </issue>
@@ -117,7 +117,7 @@
         errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="81"
+            line="142"
             column="17"/>
     </issue>
 
@@ -128,8 +128,19 @@
         errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="101"
+            line="162"
             column="17"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.android.billingclient:billing-ktx than 7.1.1 is available: 8.3.0"
+        errorLine1="    implementation(&quot;com.android.billingclient:billing-ktx:7.1.1&quot;)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="172"
+            column="20"/>
     </issue>
 
     <issue
@@ -139,7 +150,7 @@
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="113"
+            line="175"
             column="21"/>
     </issue>
 
@@ -150,7 +161,7 @@
         errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="114"
+            line="176"
             column="28"/>
     </issue>
 
@@ -161,107 +172,41 @@
         errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="115"
+            line="177"
             column="28"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.compose:compose-bom than 2024.09.01 is available: 2026.02.00"
+        message="A newer version of androidx.compose:compose-bom than 2024.09.01 is available: 2026.03.00"
         errorLine1="compose-bom = &quot;2024.09.01&quot;"
         errorLine2="              ~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="3"
             column="15"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.compose:compose-bom than 2024.09.01 is available: 2026.02.00"
+        message="A newer version of androidx.compose:compose-bom than 2024.09.01 is available: 2026.03.00"
         errorLine1="compose-bom = &quot;2024.09.01&quot;"
         errorLine2="              ~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="3"
             column="15"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.compose:compose-bom than 2024.09.01 is available: 2026.02.00"
+        message="A newer version of androidx.compose:compose-bom than 2024.09.01 is available: 2026.03.00"
         errorLine1="compose-bom = &quot;2024.09.01&quot;"
         errorLine2="              ~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="3"
             column="15"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of com.google.dagger:hilt-android than 2.52 is available: 2.58"
-        errorLine1="hilt = &quot;2.52&quot;"
-        errorLine2="       ~~~~~~">
-        <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="4"
-            column="8"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of com.google.dagger:hilt-android than 2.52 is available: 2.58"
-        errorLine1="hilt = &quot;2.52&quot;"
-        errorLine2="       ~~~~~~">
-        <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="4"
-            column="8"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of com.google.dagger:hilt-android than 2.52 is available: 2.58"
-        errorLine1="hilt = &quot;2.52&quot;"
-        errorLine2="       ~~~~~~">
-        <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="4"
-            column="8"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of com.google.dagger:hilt-compiler than 2.52 is available: 2.58"
-        errorLine1="hilt = &quot;2.52&quot;"
-        errorLine2="       ~~~~~~">
-        <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="4"
-            column="8"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of com.google.dagger:hilt-compiler than 2.52 is available: 2.58"
-        errorLine1="hilt = &quot;2.52&quot;"
-        errorLine2="       ~~~~~~">
-        <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="4"
-            column="8"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of com.google.dagger:hilt-compiler than 2.52 is available: 2.58"
-        errorLine1="hilt = &quot;2.52&quot;"
-        errorLine2="       ~~~~~~">
-        <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="4"
-            column="8"/>
     </issue>
 
     <issue
@@ -270,7 +215,7 @@
         errorLine1="hilt-navigation-compose = &quot;1.2.0&quot;"
         errorLine2="                          ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="5"
             column="27"/>
     </issue>
@@ -281,7 +226,7 @@
         errorLine1="hilt-navigation-compose = &quot;1.2.0&quot;"
         errorLine2="                          ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="5"
             column="27"/>
     </issue>
@@ -292,7 +237,7 @@
         errorLine1="hilt-navigation-compose = &quot;1.2.0&quot;"
         errorLine2="                          ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="5"
             column="27"/>
     </issue>
@@ -303,7 +248,7 @@
         errorLine1="coroutines = &quot;1.8.1&quot;"
         errorLine2="             ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="6"
             column="14"/>
     </issue>
@@ -314,7 +259,7 @@
         errorLine1="coroutines = &quot;1.8.1&quot;"
         errorLine2="             ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="6"
             column="14"/>
     </issue>
@@ -325,42 +270,75 @@
         errorLine1="coroutines = &quot;1.8.1&quot;"
         errorLine2="             ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="6"
             column="14"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of com.google.firebase:firebase-bom than 33.4.0 is available: 34.9.0"
+        message="A newer version of com.google.firebase:firebase-bom than 33.4.0 is available: 34.10.0"
         errorLine1="firebase-bom = &quot;33.4.0&quot;"
         errorLine2="               ~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="10"
             column="16"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of com.google.firebase:firebase-bom than 33.4.0 is available: 34.9.0"
+        message="A newer version of com.google.firebase:firebase-bom than 33.4.0 is available: 34.10.0"
         errorLine1="firebase-bom = &quot;33.4.0&quot;"
         errorLine2="               ~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="10"
             column="16"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of com.google.firebase:firebase-bom than 33.4.0 is available: 34.9.0"
+        message="A newer version of com.google.firebase:firebase-bom than 33.4.0 is available: 34.10.0"
         errorLine1="firebase-bom = &quot;33.4.0&quot;"
         errorLine2="               ~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="10"
             column="16"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of io.coil-kt:coil-compose than 2.6.0 is available: 2.7.0"
+        errorLine1="coil = &quot;2.6.0&quot;"
+        errorLine2="       ~~~~~~~">
+        <location
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="11"
+            column="8"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of io.coil-kt:coil-compose than 2.6.0 is available: 2.7.0"
+        errorLine1="coil = &quot;2.6.0&quot;"
+        errorLine2="       ~~~~~~~">
+        <location
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="11"
+            column="8"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of io.coil-kt:coil-compose than 2.6.0 is available: 2.7.0"
+        errorLine1="coil = &quot;2.6.0&quot;"
+        errorLine2="       ~~~~~~~">
+        <location
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="11"
+            column="8"/>
     </issue>
 
     <issue
@@ -369,7 +347,7 @@
         errorLine1="navigation = &quot;2.8.1&quot;"
         errorLine2="             ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="12"
             column="14"/>
     </issue>
@@ -380,7 +358,7 @@
         errorLine1="navigation = &quot;2.8.1&quot;"
         errorLine2="             ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="12"
             column="14"/>
     </issue>
@@ -391,73 +369,106 @@
         errorLine1="navigation = &quot;2.8.1&quot;"
         errorLine2="             ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="12"
             column="14"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.compose.ui:ui-test-junit4 than 1.7.2 is available: 1.10.4"
+        message="A newer version of com.airbnb.android:lottie-compose than 6.1.0 is available: 6.4.0"
+        errorLine1="lottie = &quot;6.1.0&quot;"
+        errorLine2="         ~~~~~~~">
+        <location
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="13"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.airbnb.android:lottie-compose than 6.1.0 is available: 6.4.0"
+        errorLine1="lottie = &quot;6.1.0&quot;"
+        errorLine2="         ~~~~~~~">
+        <location
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="13"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.airbnb.android:lottie-compose than 6.1.0 is available: 6.4.0"
+        errorLine1="lottie = &quot;6.1.0&quot;"
+        errorLine2="         ~~~~~~~">
+        <location
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="13"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.compose.ui:ui-test-junit4 than 1.7.2 is available: 1.10.5"
         errorLine1="compose-test = &quot;1.7.2&quot;"
         errorLine2="               ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="15"
             column="16"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.compose.ui:ui-test-junit4 than 1.7.2 is available: 1.10.4"
+        message="A newer version of androidx.compose.ui:ui-test-junit4 than 1.7.2 is available: 1.10.5"
         errorLine1="compose-test = &quot;1.7.2&quot;"
         errorLine2="               ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="15"
             column="16"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.compose.ui:ui-test-junit4 than 1.7.2 is available: 1.10.4"
+        message="A newer version of androidx.compose.ui:ui-test-junit4 than 1.7.2 is available: 1.10.5"
         errorLine1="compose-test = &quot;1.7.2&quot;"
         errorLine2="               ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="15"
             column="16"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.compose.ui:ui-test-manifest than 1.7.2 is available: 1.10.4"
+        message="A newer version of androidx.compose.ui:ui-test-manifest than 1.7.2 is available: 1.10.5"
         errorLine1="compose-test = &quot;1.7.2&quot;"
         errorLine2="               ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="15"
             column="16"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.compose.ui:ui-test-manifest than 1.7.2 is available: 1.10.4"
+        message="A newer version of androidx.compose.ui:ui-test-manifest than 1.7.2 is available: 1.10.5"
         errorLine1="compose-test = &quot;1.7.2&quot;"
         errorLine2="               ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="15"
             column="16"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.compose.ui:ui-test-manifest than 1.7.2 is available: 1.10.4"
+        message="A newer version of androidx.compose.ui:ui-test-manifest than 1.7.2 is available: 1.10.5"
         errorLine1="compose-test = &quot;1.7.2&quot;"
         errorLine2="               ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="15"
             column="16"/>
     </issue>
@@ -468,7 +479,7 @@
         errorLine1="play-services-maps = &quot;18.2.0&quot;"
         errorLine2="                     ~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="16"
             column="22"/>
     </issue>
@@ -479,7 +490,7 @@
         errorLine1="play-services-maps = &quot;18.2.0&quot;"
         errorLine2="                     ~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="16"
             column="22"/>
     </issue>
@@ -490,7 +501,7 @@
         errorLine1="play-services-maps = &quot;18.2.0&quot;"
         errorLine2="                     ~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="16"
             column="22"/>
     </issue>
@@ -501,7 +512,7 @@
         errorLine1="play-services-location = &quot;21.2.0&quot;"
         errorLine2="                         ~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="17"
             column="26"/>
     </issue>
@@ -512,7 +523,7 @@
         errorLine1="play-services-location = &quot;21.2.0&quot;"
         errorLine2="                         ~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="17"
             column="26"/>
     </issue>
@@ -523,18 +534,51 @@
         errorLine1="play-services-location = &quot;21.2.0&quot;"
         errorLine2="                         ~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="17"
             column="26"/>
     </issue>
 
     <issue
         id="GradleDependency"
+        message="A newer version of com.google.maps.android:maps-compose than 4.3.0 is available: 4.4.1"
+        errorLine1="maps-compose = &quot;4.3.0&quot;"
+        errorLine2="               ~~~~~~~">
+        <location
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="18"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.google.maps.android:maps-compose than 4.3.0 is available: 4.4.1"
+        errorLine1="maps-compose = &quot;4.3.0&quot;"
+        errorLine2="               ~~~~~~~">
+        <location
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="18"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.google.maps.android:maps-compose than 4.3.0 is available: 4.4.1"
+        errorLine1="maps-compose = &quot;4.3.0&quot;"
+        errorLine2="               ~~~~~~~">
+        <location
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="18"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
         message="A newer version of org.jetbrains.kotlin.android than 2.0.0 is available: 2.1.0"
         errorLine1="kotlin = &quot;2.0.0&quot;"
         errorLine2="         ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="19"
             column="10"/>
     </issue>
@@ -545,7 +589,7 @@
         errorLine1="kotlin = &quot;2.0.0&quot;"
         errorLine2="         ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="19"
             column="10"/>
     </issue>
@@ -556,7 +600,7 @@
         errorLine1="kotlin = &quot;2.0.0&quot;"
         errorLine2="         ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="19"
             column="10"/>
     </issue>
@@ -567,7 +611,7 @@
         errorLine1="kotlin = &quot;2.0.0&quot;"
         errorLine2="         ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="19"
             column="10"/>
     </issue>
@@ -578,7 +622,7 @@
         errorLine1="kotlin = &quot;2.0.0&quot;"
         errorLine2="         ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="19"
             column="10"/>
     </issue>
@@ -589,41 +633,74 @@
         errorLine1="kotlin = &quot;2.0.0&quot;"
         errorLine2="         ~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
             line="19"
             column="10"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.core:core-ktx than 1.13.1 is available: 1.17.0"
+        message="A newer version of com.android.tools:desugar_jdk_libs than 2.1.2 is available: 2.1.5"
+        errorLine1="desugar-jdk = &quot;2.1.2&quot;"
+        errorLine2="              ~~~~~~~">
+        <location
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="21"
+            column="15"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.android.tools:desugar_jdk_libs than 2.1.2 is available: 2.1.5"
+        errorLine1="desugar-jdk = &quot;2.1.2&quot;"
+        errorLine2="              ~~~~~~~">
+        <location
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="21"
+            column="15"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.android.tools:desugar_jdk_libs than 2.1.2 is available: 2.1.5"
+        errorLine1="desugar-jdk = &quot;2.1.2&quot;"
+        errorLine2="              ~~~~~~~">
+        <location
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="21"
+            column="15"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.core:core-ktx than 1.13.1 is available: 1.18.0"
         errorLine1="androidx-core-ktx = &quot;androidx.core:core-ktx:1.13.1&quot;"
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="23"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="25"
             column="21"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.core:core-ktx than 1.13.1 is available: 1.17.0"
+        message="A newer version of androidx.core:core-ktx than 1.13.1 is available: 1.18.0"
         errorLine1="androidx-core-ktx = &quot;androidx.core:core-ktx:1.13.1&quot;"
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="23"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="25"
             column="21"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.core:core-ktx than 1.13.1 is available: 1.17.0"
+        message="A newer version of androidx.core:core-ktx than 1.13.1 is available: 1.18.0"
         errorLine1="androidx-core-ktx = &quot;androidx.core:core-ktx:1.13.1&quot;"
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="23"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="25"
             column="21"/>
     </issue>
 
@@ -633,8 +710,8 @@
         errorLine1="lifecycle-vm = &quot;androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.5&quot;"
         errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="30"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="32"
             column="16"/>
     </issue>
 
@@ -644,8 +721,8 @@
         errorLine1="lifecycle-vm = &quot;androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.5&quot;"
         errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="30"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="32"
             column="16"/>
     </issue>
 
@@ -655,8 +732,8 @@
         errorLine1="lifecycle-vm = &quot;androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.5&quot;"
         errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="30"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="32"
             column="16"/>
     </issue>
 
@@ -666,8 +743,8 @@
         errorLine1="lifecycle-runtime = &quot;androidx.lifecycle:lifecycle-runtime-ktx:2.8.5&quot;"
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="31"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="33"
             column="21"/>
     </issue>
 
@@ -677,8 +754,8 @@
         errorLine1="lifecycle-runtime = &quot;androidx.lifecycle:lifecycle-runtime-ktx:2.8.5&quot;"
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="31"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="33"
             column="21"/>
     </issue>
 
@@ -688,8 +765,8 @@
         errorLine1="lifecycle-runtime = &quot;androidx.lifecycle:lifecycle-runtime-ktx:2.8.5&quot;"
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="31"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="33"
             column="21"/>
     </issue>
 
@@ -699,8 +776,8 @@
         errorLine1="lifecycle-compose = &quot;androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5&quot;"
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="32"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="34"
             column="21"/>
     </issue>
 
@@ -710,8 +787,8 @@
         errorLine1="lifecycle-compose = &quot;androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5&quot;"
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="32"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="34"
             column="21"/>
     </issue>
 
@@ -721,8 +798,8 @@
         errorLine1="lifecycle-compose = &quot;androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5&quot;"
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="32"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="34"
             column="21"/>
     </issue>
 
@@ -732,8 +809,8 @@
         errorLine1="google-auth = &quot;com.google.android.gms:play-services-auth:21.2.0&quot;"
         errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="51"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="53"
             column="15"/>
     </issue>
 
@@ -743,8 +820,8 @@
         errorLine1="google-auth = &quot;com.google.android.gms:play-services-auth:21.2.0&quot;"
         errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="51"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="53"
             column="15"/>
     </issue>
 
@@ -754,8 +831,8 @@
         errorLine1="google-auth = &quot;com.google.android.gms:play-services-auth:21.2.0&quot;"
         errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="$HOME/Documents/HorseGallop/gradle/libs.versions.toml"
-            line="51"
+            file="$HOME/HorseGallopProject/horsegallop/.claude/worktrees/competent-lamarr/gradle/libs.versions.toml"
+            line="53"
             column="15"/>
     </issue>
 
@@ -766,7 +843,7 @@
         errorLine2="    ~~~~~~~~">
         <location
             file="src/main/java/com/horsegallop/core/components/Inputs.kt"
-            line="80"
+            line="85"
             column="5"/>
     </issue>
 
@@ -777,7 +854,7 @@
         errorLine2="    ~~~~~~~~">
         <location
             file="src/main/java/com/horsegallop/core/components/Inputs.kt"
-            line="144"
+            line="149"
             column="5"/>
     </issue>
 
@@ -788,7 +865,7 @@
         errorLine2="    ~~~~~~~~">
         <location
             file="src/main/java/com/horsegallop/core/components/Inputs.kt"
-            line="193"
+            line="198"
             column="5"/>
     </issue>
 
@@ -799,7 +876,18 @@
         errorLine2="    ~~~~~~~~">
         <location
             file="src/main/java/com/horsegallop/feature/auth/presentation/ProfileComponents.kt"
-            line="59"
+            line="78"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier,"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/horsegallop/feature/auth/presentation/ProfileComponents.kt"
+            line="251"
             column="5"/>
     </issue>
 
@@ -832,7 +920,7 @@
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values-en/strings.xml"
-            line="112"
+            line="116"
             column="5"/>
     </issue>
 
@@ -843,7 +931,51 @@
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values-en/strings.xml"
-            line="230"
+            line="238"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;day&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;training_progress_format&quot;>%1$d%% completed • Goal %2$d/week • %3$d day streak&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values-en/strings.xml"
+            line="440"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;spots&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;lesson_spots_available&quot;>%1$d / %2$d spots available&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values-en/strings.xml"
+            line="473"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;days&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;horse_health_days_left&quot;>%1$d days left&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values-en/strings.xml"
+            line="549"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;days&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;horse_health_days_ago&quot;>%1$d days ago&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values-en/strings.xml"
+            line="550"
             column="5"/>
     </issue>
 
@@ -854,7 +986,7 @@
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="95"
+            line="99"
             column="5"/>
     </issue>
 
@@ -865,7 +997,51 @@
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="222"
+            line="232"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;day&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;training_progress_format&quot;>%1$d%% completed • Goal %2$d/week • %3$d day streak&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="476"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;spots&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;lesson_spots_available&quot;>%1$d / %2$d spots available&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="502"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;days&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;horse_health_days_left&quot;>%1$d days left&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="579"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;days&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;horse_health_days_ago&quot;>%1$d days ago&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="580"
             column="5"/>
     </issue>
 
@@ -876,11 +1052,11 @@
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values-tr/strings.xml"
-            line="244"
+            line="252"
             column="5"/>
         <location
             file="src/main/res/values/strings_core.xml"
-            line="240"
+            line="250"
             column="5"
             message="Conflicting number of arguments (0) here"/>
     </issue>
@@ -892,11 +1068,11 @@
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values-tr/strings.xml"
-            line="283"
+            line="291"
             column="5"/>
         <location
             file="src/main/res/values/strings_core.xml"
-            line="287"
+            line="297"
             column="5"
             message="Conflicting number of arguments (0) here"/>
     </issue>
@@ -908,7 +1084,7 @@
         errorLine2="                                                  ~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values-night/themes.xml"
-            line="4"
+            line="5"
             column="51"/>
     </issue>
 
@@ -919,7 +1095,7 @@
         errorLine2="                                                  ~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/themes.xml"
-            line="4"
+            line="5"
             column="51"/>
     </issue>
 
@@ -930,7 +1106,7 @@
         errorLine2="                                                  ~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values-night/themes.xml"
-            line="22"
+            line="21"
             column="51"/>
     </issue>
 
@@ -941,29 +1117,7 @@
         errorLine2="                                                  ~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/themes.xml"
-            line="22"
-            column="51"/>
-    </issue>
-
-    <issue
-        id="ObsoleteSdkInt"
-        message="Unnecessary; SDK_INT is always >= 23"
-        errorLine1="        &lt;item name=&quot;android:windowLightStatusBar&quot; tools:targetApi=&quot;23&quot;>false&lt;/item>"
-        errorLine2="                                                  ~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values-night/themes.xml"
-            line="27"
-            column="51"/>
-    </issue>
-
-    <issue
-        id="ObsoleteSdkInt"
-        message="Unnecessary; SDK_INT is always >= 23"
-        errorLine1="        &lt;item name=&quot;android:windowLightStatusBar&quot; tools:targetApi=&quot;23&quot;>false&lt;/item>"
-        errorLine2="                                                  ~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/themes.xml"
-            line="27"
+            line="21"
             column="51"/>
     </issue>
 
@@ -974,700 +1128,51 @@
         errorLine2="                                    ~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/horsegallop/feature/home/presentation/RecentActivityDetailScreen.kt"
-            line="349"
+            line="356"
             column="37"/>
     </issue>
 
     <issue
         id="UnusedResources"
-        message="The resource `R.color.md_theme_light_primary` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_primary&quot;>#8B4513&lt;/color> &lt;!-- Saddle Brown -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        message="The resource `R.color.secondary_light` appears to be unused"
+        errorLine1="    &lt;color name=&quot;secondary_light&quot;>#ECEBE4&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/res/values/color_scheme.xml"
-            line="6"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_onPrimary` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_onPrimary&quot;>#FFFFFF&lt;/color>"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="7"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_primaryContainer` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_primaryContainer&quot;>#F4A460&lt;/color> &lt;!-- Sandy Brown -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="8"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_onPrimaryContainer` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_onPrimaryContainer&quot;>#FFFFFF&lt;/color>"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
+            file="src/main/res/values/colors.xml"
             line="9"
             column="12"/>
     </issue>
 
     <issue
         id="UnusedResources"
-        message="The resource `R.color.md_theme_light_secondary` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_secondary&quot;>#D2691E&lt;/color> &lt;!-- Chocolate -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        message="The resource `R.color.surface` appears to be unused"
+        errorLine1="    &lt;color name=&quot;surface&quot;>#FAFAFF&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~">
         <location
-            file="src/main/res/values/color_scheme.xml"
-            line="11"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_onSecondary` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_onSecondary&quot;>#FFFFFF&lt;/color>"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
+            file="src/main/res/values/colors.xml"
             line="12"
             column="12"/>
     </issue>
 
     <issue
         id="UnusedResources"
-        message="The resource `R.color.md_theme_light_secondaryContainer` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_secondaryContainer&quot;>#FFB366&lt;/color> &lt;!-- Light Orange -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        message="The resource `R.color.on_primary` appears to be unused"
+        errorLine1="    &lt;color name=&quot;on_primary&quot;>#FFFFFF&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/res/values/color_scheme.xml"
-            line="13"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_onSecondaryContainer` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_onSecondaryContainer&quot;>#FFFFFF&lt;/color>"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
+            file="src/main/res/values/colors.xml"
             line="14"
             column="12"/>
     </issue>
 
     <issue
         id="UnusedResources"
-        message="The resource `R.color.md_theme_light_tertiary` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_tertiary&quot;>#228B22&lt;/color> &lt;!-- Forest Green -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="16"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_onTertiary` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_onTertiary&quot;>#FFFFFF&lt;/color>"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="17"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_tertiaryContainer` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_tertiaryContainer&quot;>#32CD32&lt;/color> &lt;!-- Lime Green -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="18"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_onTertiaryContainer` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_onTertiaryContainer&quot;>#FFFFFF&lt;/color>"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="19"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_error` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_error&quot;>#F44336&lt;/color> &lt;!-- Red -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="21"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_onError` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_onError&quot;>#FFFFFF&lt;/color>"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="22"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_errorContainer` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_errorContainer&quot;>#FFCDD2&lt;/color> &lt;!-- Light Red -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="23"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_onErrorContainer` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_onErrorContainer&quot;>#B71C1C&lt;/color> &lt;!-- Dark Red -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="24"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_background` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_background&quot;>#FAFAFA&lt;/color> &lt;!-- Light Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="26"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_onBackground` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_onBackground&quot;>#1A1A1A&lt;/color> &lt;!-- Dark Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="27"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_surface` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_surface&quot;>#FFFFFF&lt;/color> &lt;!-- White -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="28"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_onSurface` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_onSurface&quot;>#1A1A1A&lt;/color> &lt;!-- Dark Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="29"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_surfaceVariant` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_surfaceVariant&quot;>#F5F5F5&lt;/color> &lt;!-- Light Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="30"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_onSurfaceVariant` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_onSurfaceVariant&quot;>#666666&lt;/color> &lt;!-- Medium Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="31"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_outline` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_outline&quot;>#CCCCCC&lt;/color> &lt;!-- Medium Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="33"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_inverseOnSurface` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_inverseOnSurface&quot;>#F5F5F5&lt;/color> &lt;!-- Light Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="34"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_inverseSurface` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_inverseSurface&quot;>#2F2F2F&lt;/color> &lt;!-- Dark Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="35"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_inversePrimary` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_inversePrimary&quot;>#CD853F&lt;/color> &lt;!-- Peru -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="36"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_shadow` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_shadow&quot;>#000000&lt;/color> &lt;!-- Black -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="37"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_surfaceTint` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_surfaceTint&quot;>#8B4513&lt;/color> &lt;!-- Primary -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="38"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_outlineVariant` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_outlineVariant&quot;>#E0E0E0&lt;/color> &lt;!-- Light Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="39"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_light_scrim` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_light_scrim&quot;>#000000&lt;/color> &lt;!-- Black -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="40"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_primary` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_primary&quot;>#CD853F&lt;/color> &lt;!-- Peru -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="43"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_onPrimary` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_onPrimary&quot;>#FFFFFF&lt;/color>"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="44"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_primaryContainer` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_primaryContainer&quot;>#A0522D&lt;/color> &lt;!-- Sienna -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="45"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_onPrimaryContainer` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_onPrimaryContainer&quot;>#FFFFFF&lt;/color>"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="46"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_secondary` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_secondary&quot;>#FFB366&lt;/color> &lt;!-- Light Orange -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="48"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_onSecondary` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_onSecondary&quot;>#FFFFFF&lt;/color>"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="49"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_secondaryContainer` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_secondaryContainer&quot;>#B8860B&lt;/color> &lt;!-- Dark Goldenrod -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="50"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_onSecondaryContainer` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_onSecondaryContainer&quot;>#FFFFFF&lt;/color>"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="51"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_tertiary` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_tertiary&quot;>#32CD32&lt;/color> &lt;!-- Lime Green -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="53"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_onTertiary` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_onTertiary&quot;>#FFFFFF&lt;/color>"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="54"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_tertiaryContainer` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_tertiaryContainer&quot;>#006400&lt;/color> &lt;!-- Dark Green -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="55"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_onTertiaryContainer` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_onTertiaryContainer&quot;>#FFFFFF&lt;/color>"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="56"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_error` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_error&quot;>#EF5350&lt;/color> &lt;!-- Light Red -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="58"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_onError` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_onError&quot;>#FFFFFF&lt;/color>"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="59"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_errorContainer` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_errorContainer&quot;>#B71C1C&lt;/color> &lt;!-- Dark Red -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="60"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_onErrorContainer` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_onErrorContainer&quot;>#FFFFFF&lt;/color>"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="61"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_background` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_background&quot;>#1A1A1A&lt;/color> &lt;!-- Dark Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="63"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_onBackground` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_onBackground&quot;>#F5F5F5&lt;/color> &lt;!-- Light Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="64"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_surface` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_surface&quot;>#2F2F2F&lt;/color> &lt;!-- Dark Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="65"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_onSurface` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_onSurface&quot;>#F5F5F5&lt;/color> &lt;!-- Light Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="66"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_surfaceVariant` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_surfaceVariant&quot;>#404040&lt;/color> &lt;!-- Medium Dark Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="67"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_onSurfaceVariant` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_onSurfaceVariant&quot;>#CCCCCC&lt;/color> &lt;!-- Light Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="68"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_outline` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_outline&quot;>#666666&lt;/color> &lt;!-- Medium Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="70"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_inverseOnSurface` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_inverseOnSurface&quot;>#1A1A1A&lt;/color> &lt;!-- Dark Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="71"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_inverseSurface` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_inverseSurface&quot;>#F5F5F5&lt;/color> &lt;!-- Light Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="72"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_inversePrimary` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_inversePrimary&quot;>#8B4513&lt;/color> &lt;!-- Saddle Brown -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="73"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_shadow` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_shadow&quot;>#000000&lt;/color> &lt;!-- Black -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="74"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_surfaceTint` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_surfaceTint&quot;>#CD853F&lt;/color> &lt;!-- Peru -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="75"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_outlineVariant` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_outlineVariant&quot;>#404040&lt;/color> &lt;!-- Medium Dark Gray -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="76"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.md_theme_dark_scrim` appears to be unused"
-        errorLine1="    &lt;color name=&quot;md_theme_dark_scrim&quot;>#000000&lt;/color> &lt;!-- Black -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/color_scheme.xml"
-            line="77"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.secondary_variant` appears to be unused"
-        errorLine1="    &lt;color name=&quot;secondary_variant&quot;>#E3A067&lt;/color>"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/colors.xml"
-            line="7"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.surface` appears to be unused"
-        errorLine1="    &lt;color name=&quot;surface&quot;>#FBF6F0&lt;/color>"
-        errorLine2="           ~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/colors.xml"
-            line="11"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
         message="The resource `R.color.splash_background` appears to be unused"
-        errorLine1="    &lt;color name=&quot;splash_background&quot;>#F7EBDD&lt;/color>"
+        errorLine1="    &lt;color name=&quot;splash_background&quot;>#FAFAFF&lt;/color>"
         errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/colors.xml"
-            line="18"
+            line="19"
             column="12"/>
     </issue>
 
@@ -1827,6 +1332,17 @@
 
     <issue
         id="UnusedResources"
+        message="The resource `R.dimen.padding_content_horizontal` appears to be unused"
+        errorLine1="    &lt;dimen name=&quot;padding_content_horizontal&quot;>16dp&lt;/dimen>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/dimens.xml"
+            line="46"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
         message="The resource `R.dimen.padding_content_vertical` appears to be unused"
         errorLine1="    &lt;dimen name=&quot;padding_content_vertical&quot;>12dp&lt;/dimen>"
         errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
@@ -1860,6 +1376,17 @@
 
     <issue
         id="UnusedResources"
+        message="The resource `R.dimen.icon_md` appears to be unused"
+        errorLine1="    &lt;dimen name=&quot;icon_md&quot;>24dp&lt;/dimen>"
+        errorLine2="           ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/dimens.xml"
+            line="52"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
         message="The resource `R.dimen.icon_lg` appears to be unused"
         errorLine1="    &lt;dimen name=&quot;icon_lg&quot;>32dp&lt;/dimen>"
         errorLine2="           ~~~~~~~~~~~~~~">
@@ -1877,6 +1404,17 @@
         <location
             file="src/main/res/values/dimens.xml"
             line="54"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.dimen.icon_xxxl` appears to be unused"
+        errorLine1="    &lt;dimen name=&quot;icon_xxxl&quot;>64dp&lt;/dimen>"
+        errorLine2="           ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/dimens.xml"
+            line="56"
             column="12"/>
     </issue>
 
@@ -1976,6 +1514,17 @@
         <location
             file="src/main/res/values/dimens.xml"
             line="70"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.dimen.width_divider_thin` appears to be unused"
+        errorLine1="    &lt;dimen name=&quot;width_divider_thin&quot;>1dp&lt;/dimen>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/dimens.xml"
+            line="73"
             column="12"/>
     </issue>
 
@@ -2549,6 +2098,17 @@
 
     <issue
         id="UnusedResources"
+        message="The resource `R.string.lesson_details` appears to be unused"
+        errorLine1="    &lt;string name=&quot;lesson_details&quot;>%1$s • Instructor: %2$s&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="10"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
         message="The resource `R.string.date_time` appears to be unused"
         errorLine1=" &lt;string name=&quot;date_time&quot;>Date &amp;amp; Time&lt;/string>"
         errorLine2="         ~~~~~~~~~~~~~~~~">
@@ -2560,45 +2120,12 @@
 
     <issue
         id="UnusedResources"
-        message="The resource `R.string.offline_mode` appears to be unused"
-        errorLine1="    &lt;string name=&quot;offline_mode&quot;>No internet connection. Please check your connection and try again.&lt;/string>"
-        errorLine2="            ~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/strings_core.xml"
-            line="15"
-            column="13"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.string.retry` appears to be unused"
-        errorLine1=" &lt;string name=&quot;retry&quot;>Retry&lt;/string>"
-        errorLine2="         ~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/strings_core.xml"
-            line="18"
-            column="10"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.string.save` appears to be unused"
-        errorLine1="    &lt;string name=&quot;save&quot;>Save&lt;/string>"
-        errorLine2="            ~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/strings_core.xml"
-            line="21"
-            column="13"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
         message="The resource `R.string.edit` appears to be unused"
         errorLine1="    &lt;string name=&quot;edit&quot;>Edit&lt;/string>"
         errorLine2="            ~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="23"
+            line="28"
             column="13"/>
     </issue>
 
@@ -2609,7 +2136,7 @@
         errorLine2="            ~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="25"
+            line="30"
             column="13"/>
     </issue>
 
@@ -2620,7 +2147,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="26"
+            line="31"
             column="13"/>
     </issue>
 
@@ -2631,7 +2158,7 @@
         errorLine2="         ~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="27"
+            line="32"
             column="10"/>
     </issue>
 
@@ -2642,7 +2169,7 @@
         errorLine2="         ~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="28"
+            line="33"
             column="10"/>
     </issue>
 
@@ -2653,7 +2180,7 @@
         errorLine2="         ~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="29"
+            line="34"
             column="10"/>
     </issue>
 
@@ -2664,7 +2191,7 @@
         errorLine2="         ~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="30"
+            line="35"
             column="10"/>
     </issue>
 
@@ -2675,7 +2202,18 @@
         errorLine2="         ~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="31"
+            line="36"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.logout` appears to be unused"
+        errorLine1=" &lt;string name=&quot;logout&quot;>Logout&lt;/string>"
+        errorLine2="         ~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="39"
             column="10"/>
     </issue>
 
@@ -2686,7 +2224,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="41"
+            line="46"
             column="13"/>
     </issue>
 
@@ -2697,7 +2235,29 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="48"
+            line="53"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.horse_tip_default_category` appears to be unused"
+        errorLine1="    &lt;string name=&quot;horse_tip_default_category&quot;>Horse Fact&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="92"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.search_placeholder` appears to be unused"
+        errorLine1="    &lt;string name=&quot;search_placeholder&quot;>Search...&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="96"
             column="13"/>
     </issue>
 
@@ -2708,7 +2268,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="93"
+            line="97"
             column="13"/>
     </issue>
 
@@ -2719,7 +2279,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="94"
+            line="98"
             column="13"/>
     </issue>
 
@@ -2730,7 +2290,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="95"
+            line="99"
             column="13"/>
     </issue>
 
@@ -2741,7 +2301,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="120"
+            line="126"
             column="13"/>
     </issue>
 
@@ -2752,18 +2312,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="121"
-            column="13"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.string.ride_stats_subtitle` appears to be unused"
-        errorLine1="    &lt;string name=&quot;ride_stats_subtitle&quot;>Your ride statistics&lt;/string>"
-        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/strings_core.xml"
-            line="122"
+            line="127"
             column="13"/>
     </issue>
 
@@ -2774,7 +2323,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="123"
+            line="129"
             column="13"/>
     </issue>
 
@@ -2785,7 +2334,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="124"
+            line="130"
             column="13"/>
     </issue>
 
@@ -2796,7 +2345,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="125"
+            line="131"
             column="13"/>
     </issue>
 
@@ -2807,7 +2356,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="126"
+            line="132"
             column="13"/>
     </issue>
 
@@ -2818,7 +2367,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="127"
+            line="133"
             column="13"/>
     </issue>
 
@@ -2829,7 +2378,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="128"
+            line="134"
             column="13"/>
     </issue>
 
@@ -2840,7 +2389,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="131"
+            line="137"
             column="13"/>
     </issue>
 
@@ -2851,7 +2400,29 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="135"
+            line="141"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.onboarding_title_ride_tracking` appears to be unused"
+        errorLine1="    &lt;string name=&quot;onboarding_title_ride_tracking&quot;>Ride Tracking&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="145"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.onboarding_subtitle_ride_tracking` appears to be unused"
+        errorLine1="    &lt;string name=&quot;onboarding_subtitle_ride_tracking&quot;>Track your rides with GPS&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="146"
             column="13"/>
     </issue>
 
@@ -2862,7 +2433,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="141"
+            line="147"
             column="13"/>
     </issue>
 
@@ -2873,7 +2444,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="142"
+            line="148"
             column="13"/>
     </issue>
 
@@ -2884,7 +2455,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="143"
+            line="149"
             column="13"/>
     </issue>
 
@@ -2895,7 +2466,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="144"
+            line="150"
             column="13"/>
     </issue>
 
@@ -2906,7 +2477,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="145"
+            line="151"
             column="13"/>
     </issue>
 
@@ -2917,7 +2488,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="146"
+            line="152"
             column="13"/>
     </issue>
 
@@ -2928,7 +2499,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="147"
+            line="153"
             column="13"/>
     </issue>
 
@@ -2939,7 +2510,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="148"
+            line="154"
             column="13"/>
     </issue>
 
@@ -2950,7 +2521,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="149"
+            line="155"
             column="13"/>
     </issue>
 
@@ -2961,7 +2532,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="150"
+            line="156"
             column="13"/>
     </issue>
 
@@ -2972,7 +2543,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="151"
+            line="157"
             column="13"/>
     </issue>
 
@@ -2983,7 +2554,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="152"
+            line="158"
             column="13"/>
     </issue>
 
@@ -2994,7 +2565,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="153"
+            line="159"
             column="13"/>
     </issue>
 
@@ -3005,7 +2576,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="154"
+            line="160"
             column="13"/>
     </issue>
 
@@ -3016,7 +2587,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="155"
+            line="161"
             column="13"/>
     </issue>
 
@@ -3027,7 +2598,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="156"
+            line="162"
             column="13"/>
     </issue>
 
@@ -3038,7 +2609,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="157"
+            line="163"
             column="13"/>
     </issue>
 
@@ -3049,7 +2620,40 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="158"
+            line="164"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.label_date` appears to be unused"
+        errorLine1="    &lt;string name=&quot;label_date&quot;>Date&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="190"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.label_time` appears to be unused"
+        errorLine1="    &lt;string name=&quot;label_time&quot;>Time&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="191"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.label_instructor` appears to be unused"
+        errorLine1="    &lt;string name=&quot;label_instructor&quot;>Instructor&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="192"
             column="13"/>
     </issue>
 
@@ -3060,7 +2664,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="201"
+            line="211"
             column="13"/>
     </issue>
 
@@ -3071,7 +2675,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="203"
+            line="213"
             column="13"/>
     </issue>
 
@@ -3082,7 +2686,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="208"
+            line="218"
             column="13"/>
     </issue>
 
@@ -3093,7 +2697,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="221"
+            line="231"
             column="13"/>
     </issue>
 
@@ -3104,7 +2708,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="240"
+            line="250"
             column="13"/>
     </issue>
 
@@ -3115,7 +2719,29 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="241"
+            line="251"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.login_button_loading` appears to be unused"
+        errorLine1="    &lt;string name=&quot;login_button_loading&quot;>Logging in...&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="255"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.login_password_placeholder` appears to be unused"
+        errorLine1="    &lt;string name=&quot;login_password_placeholder&quot;>Enter your password&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="259"
             column="13"/>
     </issue>
 
@@ -3126,7 +2752,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="250"
+            line="260"
             column="13"/>
     </issue>
 
@@ -3137,7 +2763,18 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="251"
+            line="261"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.login_signup_prompt` appears to be unused"
+        errorLine1="    &lt;string name=&quot;login_signup_prompt&quot;>Don\&apos;t have an account? Sign up&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="262"
             column="13"/>
     </issue>
 
@@ -3148,7 +2785,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="257"
+            line="267"
             column="13"/>
     </issue>
 
@@ -3159,7 +2796,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="260"
+            line="270"
             column="13"/>
     </issue>
 
@@ -3170,7 +2807,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="261"
+            line="271"
             column="13"/>
     </issue>
 
@@ -3181,7 +2818,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="262"
+            line="272"
             column="13"/>
     </issue>
 
@@ -3192,7 +2829,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="265"
+            line="275"
             column="13"/>
     </issue>
 
@@ -3203,7 +2840,7 @@
         errorLine2="            ~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="266"
+            line="276"
             column="13"/>
     </issue>
 
@@ -3214,7 +2851,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="267"
+            line="277"
             column="13"/>
     </issue>
 
@@ -3225,7 +2862,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="268"
+            line="278"
             column="13"/>
     </issue>
 
@@ -3236,7 +2873,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="269"
+            line="279"
             column="13"/>
     </issue>
 
@@ -3247,18 +2884,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="270"
-            column="13"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.string.error_user_session_not_found` appears to be unused"
-        errorLine1="    &lt;string name=&quot;error_user_session_not_found&quot;>User session not found&lt;/string>"
-        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/strings_core.xml"
-            line="271"
+            line="280"
             column="13"/>
     </issue>
 
@@ -3269,7 +2895,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="277"
+            line="287"
             column="13"/>
     </issue>
 
@@ -3280,7 +2906,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="280"
+            line="290"
             column="13"/>
     </issue>
 
@@ -3291,7 +2917,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="281"
+            line="291"
             column="13"/>
     </issue>
 
@@ -3302,7 +2928,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="282"
+            line="292"
             column="13"/>
     </issue>
 
@@ -3313,7 +2939,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="285"
+            line="295"
             column="13"/>
     </issue>
 
@@ -3324,7 +2950,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="286"
+            line="296"
             column="13"/>
     </issue>
 
@@ -3335,7 +2961,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="287"
+            line="297"
             column="13"/>
     </issue>
 
@@ -3346,7 +2972,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="290"
+            line="300"
             column="13"/>
     </issue>
 
@@ -3357,7 +2983,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="293"
+            line="303"
             column="13"/>
     </issue>
 
@@ -3368,7 +2994,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="294"
+            line="304"
             column="13"/>
     </issue>
 
@@ -3379,7 +3005,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="295"
+            line="305"
             column="13"/>
     </issue>
 
@@ -3390,7 +3016,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="296"
+            line="306"
             column="13"/>
     </issue>
 
@@ -3401,7 +3027,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="299"
+            line="309"
             column="13"/>
     </issue>
 
@@ -3412,7 +3038,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="300"
+            line="310"
             column="13"/>
     </issue>
 
@@ -3423,7 +3049,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="311"
+            line="321"
             column="13"/>
     </issue>
 
@@ -3434,7 +3060,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="327"
+            line="337"
             column="13"/>
     </issue>
 
@@ -3445,7 +3071,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="336"
+            line="346"
             column="13"/>
     </issue>
 
@@ -3456,7 +3082,18 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="338"
+            line="348"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.profile_actions_title` appears to be unused"
+        errorLine1="    &lt;string name=&quot;profile_actions_title&quot;>Account Actions&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="352"
             column="13"/>
     </issue>
 
@@ -3467,7 +3104,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="353"
+            line="363"
             column="13"/>
     </issue>
 
@@ -3478,7 +3115,40 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="356"
+            line="366"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.add_horse_hero_placeholder` appears to be unused"
+        errorLine1="    &lt;string name=&quot;add_horse_hero_placeholder&quot;>Your Horse&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="375"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.add_horse_hero_subtitle` appears to be unused"
+        errorLine1="    &lt;string name=&quot;add_horse_hero_subtitle&quot;>Fill in the details to add to your profile&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="376"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.add_horse_select_action` appears to be unused"
+        errorLine1="    &lt;string name=&quot;add_horse_select_action&quot;>Select&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="387"
             column="13"/>
     </issue>
 
@@ -3489,7 +3159,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="367"
+            line="403"
             column="13"/>
     </issue>
 
@@ -3500,7 +3170,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="368"
+            line="404"
             column="13"/>
     </issue>
 
@@ -3511,7 +3181,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="369"
+            line="405"
             column="13"/>
     </issue>
 
@@ -3522,7 +3192,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="370"
+            line="406"
             column="13"/>
     </issue>
 
@@ -3533,7 +3203,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="376"
+            line="412"
             column="13"/>
     </issue>
 
@@ -3544,7 +3214,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="381"
+            line="417"
             column="13"/>
     </issue>
 
@@ -3555,7 +3225,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="382"
+            line="418"
             column="13"/>
     </issue>
 
@@ -3566,7 +3236,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="383"
+            line="419"
             column="13"/>
     </issue>
 
@@ -3577,7 +3247,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="384"
+            line="420"
             column="13"/>
     </issue>
 
@@ -3588,7 +3258,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="385"
+            line="421"
             column="13"/>
     </issue>
 
@@ -3599,7 +3269,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="386"
+            line="422"
             column="13"/>
     </issue>
 
@@ -3610,7 +3280,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="387"
+            line="423"
             column="13"/>
     </issue>
 
@@ -3621,7 +3291,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="388"
+            line="424"
             column="13"/>
     </issue>
 
@@ -3632,7 +3302,18 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="389"
+            line="425"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.lesson_detail` appears to be unused"
+        errorLine1="    &lt;string name=&quot;lesson_detail&quot;>Detail&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="426"
             column="13"/>
     </issue>
 
@@ -3643,7 +3324,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="391"
+            line="427"
             column="13"/>
     </issue>
 
@@ -3654,7 +3335,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="392"
+            line="428"
             column="13"/>
     </issue>
 
@@ -3665,7 +3346,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="393"
+            line="429"
             column="13"/>
     </issue>
 
@@ -3676,7 +3357,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="394"
+            line="430"
             column="13"/>
     </issue>
 
@@ -3687,7 +3368,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="395"
+            line="431"
             column="13"/>
     </issue>
 
@@ -3698,7 +3379,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="396"
+            line="432"
             column="13"/>
     </issue>
 
@@ -3709,7 +3390,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="397"
+            line="433"
             column="13"/>
     </issue>
 
@@ -3720,7 +3401,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="398"
+            line="434"
             column="13"/>
     </issue>
 
@@ -3731,7 +3412,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="400"
+            line="443"
             column="13"/>
     </issue>
 
@@ -3742,7 +3423,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="401"
+            line="444"
             column="13"/>
     </issue>
 
@@ -3753,7 +3434,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="402"
+            line="445"
             column="13"/>
     </issue>
 
@@ -3764,7 +3445,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="403"
+            line="446"
             column="13"/>
     </issue>
 
@@ -3775,7 +3456,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="404"
+            line="447"
             column="13"/>
     </issue>
 
@@ -3786,7 +3467,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="405"
+            line="448"
             column="13"/>
     </issue>
 
@@ -3797,7 +3478,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="406"
+            line="449"
             column="13"/>
     </issue>
 
@@ -3808,7 +3489,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="407"
+            line="450"
             column="13"/>
     </issue>
 
@@ -3819,7 +3500,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="410"
+            line="453"
             column="13"/>
     </issue>
 
@@ -3830,7 +3511,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="414"
+            line="457"
             column="13"/>
     </issue>
 
@@ -3841,7 +3522,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="415"
+            line="458"
             column="13"/>
     </issue>
 
@@ -3852,7 +3533,18 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="416"
+            line="459"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.schedule_empty_title` appears to be unused"
+        errorLine1="    &lt;string name=&quot;schedule_empty_title&quot;>No lessons available right now.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="462"
             column="13"/>
     </issue>
 
@@ -3863,7 +3555,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="418"
+            line="463"
             column="13"/>
     </issue>
 
@@ -3874,7 +3566,315 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="419"
+            line="464"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.training_hero_title` appears to be unused"
+        errorLine1="    &lt;string name=&quot;training_hero_title&quot;>HorseGallop Pro Training&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="470"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.training_hero_subtitle` appears to be unused"
+        errorLine1="    &lt;string name=&quot;training_hero_subtitle&quot;>Stay consistent with structured tasks and weekly goals.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="471"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.training_status_free` appears to be unused"
+        errorLine1="    &lt;string name=&quot;training_status_free&quot;>Free Plan&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="472"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.training_status_pro` appears to be unused"
+        errorLine1="    &lt;string name=&quot;training_status_pro&quot;>Pro Active&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="473"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.training_upgrade_monthly` appears to be unused"
+        errorLine1="    &lt;string name=&quot;training_upgrade_monthly&quot;>Go Pro Monthly&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="474"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.training_upgrade_yearly` appears to be unused"
+        errorLine1="    &lt;string name=&quot;training_upgrade_yearly&quot;>Go Pro Yearly&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="475"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.training_pro_required` appears to be unused"
+        errorLine1="    &lt;string name=&quot;training_pro_required&quot;>This plan requires HorseGallop Pro.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="487"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.horse_breed_label` appears to be unused"
+        errorLine1="    &lt;string name=&quot;horse_breed_label&quot;>Breed&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="516"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.horse_breed_arab` appears to be unused"
+        errorLine1="    &lt;string name=&quot;horse_breed_arab&quot;>Arabian&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="517"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.horse_breed_english` appears to be unused"
+        errorLine1="    &lt;string name=&quot;horse_breed_english&quot;>Thoroughbred&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="518"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.horse_breed_holsteiner` appears to be unused"
+        errorLine1="    &lt;string name=&quot;horse_breed_holsteiner&quot;>Holsteiner&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="519"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.horse_breed_kwpb` appears to be unused"
+        errorLine1="    &lt;string name=&quot;horse_breed_kwpb&quot;>KWPB&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="520"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.horse_breed_hannoveraner` appears to be unused"
+        errorLine1="    &lt;string name=&quot;horse_breed_hannoveraner&quot;>Hanoverian&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="521"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.horse_breed_trakehner` appears to be unused"
+        errorLine1="    &lt;string name=&quot;horse_breed_trakehner&quot;>Trakehner&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="522"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.horse_breed_lusitano` appears to be unused"
+        errorLine1="    &lt;string name=&quot;horse_breed_lusitano&quot;>Lusitano&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="523"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.horse_breed_andaluz` appears to be unused"
+        errorLine1="    &lt;string name=&quot;horse_breed_andaluz&quot;>Andalusian&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="524"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.horse_breed_pony` appears to be unused"
+        errorLine1="    &lt;string name=&quot;horse_breed_pony&quot;>Pony&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="525"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.horse_breed_selle_francais` appears to be unused"
+        errorLine1="    &lt;string name=&quot;horse_breed_selle_francais&quot;>Selle Français&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="526"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.horse_breed_quarter` appears to be unused"
+        errorLine1="    &lt;string name=&quot;horse_breed_quarter&quot;>Quarter Horse&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="527"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.horse_breed_mustang` appears to be unused"
+        errorLine1="    &lt;string name=&quot;horse_breed_mustang&quot;>Mustang&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="528"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.horse_breed_akhal_teke` appears to be unused"
+        errorLine1="    &lt;string name=&quot;horse_breed_akhal_teke&quot;>Akhal-Teke&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="529"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.horse_breed_turk` appears to be unused"
+        errorLine1="    &lt;string name=&quot;horse_breed_turk&quot;>Turkish Horse&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="530"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.horse_breed_other` appears to be unused"
+        errorLine1="    &lt;string name=&quot;horse_breed_other&quot;>Other&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="531"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.subscription_plan_best_value` appears to be unused"
+        errorLine1="    &lt;string name=&quot;subscription_plan_best_value&quot;>Best Value&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="548"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.safety_pro_required` appears to be unused"
+        errorLine1="    &lt;string name=&quot;safety_pro_required&quot;>Safety tracking requires Pro membership&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="613"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.safety_contact_added` appears to be unused"
+        errorLine1="    &lt;string name=&quot;safety_contact_added&quot;>Contact added&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="616"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.safety_contact_removed` appears to be unused"
+        errorLine1="    &lt;string name=&quot;safety_contact_removed&quot;>Contact removed&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="617"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.safety_alarm_sent` appears to be unused"
+        errorLine1="    &lt;string name=&quot;safety_alarm_sent&quot;>Alert sent to your contacts&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="618"
             column="13"/>
     </issue>
 
@@ -3885,18 +3885,7 @@
         errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/themes.xml"
-            line="17"
-            column="12"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.style.Theme_horsegallop_Dark` appears to be unused"
-        errorLine1="    &lt;style name=&quot;Theme.horsegallop.Dark&quot; parent=&quot;android:Theme.Material.NoActionBar&quot;>"
-        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/themes.xml"
-            line="25"
+            line="16"
             column="12"/>
     </issue>
 
@@ -3914,11 +3903,33 @@
     <issue
         id="TypographyEllipsis"
         message="Replace &quot;...&quot; with ellipsis character (…, &amp;#8230;) ?"
+        errorLine1="    &lt;string name=&quot;feedback_location_centering&quot;>Centering on your location...&lt;/string>"
+        errorLine2="                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values-en/strings.xml"
+            line="44"
+            column="48"/>
+    </issue>
+
+    <issue
+        id="TypographyEllipsis"
+        message="Replace &quot;...&quot; with ellipsis character (…, &amp;#8230;) ?"
+        errorLine1="    &lt;string name=&quot;feedback_location_centering&quot;>Konumunuza ortalanıyor...&lt;/string>"
+        errorLine2="                                               ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values-tr/strings.xml"
+            line="44"
+            column="48"/>
+    </issue>
+
+    <issue
+        id="TypographyEllipsis"
+        message="Replace &quot;...&quot; with ellipsis character (…, &amp;#8230;) ?"
         errorLine1="    &lt;string name=&quot;barn_search_placeholder&quot;>Search barns...&lt;/string>"
         errorLine2="                                           ~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values-en/strings.xml"
-            line="108"
+            line="112"
             column="44"/>
     </issue>
 
@@ -3929,7 +3940,7 @@
         errorLine2="                                           ~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values-tr/strings.xml"
-            line="108"
+            line="112"
             column="44"/>
     </issue>
 
@@ -3940,7 +3951,7 @@
         errorLine2="                                      ~~~~~~~~~">
         <location
             file="src/main/res/values-en/strings.xml"
-            line="109"
+            line="113"
             column="39"/>
     </issue>
 
@@ -3951,7 +3962,7 @@
         errorLine2="                                      ~~~~~~~~~">
         <location
             file="src/main/res/values-tr/strings.xml"
-            line="109"
+            line="113"
             column="39"/>
     </issue>
 
@@ -3962,7 +3973,7 @@
         errorLine2="                                    ~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values-en/strings.xml"
-            line="209"
+            line="213"
             column="37"/>
     </issue>
 
@@ -3973,7 +3984,7 @@
         errorLine2="                                    ~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values-tr/strings.xml"
-            line="209"
+            line="213"
             column="37"/>
     </issue>
 
@@ -3984,7 +3995,7 @@
         errorLine2="                                        ~~~~~~~~~~~~~">
         <location
             file="src/main/res/values-en/strings.xml"
-            line="247"
+            line="255"
             column="41"/>
     </issue>
 
@@ -4002,11 +4013,22 @@
     <issue
         id="TypographyEllipsis"
         message="Replace &quot;...&quot; with ellipsis character (…, &amp;#8230;) ?"
+        errorLine1="    &lt;string name=&quot;feedback_location_centering&quot;>Centering on your location...&lt;/string>"
+        errorLine2="                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings_core.xml"
+            line="18"
+            column="48"/>
+    </issue>
+
+    <issue
+        id="TypographyEllipsis"
+        message="Replace &quot;...&quot; with ellipsis character (…, &amp;#8230;) ?"
         errorLine1="    &lt;string name=&quot;barn_search_placeholder&quot;>Search barns...&lt;/string>"
         errorLine2="                                           ~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="91"
+            line="95"
             column="44"/>
     </issue>
 
@@ -4017,7 +4039,7 @@
         errorLine2="                                      ~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="92"
+            line="96"
             column="39"/>
     </issue>
 
@@ -4028,7 +4050,7 @@
         errorLine2="                                    ~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="199"
+            line="205"
             column="37"/>
     </issue>
 
@@ -4039,7 +4061,7 @@
         errorLine2="                                        ~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings_core.xml"
-            line="245"
+            line="255"
             column="41"/>
     </issue>
 
@@ -4061,7 +4083,7 @@
         errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="81"
+            line="142"
             column="17"/>
     </issue>
 
@@ -4072,7 +4094,7 @@
         errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="93"
+            line="154"
             column="20"/>
     </issue>
 
@@ -4083,7 +4105,7 @@
         errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="94"
+            line="155"
             column="20"/>
     </issue>
 
@@ -4094,7 +4116,7 @@
         errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="101"
+            line="162"
             column="17"/>
     </issue>
 
@@ -4105,7 +4127,18 @@
         errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="110"
+            line="171"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="UseTomlInstead"
+        message="Use version catalog instead"
+        errorLine1="    implementation(&quot;com.android.billingclient:billing-ktx:7.1.1&quot;)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="172"
             column="20"/>
     </issue>
 
@@ -4116,7 +4149,7 @@
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="112"
+            line="174"
             column="21"/>
     </issue>
 
@@ -4127,7 +4160,7 @@
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="113"
+            line="175"
             column="21"/>
     </issue>
 
@@ -4138,7 +4171,7 @@
         errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="114"
+            line="176"
             column="28"/>
     </issue>
 
@@ -4149,7 +4182,7 @@
         errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle.kts"
-            line="115"
+            line="177"
             column="28"/>
     </issue>
 
