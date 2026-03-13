@@ -58,6 +58,7 @@ import com.horsegallop.feature.ride.presentation.RideTrackingRoute
 import com.horsegallop.feature.ride.presentation.RideTrackingViewModel
 
 import com.horsegallop.feature.ride.presentation.RideDetailScreen
+import com.horsegallop.feature.safety.presentation.SafetyScreen
 import com.horsegallop.feature.subscription.presentation.SubscriptionScreen
 import com.horsegallop.feature.training.presentation.TrainingPlansScreen
 import com.horsegallop.ui.theme.LocalSemanticColors
@@ -97,6 +98,7 @@ sealed class Dest(val route: String) {
     fun route(horseId: String, horseName: String): String =
       "horseHealth/$horseId/${android.net.Uri.encode(horseName)}"
   }
+  object Safety : Dest("safety")
 }
 
 @Composable
@@ -354,8 +356,13 @@ fun AppNavHost(
           navController.navigate(Dest.Onboarding.route) {
             popUpTo(Dest.Home.route) { inclusive = true }
           }
-        }
+        },
+        onSafety = { navController.navigate(Dest.Safety.route) }
       )
+    }
+    composable(Dest.Safety.route) {
+      BackHandler { navController.popBackStack() }
+      SafetyScreen(onBack = { navController.popBackStack() })
     }
     composable(Dest.Ride.route) {
       com.horsegallop.feature.ride.presentation.RideTrackingRoute(

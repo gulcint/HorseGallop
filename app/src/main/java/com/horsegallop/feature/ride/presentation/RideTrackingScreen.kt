@@ -163,6 +163,29 @@ fun RideTrackingScreen(
         )
     }
 
+    if (state.showSafetyAlarmDialog) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissSafetyAlarmDialog,
+            title = { Text(text = stringResource(R.string.safety_alarm_title)) },
+            text = { Text(text = stringResource(R.string.safety_alarm_body)) },
+            confirmButton = {
+                Button(
+                    onClick = viewModel::confirmSafetyAlarm,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(text = stringResource(R.string.safety_alarm_send))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::dismissSafetyAlarmDialog) {
+                    Text(text = stringResource(R.string.safety_alarm_dismiss))
+                }
+            }
+        )
+    }
+
     Scaffold(
         containerColor = semantic.screenBase
     ) { innerPadding ->

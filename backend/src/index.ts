@@ -742,3 +742,132 @@ export const deleteHorseHealthEvent = onCall({ region: "us-central1" }, async (r
   await ref.delete();
   return { success: true };
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SAFETY FUNCTIONS
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const getSafetySettings = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+
+  const settingsDoc = await db.collection("users").doc(uid).collection("safety").doc("settings").get();
+  const isEnabled = settingsDoc.exists ? (settingsDoc.data()?.isEnabled ?? false) : false;
+  const autoAlarmMinutes = settingsDoc.exists ? (settingsDoc.data()?.autoAlarmMinutes ?? 5) : 5;
+
+  const contactsSnapshot = await db.collection("users").doc(uid).collection("safety")
+    .doc("settings").collection("contacts").orderBy("createdAt", "asc").get();
+  const contacts = contactsSnapshot.docs.map(doc => ({
+    id: doc.id,
+    name: (doc.data().name as string) ?? "",
+    phone: (doc.data().phone as string) ?? ""
+  }));
+
+  return { isEnabled, autoAlarmMinutes, contacts };
+});
+
+export const updateSafetySettings = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+  const data = request.data as Record<string, unknown>;
+
+  const update: Record<string, unknown> = { updatedAt: admin.firestore.FieldValue.serverTimestamp() };
+  if (typeof data.isEnabled === "boolean") update.isEnabled = data.isEnabled;
+  if (typeof data.autoAlarmMinutes === "number") update.autoAlarmMinutes = Math.min(Math.max(1, data.autoAlarmMinutes), 30);
+
+  await db.collection("users").doc(uid).collection("safety").doc("settings").set(update, { merge: true });
+  return { success: true };
+});
+
+export const addSafetyContact = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+  const data = request.data as Record<string, unknown>;
+
+  const name = normalizeString(data.name, 80);
+  const phone = normalizeString(data.phone, 20);
+  if (!name) throw new HttpsError("invalid-argument", "name is required");
+  if (!phone) throw new HttpsError("invalid-argument", "phone is required");
+
+  // Max 5 contacts
+  const existing = await db.collection("users").doc(uid).collection("safety")
+    .doc("settings").collection("contacts").count().get();
+  if (existing.data().count >= 5) throw new HttpsError("failed-precondition", "Max 5 contacts allowed");
+
+  const ref = await db.collection("users").doc(uid).collection("safety")
+    .doc("settings").collection("contacts").add({ name, phone, createdAt: admin.firestore.FieldValue.serverTimestamp() });
+
+  return { id: ref.id, name, phone };
+});
+
+export const removeSafetyContact = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+  const data = request.data as Record<string, unknown>;
+
+  const contactId = parseRequiredId(data.contactId, "contactId");
+  const ref = db.collection("users").doc(uid).collection("safety")
+    .doc("settings").collection("contacts").doc(contactId);
+  const doc = await ref.get();
+  if (!doc.exists) throw new HttpsError("not-found", "Contact not found");
+
+  await ref.delete();
+  return { success: true };
+});
+
+export const triggerSafetyAlarm = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+  const data = request.data as Record<string, unknown>;
+
+  const lat = typeof data.lat === "number" ? data.lat : null;
+  const lng = typeof data.lng === "number" ? data.lng : null;
+
+  // Build location link
+  const locationLink = lat !== null && lng !== null
+    ? `https://maps.google.com/maps?q=${lat},${lng}`
+    : null;
+
+  // Get user profile for display name
+  const profileDoc = await db.collection("users").doc(uid).get();
+  const firstName = profileDoc.exists ? (profileDoc.data()?.firstName ?? "A rider") : "A rider";
+
+  // Get safety contacts
+  const contactsSnapshot = await db.collection("users").doc(uid).collection("safety")
+    .doc("settings").collection("contacts").get();
+
+  // Get FCM tokens of user (self-notification for now; real implementation sends SMS/FCM to contacts)
+  const tokenDoc = await db.collection("users").doc(uid).collection("tokens").doc("fcm").get();
+  const fcmToken = tokenDoc.exists ? tokenDoc.data()?.token : null;
+
+  if (fcmToken && admin.messaging) {
+    const message = locationLink
+      ? `${firstName} may need help! Last location: ${locationLink}`
+      : `${firstName} may need help! No location available.`;
+    await admin.messaging().send({
+      token: fcmToken,
+      notification: {
+        title: "🛡️ Safety Alert",
+        body: message
+      },
+      data: {
+        type: "safety_alarm",
+        lat: lat?.toString() ?? "",
+        lng: lng?.toString() ?? "",
+        locationLink: locationLink ?? ""
+      }
+    });
+  }
+
+  // Log alarm in Firestore
+  await db.collection("users").doc(uid).collection("safety").doc("settings")
+    .collection("alarms").add({
+      lat,
+      lng,
+      locationLink,
+      triggeredAt: admin.firestore.FieldValue.serverTimestamp(),
+      contactCount: contactsSnapshot.size
+    });
+
+  return { success: true, locationLink };
+});
