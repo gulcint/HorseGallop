@@ -74,10 +74,19 @@ class HorseViewModel @Inject constructor(
                     loadHorses()
                 }
                 .onFailure { e ->
-                    val msg = if (e is FirebaseFunctionsException) {
-                        "[${e.code}] ${e.message}"
-                    } else {
-                        e.localizedMessage ?: "At eklenemedi"
+                    val msg = when {
+                        e is FirebaseFunctionsException -> when (e.code) {
+                            FirebaseFunctionsException.Code.NOT_FOUND ->
+                                "Sunucu fonksiyonu bulunamadı. Lütfen ağ bağlantınızı kontrol edin."
+                            FirebaseFunctionsException.Code.UNAUTHENTICATED ->
+                                "Oturum süresi dolmuş. Lütfen tekrar giriş yapın."
+                            FirebaseFunctionsException.Code.INVALID_ARGUMENT ->
+                                "Geçersiz bilgi girildi. Lütfen alanları kontrol edin."
+                            FirebaseFunctionsException.Code.INTERNAL ->
+                                "Sunucu hatası oluştu. Lütfen tekrar deneyin."
+                            else -> "Bağlantı hatası oluştu. Lütfen tekrar deneyin."
+                        }
+                        else -> e.localizedMessage ?: "At eklenemedi. Lütfen tekrar deneyin."
                     }
                     _uiState.value = _uiState.value.copy(saving = false, saveError = msg)
                 }

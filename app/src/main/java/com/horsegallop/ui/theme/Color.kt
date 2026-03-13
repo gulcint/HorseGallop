@@ -81,50 +81,58 @@ val LightColorScheme = lightColorScheme(
     scrim                  = WarmCharcoal
 )
 
+// ─── Dark Theme — Warm Espresso Palette ─────────────────────────────────────
+// Sıcak espresso/kakao tonları: siyah yerine derin sıcak kahve renkleri.
+// Saddle Brown primary ile uyumlu, göze yorucu olmayan koyu tema.
+private val DarkBg              = Color(0xFF1C1408) // Ana arka plan — derin espresso
+private val DarkOnBg            = Color(0xFFEADFCF) // Üst metin — sıcak krem
+private val DarkSurfaceVariant  = Color(0xFF3C3425) // Yüzey varyantı — koyu yanık ahşap
+private val DarkOnSurfaceVar    = Color(0xFFD0C9B8) // Üst metin varyantı — bej gri
+
 val DarkColorScheme = darkColorScheme(
-    primary                = BrownMid,
+    primary                = BrownMid,             // #FFB78B — parlak saddle brown
     onPrimary              = Color(0xFF4E2000),
-    primaryContainer       = BrownDark,
-    onPrimaryContainer     = BrownLight,
+    primaryContainer       = BrownDark,            // #5C2C0A
+    onPrimaryContainer     = BrownLight,           // #FFD9C3
 
-    secondary              = Color(0xFFC5C3BC),
-    onSecondary            = WarmGrey15,
-    secondaryContainer     = WarmGrey30,
-    onSecondaryContainer   = Color(0xFFE1DFD7),
+    secondary              = Color(0xFFC8C0AE),    // Sıcak bej-gri
+    onSecondary            = Color(0xFF2A2014),    // Koyu espresso
+    secondaryContainer     = Color(0xFF3A2F1E),    // Orta koyu kahve
+    onSecondaryContainer   = Color(0xFFE4DACB),    // Açık krem
 
-    tertiary               = Color(0xFFCAC7BA),
-    onTertiary             = Color(0xFF322F21),
-    tertiaryContainer      = Color(0xFF494536),
-    onTertiaryContainer    = Color(0xFFE6E3D5),
+    tertiary               = Color(0xFFCFC8B5),    // Sıcak açık gri
+    onTertiary             = Color(0xFF302916),
+    tertiaryContainer      = Color(0xFF453C28),
+    onTertiaryContainer    = Color(0xFFEBE3D0),
 
     // Warm amber replaces red in dark mode too
-    error                  = Color(0xFFE8A000),   // Warm amber for dark mode
-    onError                = Color(0xFF2D1300),   // Deep brown on amber
-    errorContainer         = Color(0xFF3D2200),   // Dark amber container
-    onErrorContainer       = Color(0xFFFFF3E0),   // Light amber tint text
+    error                  = Color(0xFFE8A000),    // Warm amber for dark mode
+    onError                = Color(0xFF2D1300),
+    errorContainer         = Color(0xFF3D2200),
+    onErrorContainer       = Color(0xFFFFF3E0),
 
-    background             = Color(0xFF131318),
-    onBackground           = Color(0xFFE5E1E9),
+    background             = DarkBg,               // #1C1408 — derin espresso arka plan
+    onBackground           = DarkOnBg,             // #EAE0CF — sıcak krem
 
-    surface                = Color(0xFF131318),
-    onSurface              = Color(0xFFE5E1E9),
-    surfaceVariant         = Color(0xFF47464F),
-    onSurfaceVariant       = Color(0xFFC8C6D0),
+    surface                = DarkBg,               // Arka planla aynı
+    onSurface              = DarkOnBg,
+    surfaceVariant         = DarkSurfaceVariant,   // #3C3425 — koyu ahşap
+    onSurfaceVariant       = DarkOnSurfaceVar,     // #D0C9B8 — bej gri
 
-    outline                = Color(0xFF918F9A),
-    outlineVariant         = Color(0xFF47464F),
+    outline                = Color(0xFF998E7E),    // Sıcak orta gri
+    outlineVariant         = Color(0xFF3C3425),
 
-    inverseSurface         = Color(0xFFE5E1E9),
-    inverseOnSurface       = Color(0xFF313033),
+    inverseSurface         = Color(0xFFEADFCF),    // Açık krem
+    inverseOnSurface       = Color(0xFF32271A),    // Koyu kahve
     inversePrimary         = SaddleBrown,
 
-    surfaceDim             = Color(0xFF0F0F14),
-    surfaceBright          = Color(0xFF39383E),
-    surfaceContainerLowest = Color(0xFF0A0A0F),
-    surfaceContainerLow    = Color(0xFF1C1B22),
-    surfaceContainer       = Color(0xFF201F26),
-    surfaceContainerHigh   = Color(0xFF2B2930),
-    surfaceContainerHighest= Color(0xFF36343B),
+    surfaceDim             = Color(0xFF150F05),    // En koyu — neredeyse siyah-kahve
+    surfaceBright          = Color(0xFF3C2E18),    // Daha açık — parlak yüzey
+    surfaceContainerLowest = Color(0xFF100B02),    // Minimum yüzey
+    surfaceContainerLow    = Color(0xFF201609),    // Düşük kap
+    surfaceContainer       = Color(0xFF26190B),    // Orta kap
+    surfaceContainerHigh   = Color(0xFF302210),    // Yüksek kap
+    surfaceContainerHighest= Color(0xFF3A2B15),    // Maksimum kap
 
     surfaceTint            = BrownMid,
     scrim                  = Color(0xFF000000)
