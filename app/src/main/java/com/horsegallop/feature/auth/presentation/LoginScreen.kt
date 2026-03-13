@@ -130,15 +130,18 @@ fun LoginScreen(
                     val msgKey = effect.message
                     val resId = when (msgKey) {
                         "auth_error_google" -> R.string.auth_error_google
-                        "auth_error_firebase" -> R.string.auth_error_firebase
                         "auth_error_cancelled" -> R.string.auth_error_cancelled
                         "auth_error_token_missing" -> R.string.auth_error_token_missing
                         "login_verify_email_sent",
                         "verification_email_sent" -> R.string.login_verify_email_sent
                         "Email not verified" -> R.string.error_email_not_verified
-                        else -> {
-                            AppLog.e("LoginScreen", "Unhandled key: $msgKey")
-                            R.string.error_unknown
+                        else -> when {
+                            msgKey.startsWith("auth_error_firebase") -> R.string.auth_error_firebase
+                            msgKey.startsWith("google_error_code:") -> R.string.auth_error_google
+                            else -> {
+                                AppLog.e("LoginScreen", "Unhandled key: $msgKey")
+                                R.string.error_unknown
+                            }
                         }
                     }
                     if (msgKey.contains("sent")) feedback.showSuccess(resId)
@@ -233,10 +236,9 @@ fun LoginScreen(
                                     if (available != ConnectionResult.SUCCESS) {
                                         feedback.showError(R.string.auth_error_play_services)
                                     } else {
-                                        val acct = GoogleSignIn.getLastSignedInAccount(context)
-                                        if (acct != null && !acct.idToken.isNullOrEmpty()) {
-                                            vm.loginWithGoogle(acct.idToken!!)
-                                        } else {
+                                        // Reusing the cached idToken is unsafe here because Google may return
+                                        // a stale token from a previous session. Always request a fresh sign-in.
+                                        googleClient.signOut().addOnCompleteListener {
                                             launcher.launch(googleClient.signInIntent)
                                         }
                                     }
