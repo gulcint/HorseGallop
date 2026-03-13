@@ -77,6 +77,8 @@
     <string name="qa_view_barns_subtitle">Find nearby horse facilities</string>
     <string name="qa_training_title">Training Plans</string>
     <string name="qa_training_subtitle">Follow your weekly goals</string>
+    <string name="qa_tjk_title">TJK Races</string>
+    <string name="qa_tjk_subtitle">Daily race results</string>
     <string name="stats_yours_title">Your Stats</string>
     <string name="stats_total_rides">Total Rides</string>
     <string name="stats_hours_suffix">h</string>
@@ -616,4 +618,18 @@
     <string name="safety_contact_added">Contact added</string>
     <string name="safety_contact_removed">Contact removed</string>
     <string name="safety_alarm_sent">Alert sent to your contacts</string>
+    <string name="elevation_profile_title">Elevation Profile</string>
+
+    <!-- TJK Race Integration -->
+    <string name="tjk_title">TJK Race Results</string>
+    <string name="tjk_date_label">Date: %s</string>
+    <string name="tjk_results_header" formatted="false">%s — %s</string>
+    <string name="tjk_race_number">Race %d</string>
+    <string name="tjk_no_races">No race data available for this date</string>
+    <string name="tjk_error_load">Could not load race results</string>
+    <string name="tjk_col_pos">Pos</string>
+    <string name="tjk_col_horse">Horse</string>
+    <string name="tjk_col_jockey">Jockey</string>
+    <string name="tjk_col_time">Time</string>
+    <string name="refresh">Refresh</string>
 </resources>

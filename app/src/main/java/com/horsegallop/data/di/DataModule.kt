@@ -145,4 +145,10 @@ abstract class DataModule {
     abstract fun bindSafetyRepository(
         safetyRepositoryImpl: SafetyRepositoryImpl
     ): SafetyRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTjkRepository(
+        tjkRepositoryImpl: com.horsegallop.data.tjk.repository.TjkRepositoryImpl
+    ): com.horsegallop.domain.tjk.repository.TjkRepository
 }

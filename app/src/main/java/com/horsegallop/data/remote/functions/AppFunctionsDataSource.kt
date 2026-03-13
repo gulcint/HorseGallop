@@ -485,4 +485,57 @@ class AppFunctionsDataSource @Inject constructor(
         functions.getHttpsCallable("triggerSafetyAlarm")
             .call(hashMapOf("lat" to lat, "lng" to lng)).await()
     }
+
+    // ─── TJK ──────────────────────────────────────────────────────────────────
+
+    suspend fun getTjkRaceDay(
+        date: String,
+        cityId: Int
+    ): com.horsegallop.data.remote.dto.TjkRaceDayFunctionsDto {
+        val result = functions.getHttpsCallable("getTjkRaceDay")
+            .call(hashMapOf("date" to date, "cityId" to cityId)).await()
+        val payload = result.data as? Map<*, *> ?: return com.horsegallop.data.remote.dto.TjkRaceDayFunctionsDto()
+
+        val races = (payload["races"] as? List<*>)?.mapNotNull { raceRaw ->
+            val r = raceRaw as? Map<*, *> ?: return@mapNotNull null
+            val results = (r["results"] as? List<*>)?.mapNotNull { resRaw ->
+                val res = resRaw as? Map<*, *> ?: return@mapNotNull null
+                com.horsegallop.data.remote.dto.TjkRaceResultFunctionsDto(
+                    position = (res["position"] as? String).orEmpty(),
+                    horseName = (res["horseName"] as? String).orEmpty(),
+                    jockey = (res["jockey"] as? String).orEmpty(),
+                    trainer = (res["trainer"] as? String).orEmpty(),
+                    weight = (res["weight"] as? String).orEmpty(),
+                    time = (res["time"] as? String).orEmpty()
+                )
+            } ?: emptyList()
+            com.horsegallop.data.remote.dto.TjkRaceFunctionsDto(
+                raceNo = (r["raceNo"] as? Number)?.toInt() ?: 0,
+                raceTitle = (r["raceTitle"] as? String).orEmpty(),
+                distance = (r["distance"] as? String).orEmpty(),
+                surface = (r["surface"] as? String).orEmpty(),
+                startTime = (r["startTime"] as? String).orEmpty(),
+                results = results
+            )
+        } ?: emptyList()
+
+        return com.horsegallop.data.remote.dto.TjkRaceDayFunctionsDto(
+            date = (payload["date"] as? String).orEmpty(),
+            cityId = (payload["cityId"] as? Number)?.toInt() ?: cityId,
+            cityName = (payload["cityName"] as? String).orEmpty(),
+            races = races
+        )
+    }
+
+    suspend fun getTjkCities(): List<com.horsegallop.data.remote.dto.TjkCityFunctionsDto> {
+        val result = functions.getHttpsCallable("getTjkCities").call(null).await()
+        val list = result.data as? List<*> ?: return emptyList()
+        return list.mapNotNull { item ->
+            val m = item as? Map<*, *> ?: return@mapNotNull null
+            com.horsegallop.data.remote.dto.TjkCityFunctionsDto(
+                id = (m["id"] as? Number)?.toInt() ?: return@mapNotNull null,
+                name = (m["name"] as? String).orEmpty()
+            )
+        }
+    }
 }

@@ -38,6 +38,7 @@ fun HomeScreen(
   onStartRide: () -> Unit,
   onViewBarns: () -> Unit,
   onOpenTrainingPlans: () -> Unit = {},
+  onOpenTjkRaces: () -> Unit = {},
   onProfileClick: () -> Unit,
   onOpenRideDetail: (String) -> Unit = {},
   onViewAllActivities: (() -> Unit)? = null,
@@ -48,6 +49,7 @@ fun HomeScreen(
     onStartRide = onStartRide,
     onViewBarns = onViewBarns,
     onOpenTrainingPlans = onOpenTrainingPlans,
+    onOpenTjkRaces = onOpenTjkRaces,
     onProfileClick = onProfileClick,
     onOpenRideDetail = onOpenRideDetail,
     onViewAllActivities = onViewAllActivities,
@@ -74,6 +76,7 @@ private fun HomeDashboard(
   onStartRide: () -> Unit,
   onViewBarns: () -> Unit,
   onOpenTrainingPlans: () -> Unit,
+  onOpenTjkRaces: () -> Unit = {},
   onProfileClick: () -> Unit,
   onOpenRideDetail: (String) -> Unit = {},
   onViewAllActivities: (() -> Unit)? = null,
@@ -118,7 +121,8 @@ private fun HomeDashboard(
         QuickActionsSection(
           onStartRide = onStartRide,
           onViewBarns = onViewBarns,
-          onOpenTrainingPlans = onOpenTrainingPlans
+          onOpenTrainingPlans = onOpenTrainingPlans,
+          onOpenTjkRaces = onOpenTjkRaces
         )
       }
       
@@ -243,7 +247,8 @@ private fun WelcomeHeader(
 private fun QuickActionsSection(
   onStartRide: () -> Unit,
   onViewBarns: () -> Unit,
-  onOpenTrainingPlans: () -> Unit
+  onOpenTrainingPlans: () -> Unit,
+  onOpenTjkRaces: () -> Unit = {}
 ) {
   Column {
     Text(
@@ -252,7 +257,7 @@ private fun QuickActionsSection(
       fontWeight = FontWeight.Bold,
       modifier = Modifier.padding(bottom = dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
     )
-    
+
     Row(
       modifier = Modifier.fillMaxWidth(),
       horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
@@ -276,14 +281,27 @@ private fun QuickActionsSection(
     }
 
     Spacer(modifier = Modifier.height(dimensionResource(id = com.horsegallop.R.dimen.spacing_md)))
-    QuickActionCard(
-      title = stringResource(id = R.string.qa_training_title),
-      subtitle = stringResource(id = R.string.qa_training_subtitle),
-      icon = Icons.AutoMirrored.Filled.TrendingUp,
-      color = MaterialTheme.colorScheme.tertiary,
-      onClick = onOpenTrainingPlans,
-      modifier = Modifier.fillMaxWidth()
-    )
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md))
+    ) {
+      QuickActionCard(
+        title = stringResource(id = R.string.qa_training_title),
+        subtitle = stringResource(id = R.string.qa_training_subtitle),
+        icon = Icons.AutoMirrored.Filled.TrendingUp,
+        color = MaterialTheme.colorScheme.tertiary,
+        onClick = onOpenTrainingPlans,
+        modifier = Modifier.weight(1f)
+      )
+      QuickActionCard(
+        title = stringResource(id = R.string.qa_tjk_title),
+        subtitle = stringResource(id = R.string.qa_tjk_subtitle),
+        icon = Icons.Filled.EmojiEvents,
+        color = MaterialTheme.colorScheme.error,
+        onClick = onOpenTjkRaces,
+        modifier = Modifier.weight(1f)
+      )
+    }
   }
 }
 

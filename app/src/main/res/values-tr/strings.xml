@@ -96,6 +96,8 @@
     <string name="qa_view_barns_subtitle">Yakındaki çiftlikleri keşfet</string>
     <string name="qa_training_title">Antrenman Planları</string>
     <string name="qa_training_subtitle">Haftalık hedeflerini takip et</string>
+    <string name="qa_tjk_title">TJK Yarışları</string>
+    <string name="qa_tjk_subtitle">Günlük yarış sonuçları</string>
     <string name="stats_yours_title">İstatistikleriniz</string>
     <string name="stats_total_rides">Toplam Sürüş</string>
     <string name="stats_hours_suffix">saat</string>
@@ -584,4 +586,18 @@
     <string name="safety_contact_added">Kişi eklendi</string>
     <string name="safety_contact_removed">Kişi kaldırıldı</string>
     <string name="safety_alarm_sent">Kişilerine uyarı gönderildi</string>
+    <string name="elevation_profile_title">Rakım Profili</string>
+
+    <!-- TJK Yarış Entegrasyonu -->
+    <string name="tjk_title">TJK Yarış Sonuçları</string>
+    <string name="tjk_date_label">Tarih: %s</string>
+    <string name="tjk_results_header" formatted="false">%s — %s</string>
+    <string name="tjk_race_number">%d. Koşu</string>
+    <string name="tjk_no_races">Bu tarihte yarış bilgisi bulunamadı</string>
+    <string name="tjk_error_load">Yarış sonuçları yüklenemedi</string>
+    <string name="tjk_col_pos">Sıra</string>
+    <string name="tjk_col_horse">At</string>
+    <string name="tjk_col_jockey">Jokey</string>
+    <string name="tjk_col_time">Süre</string>
+    <string name="refresh">Yenile</string>
 </resources>
