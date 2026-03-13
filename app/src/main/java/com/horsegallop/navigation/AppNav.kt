@@ -235,7 +235,8 @@ fun AppNavHost(
       LoginScreen(
         onGoogleClick = {
           navController.navigate(Dest.Home.route) {
-            popUpTo(Dest.Login.route) { inclusive = true }
+            popUpTo(navController.graph.id) { inclusive = true }
+            launchSingleTop = true
           }
         },
         onEmailClick = { navController.navigate(Dest.EmailLogin.route) },
@@ -282,7 +283,8 @@ fun AppNavHost(
         onForgotPassword = { navController.navigate(Dest.ForgotPassword.route) },
         onSignedIn = {
           navController.navigate(Dest.Home.route) {
-            popUpTo(Dest.Login.route) { inclusive = true }
+            popUpTo(navController.graph.id) { inclusive = true }
+            launchSingleTop = true
           }
         }
       )
@@ -292,7 +294,8 @@ fun AppNavHost(
         onBack = { navController.popBackStack() },
         onSignedUp = {
           navController.navigate(Dest.Home.route) {
-            popUpTo(Dest.Login.route) { inclusive = true }
+            popUpTo(navController.graph.id) { inclusive = true }
+            launchSingleTop = true
           }
         }
       )

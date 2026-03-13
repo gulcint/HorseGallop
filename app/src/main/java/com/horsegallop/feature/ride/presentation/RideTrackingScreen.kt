@@ -137,6 +137,15 @@ fun RideTrackingScreen(
 
     LaunchedEffect(Unit) {
         hasLocationPermission = context.hasLocationPermission()
+        // Ride tab'ına ilk girildiğinde izin yoksa sistem diyaloğunu otomatik aç
+        if (!hasLocationPermission) {
+            permissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
     }
 
     LaunchedEffect(state.errorMessageResId) {
