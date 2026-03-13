@@ -16,7 +16,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class BarnUiState(
@@ -63,7 +65,7 @@ class BarnViewModel @Inject constructor(
     fun loadBarns() {
         viewModelScope.launch {
             _uiState.update { it.copy(loading = true, error = null) }
-            val loc = userLocation()
+            val loc = withContext(Dispatchers.IO) { userLocation() }
             try {
                 getBarnsUseCase(lat = loc?.first, lng = loc?.second).collect { barns ->
                     _uiState.update {

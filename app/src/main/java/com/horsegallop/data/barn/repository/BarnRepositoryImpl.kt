@@ -1,5 +1,6 @@
 package com.horsegallop.data.barn.repository
 
+import com.horsegallop.core.util.haversineKm
 import com.horsegallop.data.remote.functions.AppFunctionsDataSource
 import com.horsegallop.domain.barn.model.BarnReview
 import com.horsegallop.domain.barn.model.BarnUi
@@ -58,16 +59,6 @@ class BarnRepositoryImpl @Inject constructor(
         } catch (_: Exception) {
             emit(cachedBarns.value)
         }
-    }
-
-    private fun haversineKm(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Double {
-        val r = 6371.0
-        val dLat = Math.toRadians(lat2 - lat1)
-        val dLng = Math.toRadians(lng2 - lng1)
-        val a = Math.sin(dLat / 2).let { it * it } +
-            Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-            Math.sin(dLng / 2).let { it * it }
-        return r * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
     }
 
     override fun getBarnById(barnId: String): Flow<BarnWithLocation?> = flow {
