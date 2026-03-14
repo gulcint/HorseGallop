@@ -69,10 +69,11 @@ Asagidaki plan urun backlog'u gibi ele alinmali. Her bolumde isler bitince durum
 **Icerik:**
 - federasyon kulup verisi yoksa minimum fallback barn dizini saglama
 - ilk yuklemede sessiz bos liste yerine gercek hata/fallback davranisini netlestirme
+- `BarnsMapView` ve `Select Barn` akislarinda smoke test kaynakli arama/secim/fallback iyilestirmeleri yapildi
 
 **Sonraki Adimlar:**
 - federasyon scrape sonucu geldiginde fallback kullanim oranini olc
-- `BarnsMapView` ve `Select Barn` akislarinda fallback veri gorunumunu smoke test et
+- federasyon koordinat senkronu tamamlandikca map fallback gorunumunu yeniden degerlendir
 
 **Riskler:**
 - fallback veri gercek federasyon listesinin yerini uzun sure almamali

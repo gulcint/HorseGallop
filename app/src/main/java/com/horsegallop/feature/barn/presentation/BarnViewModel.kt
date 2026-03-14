@@ -131,7 +131,9 @@ class BarnViewModel @Inject constructor(
         val filtered = all.filter { item ->
             val matchesQuery = if (query.isBlank()) true else {
                 item.barn.name.contains(query, ignoreCase = true) ||
-                    item.barn.description.contains(query, ignoreCase = true)
+                    item.barn.description.contains(query, ignoreCase = true) ||
+                    item.barn.location.contains(query, ignoreCase = true) ||
+                    item.barn.tags.any { tag -> tag.contains(query, ignoreCase = true) }
             }
             val matchesFilters = if (filters.isEmpty()) true else {
                 filters.all { it in item.amenities }

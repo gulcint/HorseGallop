@@ -120,6 +120,8 @@
     <string name="barn_search_placeholder">Search barns...</string>
     <string name="search_placeholder">Search...</string>
     <string name="barn_map_title">Map View</string>
+    <string name="barn_map_no_coordinates_title">Harita konumlari hazirlaniyor</string>
+    <string name="barn_map_no_coordinates_subtitle">%1$d kulup harita koordinati beklerken asagida listeleniyor.</string>
     <string name="barn_results_prefix">Showing</string>
     <string name="barn_search_results">%1$d of %2$d barns</string>
     <string name="barn_empty_title">Ahır bulunamadı</string>
