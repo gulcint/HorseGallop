@@ -122,8 +122,8 @@
     <string name="barn_map_title">Map View</string>
     <string name="barn_results_prefix">Showing</string>
     <string name="barn_search_results">%1$d of %2$d barns</string>
-    <string name="barn_empty_title">No barns found</string>
-    <string name="barn_empty_subtitle">Try adjusting your search or filters</string>
+    <string name="barn_empty_title">Ahır bulunamadı</string>
+    <string name="barn_empty_subtitle">Aramanı veya filtrelerini değiştirip tekrar dene</string>
     <string name="barn_clear_filters">Clear Filters</string>
     <string name="barn_filter_cafe">Cafe</string>
     <string name="barn_filter_indoor_arena">Indoor Arena</string>
@@ -471,8 +471,8 @@
     <string name="horse_tip_category_default">At Bilgisi</string>
 
     <!-- Ahır -->
-    <string name="barn_no_barns_title">Henüz ahır yok</string>
-    <string name="barn_no_barns_subtitle">Ahırlar ve stüdyolar hazır olduğunda burada görünecek</string>
+    <string name="barn_no_barns_title">Henüz ahır listesi yok</string>
+    <string name="barn_no_barns_subtitle">Federasyon kulüpleri ve ahırlar hazır olduğunda burada görünecek</string>
     <string name="barn_detail_instructors">Eğitmenler</string>
     <string name="barn_detail_reviews">Değerlendirmeler</string>
 

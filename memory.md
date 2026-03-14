@@ -63,22 +63,23 @@ Asagidaki plan urun backlog'u gibi ele alinmali. Her bolumde isler bitince durum
 
 ### 3. Barn Data
 
-**Durum:** Bekliyor
+**Durum:** Kismen tamamlandi
 
 **Icerik:**
-- Firestore'a test ahir verisi ekleme
-- bos liste sorununu cozme
+- federasyon kulup verisi yoksa minimum fallback barn dizini saglama
+- ilk yuklemede sessiz bos liste yerine gercek hata/fallback davranisini netlestirme
 
 **Sonraki Adimlar:**
-- mevcut `barns` koleksiyonu beklentisini belgeye dok
-- minimum seed dataset hazirla
-- bos durum ile gercek veri yok durumunu ayir
+- federasyon scrape sonucu geldiginde fallback kullanim oranini olc
+- `BarnsMapView` ve `Select Barn` akislarinda fallback veri gorunumunu smoke test et
+- gerekirse admin/manual federated sync trigger ekle
 
 **Riskler:**
-- seed verisi UI beklentileriyle uyusmazsa yalanci pozitif olusur
+- fallback veri gercek federasyon listesinin yerini uzun sure almamali
+- scrape/cache bozulursa kullanici demo veri gordugunu anlayamayabilir
 
 **Bagimliliklar:**
-- Firestore schema
+- federasyon scrape cache
 - barn listing/detail ekranlari
 
 ### 4. Gercek Bildirimler

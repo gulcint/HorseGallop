@@ -58,8 +58,12 @@ class BarnRepositoryImpl @Inject constructor(
             }
             cachedBarns.value = remote
             emit(remote)
-        } catch (_: Exception) {
-            emit(cachedBarns.value)
+        } catch (error: Exception) {
+            if (cachedBarns.value.isNotEmpty()) {
+                emit(cachedBarns.value)
+            } else {
+                throw error
+            }
         }
     }
 
