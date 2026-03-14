@@ -10,6 +10,7 @@ import com.horsegallop.domain.auth.usecase.SignInWithEmailUseCase
 import com.horsegallop.domain.auth.usecase.SignInWithGoogleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -151,6 +152,7 @@ class LoginViewModel @Inject constructor(
 
     private fun loadDynamicContent(locale: String) {
         viewModelScope.launch {
+            delay(200)
             getAppContentUseCase(locale).collect { result ->
                 result.onSuccess { content ->
                     _uiState.value = _uiState.value.copy(

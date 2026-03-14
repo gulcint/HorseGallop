@@ -9,6 +9,7 @@ import com.horsegallop.domain.content.usecase.GetAppContentUseCase
 import com.horsegallop.domain.horse.model.HorseTip
 import com.horsegallop.domain.horse.usecase.GetHorseTipsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -35,8 +36,7 @@ class HomeViewModel @Inject constructor(
   }
 
   fun refresh(limit: Int = 5) {
-    loadDynamicContent()
-    loadHorseTips()
+    loadDeferredNonCriticalContent()
     val uid = getCurrentUserIdUseCase()
     if (uid == null) {
       _ui.update {
@@ -52,6 +52,17 @@ class HomeViewModel @Inject constructor(
     _ui.update { it.copy(loading = true, error = null) }
     loadStats(uid)
     loadRecentActivities(uid, limit)
+  }
+
+  private fun loadDeferredNonCriticalContent() {
+    viewModelScope.launch {
+      delay(250)
+      loadDynamicContent()
+    }
+    viewModelScope.launch {
+      delay(400)
+      loadHorseTips()
+    }
   }
 
   private fun loadHorseTips() {

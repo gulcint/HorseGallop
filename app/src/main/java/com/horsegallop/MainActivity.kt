@@ -6,14 +6,21 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import com.horsegallop.feature.settings.presentation.SettingsViewModel
 import com.horsegallop.settings.toLocaleList
@@ -22,6 +29,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.platform.LocalContext
@@ -30,7 +38,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import com.airbnb.lottie.compose.*
 import com.horsegallop.navigation.AppNavHost
 import com.horsegallop.navigation.Dest
 import dagger.hilt.android.AndroidEntryPoint
@@ -304,19 +311,10 @@ fun SplashScreen(
             .background(semantic.screenBase),
         contentAlignment = Alignment.Center
     ) {
-        val ctx = LocalContext.current
         val titleText: String = title ?: ""
         val subtitleText: String = subtitle ?: ""
-        
-        val composition by rememberLottieComposition(
-            LottieCompositionSpec.RawRes(com.horsegallop.R.raw.horse)
-        )
-        val lottieAnimatable = rememberLottieAnimatable()
-        
-        val isSoundCompleted = true
-        var isAnimationCompleted by remember { mutableStateOf(false) }
         var finished by remember { mutableStateOf(false) }
-        val splashTimeoutMs = 2200L
+        val splashTimeoutMs = 1200L
 
         fun finishOnce(reason: String) {
             if (finished) return
@@ -330,28 +328,6 @@ fun SplashScreen(
             onDispose {}
         }
 
-        LaunchedEffect(composition) {
-            val splashComposition = composition ?: return@LaunchedEffect
-            try {
-                lottieAnimatable.animate(
-                    composition = splashComposition,
-                    iterations = 1
-                )
-            } catch (e: Exception) {
-                AppLog.e("SplashScreen", "Splash lottie playback error: ${e.message}")
-            } finally {
-                AppLog.i("SplashScreen", "lottie_completed")
-                isAnimationCompleted = true
-            }
-        }
-
-        LaunchedEffect(isSoundCompleted, isAnimationCompleted) {
-            if (finished) return@LaunchedEffect
-            if (isSoundCompleted && isAnimationCompleted) {
-                finishOnce("media_lottie_completed")
-            }
-        }
-
         LaunchedEffect(Unit) {
             kotlinx.coroutines.delay(splashTimeoutMs)
             if (!finished) {
@@ -359,12 +335,8 @@ fun SplashScreen(
                 finishOnce("timeout")
             }
         }
-        
-        LottieAnimation(
-            composition = composition,
-            progress = { lottieAnimatable.progress },
-            modifier = Modifier.size(220.dp)
-        )
+
+        SplashBadge()
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -383,6 +355,48 @@ fun SplashScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+    }
+}
+
+@Composable
+private fun SplashBadge() {
+    val semantic = LocalSemanticColors.current
+    Surface(
+        modifier = Modifier
+            .size(156.dp)
+            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), CircleShape),
+        shape = CircleShape,
+        color = semantic.cardElevated
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
+                            MaterialTheme.colorScheme.secondary.copy(alpha = 0.12f),
+                            MaterialTheme.colorScheme.surface
+                        )
+                    )
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Filled.Pets,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(34.dp)
+                )
+                Spacer(modifier = Modifier.size(10.dp))
+                Text(
+                    text = "HG",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
     }
 }

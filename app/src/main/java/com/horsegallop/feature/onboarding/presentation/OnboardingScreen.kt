@@ -2,12 +2,6 @@ package com.horsegallop.feature.onboarding.presentation
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -53,14 +47,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -68,11 +57,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.horsegallop.R
 import com.horsegallop.ui.theme.LocalSemanticColors
 import com.horsegallop.ui.theme.SemanticColors
@@ -151,8 +135,7 @@ fun OnboardingScreen(
             .fillMaxSize()
             .background(semantic.screenBase)
     ) {
-        ThemedAnimatedBackground(gradient = pages[pagerState.currentPage].gradient)
-        AnimatedCoffeeOverlay()
+        StaticOnboardingBackground(gradient = pages[pagerState.currentPage].gradient)
 
         BackHandler(enabled = true) { activity?.finish() }
 
@@ -269,81 +252,22 @@ fun OnboardingScreen(
     }
 }
 
-// ── Horse Lottie composable ───────────────────────────────────────────────────
 @Composable
-private fun HorseLottieAnimation(modifier: Modifier = Modifier) {
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.horse))
-    val progress by animateLottieCompositionAsState(
-        composition = composition,
-        iterations = LottieConstants.IterateForever
-    )
-    LottieAnimation(
-        composition = composition,
-        progress = { progress },
-        modifier = modifier
-    )
-}
-
-// ── Background layers ─────────────────────────────────────────────────────────
-@Composable
-private fun ThemedAnimatedBackground(gradient: List<Color>) {
-    val transition = rememberInfiniteTransition(label = "bg")
-    val shift by transition.animateFloat(
-        initialValue = 0f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(22000, easing = LinearEasing), RepeatMode.Reverse),
-        label = "shift"
-    )
-    val drift by transition.animateFloat(
-        initialValue = 1f, targetValue = 0f,
-        animationSpec = infiniteRepeatable(tween(28000, easing = LinearEasing), RepeatMode.Reverse),
-        label = "drift"
-    )
+private fun StaticOnboardingBackground(gradient: List<Color>) {
     val fallbackPrimary = MaterialTheme.colorScheme.primaryContainer
     val fallbackSecondary = MaterialTheme.colorScheme.secondaryContainer
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .drawWithCache {
-                val start = Offset(size.width * (0.1f + 0.2f * shift), size.height * (0.1f + 0.2f * drift))
-                val end   = Offset(size.width * (0.9f - 0.2f * shift), size.height * (0.9f - 0.2f * drift))
-                val brush = Brush.linearGradient(
+            .background(
+                Brush.verticalGradient(
                     colors = listOf(
                         gradient.firstOrNull() ?: fallbackPrimary,
-                        gradient.getOrNull(1) ?: fallbackSecondary
-                    ),
-                    start = start, end = end, tileMode = TileMode.Clamp
+                        gradient.getOrNull(1) ?: fallbackSecondary,
+                        fallbackPrimary.copy(alpha = 0.88f)
+                    )
                 )
-                onDrawBehind { drawRect(brush) }
-            }
-    )
-}
-
-@Composable
-private fun AnimatedCoffeeOverlay() {
-    val transition = rememberInfiniteTransition(label = "coffee")
-    val pulse by transition.animateFloat(
-        initialValue = 0.15f, targetValue = 0.35f,
-        animationSpec = infiniteRepeatable(tween(18000, easing = LinearEasing), RepeatMode.Reverse),
-        label = "pulse"
-    )
-    val slide by transition.animateFloat(
-        initialValue = 0f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(26000, easing = LinearEasing), RepeatMode.Reverse),
-        label = "slide"
-    )
-    val c1 = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f + pulse * 0.30f)
-    val c2 = MaterialTheme.colorScheme.secondary.copy(alpha = 0.10f + pulse * 0.28f)
-    val c3 = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.10f + pulse * 0.24f)
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .drawWithCache {
-                val start = Offset(size.width * (0.15f + 0.2f * slide), size.height * 0.1f)
-                val end   = Offset(size.width * (0.85f - 0.2f * slide), size.height * 0.9f)
-                val brush = Brush.linearGradient(colors = listOf(c1, c2, c3), start = start, end = end)
-                onDrawBehind { drawRect(brush) }
-            }
-            .alpha(0.40f)
+            )
     )
 }
 
@@ -356,19 +280,16 @@ private fun OnboardingPageContentAnimated(
 ) {
     val clamped  = pageOffset.coerceIn(-1f, 1f)
     val alpha    = 1f - kotlin.math.abs(clamped) * 0.25f
-    val parallax = 24f * clamped
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Transparent)
-            .graphicsLayer { this.alpha = alpha; translationX = parallax }
             .padding(horizontal = 24.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // ── Lottie hero animation ─────────────────────────────────────────────
-        HorseLottieAnimation(modifier = Modifier.size(180.dp))
+        OnboardingHeroBadge(modifier = Modifier.size(180.dp), alpha = alpha)
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -397,6 +318,42 @@ private fun OnboardingPageContentAnimated(
             page.features.forEach { feature ->
                 FeatureBullet(icon = feature.icon, text = stringResource(id = feature.textRes))
             }
+        }
+    }
+}
+
+@Composable
+private fun OnboardingHeroBadge(
+    modifier: Modifier = Modifier,
+    alpha: Float
+) {
+    val semantic = LocalSemanticColors.current
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(32.dp),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+        border = BorderStroke(1.dp, semantic.cardStroke)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.22f * alpha),
+                            MaterialTheme.colorScheme.secondary.copy(alpha = 0.14f * alpha),
+                            semantic.cardElevated
+                        )
+                    )
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Filled.EmojiEvents,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(72.dp)
+            )
         }
     }
 }

@@ -19,7 +19,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -37,7 +39,7 @@ class MainViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     @Test
-    fun init_triggersPendingRideRetry() = runTest {
+    fun startup_defersPendingRideRetry_untilAfterSplashFinishes() = runTest {
         val fakeRideRepository = FakeRideRepository()
         val fakeAuthRepository = FakeAuthRepository()
 
@@ -50,8 +52,16 @@ class MainViewModelTest {
 
         advanceUntilIdle()
 
-        assertEquals(1, fakeRideRepository.retryCallCount)
+        assertEquals(0, fakeRideRepository.retryCallCount)
         assertTrue(viewModel.ui.value.isLoggedIn)
+
+        viewModel.onSplashFinished()
+        advanceTimeBy(1_199)
+        assertEquals(0, fakeRideRepository.retryCallCount)
+
+        advanceTimeBy(1)
+        runCurrent()
+        assertEquals(1, fakeRideRepository.retryCallCount)
     }
 }
 

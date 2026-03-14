@@ -10,6 +10,7 @@ import com.horsegallop.domain.content.usecase.GetAppContentUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Locale
 import javax.inject.Inject
@@ -37,6 +38,7 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
     private val _ui = MutableStateFlow(MainUiState())
     val ui: StateFlow<MainUiState> = _ui
+    private var deferredStartupWorkStarted = false
 
     init {
         viewModelScope.launch {
@@ -54,15 +56,12 @@ class MainViewModel @Inject constructor(
             )
         }
         val locale = Locale.getDefault().language
-        loadAppContent(locale)
         loadSplashTexts(locale)
-        viewModelScope.launch {
-            runCatching { retryPendingRideSyncUseCase() }
-        }
     }
 
     fun onSplashFinished() {
         _ui.value = _ui.value.copy(showSplash = false, isInitialized = true)
+        startDeferredStartupWork()
     }
 
     fun reloadUser() {
@@ -106,6 +105,20 @@ class MainViewModel @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    private fun startDeferredStartupWork() {
+        if (deferredStartupWorkStarted) return
+        deferredStartupWorkStarted = true
+        val locale = Locale.getDefault().language
+        viewModelScope.launch {
+            delay(300)
+            loadAppContent(locale)
+        }
+        viewModelScope.launch {
+            delay(1200)
+            runCatching { retryPendingRideSyncUseCase() }
         }
     }
 

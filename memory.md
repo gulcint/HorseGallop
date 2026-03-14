@@ -15,6 +15,7 @@ Bu dosya, repo icinde kalici urun/backlog hafizasi icindir. Yeni oturumlarda onc
 - Binicilik gundemi temeli: federasyon verisi, agenda akisi ve barn entegrasyonu aktif gelistirme alaninda.
 - Auth dark mode polish: login ve sifre yenileme CTA kontrastlari ortak semantic button stiliyle iyilestirildi.
 - Startup jank azaltma: splash ve onboarding acilis sesleri kaldirilarak ilk frame yukleri hafifletildi.
+- Startup jank polish: splash Lottie statik badge'e indirildi, onboarding sonsuz animasyonlari kaldirildi, kritik olmayan startup veri yukleri ertelendi.
 
 ## Backlog
 
