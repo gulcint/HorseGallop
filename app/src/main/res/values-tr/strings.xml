@@ -609,6 +609,9 @@
     <string name="equestrian_agenda_sync_now">Şimdi senkronla</string>
     <string name="equestrian_agenda_sync_refreshed">Federasyon verileri yenilendi</string>
     <string name="equestrian_agenda_sync_throttled">Az önce senkronlandı. Lütfen birkaç dakika sonra tekrar dene.</string>
+    <string name="equestrian_agenda_preview_open_source">Kaynak sayfasini ac</string>
+    <string name="equestrian_agenda_preview_summary_fallback">Duyurunun tam icerigi ve ekleri icin federasyon kaynak sayfasini ac.</string>
+    <string name="equestrian_agenda_preview_competition_fallback">Yarisma alani ve tam program detaylari federasyon kaynak sayfasinda yer aliyor.</string>
     <string name="equestrian_agenda_empty_announcements">Şu anda gösterilecek duyuru bulunmuyor.</string>
     <string name="equestrian_agenda_empty_competitions">Şu anda gösterilecek yarışma bulunmuyor.</string>
     <string name="refresh">Yenile</string>

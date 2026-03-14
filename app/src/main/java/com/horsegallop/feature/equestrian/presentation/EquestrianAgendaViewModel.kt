@@ -27,6 +27,11 @@ enum class SyncActionMessage {
     THROTTLED
 }
 
+sealed interface AgendaPreviewItem {
+    data class Announcement(val item: EquestrianAnnouncement) : AgendaPreviewItem
+    data class Competition(val item: EquestrianCompetition) : AgendaPreviewItem
+}
+
 data class EquestrianAgendaUiState(
     val selectedTab: EquestrianAgendaTab = EquestrianAgendaTab.ANNOUNCEMENTS,
     val announcements: List<EquestrianAnnouncement> = emptyList(),
@@ -39,7 +44,8 @@ data class EquestrianAgendaUiState(
     val announcementsError: String? = null,
     val competitionsError: String? = null,
     val syncStatusError: String? = null,
-    val syncActionMessage: SyncActionMessage? = null
+    val syncActionMessage: SyncActionMessage? = null,
+    val previewItem: AgendaPreviewItem? = null
 )
 
 @HiltViewModel
@@ -65,6 +71,18 @@ class EquestrianAgendaViewModel @Inject constructor(
         loadSyncStatus()
         loadAnnouncements()
         loadCompetitions()
+    }
+
+    fun showAnnouncementPreview(item: EquestrianAnnouncement) {
+        _uiState.update { it.copy(previewItem = AgendaPreviewItem.Announcement(item)) }
+    }
+
+    fun showCompetitionPreview(item: EquestrianCompetition) {
+        _uiState.update { it.copy(previewItem = AgendaPreviewItem.Competition(item)) }
+    }
+
+    fun dismissPreview() {
+        _uiState.update { it.copy(previewItem = null) }
     }
 
     fun triggerManualSync() {

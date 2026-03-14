@@ -138,10 +138,11 @@ Asagidaki plan urun backlog'u gibi ele alinmali. Her bolumde isler bitince durum
 - federasyon kulüpleri icin geocoding + cache + arka plan sync eklendi
 - response aninda canli scrape yerine Firebase cache/Firestore-first veri akisi benimsendi
 - manual/admin federation sync trigger eklendi; agenda ekranindan cache yenileme tetiklenebiliyor
+- duyuru ve yarisma kartlari icin uygulama ici preview sheet eklendi
 
 **Sonraki Adimlar:**
 - ekran metinleri ve bos durumlari iyilestir
-- duyuru/yarisma detay preview veya detay sayfasi karari ver
+- tam detay sayfasi gerekip gerekmedigini degerlendir
 - backend scraping guvenilirligini olc
 
 **Riskler:**

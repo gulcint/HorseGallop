@@ -641,6 +641,9 @@
     <string name="equestrian_agenda_sync_now">Sync now</string>
     <string name="equestrian_agenda_sync_refreshed">Federation data refreshed</string>
     <string name="equestrian_agenda_sync_throttled">Synced recently. Please wait a few minutes.</string>
+    <string name="equestrian_agenda_preview_open_source">Open source page</string>
+    <string name="equestrian_agenda_preview_summary_fallback">Open the source page to see the full announcement content and attachments.</string>
+    <string name="equestrian_agenda_preview_competition_fallback">Competition venue and full program details are available on the federation source page.</string>
     <string name="equestrian_agenda_empty_announcements">No federation announcements available right now.</string>
     <string name="equestrian_agenda_empty_competitions">No competition data available right now.</string>
     <string name="refresh">Refresh</string>

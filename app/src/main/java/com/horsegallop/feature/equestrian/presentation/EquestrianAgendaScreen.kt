@@ -30,6 +30,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -54,6 +55,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.horsegallop.R
+import com.horsegallop.core.components.ButtonVariant
+import com.horsegallop.core.components.HorseGallopButton
 import com.horsegallop.domain.equestrian.model.EquestrianAnnouncement
 import com.horsegallop.domain.equestrian.model.EquestrianCompetition
 import com.horsegallop.domain.equestrian.model.FederatedBarnSyncStatus
@@ -71,6 +74,18 @@ fun EquestrianAgendaScreen(
     val state by viewModel.uiState.collectAsState()
     val uriHandler = LocalUriHandler.current
     val semantic = LocalSemanticColors.current
+
+    state.previewItem?.let { previewItem ->
+        AgendaPreviewSheet(
+            previewItem = previewItem,
+            onDismiss = viewModel::dismissPreview,
+            onOpenSource = { url ->
+                if (url.isNotBlank()) {
+                    uriHandler.openUri(url)
+                }
+            }
+        )
+    }
 
     Scaffold(
         containerColor = semantic.screenBase,
@@ -132,9 +147,10 @@ fun EquestrianAgendaScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(state.announcements, key = { it.id }) { item ->
-                            AnnouncementCard(item = item, onOpen = {
-                                if (item.detailUrl.isNotBlank()) uriHandler.openUri(item.detailUrl)
-                            })
+                            AnnouncementCard(
+                                item = item,
+                                onOpen = { viewModel.showAnnouncementPreview(item) }
+                            )
                         }
                     }
                 }
@@ -151,13 +167,38 @@ fun EquestrianAgendaScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(state.competitions, key = { it.id }) { item ->
-                            CompetitionCard(item = item, onOpen = {
-                                if (item.detailUrl.isNotBlank()) uriHandler.openUri(item.detailUrl)
-                            })
+                            CompetitionCard(
+                                item = item,
+                                onOpen = { viewModel.showCompetitionPreview(item) }
+                            )
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun AgendaPreviewSheet(
+    previewItem: AgendaPreviewItem,
+    onDismiss: () -> Unit,
+    onOpenSource: (String) -> Unit
+) {
+    val semantic = LocalSemanticColors.current
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = semantic.cardElevated
+    ) {
+        when (previewItem) {
+            is AgendaPreviewItem.Announcement -> AnnouncementPreviewContent(
+                item = previewItem.item,
+                onOpenSource = onOpenSource
+            )
+            is AgendaPreviewItem.Competition -> CompetitionPreviewContent(
+                item = previewItem.item,
+                onOpenSource = onOpenSource
+            )
         }
     }
 }
@@ -262,6 +303,117 @@ private fun FeedState(
             Text(text = emptyMessage, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         else -> content()
+    }
+}
+
+@Composable
+private fun AnnouncementPreviewContent(
+    item: EquestrianAnnouncement,
+    onOpenSource: (String) -> Unit
+) {
+    PreviewSheetLayout(
+        chipLabel = stringResource(R.string.equestrian_agenda_chip_announcements),
+        title = item.title,
+        meta = item.publishedAtLabel,
+        summary = item.summary.ifBlank { stringResource(R.string.equestrian_agenda_preview_summary_fallback) },
+        secondaryMeta = null,
+        imageUrl = item.imageUrl,
+        onOpenSource = { onOpenSource(item.detailUrl) }
+    )
+}
+
+@Composable
+private fun CompetitionPreviewContent(
+    item: EquestrianCompetition,
+    onOpenSource: (String) -> Unit
+) {
+    PreviewSheetLayout(
+        chipLabel = stringResource(R.string.equestrian_agenda_chip_competitions),
+        title = item.title,
+        meta = item.dateLabel,
+        summary = item.location.ifBlank { stringResource(R.string.equestrian_agenda_preview_competition_fallback) },
+        secondaryMeta = item.location.takeIf { it.isNotBlank() },
+        imageUrl = null,
+        onOpenSource = { onOpenSource(item.detailUrl) }
+    )
+}
+
+@Composable
+private fun PreviewSheetLayout(
+    chipLabel: String,
+    title: String,
+    meta: String,
+    summary: String,
+    secondaryMeta: String?,
+    imageUrl: String?,
+    onOpenSource: () -> Unit
+) {
+    val semantic = LocalSemanticColors.current
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Surface(
+            shape = RoundedCornerShape(999.dp),
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+        ) {
+            Text(
+                text = chipLabel,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+        if (!imageUrl.isNullOrBlank()) {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = title,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(semantic.panelOverlay)
+            )
+        }
+        Text(
+            text = title,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.SemiBold
+        )
+        if (meta.isNotBlank()) {
+            Text(
+                text = meta,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+        secondaryMeta?.takeIf { it.isNotBlank() && it != summary }?.let {
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = semantic.cardSubtle
+            ) {
+                Text(
+                    text = it,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+        Text(
+            text = summary,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        HorseGallopButton(
+            text = stringResource(R.string.equestrian_agenda_preview_open_source),
+            onClick = onOpenSource,
+            modifier = Modifier.fillMaxWidth(),
+            variant = ButtonVariant.Primary
+        )
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
