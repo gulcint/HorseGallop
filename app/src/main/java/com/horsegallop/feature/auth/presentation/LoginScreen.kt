@@ -276,15 +276,19 @@ fun LoginScreen(
                             .fillMaxWidth()
                             .height(52.dp),
                         shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
                         border = BorderStroke(
                             1.dp,
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                         )
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Email,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
@@ -292,7 +296,7 @@ fun LoginScreen(
                             text = stringResource(R.string.signin_email),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }

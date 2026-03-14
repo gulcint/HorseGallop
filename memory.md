@@ -13,6 +13,7 @@ Bu dosya, repo icinde kalici urun/backlog hafizasi icindir. Yeni oturumlarda onc
 - Safety temeli: guvenilen kisi ekleme, canli konum linki, hareketsizlik alarmi ve backend akisi eklendi.
 - Horse health temeli: `HorseHealthEvent` modeli, backend CRUD ve `HorseHealthScreen` eklendi.
 - Binicilik gundemi temeli: federasyon verisi, agenda akisi ve barn entegrasyonu aktif gelistirme alaninda.
+- Auth dark mode polish: login ve sifre yenileme CTA kontrastlari ortak semantic button stiliyle iyilestirildi.
 
 ## Backlog
 
@@ -72,7 +73,6 @@ Asagidaki plan urun backlog'u gibi ele alinmali. Her bolumde isler bitince durum
 **Sonraki Adimlar:**
 - federasyon scrape sonucu geldiginde fallback kullanim oranini olc
 - `BarnsMapView` ve `Select Barn` akislarinda fallback veri gorunumunu smoke test et
-- gerekirse admin/manual federated sync trigger ekle
 
 **Riskler:**
 - fallback veri gercek federasyon listesinin yerini uzun sure almamali
