@@ -604,6 +604,9 @@
     <string name="equestrian_agenda_sync_idle">Senkron durumu henüz hazır değil.</string>
     <string name="equestrian_agenda_sync_success">%1$d federe kulüp senkronlandı. Son güncelleme: %2$s</string>
     <string name="equestrian_agenda_sync_error">Federasyon senkron durumu yüklenemedi.</string>
+    <string name="equestrian_agenda_sync_now">Şimdi senkronla</string>
+    <string name="equestrian_agenda_sync_refreshed">Federasyon verileri yenilendi</string>
+    <string name="equestrian_agenda_sync_throttled">Az önce senkronlandı. Lütfen birkaç dakika sonra tekrar dene.</string>
     <string name="equestrian_agenda_empty_announcements">Şu anda gösterilecek duyuru bulunmuyor.</string>
     <string name="equestrian_agenda_empty_competitions">Şu anda gösterilecek yarışma bulunmuyor.</string>
     <string name="refresh">Yenile</string>

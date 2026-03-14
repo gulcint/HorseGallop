@@ -3,6 +3,7 @@ package com.horsegallop.data.equestrian.repository
 import com.horsegallop.data.remote.functions.AppFunctionsDataSource
 import com.horsegallop.domain.equestrian.model.EquestrianAnnouncement
 import com.horsegallop.domain.equestrian.model.EquestrianCompetition
+import com.horsegallop.domain.equestrian.model.FederationManualSyncResult
 import com.horsegallop.domain.equestrian.model.FederatedBarnSyncStatus
 import com.horsegallop.domain.equestrian.repository.EquestrianAgendaRepository
 import javax.inject.Inject
@@ -43,6 +44,17 @@ class EquestrianAgendaRepositoryImpl @Inject constructor(
             syncedAt = dto.syncedAt,
             itemCount = dto.itemCount,
             errorMessage = dto.errorMessage
+        )
+    }
+
+    override suspend fun triggerManualSync(): Result<FederationManualSyncResult> = runCatching {
+        val dto = functionsDataSource.triggerFederationManualSync()
+        FederationManualSyncResult(
+            syncedAt = dto.syncedAt,
+            barnsCount = dto.barnsCount,
+            announcementsCount = dto.announcementsCount,
+            competitionsCount = dto.competitionsCount,
+            throttled = dto.throttled
         )
     }
 }

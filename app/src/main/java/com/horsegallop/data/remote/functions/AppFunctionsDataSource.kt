@@ -6,6 +6,7 @@ import com.horsegallop.data.remote.dto.BarnInstructorFunctionsDto
 import com.horsegallop.data.remote.dto.BarnReviewFunctionsDto
 import com.horsegallop.data.remote.dto.AppContentFunctionsDto
 import com.horsegallop.data.remote.dto.BreedFunctionsDto
+import com.horsegallop.data.remote.dto.FederationManualSyncFunctionsDto
 import com.horsegallop.data.remote.dto.FederatedBarnSyncStatusFunctionsDto
 import com.horsegallop.data.remote.dto.HomeDashboardFunctionsDto
 import com.horsegallop.data.remote.dto.HomeRecentActivityFunctionsDto
@@ -83,6 +84,18 @@ class AppFunctionsDataSource @Inject constructor(
             syncedAt = (payload["syncedAt"] as? String).orEmpty(),
             itemCount = (payload["itemCount"] as? Number)?.toInt() ?: 0,
             errorMessage = payload["errorMessage"] as? String
+        )
+    }
+
+    suspend fun triggerFederationManualSync(): FederationManualSyncFunctionsDto {
+        val result = functions.getHttpsCallable("triggerFederationManualSync").call().await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        return FederationManualSyncFunctionsDto(
+            syncedAt = (payload["syncedAt"] as? String).orEmpty(),
+            barnsCount = (payload["barnsCount"] as? Number)?.toInt() ?: 0,
+            announcementsCount = (payload["announcementsCount"] as? Number)?.toInt() ?: 0,
+            competitionsCount = (payload["competitionsCount"] as? Number)?.toInt() ?: 0,
+            throttled = (payload["throttled"] as? Boolean) ?: false
         )
     }
 

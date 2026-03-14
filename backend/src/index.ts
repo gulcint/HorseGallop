@@ -199,9 +199,11 @@ const FEDERATION_BASE_URL = "https://www.binicilik.org.tr";
 const SCRAPE_CACHE_COLLECTION = "scrape_cache";
 const GEOCODE_CACHE_COLLECTION = "geocode_cache";
 const FEDERATED_BARNS_SYNC_STATUS_KEY = "federated_barns_sync_status";
+const FEDERATION_MANUAL_SYNC_STATUS_KEY = "federation_manual_sync_status";
 const FEDERATED_BARNS_CACHE_KEY = "federated_barns";
 const EQUESTRIAN_ANNOUNCEMENTS_CACHE_KEY = "equestrian_announcements";
 const EQUESTRIAN_COMPETITIONS_CACHE_KEY = "equestrian_competitions";
+const MANUAL_SYNC_MIN_INTERVAL_MS = 5 * 60 * 1000;
 const FALLBACK_BARNS: BarnDto[] = [
   {
     id: "barn_adin_country",
@@ -269,6 +271,14 @@ type FederatedBarnSyncStatusDto = {
   syncedAt: string;
   itemCount: number;
   errorMessage?: string;
+};
+
+type FederationManualSyncDto = {
+  syncedAt: string;
+  barnsCount: number;
+  announcementsCount: number;
+  competitionsCount: number;
+  throttled: boolean;
 };
 
 const TURKEY_CITY_COORDS: Record<string, CoordinatesDto> = {
@@ -699,6 +709,60 @@ async function syncEquestrianAgendaCache(): Promise<void> {
   ]);
 }
 
+function timestampToIso(value: unknown): string {
+  if (value instanceof admin.firestore.Timestamp) {
+    return value.toDate().toISOString();
+  }
+  return typeof value === "string" ? value : "";
+}
+
+async function triggerManualFederationSync(): Promise<FederationManualSyncDto> {
+  const statusRef = db.collection(SCRAPE_CACHE_COLLECTION).doc(FEDERATION_MANUAL_SYNC_STATUS_KEY);
+  const statusDoc = await statusRef.get();
+  const statusData = statusDoc.data() || {};
+  const lastTriggered = statusData.syncedAt instanceof admin.firestore.Timestamp
+    ? statusData.syncedAt.toMillis()
+    : 0;
+
+  if (lastTriggered && Date.now() - lastTriggered < MANUAL_SYNC_MIN_INTERVAL_MS) {
+    return {
+      syncedAt: timestampToIso(statusData.syncedAt),
+      barnsCount: typeof statusData.barnsCount === "number" ? statusData.barnsCount : 0,
+      announcementsCount: typeof statusData.announcementsCount === "number" ? statusData.announcementsCount : 0,
+      competitionsCount: typeof statusData.competitionsCount === "number" ? statusData.competitionsCount : 0,
+      throttled: true,
+    };
+  }
+
+  const [barnsPayload, announcements, competitions] = await Promise.all([
+    syncFederatedBarnDirectory(),
+    scrapeEquestrianAnnouncements(),
+    scrapeEquestrianCompetitions(),
+  ]);
+
+  await Promise.all([
+    writeScrapeCache(EQUESTRIAN_ANNOUNCEMENTS_CACHE_KEY, { items: announcements }),
+    writeScrapeCache(EQUESTRIAN_COMPETITIONS_CACHE_KEY, { items: competitions }),
+  ]);
+
+  await statusRef.set({
+    syncedAt: admin.firestore.FieldValue.serverTimestamp(),
+    barnsCount: barnsPayload.items.length,
+    announcementsCount: announcements.length,
+    competitionsCount: competitions.length,
+  }, { merge: true });
+
+  const refreshed = await statusRef.get();
+  const refreshedData = refreshed.data() || {};
+  return {
+    syncedAt: timestampToIso(refreshedData.syncedAt),
+    barnsCount: typeof refreshedData.barnsCount === "number" ? refreshedData.barnsCount : barnsPayload.items.length,
+    announcementsCount: typeof refreshedData.announcementsCount === "number" ? refreshedData.announcementsCount : announcements.length,
+    competitionsCount: typeof refreshedData.competitionsCount === "number" ? refreshedData.competitionsCount : competitions.length,
+    throttled: false,
+  };
+}
+
 export const getUserProfile = onCall({ region: "us-central1" }, async (request) => {
   const auth = request.auth;
   if (!auth?.uid) {
@@ -871,6 +935,16 @@ export const getFederatedBarnsSyncStatus = onCall(
       throw new HttpsError("unauthenticated", "Authentication required");
     }
     return getFederatedBarnSyncStatusPayload();
+  }
+);
+
+export const triggerFederationManualSync = onCall(
+  { region: "us-central1" },
+  async (request): Promise<FederationManualSyncDto> => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "Authentication required");
+    }
+    return triggerManualFederationSync();
   }
 );
 

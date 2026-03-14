@@ -23,3 +23,11 @@ data class FederatedBarnSyncStatus(
     val itemCount: Int,
     val errorMessage: String? = null
 )
+
+data class FederationManualSyncResult(
+    val syncedAt: String,
+    val barnsCount: Int,
+    val announcementsCount: Int,
+    val competitionsCount: Int,
+    val throttled: Boolean
+)

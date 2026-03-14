@@ -30,6 +30,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -100,7 +101,10 @@ fun EquestrianAgendaScreen(
             SyncStatusCard(
                 syncStatus = state.syncStatus,
                 isLoading = state.isLoadingSyncStatus,
-                error = state.syncStatusError
+                error = state.syncStatusError,
+                isTriggering = state.isTriggeringSync,
+                actionMessage = state.syncActionMessage,
+                onTriggerSync = viewModel::triggerManualSync
             )
             TabRow(selectedTabIndex = state.selectedTab.ordinal) {
                 Tab(
@@ -162,7 +166,10 @@ fun EquestrianAgendaScreen(
 private fun SyncStatusCard(
     syncStatus: FederatedBarnSyncStatus?,
     isLoading: Boolean,
-    error: String?
+    error: String?,
+    isTriggering: Boolean,
+    actionMessage: SyncActionMessage?,
+    onTriggerSync: () -> Unit
 ) {
     val semantic = LocalSemanticColors.current
     Surface(
@@ -208,6 +215,29 @@ private fun SyncStatusCard(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                if (actionMessage != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(
+                            when (actionMessage) {
+                                SyncActionMessage.REFRESHED -> R.string.equestrian_agenda_sync_refreshed
+                                SyncActionMessage.THROTTLED -> R.string.equestrian_agenda_sync_throttled
+                                null -> R.string.equestrian_agenda_sync_refreshed
+                            }
+                        ),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            TextButton(
+                onClick = onTriggerSync,
+                enabled = !isTriggering && !isLoading
+            ) {
+                if (isTriggering) {
+                    CircularProgressIndicator(modifier = Modifier.padding(end = 8.dp).height(16.dp), strokeWidth = 2.dp)
+                }
+                Text(text = stringResource(R.string.equestrian_agenda_sync_now))
             }
         }
     }

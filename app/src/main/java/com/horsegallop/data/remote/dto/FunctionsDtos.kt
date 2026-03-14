@@ -197,3 +197,11 @@ data class FederatedBarnSyncStatusFunctionsDto(
     val itemCount: Int = 0,
     val errorMessage: String? = null
 )
+
+data class FederationManualSyncFunctionsDto(
+    val syncedAt: String = "",
+    val barnsCount: Int = 0,
+    val announcementsCount: Int = 0,
+    val competitionsCount: Int = 0,
+    val throttled: Boolean = false
+)

@@ -136,12 +136,12 @@ Asagidaki plan urun backlog'u gibi ele alinmali. Her bolumde isler bitince durum
 - `Federe Kulüpler` verisi `Barns`, `BarnDetail` ve barn secim akislarina baglandi
 - federasyon kulüpleri icin geocoding + cache + arka plan sync eklendi
 - response aninda canli scrape yerine Firebase cache/Firestore-first veri akisi benimsendi
+- manual/admin federation sync trigger eklendi; agenda ekranindan cache yenileme tetiklenebiliyor
 
 **Sonraki Adimlar:**
 - ekran metinleri ve bos durumlari iyilestir
 - duyuru/yarisma detay preview veya detay sayfasi karari ver
 - backend scraping guvenilirligini olc
-- manual/admin sync trigger gerekip gerekmedigini belirle
 
 **Riskler:**
 - `binicilik.org.tr` HTML yapisi degisirse scraping kirilir

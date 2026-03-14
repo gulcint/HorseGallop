@@ -636,6 +636,9 @@
     <string name="equestrian_agenda_sync_idle">Sync status is not available yet.</string>
     <string name="equestrian_agenda_sync_success">%1$d federated clubs synced. Last update: %2$s</string>
     <string name="equestrian_agenda_sync_error">Federation sync status could not be loaded.</string>
+    <string name="equestrian_agenda_sync_now">Sync now</string>
+    <string name="equestrian_agenda_sync_refreshed">Federation data refreshed</string>
+    <string name="equestrian_agenda_sync_throttled">Synced recently. Please wait a few minutes.</string>
     <string name="equestrian_agenda_empty_announcements">No federation announcements available right now.</string>
     <string name="equestrian_agenda_empty_competitions">No competition data available right now.</string>
     <string name="refresh">Refresh</string>
