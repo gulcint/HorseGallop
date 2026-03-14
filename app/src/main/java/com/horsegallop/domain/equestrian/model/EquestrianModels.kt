@@ -39,5 +39,6 @@ data class FederationSourceHealthItem(
     val lastAttemptAt: String,
     val lastSuccessAt: String,
     val dataAgeMinutes: Int,
+    val isStale: Boolean,
     val errorMessage: String? = null
 )

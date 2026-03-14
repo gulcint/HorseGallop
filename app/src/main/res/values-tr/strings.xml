@@ -607,7 +607,9 @@
     <string name="equestrian_agenda_sync_success">%1$d federe kulüp senkronlandı. Son güncelleme: %2$s</string>
     <string name="equestrian_agenda_sync_error">Federasyon senkron durumu yüklenemedi.</string>
     <string name="equestrian_agenda_sync_now">Şimdi senkronla</string>
+    <string name="equestrian_agenda_sync_force_refresh">Zorla yenile</string>
     <string name="equestrian_agenda_sync_refreshed">Federasyon verileri yenilendi</string>
+    <string name="equestrian_agenda_sync_debug_refreshed">Debug yenilemesi tamamlandi</string>
     <string name="equestrian_agenda_sync_throttled">Az önce senkronlandı. Lütfen birkaç dakika sonra tekrar dene.</string>
     <string name="equestrian_agenda_health_loading">Federasyon kaynak sagligi kontrol ediliyor…</string>
     <string name="equestrian_agenda_health_error">Federasyon kaynak sagligi su anda goruntulenemiyor.</string>
@@ -615,6 +617,7 @@
     <string name="equestrian_agenda_health_announcements">Duyurular</string>
     <string name="equestrian_agenda_health_competitions">Yarismalar</string>
     <string name="equestrian_agenda_health_failed">Son yenileme basarisiz</string>
+    <string name="equestrian_agenda_health_stale">%1$d dkdir guncel degil</string>
     <string name="equestrian_agenda_health_waiting">Ilk senkron bekleniyor</string>
     <string name="equestrian_agenda_health_age_minutes">%1$d dk once</string>
     <string name="equestrian_agenda_health_item_count">%1$d kayit</string>

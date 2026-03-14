@@ -7,5 +7,6 @@ import javax.inject.Inject
 class TriggerFederationManualSyncUseCase @Inject constructor(
     private val repository: EquestrianAgendaRepository
 ) {
-    suspend operator fun invoke(): Result<FederationManualSyncResult> = repository.triggerManualSync()
+    suspend operator fun invoke(force: Boolean = false): Result<FederationManualSyncResult> =
+        repository.triggerManualSync(force = force)
 }

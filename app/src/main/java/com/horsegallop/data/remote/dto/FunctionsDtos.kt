@@ -213,5 +213,6 @@ data class FederationSourceHealthFunctionsDto(
     val lastAttemptAt: String = "",
     val lastSuccessAt: String = "",
     val dataAgeMinutes: Int = -1,
+    val isStale: Boolean = false,
     val errorMessage: String? = null
 )

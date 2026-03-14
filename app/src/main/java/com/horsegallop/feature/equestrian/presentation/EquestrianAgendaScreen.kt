@@ -2,6 +2,7 @@
 
 package com.horsegallop.feature.equestrian.presentation
 
+import com.horsegallop.BuildConfig
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -123,7 +124,8 @@ fun EquestrianAgendaScreen(
                 sourceHealthError = state.sourceHealthError,
                 isTriggering = state.isTriggeringSync,
                 actionMessage = state.syncActionMessage,
-                onTriggerSync = viewModel::triggerManualSync
+                onTriggerSync = viewModel::triggerManualSync,
+                onTriggerDebugSync = viewModel::triggerDebugSync
             )
             TabRow(selectedTabIndex = state.selectedTab.ordinal) {
                 Tab(
@@ -217,7 +219,8 @@ private fun SyncStatusCard(
     sourceHealthError: String?,
     isTriggering: Boolean,
     actionMessage: SyncActionMessage?,
-    onTriggerSync: () -> Unit
+    onTriggerSync: () -> Unit,
+    onTriggerDebugSync: () -> Unit
 ) {
     val semantic = LocalSemanticColors.current
     Surface(
@@ -273,7 +276,7 @@ private fun SyncStatusCard(
                                 when (actionMessage) {
                                     SyncActionMessage.REFRESHED -> R.string.equestrian_agenda_sync_refreshed
                                     SyncActionMessage.THROTTLED -> R.string.equestrian_agenda_sync_throttled
-                                    null -> R.string.equestrian_agenda_sync_refreshed
+                                    SyncActionMessage.DEBUG_REFRESHED -> R.string.equestrian_agenda_sync_debug_refreshed
                                 }
                             ),
                             style = MaterialTheme.typography.labelMedium,
@@ -289,6 +292,15 @@ private fun SyncStatusCard(
                         CircularProgressIndicator(modifier = Modifier.padding(end = 8.dp).height(16.dp), strokeWidth = 2.dp)
                     }
                     Text(text = stringResource(R.string.equestrian_agenda_sync_now))
+                }
+            }
+
+            if (BuildConfig.DEBUG) {
+                TextButton(
+                    onClick = onTriggerDebugSync,
+                    enabled = !isTriggering
+                ) {
+                    Text(text = stringResource(R.string.equestrian_agenda_sync_force_refresh))
                 }
             }
 
@@ -344,6 +356,7 @@ private fun FederationSourceHealthPill(
     val semantic = LocalSemanticColors.current
     val toneColor = when (item.status) {
         "success" -> MaterialTheme.colorScheme.primary
+        "stale" -> semantic.warning
         "error" -> semantic.destructive
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
@@ -370,6 +383,8 @@ private fun FederationSourceHealthPill(
                 text = when {
                     item.status == "error" && !item.errorMessage.isNullOrBlank() ->
                         stringResource(R.string.equestrian_agenda_health_failed)
+                    item.status == "stale" ->
+                        stringResource(R.string.equestrian_agenda_health_stale, item.dataAgeMinutes)
                     item.dataAgeMinutes >= 0 ->
                         stringResource(R.string.equestrian_agenda_health_age_minutes, item.dataAgeMinutes)
                     else -> stringResource(R.string.equestrian_agenda_health_waiting)

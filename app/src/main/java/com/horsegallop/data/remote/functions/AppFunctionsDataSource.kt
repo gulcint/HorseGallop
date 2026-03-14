@@ -100,6 +100,18 @@ class AppFunctionsDataSource @Inject constructor(
         )
     }
 
+    suspend fun triggerFederationDebugSync(): FederationManualSyncFunctionsDto {
+        val result = functions.getHttpsCallable("triggerFederationDebugSync").call().await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        return FederationManualSyncFunctionsDto(
+            syncedAt = (payload["syncedAt"] as? String).orEmpty(),
+            barnsCount = (payload["barnsCount"] as? Number)?.toInt() ?: 0,
+            announcementsCount = (payload["announcementsCount"] as? Number)?.toInt() ?: 0,
+            competitionsCount = (payload["competitionsCount"] as? Number)?.toInt() ?: 0,
+            throttled = (payload["throttled"] as? Boolean) ?: false
+        )
+    }
+
     suspend fun getFederationSourceHealth(): List<FederationSourceHealthFunctionsDto> {
         val result = functions.getHttpsCallable("getFederationSourceHealth").call().await()
         val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
@@ -113,6 +125,7 @@ class AppFunctionsDataSource @Inject constructor(
                 lastAttemptAt = (map["lastAttemptAt"] as? String).orEmpty(),
                 lastSuccessAt = (map["lastSuccessAt"] as? String).orEmpty(),
                 dataAgeMinutes = (map["dataAgeMinutes"] as? Number)?.toInt() ?: -1,
+                isStale = (map["isStale"] as? Boolean) ?: false,
                 errorMessage = map["errorMessage"] as? String
             )
         }

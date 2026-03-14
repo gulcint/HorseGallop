@@ -11,5 +11,5 @@ interface EquestrianAgendaRepository {
     suspend fun getCompetitions(): Result<List<EquestrianCompetition>>
     suspend fun getFederatedBarnSyncStatus(): Result<FederatedBarnSyncStatus>
     suspend fun getFederationSourceHealth(): Result<List<FederationSourceHealthItem>>
-    suspend fun triggerManualSync(): Result<FederationManualSyncResult>
+    suspend fun triggerManualSync(force: Boolean = false): Result<FederationManualSyncResult>
 }

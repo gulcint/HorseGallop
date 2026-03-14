@@ -141,11 +141,13 @@ Asagidaki plan urun backlog'u gibi ele alinmali. Her bolumde isler bitince durum
 - manual/admin federation sync trigger eklendi; agenda ekranindan cache yenileme tetiklenebiliyor
 - duyuru ve yarisma kartlari icin uygulama ici preview sheet eklendi
 - barns / announcements / competitions icin source health metrikleri ve agenda health kartlari eklendi
+- source health icin `24 saat` stale threshold eklendi; debug build'lerde throttle bypass eden `zorla yenile` aksiyonu eklendi
 
 **Sonraki Adimlar:**
 - ekran metinleri ve bos durumlari iyilestir
 - tam detay sayfasi gerekip gerekmedigini degerlendir
-- source health metrikleri icin stale threshold ve admin aksiyon ihtiyacini degerlendir
+- source health hata detaylarini daha operator dostu hale getirmeyi degerlendir
+- agenda verisi icin cache freshness SLA dokumante et
 
 **Riskler:**
 - `binicilik.org.tr` HTML yapisi degisirse scraping kirilir
@@ -247,6 +249,7 @@ Asagidaki maddeler "tamamlandi sanilan ama polish/validation ihtiyaci olan" alan
 - Safety flow: FCM + dynamic links + inactivity trigger uc uca test edilmeli.
 - Horse health: CRUD, reminder mantigi ve tarih bazli empty states tekrar test edilmeli.
 - Binicilik gundemi: scraping dayanikliligi ve fallback mesajlari polish edilmeli.
+- Startup performansi: son repro'da yeni ANR gorulmedi ama logcat'te yuksek `Skipped frames` devam ediyor; startup profil ve Compose agir ekranlar tekrar incelenmeli.
 - Settings sync: local/remote precedence belgelendirilmeli.
 
 ## Engineering Decisions

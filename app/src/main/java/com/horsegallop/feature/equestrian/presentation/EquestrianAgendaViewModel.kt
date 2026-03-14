@@ -26,7 +26,8 @@ enum class EquestrianAgendaTab {
 
 enum class SyncActionMessage {
     REFRESHED,
-    THROTTLED
+    THROTTLED,
+    DEBUG_REFRESHED
 }
 
 sealed interface AgendaPreviewItem {
@@ -93,17 +94,29 @@ class EquestrianAgendaViewModel @Inject constructor(
     }
 
     fun triggerManualSync() {
+        triggerSync(force = false)
+    }
+
+    fun triggerDebugSync() {
+        triggerSync(force = true)
+    }
+
+    private fun triggerSync(force: Boolean) {
         viewModelScope.launch {
             _uiState.update { it.copy(isTriggeringSync = true, syncActionMessage = null, syncStatusError = null) }
-            triggerFederationManualSyncUseCase()
+            triggerFederationManualSyncUseCase(force = force)
                 .onSuccess { result ->
                     _uiState.update {
                         it.copy(
                             isTriggeringSync = false,
-                            syncActionMessage = if (result.throttled) {
-                                SyncActionMessage.THROTTLED
+                            syncActionMessage = if (force) {
+                                SyncActionMessage.DEBUG_REFRESHED
                             } else {
-                                SyncActionMessage.REFRESHED
+                                if (result.throttled) {
+                                    SyncActionMessage.THROTTLED
+                                } else {
+                                    SyncActionMessage.REFRESHED
+                                }
                             }
                         )
                     }

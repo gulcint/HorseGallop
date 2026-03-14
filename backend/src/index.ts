@@ -16,6 +16,7 @@ import * as cheerio from "cheerio";
 admin.initializeApp();
 
 const db = admin.firestore();
+const FEDERATION_SOURCE_STALE_MINUTES = 24 * 60;
 
 type UserProfileDto = {
   firstName: string;
@@ -283,6 +284,7 @@ type FederationSourceHealthItemDto = {
   lastAttemptAt: string;
   lastSuccessAt: string;
   dataAgeMinutes: number;
+  isStale: boolean;
   errorMessage?: string;
 };
 
@@ -775,6 +777,14 @@ function timestampToIso(value: unknown): string {
 }
 
 async function triggerManualFederationSync(): Promise<FederationManualSyncDto> {
+  return triggerFederationSyncInternal(false);
+}
+
+async function triggerFederationDebugSyncInternal(): Promise<FederationManualSyncDto> {
+  return triggerFederationSyncInternal(true);
+}
+
+async function triggerFederationSyncInternal(force: boolean): Promise<FederationManualSyncDto> {
   const statusRef = db.collection(SCRAPE_CACHE_COLLECTION).doc(FEDERATION_MANUAL_SYNC_STATUS_KEY);
   const statusDoc = await statusRef.get();
   const statusData = statusDoc.data() || {};
@@ -782,7 +792,7 @@ async function triggerManualFederationSync(): Promise<FederationManualSyncDto> {
     ? statusData.syncedAt.toMillis()
     : 0;
 
-  if (lastTriggered && Date.now() - lastTriggered < MANUAL_SYNC_MIN_INTERVAL_MS) {
+  if (!force && lastTriggered && Date.now() - lastTriggered < MANUAL_SYNC_MIN_INTERVAL_MS) {
     return {
       syncedAt: timestampToIso(statusData.syncedAt),
       barnsCount: typeof statusData.barnsCount === "number" ? statusData.barnsCount : 0,
@@ -856,6 +866,14 @@ function calculateDataAgeMinutes(lastSuccessAt: string): number {
   return Math.max(0, Math.floor((Date.now() - millis) / 60000));
 }
 
+function resolveFederationSourceStatus(status: string, dataAgeMinutes: number): { status: string; isStale: boolean } {
+  const isStale = status === "success" && dataAgeMinutes >= FEDERATION_SOURCE_STALE_MINUTES;
+  return {
+    status: isStale ? "stale" : status,
+    isStale,
+  };
+}
+
 async function getFederationSourceHealthPayload(): Promise<FederationSourceHealthItemDto[]> {
   const keys: Array<{ source: FederationSourceHealthItemDto["source"]; key: string }> = [
     { source: "barns", key: FEDERATION_HEALTH_BARNS_KEY },
@@ -869,13 +887,17 @@ async function getFederationSourceHealthPayload(): Promise<FederationSourceHealt
       const data = snapshot.data() || {};
       const lastAttemptAt = timestampOrStringToIso(data.lastAttemptAt);
       const lastSuccessAt = timestampOrStringToIso(data.lastSuccessAt);
+      const rawStatus = typeof data.status === "string" ? data.status : "idle";
+      const dataAgeMinutes = calculateDataAgeMinutes(lastSuccessAt);
+      const resolvedStatus = resolveFederationSourceStatus(rawStatus, dataAgeMinutes);
       return {
         source,
-        status: typeof data.status === "string" ? data.status : "idle",
+        status: resolvedStatus.status,
         itemCount: typeof data.itemCount === "number" ? data.itemCount : 0,
         lastAttemptAt,
         lastSuccessAt,
-        dataAgeMinutes: calculateDataAgeMinutes(lastSuccessAt),
+        dataAgeMinutes,
+        isStale: resolvedStatus.isStale,
         errorMessage: typeof data.errorMessage === "string" ? data.errorMessage : undefined,
       } satisfies FederationSourceHealthItemDto;
     })
@@ -1066,6 +1088,17 @@ export const getFederationSourceHealth = onCall(
       throw new HttpsError("unauthenticated", "Authentication required");
     }
     return { items: await getFederationSourceHealthPayload() };
+  }
+);
+
+export const triggerFederationDebugSync = onCall(
+  { region: "us-central1" },
+  async (request): Promise<FederationManualSyncDto> => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "Authentication required");
+    }
+
+    return triggerFederationDebugSyncInternal();
   }
 );
 

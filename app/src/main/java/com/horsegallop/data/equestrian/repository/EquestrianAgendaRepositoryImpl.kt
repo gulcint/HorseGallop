@@ -57,13 +57,18 @@ class EquestrianAgendaRepositoryImpl @Inject constructor(
                 lastAttemptAt = dto.lastAttemptAt,
                 lastSuccessAt = dto.lastSuccessAt,
                 dataAgeMinutes = dto.dataAgeMinutes,
+                isStale = dto.isStale,
                 errorMessage = dto.errorMessage
             )
         }
     }
 
-    override suspend fun triggerManualSync(): Result<FederationManualSyncResult> = runCatching {
-        val dto = functionsDataSource.triggerFederationManualSync()
+    override suspend fun triggerManualSync(force: Boolean): Result<FederationManualSyncResult> = runCatching {
+        val dto = if (force) {
+            functionsDataSource.triggerFederationDebugSync()
+        } else {
+            functionsDataSource.triggerFederationManualSync()
+        }
         FederationManualSyncResult(
             syncedAt = dto.syncedAt,
             barnsCount = dto.barnsCount,
