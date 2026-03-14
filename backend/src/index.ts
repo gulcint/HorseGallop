@@ -199,6 +199,9 @@ const FEDERATION_BASE_URL = "https://www.binicilik.org.tr";
 const SCRAPE_CACHE_COLLECTION = "scrape_cache";
 const GEOCODE_CACHE_COLLECTION = "geocode_cache";
 const FEDERATED_BARNS_SYNC_STATUS_KEY = "federated_barns_sync_status";
+const FEDERATED_BARNS_CACHE_KEY = "federated_barns";
+const EQUESTRIAN_ANNOUNCEMENTS_CACHE_KEY = "equestrian_announcements";
+const EQUESTRIAN_COMPETITIONS_CACHE_KEY = "equestrian_competitions";
 const FALLBACK_BARNS: BarnDto[] = [
   {
     id: "barn_adin_country",
@@ -583,48 +586,26 @@ async function scrapeFederatedBarns(): Promise<BarnDto[]> {
 }
 
 async function getFederatedBarnsPayload(): Promise<BarnListDto> {
-  const cacheKey = "federated_barns";
-  try {
-    const items = await scrapeFederatedBarns();
-    if (items.length === 0) {
-      throw new HttpsError("unavailable", "Federated barn directory is empty");
-    }
-    const payload = { items };
-    await writeScrapeCache(cacheKey, payload);
-    return payload;
-  } catch (error) {
-    const cached = await readScrapeCache<BarnListDto>(cacheKey);
-    if (cached?.items?.length) return cached;
-    return { items: FALLBACK_BARNS };
-  }
+  const cached = await readScrapeCache<BarnListDto>(FEDERATED_BARNS_CACHE_KEY);
+  if (cached?.items?.length) return cached;
+  return { items: FALLBACK_BARNS };
 }
 
 async function getFederatedBarnDetailPayload(id: string): Promise<BarnDto> {
-  const cacheKey = "federated_barns";
-  try {
-    const items = await scrapeFederatedBarns();
-    if (items.length === 0) {
-      throw new HttpsError("unavailable", "Federated barn directory is empty");
-    }
-    const payload = { items };
-    await writeScrapeCache(cacheKey, payload);
-    const barn = items.find((item) => item.id === id);
-    if (!barn) throw new HttpsError("not-found", "Barn not found");
-    return barn;
-  } catch (error) {
-    const cached = await readScrapeCache<BarnListDto>(cacheKey);
-    const barn = cached?.items.find((item) => item.id === id);
-    if (barn) return barn;
-    const fallbackBarn = FALLBACK_BARNS.find((item) => item.id === id);
-    if (fallbackBarn) return fallbackBarn;
-    throw error;
-  }
+  const cached = await readScrapeCache<BarnListDto>(FEDERATED_BARNS_CACHE_KEY);
+  const barn = cached?.items.find((item) => item.id === id);
+  if (barn) return barn;
+
+  const fallbackBarn = FALLBACK_BARNS.find((item) => item.id === id);
+  if (fallbackBarn) return fallbackBarn;
+
+  throw new HttpsError("not-found", "Barn not found");
 }
 
 async function syncFederatedBarnDirectory(): Promise<BarnListDto> {
   const items = await scrapeFederatedBarns();
   const payload = { items };
-  await writeScrapeCache("federated_barns", payload);
+  await writeScrapeCache(FEDERATED_BARNS_CACHE_KEY, payload);
   await db.collection(SCRAPE_CACHE_COLLECTION).doc(FEDERATED_BARNS_SYNC_STATUS_KEY).set({
     status: "success",
     itemCount: items.length,
@@ -704,6 +685,18 @@ async function scrapeEquestrianCompetitions(): Promise<EquestrianCompetitionDto[
       detailUrl,
     };
   }).get().filter((item): item is EquestrianCompetitionDto => item !== null);
+}
+
+async function syncEquestrianAgendaCache(): Promise<void> {
+  const [announcements, competitions] = await Promise.all([
+    scrapeEquestrianAnnouncements(),
+    scrapeEquestrianCompetitions(),
+  ]);
+
+  await Promise.all([
+    writeScrapeCache(EQUESTRIAN_ANNOUNCEMENTS_CACHE_KEY, { items: announcements }),
+    writeScrapeCache(EQUESTRIAN_COMPETITIONS_CACHE_KEY, { items: competitions }),
+  ]);
 }
 
 export const getUserProfile = onCall({ region: "us-central1" }, async (request) => {
@@ -856,6 +849,18 @@ export const syncFederatedBarns = onSchedule(
       }, { merge: true });
       throw error;
     }
+  }
+);
+
+export const syncEquestrianAgenda = onSchedule(
+  {
+    region: "us-central1",
+    schedule: "every day 04:15",
+    timeZone: "Europe/Istanbul",
+    retryCount: 1,
+  },
+  async () => {
+    await syncEquestrianAgendaCache();
   }
 );
 
@@ -1487,17 +1492,8 @@ export const getEquestrianAnnouncements = onCall({ region: "us-central1" }, asyn
     throw new HttpsError("unauthenticated", "Authentication required");
   }
 
-  const cacheKey = "equestrian_announcements";
-  try {
-    const items = await scrapeEquestrianAnnouncements();
-    const payload = { items };
-    await writeScrapeCache(cacheKey, payload);
-    return payload;
-  } catch (error) {
-    const cached = await readScrapeCache<{ items: EquestrianAnnouncementDto[] }>(cacheKey);
-    if (cached) return cached;
-    throw error;
-  }
+  const cached = await readScrapeCache<{ items: EquestrianAnnouncementDto[] }>(EQUESTRIAN_ANNOUNCEMENTS_CACHE_KEY);
+  return cached ?? { items: [] };
 });
 
 export const getEquestrianCompetitions = onCall({ region: "us-central1" }, async (request) => {
@@ -1505,15 +1501,6 @@ export const getEquestrianCompetitions = onCall({ region: "us-central1" }, async
     throw new HttpsError("unauthenticated", "Authentication required");
   }
 
-  const cacheKey = "equestrian_competitions";
-  try {
-    const items = await scrapeEquestrianCompetitions();
-    const payload = { items };
-    await writeScrapeCache(cacheKey, payload);
-    return payload;
-  } catch (error) {
-    const cached = await readScrapeCache<{ items: EquestrianCompetitionDto[] }>(cacheKey);
-    if (cached) return cached;
-    throw error;
-  }
+  const cached = await readScrapeCache<{ items: EquestrianCompetitionDto[] }>(EQUESTRIAN_COMPETITIONS_CACHE_KEY);
+  return cached ?? { items: [] };
 });

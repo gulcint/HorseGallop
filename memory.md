@@ -135,6 +135,7 @@ Asagidaki plan urun backlog'u gibi ele alinmali. Her bolumde isler bitince durum
 - `TJK` modulu kaldirildi, yerine `EquestrianAgenda` geldi
 - `Federe Kulüpler` verisi `Barns`, `BarnDetail` ve barn secim akislarina baglandi
 - federasyon kulüpleri icin geocoding + cache + arka plan sync eklendi
+- response aninda canli scrape yerine Firebase cache/Firestore-first veri akisi benimsendi
 
 **Sonraki Adimlar:**
 - ekran metinleri ve bos durumlari iyilestir
