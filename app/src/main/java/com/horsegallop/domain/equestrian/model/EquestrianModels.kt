@@ -31,3 +31,13 @@ data class FederationManualSyncResult(
     val competitionsCount: Int,
     val throttled: Boolean
 )
+
+data class FederationSourceHealthItem(
+    val source: String,
+    val status: String,
+    val itemCount: Int,
+    val lastAttemptAt: String,
+    val lastSuccessAt: String,
+    val dataAgeMinutes: Int,
+    val errorMessage: String? = null
+)

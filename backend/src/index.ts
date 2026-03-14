@@ -203,6 +203,9 @@ const FEDERATION_MANUAL_SYNC_STATUS_KEY = "federation_manual_sync_status";
 const FEDERATED_BARNS_CACHE_KEY = "federated_barns";
 const EQUESTRIAN_ANNOUNCEMENTS_CACHE_KEY = "equestrian_announcements";
 const EQUESTRIAN_COMPETITIONS_CACHE_KEY = "equestrian_competitions";
+const FEDERATION_HEALTH_BARNS_KEY = "federation_health_barns";
+const FEDERATION_HEALTH_ANNOUNCEMENTS_KEY = "federation_health_announcements";
+const FEDERATION_HEALTH_COMPETITIONS_KEY = "federation_health_competitions";
 const MANUAL_SYNC_MIN_INTERVAL_MS = 5 * 60 * 1000;
 const FALLBACK_BARNS: BarnDto[] = [
   {
@@ -270,6 +273,16 @@ type FederatedBarnSyncStatusDto = {
   status: string;
   syncedAt: string;
   itemCount: number;
+  errorMessage?: string;
+};
+
+type FederationSourceHealthItemDto = {
+  source: "barns" | "announcements" | "competitions";
+  status: string;
+  itemCount: number;
+  lastAttemptAt: string;
+  lastSuccessAt: string;
+  dataAgeMinutes: number;
   errorMessage?: string;
 };
 
@@ -621,6 +634,13 @@ async function syncFederatedBarnDirectory(): Promise<BarnListDto> {
     itemCount: items.length,
     syncedAt: admin.firestore.FieldValue.serverTimestamp(),
   }, { merge: true });
+  await writeFederationSourceHealth(FEDERATION_HEALTH_BARNS_KEY, {
+    status: "success",
+    itemCount: items.length,
+    errorMessage: admin.firestore.FieldValue.delete(),
+    lastAttemptAt: admin.firestore.FieldValue.serverTimestamp(),
+    lastSuccessAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
   return payload;
 }
 
@@ -698,15 +718,53 @@ async function scrapeEquestrianCompetitions(): Promise<EquestrianCompetitionDto[
 }
 
 async function syncEquestrianAgendaCache(): Promise<void> {
-  const [announcements, competitions] = await Promise.all([
+  const attemptedAt = admin.firestore.FieldValue.serverTimestamp();
+  const announcementAttemptIso = new Date().toISOString();
+  const competitionAttemptIso = announcementAttemptIso;
+  const [announcementsResult, competitionsResult] = await Promise.allSettled([
     scrapeEquestrianAnnouncements(),
     scrapeEquestrianCompetitions(),
   ]);
 
-  await Promise.all([
-    writeScrapeCache(EQUESTRIAN_ANNOUNCEMENTS_CACHE_KEY, { items: announcements }),
-    writeScrapeCache(EQUESTRIAN_COMPETITIONS_CACHE_KEY, { items: competitions }),
-  ]);
+  if (announcementsResult.status === "fulfilled") {
+    await writeScrapeCache(EQUESTRIAN_ANNOUNCEMENTS_CACHE_KEY, { items: announcementsResult.value });
+    await writeFederationSourceHealth(FEDERATION_HEALTH_ANNOUNCEMENTS_KEY, {
+      status: "success",
+      itemCount: announcementsResult.value.length,
+      errorMessage: admin.firestore.FieldValue.delete(),
+      lastAttemptAt: attemptedAt,
+      lastSuccessAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  } else {
+    await writeFederationSourceHealth(FEDERATION_HEALTH_ANNOUNCEMENTS_KEY, {
+      status: "error",
+      itemCount: 0,
+      errorMessage: announcementsResult.reason instanceof Error ? announcementsResult.reason.message : "Unknown scrape error",
+      lastAttemptAt: announcementAttemptIso,
+    });
+  }
+
+  if (competitionsResult.status === "fulfilled") {
+    await writeScrapeCache(EQUESTRIAN_COMPETITIONS_CACHE_KEY, { items: competitionsResult.value });
+    await writeFederationSourceHealth(FEDERATION_HEALTH_COMPETITIONS_KEY, {
+      status: "success",
+      itemCount: competitionsResult.value.length,
+      errorMessage: admin.firestore.FieldValue.delete(),
+      lastAttemptAt: attemptedAt,
+      lastSuccessAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  } else {
+    await writeFederationSourceHealth(FEDERATION_HEALTH_COMPETITIONS_KEY, {
+      status: "error",
+      itemCount: 0,
+      errorMessage: competitionsResult.reason instanceof Error ? competitionsResult.reason.message : "Unknown scrape error",
+      lastAttemptAt: competitionAttemptIso,
+    });
+  }
+
+  if (announcementsResult.status === "rejected" || competitionsResult.status === "rejected") {
+    throw new HttpsError("unavailable", "One or more federation sources could not be refreshed");
+  }
 }
 
 function timestampToIso(value: unknown): string {
@@ -743,6 +801,20 @@ async function triggerManualFederationSync(): Promise<FederationManualSyncDto> {
   await Promise.all([
     writeScrapeCache(EQUESTRIAN_ANNOUNCEMENTS_CACHE_KEY, { items: announcements }),
     writeScrapeCache(EQUESTRIAN_COMPETITIONS_CACHE_KEY, { items: competitions }),
+    writeFederationSourceHealth(FEDERATION_HEALTH_ANNOUNCEMENTS_KEY, {
+      status: "success",
+      itemCount: announcements.length,
+      errorMessage: admin.firestore.FieldValue.delete(),
+      lastAttemptAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastSuccessAt: admin.firestore.FieldValue.serverTimestamp(),
+    }),
+    writeFederationSourceHealth(FEDERATION_HEALTH_COMPETITIONS_KEY, {
+      status: "success",
+      itemCount: competitions.length,
+      errorMessage: admin.firestore.FieldValue.delete(),
+      lastAttemptAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastSuccessAt: admin.firestore.FieldValue.serverTimestamp(),
+    }),
   ]);
 
   await statusRef.set({
@@ -761,6 +833,55 @@ async function triggerManualFederationSync(): Promise<FederationManualSyncDto> {
     competitionsCount: typeof refreshedData.competitionsCount === "number" ? refreshedData.competitionsCount : competitions.length,
     throttled: false,
   };
+}
+
+async function writeFederationSourceHealth(
+  key: string,
+  payload: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData>
+): Promise<void> {
+  await db.collection(SCRAPE_CACHE_COLLECTION).doc(key).set(payload, { merge: true });
+}
+
+function timestampOrStringToIso(value: unknown): string {
+  if (value instanceof admin.firestore.Timestamp) {
+    return value.toDate().toISOString();
+  }
+  return typeof value === "string" ? value : "";
+}
+
+function calculateDataAgeMinutes(lastSuccessAt: string): number {
+  if (!lastSuccessAt) return -1;
+  const millis = Date.parse(lastSuccessAt);
+  if (Number.isNaN(millis)) return -1;
+  return Math.max(0, Math.floor((Date.now() - millis) / 60000));
+}
+
+async function getFederationSourceHealthPayload(): Promise<FederationSourceHealthItemDto[]> {
+  const keys: Array<{ source: FederationSourceHealthItemDto["source"]; key: string }> = [
+    { source: "barns", key: FEDERATION_HEALTH_BARNS_KEY },
+    { source: "announcements", key: FEDERATION_HEALTH_ANNOUNCEMENTS_KEY },
+    { source: "competitions", key: FEDERATION_HEALTH_COMPETITIONS_KEY },
+  ];
+
+  const docs = await Promise.all(
+    keys.map(async ({ source, key }) => {
+      const snapshot = await db.collection(SCRAPE_CACHE_COLLECTION).doc(key).get();
+      const data = snapshot.data() || {};
+      const lastAttemptAt = timestampOrStringToIso(data.lastAttemptAt);
+      const lastSuccessAt = timestampOrStringToIso(data.lastSuccessAt);
+      return {
+        source,
+        status: typeof data.status === "string" ? data.status : "idle",
+        itemCount: typeof data.itemCount === "number" ? data.itemCount : 0,
+        lastAttemptAt,
+        lastSuccessAt,
+        dataAgeMinutes: calculateDataAgeMinutes(lastSuccessAt),
+        errorMessage: typeof data.errorMessage === "string" ? data.errorMessage : undefined,
+      } satisfies FederationSourceHealthItemDto;
+    })
+  );
+
+  return docs;
 }
 
 export const getUserProfile = onCall({ region: "us-central1" }, async (request) => {
@@ -935,6 +1056,16 @@ export const getFederatedBarnsSyncStatus = onCall(
       throw new HttpsError("unauthenticated", "Authentication required");
     }
     return getFederatedBarnSyncStatusPayload();
+  }
+);
+
+export const getFederationSourceHealth = onCall(
+  { region: "us-central1" },
+  async (request): Promise<{ items: FederationSourceHealthItemDto[] }> => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "Authentication required");
+    }
+    return { items: await getFederationSourceHealthPayload() };
   }
 );
 

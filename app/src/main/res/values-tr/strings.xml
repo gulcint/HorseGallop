@@ -609,6 +609,15 @@
     <string name="equestrian_agenda_sync_now">Şimdi senkronla</string>
     <string name="equestrian_agenda_sync_refreshed">Federasyon verileri yenilendi</string>
     <string name="equestrian_agenda_sync_throttled">Az önce senkronlandı. Lütfen birkaç dakika sonra tekrar dene.</string>
+    <string name="equestrian_agenda_health_loading">Federasyon kaynak sagligi kontrol ediliyor…</string>
+    <string name="equestrian_agenda_health_error">Federasyon kaynak sagligi su anda goruntulenemiyor.</string>
+    <string name="equestrian_agenda_health_barns">Kulupler</string>
+    <string name="equestrian_agenda_health_announcements">Duyurular</string>
+    <string name="equestrian_agenda_health_competitions">Yarismalar</string>
+    <string name="equestrian_agenda_health_failed">Son yenileme basarisiz</string>
+    <string name="equestrian_agenda_health_waiting">Ilk senkron bekleniyor</string>
+    <string name="equestrian_agenda_health_age_minutes">%1$d dk once</string>
+    <string name="equestrian_agenda_health_item_count">%1$d kayit</string>
     <string name="equestrian_agenda_preview_open_source">Kaynak sayfasini ac</string>
     <string name="equestrian_agenda_preview_summary_fallback">Duyurunun tam icerigi ve ekleri icin federasyon kaynak sayfasini ac.</string>
     <string name="equestrian_agenda_preview_competition_fallback">Yarisma alani ve tam program detaylari federasyon kaynak sayfasinda yer aliyor.</string>

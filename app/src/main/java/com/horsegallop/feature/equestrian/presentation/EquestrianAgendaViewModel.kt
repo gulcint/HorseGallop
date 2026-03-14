@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.horsegallop.domain.equestrian.model.EquestrianAnnouncement
 import com.horsegallop.domain.equestrian.model.EquestrianCompetition
+import com.horsegallop.domain.equestrian.model.FederationSourceHealthItem
 import com.horsegallop.domain.equestrian.model.FederatedBarnSyncStatus
 import com.horsegallop.domain.equestrian.usecase.GetEquestrianAnnouncementsUseCase
 import com.horsegallop.domain.equestrian.usecase.GetEquestrianCompetitionsUseCase
+import com.horsegallop.domain.equestrian.usecase.GetFederationSourceHealthUseCase
 import com.horsegallop.domain.equestrian.usecase.GetFederatedBarnSyncStatusUseCase
 import com.horsegallop.domain.equestrian.usecase.TriggerFederationManualSyncUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,13 +39,16 @@ data class EquestrianAgendaUiState(
     val announcements: List<EquestrianAnnouncement> = emptyList(),
     val competitions: List<EquestrianCompetition> = emptyList(),
     val syncStatus: FederatedBarnSyncStatus? = null,
+    val sourceHealth: List<FederationSourceHealthItem> = emptyList(),
     val isLoadingSyncStatus: Boolean = true,
+    val isLoadingSourceHealth: Boolean = true,
     val isTriggeringSync: Boolean = false,
     val isLoadingAnnouncements: Boolean = true,
     val isLoadingCompetitions: Boolean = true,
     val announcementsError: String? = null,
     val competitionsError: String? = null,
     val syncStatusError: String? = null,
+    val sourceHealthError: String? = null,
     val syncActionMessage: SyncActionMessage? = null,
     val previewItem: AgendaPreviewItem? = null
 )
@@ -52,6 +57,7 @@ data class EquestrianAgendaUiState(
 class EquestrianAgendaViewModel @Inject constructor(
     private val getEquestrianAnnouncementsUseCase: GetEquestrianAnnouncementsUseCase,
     private val getEquestrianCompetitionsUseCase: GetEquestrianCompetitionsUseCase,
+    private val getFederationSourceHealthUseCase: GetFederationSourceHealthUseCase,
     private val getFederatedBarnSyncStatusUseCase: GetFederatedBarnSyncStatusUseCase,
     private val triggerFederationManualSyncUseCase: TriggerFederationManualSyncUseCase
 ) : ViewModel() {
@@ -69,6 +75,7 @@ class EquestrianAgendaViewModel @Inject constructor(
 
     fun refresh() {
         loadSyncStatus()
+        loadSourceHealth()
         loadAnnouncements()
         loadCompetitions()
     }
@@ -131,6 +138,29 @@ class EquestrianAgendaViewModel @Inject constructor(
                         it.copy(
                             isLoadingSyncStatus = false,
                             syncStatusError = error.localizedMessage
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun loadSourceHealth() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingSourceHealth = true, sourceHealthError = null) }
+            getFederationSourceHealthUseCase()
+                .onSuccess { items ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingSourceHealth = false,
+                            sourceHealth = items
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingSourceHealth = false,
+                            sourceHealthError = error.localizedMessage
                         )
                     }
                 }

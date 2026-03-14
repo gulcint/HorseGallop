@@ -4,6 +4,7 @@ import com.horsegallop.data.remote.functions.AppFunctionsDataSource
 import com.horsegallop.domain.equestrian.model.EquestrianAnnouncement
 import com.horsegallop.domain.equestrian.model.EquestrianCompetition
 import com.horsegallop.domain.equestrian.model.FederationManualSyncResult
+import com.horsegallop.domain.equestrian.model.FederationSourceHealthItem
 import com.horsegallop.domain.equestrian.model.FederatedBarnSyncStatus
 import com.horsegallop.domain.equestrian.repository.EquestrianAgendaRepository
 import javax.inject.Inject
@@ -45,6 +46,20 @@ class EquestrianAgendaRepositoryImpl @Inject constructor(
             itemCount = dto.itemCount,
             errorMessage = dto.errorMessage
         )
+    }
+
+    override suspend fun getFederationSourceHealth(): Result<List<FederationSourceHealthItem>> = runCatching {
+        functionsDataSource.getFederationSourceHealth().map { dto ->
+            FederationSourceHealthItem(
+                source = dto.source,
+                status = dto.status,
+                itemCount = dto.itemCount,
+                lastAttemptAt = dto.lastAttemptAt,
+                lastSuccessAt = dto.lastSuccessAt,
+                dataAgeMinutes = dto.dataAgeMinutes,
+                errorMessage = dto.errorMessage
+            )
+        }
     }
 
     override suspend fun triggerManualSync(): Result<FederationManualSyncResult> = runCatching {

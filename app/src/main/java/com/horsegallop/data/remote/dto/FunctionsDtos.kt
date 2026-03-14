@@ -205,3 +205,13 @@ data class FederationManualSyncFunctionsDto(
     val competitionsCount: Int = 0,
     val throttled: Boolean = false
 )
+
+data class FederationSourceHealthFunctionsDto(
+    val source: String = "",
+    val status: String = "",
+    val itemCount: Int = 0,
+    val lastAttemptAt: String = "",
+    val lastSuccessAt: String = "",
+    val dataAgeMinutes: Int = -1,
+    val errorMessage: String? = null
+)

@@ -641,6 +641,15 @@
     <string name="equestrian_agenda_sync_now">Sync now</string>
     <string name="equestrian_agenda_sync_refreshed">Federation data refreshed</string>
     <string name="equestrian_agenda_sync_throttled">Synced recently. Please wait a few minutes.</string>
+    <string name="equestrian_agenda_health_loading">Checking federation source health…</string>
+    <string name="equestrian_agenda_health_error">Federation source health is unavailable.</string>
+    <string name="equestrian_agenda_health_barns">Barns</string>
+    <string name="equestrian_agenda_health_announcements">Announcements</string>
+    <string name="equestrian_agenda_health_competitions">Competitions</string>
+    <string name="equestrian_agenda_health_failed">Latest refresh failed</string>
+    <string name="equestrian_agenda_health_waiting">Waiting for first sync</string>
+    <string name="equestrian_agenda_health_age_minutes">%1$d min ago</string>
+    <string name="equestrian_agenda_health_item_count">%1$d items</string>
     <string name="equestrian_agenda_preview_open_source">Open source page</string>
     <string name="equestrian_agenda_preview_summary_fallback">Open the source page to see the full announcement content and attachments.</string>
     <string name="equestrian_agenda_preview_competition_fallback">Competition venue and full program details are available on the federation source page.</string>

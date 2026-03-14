@@ -14,6 +14,7 @@ Bu dosya, repo icinde kalici urun/backlog hafizasi icindir. Yeni oturumlarda onc
 - Horse health temeli: `HorseHealthEvent` modeli, backend CRUD ve `HorseHealthScreen` eklendi.
 - Binicilik gundemi temeli: federasyon verisi, agenda akisi ve barn entegrasyonu aktif gelistirme alaninda.
 - Auth dark mode polish: login ve sifre yenileme CTA kontrastlari ortak semantic button stiliyle iyilestirildi.
+- Startup jank azaltma: splash ve onboarding acilis sesleri kaldirilarak ilk frame yukleri hafifletildi.
 
 ## Backlog
 
@@ -139,11 +140,12 @@ Asagidaki plan urun backlog'u gibi ele alinmali. Her bolumde isler bitince durum
 - response aninda canli scrape yerine Firebase cache/Firestore-first veri akisi benimsendi
 - manual/admin federation sync trigger eklendi; agenda ekranindan cache yenileme tetiklenebiliyor
 - duyuru ve yarisma kartlari icin uygulama ici preview sheet eklendi
+- barns / announcements / competitions icin source health metrikleri ve agenda health kartlari eklendi
 
 **Sonraki Adimlar:**
 - ekran metinleri ve bos durumlari iyilestir
 - tam detay sayfasi gerekip gerekmedigini degerlendir
-- backend scraping guvenilirligini olc
+- source health metrikleri icin stale threshold ve admin aksiyon ihtiyacini degerlendir
 
 **Riskler:**
 - `binicilik.org.tr` HTML yapisi degisirse scraping kirilir

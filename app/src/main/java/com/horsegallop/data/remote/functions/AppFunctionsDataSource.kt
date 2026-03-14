@@ -6,6 +6,7 @@ import com.horsegallop.data.remote.dto.BarnInstructorFunctionsDto
 import com.horsegallop.data.remote.dto.BarnReviewFunctionsDto
 import com.horsegallop.data.remote.dto.AppContentFunctionsDto
 import com.horsegallop.data.remote.dto.BreedFunctionsDto
+import com.horsegallop.data.remote.dto.FederationSourceHealthFunctionsDto
 import com.horsegallop.data.remote.dto.FederationManualSyncFunctionsDto
 import com.horsegallop.data.remote.dto.FederatedBarnSyncStatusFunctionsDto
 import com.horsegallop.data.remote.dto.HomeDashboardFunctionsDto
@@ -97,6 +98,24 @@ class AppFunctionsDataSource @Inject constructor(
             competitionsCount = (payload["competitionsCount"] as? Number)?.toInt() ?: 0,
             throttled = (payload["throttled"] as? Boolean) ?: false
         )
+    }
+
+    suspend fun getFederationSourceHealth(): List<FederationSourceHealthFunctionsDto> {
+        val result = functions.getHttpsCallable("getFederationSourceHealth").call().await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        val items = payload["items"] as? List<*> ?: emptyList<Any?>()
+        return items.mapNotNull { item ->
+            val map = item as? Map<*, *> ?: return@mapNotNull null
+            FederationSourceHealthFunctionsDto(
+                source = (map["source"] as? String).orEmpty(),
+                status = (map["status"] as? String).orEmpty(),
+                itemCount = (map["itemCount"] as? Number)?.toInt() ?: 0,
+                lastAttemptAt = (map["lastAttemptAt"] as? String).orEmpty(),
+                lastSuccessAt = (map["lastSuccessAt"] as? String).orEmpty(),
+                dataAgeMinutes = (map["dataAgeMinutes"] as? Number)?.toInt() ?: -1,
+                errorMessage = map["errorMessage"] as? String
+            )
+        }
     }
 
     suspend fun getLessons(from: String? = null, to: String? = null): List<LessonFunctionsDto> {

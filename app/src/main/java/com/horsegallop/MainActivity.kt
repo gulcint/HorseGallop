@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
-import android.media.MediaPlayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
@@ -314,8 +313,7 @@ fun SplashScreen(
         )
         val lottieAnimatable = rememberLottieAnimatable()
         
-        var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
-        var isSoundCompleted by remember { mutableStateOf(false) }
+        val isSoundCompleted = true
         var isAnimationCompleted by remember { mutableStateOf(false) }
         var finished by remember { mutableStateOf(false) }
         val splashTimeoutMs = 2200L
@@ -329,49 +327,7 @@ fun SplashScreen(
         
         DisposableEffect(Unit) {
             AppLog.i("SplashScreen", "splash_started")
-            val mp = runCatching { MediaPlayer.create(ctx, com.horsegallop.R.raw.horse_gallop) }.getOrNull()
-            mediaPlayer = mp
-            if (mp == null) {
-                AppLog.w("SplashScreen", "audio_unavailable")
-                isSoundCompleted = true
-            } else {
-                mp.setVolume(1.0f, 1.0f)
-                mp.setOnCompletionListener {
-                    AppLog.i("SplashScreen", "audio_completed")
-                    isSoundCompleted = true
-                }
-                mp.setOnErrorListener { _, what, extra ->
-                    AppLog.e("SplashScreen", "audio_error what=$what extra=$extra")
-                    isSoundCompleted = true
-                    true
-                }
-            }
-
-            onDispose {
-                try {
-                    if (mp != null && mp.isPlaying) {
-                        mp.stop()
-                    }
-                    mp?.release()
-                    mediaPlayer = null
-                } catch (e: Exception) {
-                    AppLog.e("SplashScreen", "audio_release_error: ${e.message}")
-                }
-            }
-        }
-
-        LaunchedEffect(mediaPlayer) {
-            val player = mediaPlayer ?: return@LaunchedEffect
-            try {
-                withContext(Dispatchers.Main.immediate) {
-                    player.seekTo(0)
-                    player.start()
-                }
-                AppLog.i("SplashScreen", "audio_started")
-            } catch (e: Exception) {
-                AppLog.e("SplashScreen", "Splash sound playback error: ${e.message}")
-                isSoundCompleted = true
-            }
+            onDispose {}
         }
 
         LaunchedEffect(composition) {

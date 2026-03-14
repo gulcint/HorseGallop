@@ -1,7 +1,6 @@
 package com.horsegallop.feature.onboarding.presentation
 
 import android.app.Activity
-import android.media.MediaPlayer
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -48,7 +47,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -93,24 +91,6 @@ fun OnboardingScreen(
     val warmClay = MaterialTheme.colorScheme.primaryContainer
     val semantic = LocalSemanticColors.current
     val uiState by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
-
-    // ── Horse gallop sound — plays once, released on completion or dispose ────
-    DisposableEffect(Unit) {
-        var mp: MediaPlayer? = null
-        try {
-            mp = MediaPlayer.create(context, R.raw.horse_gallop)
-            mp?.setOnCompletionListener { player -> player.release() }
-            mp?.start()
-        } catch (_: Throwable) {
-            mp?.release()
-            mp = null
-        }
-        onDispose {
-            try { mp?.release() } catch (_: Throwable) {}
-        }
-    }
-
     // ── Pages ─────────────────────────────────────────────────────────────────
     val pages: List<OnboardingPage> = remember(
         warmUmber, warmCopper, warmChestnut, warmClay,
