@@ -2,6 +2,9 @@ package com.horsegallop.data.remote.functions
 
 import com.google.firebase.functions.FirebaseFunctions
 import com.horsegallop.data.remote.dto.BarnFunctionsDto
+import com.horsegallop.data.remote.dto.BarnStatsDto
+import com.horsegallop.data.remote.dto.ManagedLessonDto
+import com.horsegallop.data.remote.dto.StudentRosterEntryDto
 import com.horsegallop.data.remote.dto.BarnInstructorFunctionsDto
 import com.horsegallop.data.remote.dto.BarnReviewFunctionsDto
 import com.horsegallop.data.remote.dto.AppContentFunctionsDto
@@ -645,5 +648,98 @@ class AppFunctionsDataSource @Inject constructor(
         val result = functions.getHttpsCallable("checkAndAwardBadges").call(params).await()
         @Suppress("UNCHECKED_CAST")
         return ((result.getData() as? Map<String, Any>)?.get("newBadges") as? List<String>) ?: emptyList()
+    }
+
+    // ─── Barn Management ──────────────────────────────────────────────────────
+
+    suspend fun getBarnStats(barnId: String): BarnStatsDto {
+        val result = functions.getHttpsCallable("getBarnStats")
+            .call(hashMapOf("barnId" to barnId))
+            .await()
+        val map = result.data as? Map<*, *> ?: return BarnStatsDto()
+        return BarnStatsDto(
+            totalLessons = (map["totalLessons"] as? Number)?.toInt() ?: 0,
+            totalReservations = (map["totalReservations"] as? Number)?.toInt() ?: 0,
+            uniqueStudents = (map["uniqueStudents"] as? Number)?.toInt() ?: 0,
+            upcomingLessonsCount = (map["upcomingLessonsCount"] as? Number)?.toInt() ?: 0
+        )
+    }
+
+    suspend fun getManagedLessons(barnId: String): List<ManagedLessonDto> {
+        val result = functions.getHttpsCallable("getManagedLessons")
+            .call(hashMapOf("barnId" to barnId))
+            .await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        val items = payload["items"] as? List<*> ?: emptyList<Any?>()
+        return items.mapNotNull { item ->
+            val m = item as? Map<*, *> ?: return@mapNotNull null
+            mapManagedLesson(m)
+        }
+    }
+
+    suspend fun createLesson(
+        barnId: String,
+        title: String,
+        instructorName: String,
+        startTimeMs: Long,
+        durationMin: Int,
+        level: String,
+        price: Double,
+        spotsTotal: Int
+    ): ManagedLessonDto {
+        val result = functions.getHttpsCallable("createManagedLesson").call(
+            hashMapOf(
+                "barnId" to barnId,
+                "title" to title,
+                "instructorName" to instructorName,
+                "startTimeMs" to startTimeMs,
+                "durationMin" to durationMin,
+                "level" to level,
+                "price" to price,
+                "spotsTotal" to spotsTotal
+            )
+        ).await()
+        val map = result.data as? Map<*, *> ?: error("Invalid response")
+        return mapManagedLesson(map) ?: error("Invalid lesson payload")
+    }
+
+    suspend fun cancelLesson(lessonId: String) {
+        functions.getHttpsCallable("cancelManagedLesson")
+            .call(hashMapOf("lessonId" to lessonId))
+            .await()
+    }
+
+    suspend fun getLessonRoster(lessonId: String): List<StudentRosterEntryDto> {
+        val result = functions.getHttpsCallable("getLessonRoster")
+            .call(hashMapOf("lessonId" to lessonId))
+            .await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        val items = payload["items"] as? List<*> ?: emptyList<Any?>()
+        return items.mapNotNull { item ->
+            val m = item as? Map<*, *> ?: return@mapNotNull null
+            StudentRosterEntryDto(
+                userId = m["userId"] as? String ?: return@mapNotNull null,
+                displayName = (m["displayName"] as? String).orEmpty(),
+                email = (m["email"] as? String).orEmpty(),
+                reservationId = (m["reservationId"] as? String).orEmpty(),
+                bookedAtMs = (m["bookedAtMs"] as? Number)?.toLong() ?: 0L
+            )
+        }
+    }
+
+    private fun mapManagedLesson(m: Map<*, *>): ManagedLessonDto? {
+        return ManagedLessonDto(
+            id = m["id"] as? String ?: return null,
+            title = (m["title"] as? String).orEmpty(),
+            instructorName = (m["instructorName"] as? String).orEmpty(),
+            startTimeMs = (m["startTimeMs"] as? Number)?.toLong() ?: 0L,
+            durationMin = (m["durationMin"] as? Number)?.toInt() ?: 0,
+            level = (m["level"] as? String).orEmpty(),
+            price = (m["price"] as? Number)?.toDouble() ?: 0.0,
+            spotsTotal = (m["spotsTotal"] as? Number)?.toInt() ?: 0,
+            spotsBooked = (m["spotsBooked"] as? Number)?.toInt() ?: 0,
+            barnId = (m["barnId"] as? String).orEmpty(),
+            isCancelled = (m["isCancelled"] as? Boolean) ?: false
+        )
     }
 }

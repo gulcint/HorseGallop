@@ -228,3 +228,34 @@ data class FederationSourceHealthFunctionsDto(
     val isStale: Boolean = false,
     val errorMessage: String? = null
 )
+
+// ─── Barn Management DTOs ─────────────────────────────────────────────────────
+
+data class BarnStatsDto(
+    val totalLessons: Int = 0,
+    val totalReservations: Int = 0,
+    val uniqueStudents: Int = 0,
+    val upcomingLessonsCount: Int = 0
+)
+
+data class ManagedLessonDto(
+    val id: String,
+    val title: String,
+    val instructorName: String,
+    val startTimeMs: Long,
+    val durationMin: Int,
+    val level: String,
+    val price: Double,
+    val spotsTotal: Int,
+    val spotsBooked: Int,
+    val barnId: String,
+    val isCancelled: Boolean = false
+)
+
+data class StudentRosterEntryDto(
+    val userId: String,
+    val displayName: String,
+    val email: String,
+    val reservationId: String,
+    val bookedAtMs: Long
+)

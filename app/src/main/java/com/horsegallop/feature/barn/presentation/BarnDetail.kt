@@ -54,10 +54,12 @@ import java.util.Locale
 @Composable
 fun BarnDetailScreen(
     onBack: () -> Unit,
+    onManageBarn: (barnId: String) -> Unit = {},
     viewModel: BarnDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val bookingState by viewModel.bookingState.collectAsState()
+    val isOwner by viewModel.isOwner.collectAsState()
     val semantic = LocalSemanticColors.current
     val topBarTitle = when (val state = uiState) {
         is BarnDetailUiState.Success -> state.barn.barn.name
@@ -107,8 +109,10 @@ fun BarnDetailScreen(
                 is BarnDetailUiState.Success -> BarnDetailContent(
                     barn = state.barn,
                     bookingState = bookingState,
+                    isOwner = isOwner,
                     onBookLesson = viewModel::bookLesson,
-                    onClearBookingResult = viewModel::clearBookingResult
+                    onClearBookingResult = viewModel::clearBookingResult,
+                    onManageBarn = { onManageBarn(state.barn.barn.id) }
                 )
                 is BarnDetailUiState.Error -> Box(
                     modifier = Modifier.fillMaxSize(),
@@ -137,8 +141,10 @@ fun BarnDetailScreen(
 fun BarnDetailContent(
     barn: BarnWithLocation,
     bookingState: BookingState = BookingState(),
+    isOwner: Boolean = false,
     onBookLesson: (String) -> Unit = {},
-    onClearBookingResult: () -> Unit = {}
+    onClearBookingResult: () -> Unit = {},
+    onManageBarn: () -> Unit = {}
 ) {
     val feedback = LocalAppFeedbackController.current
     val semantic = LocalSemanticColors.current
@@ -484,42 +490,62 @@ fun BarnDetailContent(
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
             )
         ) {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 16.dp)
                     .navigationBarsPadding(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                OutlinedButton(
-                    onClick = { /* Call action */ },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f),
-                        contentColor = MaterialTheme.colorScheme.primary
-                    ),
-                    border = androidx.compose.foundation.BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                    )
-                ) {
-                    Text(stringResource(id = com.horsegallop.R.string.contact))
+                if (isOwner) {
+                    Button(
+                        onClick = onManageBarn,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.tertiary,
+                            contentColor = MaterialTheme.colorScheme.onTertiary
+                        )
+                    ) {
+                        Text(stringResource(id = com.horsegallop.R.string.barn_manage_button))
+                    }
                 }
-                Button(
-                    onClick = { showReservationSheet = true },
-                    modifier = Modifier
-                        .weight(2f)
-                        .height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        contentColor = MaterialTheme.colorScheme.onSecondary
-                    )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text(stringResource(id = com.horsegallop.R.string.book_lesson))
+                    OutlinedButton(
+                        onClick = { /* Call action */ },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f),
+                            contentColor = MaterialTheme.colorScheme.primary
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                        )
+                    ) {
+                        Text(stringResource(id = com.horsegallop.R.string.contact))
+                    }
+                    Button(
+                        onClick = { showReservationSheet = true },
+                        modifier = Modifier
+                            .weight(2f)
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary,
+                            contentColor = MaterialTheme.colorScheme.onSecondary
+                        )
+                    ) {
+                        Text(stringResource(id = com.horsegallop.R.string.book_lesson))
+                    }
                 }
             }
         }

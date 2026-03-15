@@ -680,4 +680,28 @@
     <string name="badge_type_early_bird">Early Bird</string>
     <string name="badge_type_monthly_champion">Monthly Champion</string>
     <string name="badge_type_social_rider">Social Rider</string>
+
+    <!-- Barn Management -->
+    <string name="barn_management_title">Barn Management</string>
+    <string name="barn_stats_total_lessons">Total Lessons</string>
+    <string name="barn_stats_reservations">Reservations</string>
+    <string name="barn_stats_students">Students</string>
+    <string name="barn_manage_button">Manage My Barn</string>
+    <string name="barn_create_lesson_title">New Lesson</string>
+    <string name="barn_lesson_title_label">Lesson Title</string>
+    <string name="barn_instructor_label">Instructor</string>
+    <string name="barn_lesson_duration_label">Duration (min)</string>
+    <string name="barn_lesson_level_label">Level</string>
+    <string name="barn_lesson_price_label">Price</string>
+    <string name="barn_lesson_capacity_label">Capacity</string>
+    <string name="barn_lesson_save">Save Lesson</string>
+    <string name="barn_lesson_cancel">Cancel Lesson</string>
+    <string name="barn_lesson_roster_title">Roster</string>
+    <string name="barn_roster_empty">No reservations yet</string>
+    <string name="barn_roster_empty_subtitle">Students who book this lesson will appear here</string>
+    <string name="barn_upcoming_lessons">Upcoming Lessons</string>
+    <string name="barn_no_upcoming_lessons">No upcoming lessons</string>
+    <string name="barn_level_beginner">Beginner</string>
+    <string name="barn_level_intermediate">Intermediate</string>
+    <string name="barn_level_advanced">Advanced</string>
 </resources>

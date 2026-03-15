@@ -675,4 +675,28 @@
     <string name="badge_type_early_bird">Erken Kalkan</string>
     <string name="badge_type_monthly_champion">Aylık Şampiyon</string>
     <string name="badge_type_social_rider">Sosyal Binici</string>
+
+    <!-- Ahır Yönetimi -->
+    <string name="barn_management_title">Ahır Yönetimi</string>
+    <string name="barn_stats_total_lessons">Toplam Ders</string>
+    <string name="barn_stats_reservations">Rezervasyonlar</string>
+    <string name="barn_stats_students">Öğrenciler</string>
+    <string name="barn_manage_button">Ahırımı Yönet</string>
+    <string name="barn_create_lesson_title">Yeni Ders</string>
+    <string name="barn_lesson_title_label">Ders Başlığı</string>
+    <string name="barn_instructor_label">Eğitmen</string>
+    <string name="barn_lesson_duration_label">Süre (dk)</string>
+    <string name="barn_lesson_level_label">Seviye</string>
+    <string name="barn_lesson_price_label">Fiyat</string>
+    <string name="barn_lesson_capacity_label">Kapasite</string>
+    <string name="barn_lesson_save">Dersi Kaydet</string>
+    <string name="barn_lesson_cancel">Dersi İptal Et</string>
+    <string name="barn_lesson_roster_title">Katılımcılar</string>
+    <string name="barn_roster_empty">Henüz rezervasyon yok</string>
+    <string name="barn_roster_empty_subtitle">Ders rezerve eden öğrenciler burada görünecek</string>
+    <string name="barn_upcoming_lessons">Yaklaşan Dersler</string>
+    <string name="barn_no_upcoming_lessons">Yaklaşan ders yok</string>
+    <string name="barn_level_beginner">Başlangıç</string>
+    <string name="barn_level_intermediate">Orta</string>
+    <string name="barn_level_advanced">İleri</string>
 </resources>

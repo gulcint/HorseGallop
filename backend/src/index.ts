@@ -1896,3 +1896,145 @@ export const checkAndAwardBadges = onCall({ region: "us-central1" }, async (requ
 
   return { newBadges };
 });
+
+// ─────────────────────────────────────────────
+// B2B Barn Management Functions
+// ─────────────────────────────────────────────
+
+export const getBarnStats = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Login required");
+  const { barnId } = request.data ?? {};
+  if (!barnId) throw new HttpsError("invalid-argument", "barnId required");
+
+  try {
+    const lessonsSnap = await db.collection("lessons").where("barnId", "==", barnId).get();
+    const reservSnap = await db.collection("reservations").where("barnId", "==", barnId).get();
+    const now = Date.now();
+    const upcoming = lessonsSnap.docs.filter(d => ((d.data().startTimeMs as number) || 0) > now);
+    const uniqueStudents = new Set(reservSnap.docs.map(d => d.data().userId as string)).size;
+    return {
+      totalLessons: lessonsSnap.size,
+      totalReservations: reservSnap.size,
+      uniqueStudents,
+      upcomingLessonsCount: upcoming.length
+    };
+  } catch (_) {
+    throw new HttpsError("internal", "Failed to fetch stats");
+  }
+});
+
+export const getManagedLessons = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Login required");
+  const { barnId } = request.data ?? {};
+  if (!barnId) throw new HttpsError("invalid-argument", "barnId required");
+
+  try {
+    const snap = await db.collection("lessons")
+      .where("barnId", "==", barnId)
+      .orderBy("startTimeMs", "desc")
+      .limit(50)
+      .get();
+
+    const lessons = await Promise.all(snap.docs.map(async doc => {
+      const d = doc.data();
+      const reservSnap = await db.collection("reservations")
+        .where("lessonId", "==", doc.id)
+        .where("status", "!=", "cancelled")
+        .get();
+      return {
+        id: doc.id,
+        title: (d.title as string) || "",
+        instructorName: (d.instructorName as string) || "",
+        startTimeMs: (d.startTimeMs as number) || 0,
+        durationMin: (d.durationMin as number) || 60,
+        level: (d.level as string) || "beginner",
+        price: (d.price as number) || 0,
+        spotsTotal: (d.spotsTotal as number) || 10,
+        spotsBooked: reservSnap.size,
+        barnId: (d.barnId as string) || barnId,
+        isCancelled: (d.isCancelled as boolean) || false
+      };
+    }));
+    return { lessons };
+  } catch (_) {
+    throw new HttpsError("internal", "Failed to fetch lessons");
+  }
+});
+
+export const createLesson = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Login required");
+  const { barnId, title, instructorName, startTimeMs, durationMin, level, price, spotsTotal } = request.data ?? {};
+  if (!barnId || !title || !startTimeMs) {
+    throw new HttpsError("invalid-argument", "barnId, title, startTimeMs required");
+  }
+
+  try {
+    const ref = db.collection("lessons").doc();
+    const lesson = {
+      id: ref.id,
+      barnId,
+      title,
+      instructorName: instructorName || "",
+      startTimeMs,
+      durationMin: durationMin || 60,
+      level: level || "beginner",
+      price: price || 0,
+      spotsTotal: spotsTotal || 10,
+      isCancelled: false,
+      createdBy: request.auth.uid,
+      createdAt: Date.now()
+    };
+    await ref.set(lesson);
+    return { ...lesson, spotsBooked: 0 };
+  } catch (_) {
+    throw new HttpsError("internal", "Failed to create lesson");
+  }
+});
+
+export const cancelLesson = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Login required");
+  const { lessonId } = request.data ?? {};
+  if (!lessonId) throw new HttpsError("invalid-argument", "lessonId required");
+
+  try {
+    await db.collection("lessons").doc(lessonId as string).update({ isCancelled: true });
+    return { success: true };
+  } catch (_) {
+    throw new HttpsError("internal", "Failed to cancel lesson");
+  }
+});
+
+export const getLessonRoster = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Login required");
+  const { lessonId } = request.data ?? {};
+  if (!lessonId) throw new HttpsError("invalid-argument", "lessonId required");
+
+  try {
+    const reservSnap = await db.collection("reservations")
+      .where("lessonId", "==", lessonId)
+      .where("status", "!=", "cancelled")
+      .get();
+
+    const roster = await Promise.all(reservSnap.docs.map(async doc => {
+      const reservData = doc.data();
+      let displayName = "";
+      let email = "";
+      try {
+        const userDoc = await db.collection("users").doc(reservData.userId as string).get();
+        const userData = userDoc.data();
+        displayName = `${userData?.firstName || ""} ${userData?.lastName || ""}`.trim();
+        email = (userData?.email as string) || "";
+      } catch (_) { /* best-effort */ }
+      return {
+        userId: reservData.userId as string,
+        displayName,
+        email,
+        reservationId: doc.id,
+        bookedAtMs: (reservData.createdAt as number) || 0
+      };
+    }));
+    return { roster };
+  } catch (_) {
+    throw new HttpsError("internal", "Failed to fetch roster");
+  }
+});

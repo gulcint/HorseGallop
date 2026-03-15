@@ -24,11 +24,16 @@ class BarnDetailViewModel @Inject constructor(
 
     private val barnId: String = checkNotNull(savedStateHandle["id"])
 
+    private val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+
     private val _uiState = MutableStateFlow<BarnDetailUiState>(BarnDetailUiState.Loading)
     val uiState: StateFlow<BarnDetailUiState> = _uiState.asStateFlow()
 
     private val _bookingState = MutableStateFlow(BookingState())
     val bookingState: StateFlow<BookingState> = _bookingState.asStateFlow()
+
+    private val _isOwner = MutableStateFlow(false)
+    val isOwner: StateFlow<Boolean> = _isOwner.asStateFlow()
 
     init {
         loadBarnDetails()
@@ -46,6 +51,9 @@ class BarnDetailViewModel @Inject constructor(
             getBarnDetailUseCase(barnId).collect { barn ->
                 if (barn != null) {
                     _uiState.value = BarnDetailUiState.Success(barn)
+                    _isOwner.value = currentUserId != null &&
+                        barn.barn.ownerUserId != null &&
+                        barn.barn.ownerUserId == currentUserId
                 } else {
                     _uiState.value = BarnDetailUiState.Error("Barn not found")
                 }

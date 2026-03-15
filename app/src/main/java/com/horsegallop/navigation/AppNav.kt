@@ -61,6 +61,9 @@ import com.horsegallop.feature.ride.presentation.RideDetailScreen
 import com.horsegallop.feature.safety.presentation.SafetyScreen
 import com.horsegallop.feature.equestrian.presentation.EquestrianAgendaScreen
 import com.horsegallop.feature.challenge.presentation.ChallengeScreen
+import com.horsegallop.feature.barnmanagement.presentation.BarnDashboardScreen
+import com.horsegallop.feature.barnmanagement.presentation.CreateLessonScreen
+import com.horsegallop.feature.barnmanagement.presentation.LessonRosterScreen
 import com.horsegallop.feature.health.presentation.AddHealthEventScreen
 import com.horsegallop.feature.health.presentation.HealthScreen
 import com.horsegallop.feature.subscription.presentation.SubscriptionScreen
@@ -107,6 +110,15 @@ sealed class Dest(val route: String) {
   object HealthCalendar : Dest("health_calendar")
   object AddHealthEvent : Dest("add_health_event")
   object Challenges : Dest("challenges")
+  object BarnDashboard : Dest("barn_dashboard/{barnId}") {
+    fun route(barnId: String) = "barn_dashboard/$barnId"
+  }
+  object CreateLesson : Dest("create_lesson/{barnId}") {
+    fun route(barnId: String) = "create_lesson/$barnId"
+  }
+  object LessonRoster : Dest("lesson_roster/{lessonId}") {
+    fun route(lessonId: String) = "lesson_roster/$lessonId"
+  }
 }
 
 @Composable
@@ -462,7 +474,12 @@ fun AppNavHost(
       arguments = listOf(navArgument("id") { type = NavType.StringType })
     ) { backStackEntry ->
       BackHandler { navController.popBackStack() }
-      BarnDetailScreen(onBack = { navController.popBackStack() })
+      BarnDetailScreen(
+        onBack = { navController.popBackStack() },
+        onManageBarn = { barnId ->
+          navController.navigate(Dest.BarnDashboard.route(barnId))
+        }
+      )
     }
     composable(Dest.RecentActivityDetail.route) {
       BackHandler { navController.popBackStack() }
@@ -514,6 +531,41 @@ fun AppNavHost(
         onOpenTargetRoute = { route ->
           navController.navigate(route)
         }
+      )
+    }
+    composable(
+      route = Dest.BarnDashboard.route,
+      arguments = listOf(navArgument("barnId") { type = NavType.StringType })
+    ) { backStackEntry ->
+      BackHandler { navController.popBackStack() }
+      val barnId = backStackEntry.arguments?.getString("barnId") ?: ""
+      BarnDashboardScreen(
+        onBack = { navController.popBackStack() },
+        onCreateLesson = { _ ->
+          navController.navigate(Dest.CreateLesson.route(barnId))
+        },
+        onViewRoster = { lessonId ->
+          navController.navigate(Dest.LessonRoster.route(lessonId))
+        }
+      )
+    }
+    composable(
+      route = Dest.CreateLesson.route,
+      arguments = listOf(navArgument("barnId") { type = NavType.StringType })
+    ) {
+      BackHandler { navController.popBackStack() }
+      CreateLessonScreen(
+        onBack = { navController.popBackStack() },
+        onSuccess = { navController.popBackStack() }
+      )
+    }
+    composable(
+      route = Dest.LessonRoster.route,
+      arguments = listOf(navArgument("lessonId") { type = NavType.StringType })
+    ) {
+      BackHandler { navController.popBackStack() }
+      LessonRosterScreen(
+        onBack = { navController.popBackStack() }
       )
     }
   }
