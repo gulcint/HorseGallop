@@ -81,7 +81,7 @@ class BarnViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         loading = false,
-                        error = null,
+                        error = e.message ?: "Ahırlar yüklenemedi",
                         allBarns = emptyList(),
                         filteredBarns = emptyList()
                     )
@@ -114,7 +114,7 @@ class BarnViewModel @Inject constructor(
     }
 
     fun clearFilters() {
-        _uiState.update { it.copy(selectedFilters = emptySet()) }
+        _uiState.update { it.copy(selectedFilters = emptySet(), query = "") }
         applyFilters()
     }
 

@@ -203,7 +203,8 @@ fun BarnListScreen(
           }
         }
       } else if (uiState.filteredBarns.isEmpty()) {
-        val hasActiveSearch = uiState.selectedFilters.isNotEmpty() || uiState.query.isNotBlank()
+        val hasActiveFilters = uiState.selectedFilters.isNotEmpty()
+        val hasActiveSearch = hasActiveFilters || uiState.query.isNotBlank()
         Spacer(modifier = Modifier.height(12.dp))
         Card(
           shape = RoundedCornerShape(24.dp),
@@ -252,7 +253,7 @@ fun BarnListScreen(
               color = MaterialTheme.colorScheme.onSurfaceVariant,
               textAlign = TextAlign.Center
             )
-            if (hasActiveSearch) {
+            if (hasActiveFilters) {
               OutlinedButton(onClick = viewModel::clearFilters) {
                 Text(
                   text = stringResource(com.horsegallop.R.string.barn_clear_filters),
