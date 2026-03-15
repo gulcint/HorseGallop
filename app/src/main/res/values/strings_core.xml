@@ -671,4 +671,18 @@
     <string name="equestrian_agenda_error_title">Failed to Load Data</string>
     <string name="equestrian_agenda_error_subtitle">Check your connection and try syncing again.</string>
     <string name="refresh">Refresh</string>
+
+    <!-- Health Calendar (cross-horse) -->
+    <string name="health_calendar_title">Health Calendar</string>
+    <string name="health_event_type_farrier">Farrier</string>
+    <string name="health_event_type_vaccine">Vaccine</string>
+    <string name="health_event_type_dental">Dental Care</string>
+    <string name="health_event_type_vet">Vet Visit</string>
+    <string name="health_event_overdue">Overdue</string>
+    <string name="health_event_due_soon">Due Soon</string>
+    <string name="health_event_completed">Completed</string>
+    <string name="health_calendar_empty">No health events yet</string>
+    <string name="health_calendar_empty_subtitle">Track farrier, vaccine and vet appointments here.</string>
+    <string name="health_add_event">Add Event</string>
+    <string name="health_mark_complete">Mark Complete</string>
 </resources>

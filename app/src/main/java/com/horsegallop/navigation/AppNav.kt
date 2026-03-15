@@ -60,6 +60,8 @@ import com.horsegallop.feature.ride.presentation.RideTrackingViewModel
 import com.horsegallop.feature.ride.presentation.RideDetailScreen
 import com.horsegallop.feature.safety.presentation.SafetyScreen
 import com.horsegallop.feature.equestrian.presentation.EquestrianAgendaScreen
+import com.horsegallop.feature.health.presentation.AddHealthEventScreen
+import com.horsegallop.feature.health.presentation.HealthScreen
 import com.horsegallop.feature.subscription.presentation.SubscriptionScreen
 import com.horsegallop.feature.training.presentation.TrainingPlansScreen
 import com.horsegallop.ui.theme.LocalSemanticColors
@@ -101,6 +103,8 @@ sealed class Dest(val route: String) {
   }
   object Safety : Dest("safety")
   object EquestrianAgenda : Dest("equestrianAgenda")
+  object HealthCalendar : Dest("health_calendar")
+  object AddHealthEvent : Dest("add_health_event")
 }
 
 @Composable
@@ -334,6 +338,7 @@ fun AppNavHost(
         onEditProfile = { navController.navigate(Dest.ProfileEdit.route) },
         onMyHorses = { navController.navigate(Dest.MyHorses.route) },
         onNotifications = { navController.navigate(Dest.Notifications.route) },
+        onHealthCalendar = { navController.navigate(Dest.HealthCalendar.route) },
         onLogout = {
           navController.navigate(Dest.Onboarding.route) {
             popUpTo(Dest.Home.route) { inclusive = true }
@@ -478,6 +483,19 @@ fun AppNavHost(
       BackHandler { navController.popBackStack() }
       com.horsegallop.feature.barn.presentation.BarnsMapViewScreen(
         navController = navController
+      )
+    }
+    composable(Dest.HealthCalendar.route) {
+      BackHandler { navController.popBackStack() }
+      HealthScreen(
+        onBack = { navController.popBackStack() },
+        onAddEvent = { navController.navigate(Dest.AddHealthEvent.route) }
+      )
+    }
+    composable(Dest.AddHealthEvent.route) {
+      BackHandler { navController.popBackStack() }
+      AddHealthEventScreen(
+        onBack = { navController.popBackStack() }
       )
     }
     composable(Dest.Notifications.route) {

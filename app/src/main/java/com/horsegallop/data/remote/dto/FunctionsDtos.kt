@@ -174,6 +174,18 @@ data class SafetySettingsFunctionsDto(
     val autoAlarmMinutes: Int = 5
 )
 
+data class HealthEventFunctionsDto(
+    val id: String,
+    val userId: String = "",
+    val horseId: String,
+    val horseName: String = "",
+    val type: String,
+    val scheduledDate: Long,
+    val completedDate: Long? = null,
+    val notes: String = "",
+    val isCompleted: Boolean = false
+)
+
 data class EquestrianAnnouncementFunctionsDto(
     val id: String = "",
     val title: String = "",

@@ -1,6 +1,8 @@
 package com.horsegallop.data.di
 
 import com.horsegallop.data.auth.FirebaseAuthRepository
+import com.horsegallop.data.health.repository.HealthRepositoryImpl
+import com.horsegallop.domain.health.repository.HealthRepository
 import com.horsegallop.data.horse.repository.HorseHealthRepositoryImpl
 import com.horsegallop.data.horse.repository.HorseRepositoryImpl
 import com.horsegallop.data.safety.repository.SafetyRepositoryImpl
@@ -153,4 +155,10 @@ abstract class DataModule {
     abstract fun bindEquestrianAgendaRepository(
         equestrianAgendaRepositoryImpl: EquestrianAgendaRepositoryImpl
     ): EquestrianAgendaRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindHealthRepository(
+        healthRepositoryImpl: HealthRepositoryImpl
+    ): HealthRepository
 }

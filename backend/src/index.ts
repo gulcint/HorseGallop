@@ -1737,3 +1737,80 @@ export const getEquestrianCompetitions = onCall({ region: "us-central1" }, async
   const cached = await readScrapeCache<{ items: EquestrianCompetitionDto[] }>(EQUESTRIAN_COMPETITIONS_CACHE_KEY);
   return cached ?? { items: [] };
 });
+
+// ─── At Sağlık Takvimi ───────────────────────────────────────────────────────
+
+export const getHealthEvents = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Login required");
+  }
+  const uid = request.auth.uid;
+  const horseId = request.data?.horseId as string | undefined;
+
+  let query: FirebaseFirestore.Query = db.collection("healthEvents").where("userId", "==", uid);
+  if (horseId) {
+    query = query.where("horseId", "==", horseId);
+  }
+
+  const snapshot = await query.orderBy("scheduledDate", "desc").get();
+  return {
+    events: snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }))
+  };
+});
+
+export const saveHealthEvent = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Login required");
+  }
+  const uid = request.auth.uid;
+  const { id, horseId, horseName, type, scheduledDate, completedDate, notes, isCompleted } = request.data ?? {};
+
+  if (!horseId) throw new HttpsError("invalid-argument", "horseId required");
+  if (!type) throw new HttpsError("invalid-argument", "type required");
+  if (scheduledDate == null) throw new HttpsError("invalid-argument", "scheduledDate required");
+
+  const payload = {
+    userId: uid,
+    horseId,
+    horseName: horseName ?? "",
+    type,
+    scheduledDate,
+    completedDate: completedDate ?? null,
+    notes: notes ?? "",
+    isCompleted: isCompleted ?? false
+  };
+
+  if (id && id !== "") {
+    await db.collection("healthEvents").doc(id as string).set(payload, { merge: true });
+    return { id };
+  } else {
+    const ref = await db.collection("healthEvents").add(payload);
+    return { id: ref.id };
+  }
+});
+
+export const deleteHealthEvent = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Login required");
+  }
+  const { eventId } = request.data ?? {};
+  if (!eventId) throw new HttpsError("invalid-argument", "eventId required");
+  await db.collection("healthEvents").doc(eventId as string).delete();
+  return { success: true };
+});
+
+export const markHealthEventCompleted = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Login required");
+  }
+  const { eventId, completedDate } = request.data ?? {};
+  if (!eventId) throw new HttpsError("invalid-argument", "eventId required");
+  await db.collection("healthEvents").doc(eventId as string).update({
+    isCompleted: true,
+    completedDate: completedDate ?? Date.now()
+  });
+  return { success: true };
+});

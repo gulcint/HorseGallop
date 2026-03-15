@@ -13,6 +13,7 @@ import com.horsegallop.data.remote.dto.HomeDashboardFunctionsDto
 import com.horsegallop.data.remote.dto.HomeRecentActivityFunctionsDto
 import com.horsegallop.data.remote.dto.HomeStatsFunctionsDto
 import com.horsegallop.data.remote.dto.HorseFunctionsDto
+import com.horsegallop.data.remote.dto.HealthEventFunctionsDto
 import com.horsegallop.data.remote.dto.HorseHealthEventFunctionsDto
 import com.horsegallop.data.remote.dto.HorseTipFunctionsDto
 import com.horsegallop.data.remote.dto.LessonFunctionsDto
@@ -558,6 +559,55 @@ class AppFunctionsDataSource @Inject constructor(
                 imageUrl = m["imageUrl"] as? String
             )
         }
+    }
+
+    // ─── At Sağlık Takvimi ───────────────────────────────────────────────────
+
+    suspend fun getHealthEvents(horseId: String? = null): List<HealthEventFunctionsDto> {
+        val params = if (horseId != null) hashMapOf<String, Any>("horseId" to horseId) else hashMapOf()
+        val result = functions.getHttpsCallable("getHealthEvents").call(params).await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        val raw = payload["events"] as? List<*> ?: emptyList<Any?>()
+        return raw.mapNotNull { item ->
+            val m = item as? Map<*, *> ?: return@mapNotNull null
+            HealthEventFunctionsDto(
+                id = m["id"] as? String ?: return@mapNotNull null,
+                userId = (m["userId"] as? String).orEmpty(),
+                horseId = (m["horseId"] as? String).orEmpty(),
+                horseName = (m["horseName"] as? String).orEmpty(),
+                type = (m["type"] as? String) ?: "VET",
+                scheduledDate = (m["scheduledDate"] as? Number)?.toLong() ?: 0L,
+                completedDate = (m["completedDate"] as? Number)?.toLong(),
+                notes = (m["notes"] as? String).orEmpty(),
+                isCompleted = (m["isCompleted"] as? Boolean) ?: false
+            )
+        }
+    }
+
+    suspend fun saveHealthEvent(event: HealthEventFunctionsDto): String {
+        val params = hashMapOf<String, Any?>(
+            "id" to event.id,
+            "horseId" to event.horseId,
+            "horseName" to event.horseName,
+            "type" to event.type,
+            "scheduledDate" to event.scheduledDate,
+            "completedDate" to event.completedDate,
+            "notes" to event.notes,
+            "isCompleted" to event.isCompleted
+        )
+        val result = functions.getHttpsCallable("saveHealthEvent").call(params).await()
+        val map = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        return (map["id"] as? String).orEmpty()
+    }
+
+    suspend fun deleteHealthEvent(eventId: String) {
+        functions.getHttpsCallable("deleteHealthEvent")
+            .call(hashMapOf("eventId" to eventId)).await()
+    }
+
+    suspend fun markHealthEventCompleted(eventId: String, completedDate: Long) {
+        functions.getHttpsCallable("markHealthEventCompleted")
+            .call(hashMapOf("eventId" to eventId, "completedDate" to completedDate)).await()
     }
 
     suspend fun getEquestrianCompetitions(): List<com.horsegallop.data.remote.dto.EquestrianCompetitionFunctionsDto> {

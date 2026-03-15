@@ -25,6 +25,20 @@
     <string name="error_name_required">First and last name are required</string>
     <string name="error_email_invalid">Enter a valid email</string>
     <string name="error_password_length">Password must be at least 10 characters</string>
+    <!-- Health Calendar (cross-horse) -->
+    <string name="health_calendar_title">Health Calendar</string>
+    <string name="health_event_type_farrier">Farrier</string>
+    <string name="health_event_type_vaccine">Vaccine</string>
+    <string name="health_event_type_dental">Dental Care</string>
+    <string name="health_event_type_vet">Vet Visit</string>
+    <string name="health_event_overdue">Overdue</string>
+    <string name="health_event_due_soon">Due Soon</string>
+    <string name="health_event_completed">Completed</string>
+    <string name="health_calendar_empty">No health events yet</string>
+    <string name="health_calendar_empty_subtitle">Track farrier, vaccine and vet appointments here.</string>
+    <string name="health_add_event">Add Event</string>
+    <string name="health_mark_complete">Mark Complete</string>
+
     <string name="app_name">horsegallop</string>
     <string name="signin_google">Sign in with Google</string>
     <string name="signin_apple">Sign in with Apple</string>
