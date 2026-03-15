@@ -237,7 +237,7 @@ private fun VenueChip(
         onClick = onClick,
         label = {
             Text(
-                text = "${venue.name} (${venue.eventCount})",
+                text = stringResource(R.string.tbf_venue_event_count, venue.name, venue.eventCount),
                 style = MaterialTheme.typography.labelMedium
             )
         },
@@ -274,7 +274,7 @@ private fun TbfCompetitionCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "${competition.no}. Koşu",
+                        text = stringResource(R.string.tbf_competition_label, competition.no),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
