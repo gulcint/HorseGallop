@@ -1814,3 +1814,85 @@ export const markHealthEventCompleted = onCall({ region: "us-central1" }, async 
   });
   return { success: true };
 });
+
+// ─── Challenge / Badge System ────────────────────────────────────────────────
+
+export const getActiveChallenges = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Login required");
+  const userId = request.auth.uid;
+  const now = Date.now();
+
+  const globalSnapshot = await db.collection("challenges")
+    .where("endDate", ">", now)
+    .orderBy("endDate", "asc")
+    .get();
+
+  const userProgressSnapshot = await db.collection("userChallengeProgress")
+    .where("userId", "==", userId)
+    .get();
+
+  const progressMap = new Map(
+    userProgressSnapshot.docs.map(d => [d.data().challengeId as string, d.data().currentValue as number])
+  );
+
+  return {
+    challenges: globalSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      currentValue: progressMap.get(doc.id) ?? 0,
+      isCompleted: (progressMap.get(doc.id) ?? 0) >= (doc.data().targetValue as number)
+    }))
+  };
+});
+
+export const getEarnedBadges = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Login required");
+  const userId = request.auth.uid;
+
+  const snapshot = await db.collection("userBadges")
+    .where("userId", "==", userId)
+    .orderBy("earnedDate", "desc")
+    .get();
+
+  return {
+    badges: snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  };
+});
+
+export const checkAndAwardBadges = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Login required");
+  const userId = request.auth.uid;
+  const { distanceMeters, durationSeconds, avgSpeedKph } = request.data ?? {};
+
+  const newBadges: string[] = [];
+
+  const ridesSnapshot = await db.collection("trainings").where("userId", "==", userId).get();
+  const totalKm = ridesSnapshot.docs.reduce(
+    (sum, d) => sum + ((d.data().distanceMeters as number) / 1000),
+    0
+  );
+
+  const badgesToCheck = [
+    { type: "FIRST_RIDE", condition: ridesSnapshot.size >= 1 },
+    { type: "DISTANCE_10K", condition: totalKm >= 10 },
+    { type: "DISTANCE_50K", condition: totalKm >= 50 },
+    { type: "DISTANCE_100K", condition: totalKm >= 100 },
+    { type: "SPEED_DEMON", condition: (avgSpeedKph as number) >= 20 },
+  ];
+
+  const existingBadges = await db.collection("userBadges").where("userId", "==", userId).get();
+  const earnedTypes = new Set(existingBadges.docs.map(d => d.data().type as string));
+
+  for (const badge of badgesToCheck) {
+    if (badge.condition && !earnedTypes.has(badge.type)) {
+      await db.collection("userBadges").add({
+        userId,
+        type: badge.type,
+        earnedDate: Date.now()
+      });
+      newBadges.push(badge.type);
+    }
+  }
+
+  return { newBadges };
+});

@@ -685,4 +685,26 @@
     <string name="health_calendar_empty_subtitle">Track farrier, vaccine and vet appointments here.</string>
     <string name="health_add_event">Add Event</string>
     <string name="health_mark_complete">Mark Complete</string>
+
+    <!-- Challenge & Badge System -->
+    <string name="challenge_screen_title">Challenges</string>
+    <string name="challenge_tab_challenges">Challenges</string>
+    <string name="challenge_tab_badges">Badges</string>
+    <string name="challenge_empty">No active challenges yet</string>
+    <string name="challenge_empty_subtitle">New challenges coming soon.</string>
+    <string name="badge_empty">No badges earned yet</string>
+    <string name="badge_empty_subtitle">Start riding to earn your first badge!</string>
+    <string name="challenge_days_left">%d days left</string>
+    <string name="challenge_completed">Completed!</string>
+    <string name="badge_earned_date">Earned: %s</string>
+    <string name="badge_type_first_ride">First Ride</string>
+    <string name="badge_type_distance_10k">10 km Total</string>
+    <string name="badge_type_distance_50k">50 km Total</string>
+    <string name="badge_type_distance_100k">100 km Total</string>
+    <string name="badge_type_streak_7">7-Day Streak</string>
+    <string name="badge_type_streak_30">30-Day Streak</string>
+    <string name="badge_type_speed_demon">Speed Demon</string>
+    <string name="badge_type_early_bird">Early Bird</string>
+    <string name="badge_type_monthly_champion">Monthly Champion</string>
+    <string name="badge_type_social_rider">Social Rider</string>
 </resources>

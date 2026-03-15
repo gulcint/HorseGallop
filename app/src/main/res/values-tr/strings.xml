@@ -653,4 +653,26 @@
     <string name="equestrian_agenda_error_title">Veriler Yüklenemedi</string>
     <string name="equestrian_agenda_error_subtitle">Bağlantınızı kontrol edin ve senkronizasyonu yeniden deneyin.</string>
     <string name="refresh">Yenile</string>
+
+    <!-- Challenge & Badge System -->
+    <string name="challenge_screen_title">Meydan Okumalar</string>
+    <string name="challenge_tab_challenges">Meydan Okumalar</string>
+    <string name="challenge_tab_badges">Rozetler</string>
+    <string name="challenge_empty">Henüz aktif meydan okuma yok</string>
+    <string name="challenge_empty_subtitle">Yeni meydan okumalar yakında eklenecek.</string>
+    <string name="badge_empty">Henüz rozet kazanılmadı</string>
+    <string name="badge_empty_subtitle">İlk rozeti kazanmak için sürüşe çık!</string>
+    <string name="challenge_days_left">%d gün kaldı</string>
+    <string name="challenge_completed">Tamamlandı!</string>
+    <string name="badge_earned_date">Kazanıldı: %s</string>
+    <string name="badge_type_first_ride">İlk Sürüş</string>
+    <string name="badge_type_distance_10k">10 km Toplam</string>
+    <string name="badge_type_distance_50k">50 km Toplam</string>
+    <string name="badge_type_distance_100k">100 km Toplam</string>
+    <string name="badge_type_streak_7">7 Günlük Seri</string>
+    <string name="badge_type_streak_30">30 Günlük Seri</string>
+    <string name="badge_type_speed_demon">Hız Şeytanı</string>
+    <string name="badge_type_early_bird">Erken Kalkan</string>
+    <string name="badge_type_monthly_champion">Aylık Şampiyon</string>
+    <string name="badge_type_social_rider">Sosyal Binici</string>
 </resources>

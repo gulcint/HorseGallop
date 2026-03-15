@@ -625,4 +625,25 @@ class AppFunctionsDataSource @Inject constructor(
             )
         }
     }
+
+    // ─── Challenge / Badge System ─────────────────────────────────────────────
+
+    suspend fun getActiveChallenges(): List<Map<String, Any>> {
+        val result = functions.getHttpsCallable("getActiveChallenges").call(emptyMap<String, Any>()).await()
+        @Suppress("UNCHECKED_CAST")
+        return ((result.getData() as? Map<String, Any>)?.get("challenges") as? List<Map<String, Any>>) ?: emptyList()
+    }
+
+    suspend fun getEarnedBadges(): List<Map<String, Any>> {
+        val result = functions.getHttpsCallable("getEarnedBadges").call(emptyMap<String, Any>()).await()
+        @Suppress("UNCHECKED_CAST")
+        return ((result.getData() as? Map<String, Any>)?.get("badges") as? List<Map<String, Any>>) ?: emptyList()
+    }
+
+    suspend fun checkAndAwardBadges(distanceMeters: Double, durationSeconds: Long, avgSpeedKph: Double): List<String> {
+        val params = mapOf("distanceMeters" to distanceMeters, "durationSeconds" to durationSeconds, "avgSpeedKph" to avgSpeedKph)
+        val result = functions.getHttpsCallable("checkAndAwardBadges").call(params).await()
+        @Suppress("UNCHECKED_CAST")
+        return ((result.getData() as? Map<String, Any>)?.get("newBadges") as? List<String>) ?: emptyList()
+    }
 }

@@ -60,6 +60,7 @@ import com.horsegallop.feature.ride.presentation.RideTrackingViewModel
 import com.horsegallop.feature.ride.presentation.RideDetailScreen
 import com.horsegallop.feature.safety.presentation.SafetyScreen
 import com.horsegallop.feature.equestrian.presentation.EquestrianAgendaScreen
+import com.horsegallop.feature.challenge.presentation.ChallengeScreen
 import com.horsegallop.feature.health.presentation.AddHealthEventScreen
 import com.horsegallop.feature.health.presentation.HealthScreen
 import com.horsegallop.feature.subscription.presentation.SubscriptionScreen
@@ -105,6 +106,7 @@ sealed class Dest(val route: String) {
   object EquestrianAgenda : Dest("equestrianAgenda")
   object HealthCalendar : Dest("health_calendar")
   object AddHealthEvent : Dest("add_health_event")
+  object Challenges : Dest("challenges")
 }
 
 @Composable
@@ -339,6 +341,7 @@ fun AppNavHost(
         onMyHorses = { navController.navigate(Dest.MyHorses.route) },
         onNotifications = { navController.navigate(Dest.Notifications.route) },
         onHealthCalendar = { navController.navigate(Dest.HealthCalendar.route) },
+        onChallenges = { navController.navigate(Dest.Challenges.route) },
         onLogout = {
           navController.navigate(Dest.Onboarding.route) {
             popUpTo(Dest.Home.route) { inclusive = true }
@@ -495,6 +498,12 @@ fun AppNavHost(
     composable(Dest.AddHealthEvent.route) {
       BackHandler { navController.popBackStack() }
       AddHealthEventScreen(
+        onBack = { navController.popBackStack() }
+      )
+    }
+    composable(Dest.Challenges.route) {
+      BackHandler { navController.popBackStack() }
+      ChallengeScreen(
         onBack = { navController.popBackStack() }
       )
     }
