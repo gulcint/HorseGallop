@@ -62,6 +62,8 @@ import com.horsegallop.feature.safety.presentation.SafetyScreen
 import com.horsegallop.feature.equestrian.presentation.EquestrianAgendaScreen
 import com.horsegallop.feature.challenge.presentation.ChallengeScreen
 import com.horsegallop.feature.aicoach.presentation.AiCoachScreen
+import com.horsegallop.feature.tjk.presentation.TjkScreen
+import com.horsegallop.feature.tjk.presentation.TjkRaceDetailScreen
 import com.horsegallop.feature.barnmanagement.presentation.BarnDashboardScreen
 import com.horsegallop.feature.barnmanagement.presentation.CreateLessonScreen
 import com.horsegallop.feature.barnmanagement.presentation.LessonRosterScreen
@@ -121,6 +123,10 @@ sealed class Dest(val route: String) {
     fun route(lessonId: String) = "lesson_roster/$lessonId"
   }
   object AiCoach : Dest("ai_coach")
+  object TjkRaces : Dest("tjk_races")
+  object TjkRaceDetail : Dest("tjk_race_detail/{hippodromeCode}/{raceIndex}") {
+    fun route(code: String, index: Int) = "tjk_race_detail/$code/$index"
+  }
 }
 
 @Composable
@@ -357,6 +363,7 @@ fun AppNavHost(
         onHealthCalendar = { navController.navigate(Dest.HealthCalendar.route) },
         onChallenges = { navController.navigate(Dest.Challenges.route) },
         onAiCoach = { navController.navigate(Dest.AiCoach.route) },
+        onTjkRaces = { navController.navigate(Dest.TjkRaces.route) },
         onLogout = {
           navController.navigate(Dest.Onboarding.route) {
             popUpTo(Dest.Home.route) { inclusive = true }
@@ -574,6 +581,25 @@ fun AppNavHost(
     composable(Dest.AiCoach.route) {
       BackHandler { navController.popBackStack() }
       AiCoachScreen(onBack = { navController.popBackStack() })
+    }
+    composable(Dest.TjkRaces.route) {
+      BackHandler { navController.popBackStack() }
+      TjkScreen(
+        onBack = { navController.popBackStack() },
+        onRaceClick = { hippodromeCode, raceIndex ->
+          navController.navigate(Dest.TjkRaceDetail.route(hippodromeCode, raceIndex))
+        }
+      )
+    }
+    composable(
+      route = Dest.TjkRaceDetail.route,
+      arguments = listOf(
+        navArgument("hippodromeCode") { type = NavType.StringType },
+        navArgument("raceIndex") { type = NavType.StringType }
+      )
+    ) {
+      BackHandler { navController.popBackStack() }
+      TjkRaceDetailScreen(onBack = { navController.popBackStack() })
     }
   }
   }

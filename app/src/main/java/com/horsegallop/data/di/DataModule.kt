@@ -2,6 +2,8 @@ package com.horsegallop.data.di
 
 import com.horsegallop.data.aicoach.repository.AiCoachRepositoryImpl
 import com.horsegallop.domain.aicoach.repository.AiCoachRepository
+import com.horsegallop.data.tjk.repository.TjkRepositoryImpl
+import com.horsegallop.domain.tjk.repository.TjkRepository
 import com.horsegallop.data.auth.FirebaseAuthRepository
 import com.horsegallop.data.barnmanagement.repository.BarnManagementRepositoryImpl
 import com.horsegallop.domain.barnmanagement.repository.BarnManagementRepository
@@ -185,4 +187,10 @@ abstract class DataModule {
     abstract fun bindAiCoachRepository(
         aiCoachRepositoryImpl: AiCoachRepositoryImpl
     ): AiCoachRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTjkRepository(
+        tjkRepositoryImpl: TjkRepositoryImpl
+    ): TjkRepository
 }

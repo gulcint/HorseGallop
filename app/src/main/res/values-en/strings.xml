@@ -711,4 +711,13 @@
     <string name="ai_coach_thinking">Thinking...</string>
     <string name="ai_coach_send">Send</string>
     <string name="ai_coach_error">Unable to get response. Please try again.</string>
+
+    <!-- TJK Races -->
+    <string name="tjk_races_title">Races</string>
+    <string name="tjk_program_tab">Program</string>
+    <string name="tjk_results_tab">Results</string>
+    <string name="tjk_no_races">No races found for today</string>
+    <string name="tjk_race_distance">%1$dm %2$s</string>
+    <string name="tjk_select_hippodrome">Select hippodrome</string>
+    <string name="tjk_loading">Loading races...</string>
 </resources>

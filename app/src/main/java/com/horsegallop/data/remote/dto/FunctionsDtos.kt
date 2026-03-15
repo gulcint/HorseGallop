@@ -264,3 +264,55 @@ data class StudentRosterEntryDto(
 
 data class AiCoachMessageDto(val role: String, val text: String)
 data class AiCoachAnswerDto(val answer: String)
+
+// ─── TJK Race DTOs ────────────────────────────────────────────────────────────
+
+data class TjkHippodromeDto(
+    val code: String,
+    val name: String,
+    val raceCount: Int,
+    val time: String = ""
+)
+
+data class TjkRaceDayDto(
+    val date: String,
+    val type: String,
+    val hippodromes: List<TjkHippodromeDto>
+)
+
+data class TjkHorseDto(
+    val no: String,
+    val name: String,
+    val jockey: String,
+    val trainer: String,
+    val owner: String,
+    val weight: Int,
+    val age: String,
+    val last6: String,
+    val odds: String,
+    val bestTime: String,
+    val result: String = "",
+    val time: String = "",
+    val gap: String = ""
+)
+
+data class TjkRaceDto(
+    val no: String,
+    val name: String,
+    val distance: Int,
+    val surface: String,
+    val time: String,
+    val prize: Long,
+    val horses: List<TjkHorseDto>
+)
+
+data class TjkRaceCardDto(
+    val hippodrome: String,
+    val date: String,
+    val type: String,
+    val races: List<TjkRaceDto>,
+    val weather: String = "",
+    val trackCondition: String = ""
+)
+
+data class TjkUpcomingRacesDto(val days: List<TjkRaceDayDto>)

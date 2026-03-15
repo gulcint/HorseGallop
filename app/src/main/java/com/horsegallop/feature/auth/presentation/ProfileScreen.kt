@@ -64,6 +64,7 @@ fun ProfileScreen(
     onHealthCalendar: () -> Unit = {},
     onChallenges: () -> Unit = {},
     onAiCoach: () -> Unit = {},
+    onTjkRaces: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -210,7 +211,8 @@ fun ProfileScreen(
                     onLogout = { viewModel.signOut(onLogout) },
                     onHealthCalendar = onHealthCalendar,
                     onChallenges = onChallenges,
-                    onAiCoach = onAiCoach
+                    onAiCoach = onAiCoach,
+                    onTjkRaces = onTjkRaces
                 )
             }
 
