@@ -30,6 +30,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
@@ -148,6 +151,7 @@ fun BarnDetailContent(
 ) {
     val feedback = LocalAppFeedbackController.current
     val semantic = LocalSemanticColors.current
+    val context = LocalContext.current
     var showReservationSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(bookingState.bookingSuccess) {
@@ -517,7 +521,14 @@ fun BarnDetailContent(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     OutlinedButton(
-                        onClick = { /* Call action */ },
+                        onClick = {
+                            val phone = barn.barn.phone
+                            if (!phone.isNullOrBlank()) {
+                                context.startActivity(
+                                    Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
+                                )
+                            }
+                        },
                         modifier = Modifier
                             .weight(1f)
                             .height(56.dp),
