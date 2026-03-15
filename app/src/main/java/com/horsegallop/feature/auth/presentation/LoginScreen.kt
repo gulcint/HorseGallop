@@ -54,15 +54,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.horsegallop.R
 import com.horsegallop.core.components.HorseLoadingOverlay
 import com.horsegallop.core.debug.AppLog
 import com.horsegallop.core.feedback.LocalAppFeedbackController
 import com.horsegallop.ui.theme.LocalSemanticColors
 import com.horsegallop.ui.theme.LocalTextColors
-import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -180,14 +177,10 @@ fun LoginScreen(
             // ── Hero ──────────────────────────────────────────────────────────
             Spacer(modifier = Modifier.weight(0.45f))
 
-            // Coil handles adaptive icons (API 26+ XML) correctly — painterResource crashes on them
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(R.mipmap.ic_launcher)
-                    .crossfade(true)
-                    .build(),
+            Image(
+                painter = painterResource(id = R.mipmap.ic_launcher_foreground),
                 contentDescription = stringResource(R.string.app_name),
-                modifier = Modifier.size(96.dp)
+                modifier = Modifier.size(88.dp)
             )
             Spacer(modifier = Modifier.height(20.dp))
             Text(
@@ -376,7 +369,6 @@ fun GoogleSignInButton(loading: Boolean = false, onClick: () -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
-                .let { base -> if (loading) base.shimmer() else base }
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_google_logo),

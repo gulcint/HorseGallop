@@ -16,6 +16,7 @@ Bu dosya, repo icinde kalici urun/backlog hafizasi icindir. Yeni oturumlarda onc
 - Auth dark mode polish: login ve sifre yenileme CTA kontrastlari ortak semantic button stiliyle iyilestirildi.
 - Startup jank azaltma: splash ve onboarding acilis sesleri kaldirilarak ilk frame yukleri hafifletildi.
 - Startup jank polish: splash Lottie statik badge'e indirildi, onboarding sonsuz animasyonlari kaldirildi, kritik olmayan startup veri yukleri ertelendi.
+- Startup profiling: cold start olcumlerinde yeni ANR gorulmedi; ancak `Login` tarafinda hala yuksek `Skipped frames` ve yavas UI thread sinyali var. Async launcher icon/shimmer kaldirildi, `Home` tam ekran gradient arka plani sadeleştirildi.
 
 ## Backlog
 

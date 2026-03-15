@@ -91,15 +91,7 @@ private fun HomeDashboard(
     LazyColumn(
       modifier = Modifier
         .fillMaxSize()
-        .background(
-          Brush.verticalGradient(
-            colors = listOf(
-              MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.18f),
-              MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.12f),
-              semantic.screenBase
-            )
-          )
-        ),
+        .background(semantic.screenBase),
       contentPadding = PaddingValues(
         start = dimensionResource(id = com.horsegallop.R.dimen.padding_screen_horizontal),
         end = dimensionResource(id = com.horsegallop.R.dimen.padding_screen_horizontal),
@@ -147,8 +139,10 @@ private fun HomeDashboard(
         )
       }
       
-      item {
-        TipsSection(tip = uiState.currentTip)
+      if (uiState.currentTip != null || !uiState.loading) {
+        item {
+          TipsSection(tip = uiState.currentTip)
+        }
       }
     }
   }
