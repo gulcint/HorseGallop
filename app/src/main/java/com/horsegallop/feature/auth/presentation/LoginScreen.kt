@@ -6,11 +6,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,11 +25,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,11 +39,18 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -53,15 +59,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.horsegallop.R
 import com.horsegallop.core.components.HorseLoadingOverlay
 import com.horsegallop.core.debug.AppLog
 import com.horsegallop.core.feedback.LocalAppFeedbackController
 import com.horsegallop.ui.theme.LocalSemanticColors
 import com.horsegallop.ui.theme.LocalTextColors
-import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -130,15 +133,18 @@ fun LoginScreen(
                     val msgKey = effect.message
                     val resId = when (msgKey) {
                         "auth_error_google" -> R.string.auth_error_google
-                        "auth_error_firebase" -> R.string.auth_error_firebase
                         "auth_error_cancelled" -> R.string.auth_error_cancelled
                         "auth_error_token_missing" -> R.string.auth_error_token_missing
                         "login_verify_email_sent",
                         "verification_email_sent" -> R.string.login_verify_email_sent
                         "Email not verified" -> R.string.error_email_not_verified
-                        else -> {
-                            AppLog.e("LoginScreen", "Unhandled key: $msgKey")
-                            R.string.error_unknown
+                        else -> when {
+                            msgKey.startsWith("auth_error_firebase") -> R.string.auth_error_firebase
+                            msgKey.startsWith("google_error_code:") -> R.string.auth_error_google
+                            else -> {
+                                AppLog.e("LoginScreen", "Unhandled key: $msgKey")
+                                R.string.error_unknown
+                            }
                         }
                     }
                     if (msgKey.contains("sent")) feedback.showSuccess(resId)
@@ -176,14 +182,10 @@ fun LoginScreen(
             // ── Hero ──────────────────────────────────────────────────────────
             Spacer(modifier = Modifier.weight(0.45f))
 
-            // Coil handles adaptive icons (API 26+ XML) correctly — painterResource crashes on them
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(R.mipmap.ic_launcher)
-                    .crossfade(true)
-                    .build(),
+            Image(
+                painter = painterResource(id = R.mipmap.ic_launcher_round),
                 contentDescription = stringResource(R.string.app_name),
-                modifier = Modifier.size(96.dp)
+                modifier = Modifier.size(88.dp)
             )
             Spacer(modifier = Modifier.height(20.dp))
             Text(
@@ -223,9 +225,13 @@ fun LoginScreen(
                         color = LocalTextColors.current.titlePrimary
                     )
 
-                    // Google — first option
-                    GoogleSignInButton(loading = uiState.isLoading) {
-                        if (!uiState.isLoading) {
+                    AuthOptionButton(
+                        title = stringResource(R.string.signin_google),
+                        subtitle = stringResource(R.string.login_google_helper),
+                        enabled = !uiState.isLoading && uiState.agreementAccepted,
+                        modifier = Modifier.alpha(if (uiState.agreementAccepted) 1f else 0.5f),
+                        onClick = {
+                        if (!uiState.isLoading && uiState.agreementAccepted) {
                             scope.launch(Dispatchers.IO) {
                                 val available = GoogleApiAvailability.getInstance()
                                     .isGooglePlayServicesAvailable(context)
@@ -233,17 +239,24 @@ fun LoginScreen(
                                     if (available != ConnectionResult.SUCCESS) {
                                         feedback.showError(R.string.auth_error_play_services)
                                     } else {
-                                        val acct = GoogleSignIn.getLastSignedInAccount(context)
-                                        if (acct != null && !acct.idToken.isNullOrEmpty()) {
-                                            vm.loginWithGoogle(acct.idToken!!)
-                                        } else {
+                                        // Reusing the cached idToken is unsafe here because Google may return
+                                        // a stale token from a previous session. Always request a fresh sign-in.
+                                        googleClient.signOut().addOnCompleteListener {
                                             launcher.launch(googleClient.signInIntent)
                                         }
                                     }
                                 }
                             }
                         }
-                    }
+                        },
+                        icon = {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_google_logo),
+                                contentDescription = stringResource(R.string.cd_google_logo),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    )
 
                     // Divider
                     Row(
@@ -266,31 +279,61 @@ fun LoginScreen(
                         )
                     }
 
-                    // Email — second option (navigates to EmailLoginScreen)
-                    OutlinedButton(
+                    AuthOptionButton(
+                        title = stringResource(R.string.signin_email),
+                        subtitle = stringResource(R.string.login_email_helper),
                         onClick = onEmailClick,
-                        enabled = !uiState.isLoading,
+                        enabled = !uiState.isLoading && uiState.agreementAccepted,
+                        modifier = Modifier.alpha(if (uiState.agreementAccepted) 1f else 0.5f),
+                        accentTint = MaterialTheme.colorScheme.primary,
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Filled.Email,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    )
+
+                    // ── Agreement checkbox ────────────────────────────────────
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        border = BorderStroke(
-                            1.dp,
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
-                        )
+                            .padding(top = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Email,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
+                        Checkbox(
+                            checked = uiState.agreementAccepted,
+                            onCheckedChange = { vm.toggleAgreement() },
+                            modifier = Modifier.semantics {
+                                contentDescription = "agreement_checkbox"
+                            },
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = MaterialTheme.colorScheme.primary,
+                                uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         )
-                        Spacer(modifier = Modifier.width(10.dp))
+                        val primaryColor = MaterialTheme.colorScheme.primary
+                        val textColor = LocalTextColors.current.bodySecondary
+                        val termsText = stringResource(R.string.agreement_terms_link)
+                        val privacyText = stringResource(R.string.agreement_privacy_link)
+                        val fullLabel = buildAnnotatedString {
+                            append(stringResource(R.string.agreement_label_prefix))
+                            withStyle(SpanStyle(color = primaryColor, fontWeight = FontWeight.SemiBold)) {
+                                append(termsText)
+                            }
+                            append(stringResource(R.string.agreement_label_connector))
+                            withStyle(SpanStyle(color = primaryColor, fontWeight = FontWeight.SemiBold)) {
+                                append(privacyText)
+                            }
+                            append(stringResource(R.string.agreement_label_suffix))
+                        }
                         Text(
-                            text = stringResource(R.string.signin_email),
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.primary
+                            text = fullLabel,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = textColor,
+                            modifier = Modifier.weight(1f)
                         )
                     }
                 }
@@ -308,23 +351,12 @@ fun LoginScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Terms
-            Text(
-                text = stringResource(R.string.terms_consent),
-                style = MaterialTheme.typography.bodySmall,
-                color = LocalTextColors.current.bodyTertiary,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
             Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
 
-@Preview(showBackground = true, name = "LoginScreen")
+@Preview(showBackground = true, name = "LoginScreen – agreement unchecked")
 @Composable
 private fun PreviewLoginScreen() {
     MaterialTheme {
@@ -332,73 +364,77 @@ private fun PreviewLoginScreen() {
     }
 }
 
+@Preview(showBackground = true, name = "LoginScreen – agreement checked")
 @Composable
-fun GoogleSignInButton(loading: Boolean = false, onClick: () -> Unit) {
-    val semantic = LocalSemanticColors.current
-    Surface(
-        onClick = if (loading) ({}) else onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(52.dp),
-        shape = RoundedCornerShape(14.dp),
-        color = semantic.cardElevated,
-        shadowElevation = 2.dp,
-        border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-                .let { base -> if (loading) base.shimmer() else base }
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_google_logo),
-                contentDescription = stringResource(R.string.cd_google_logo),
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(
-                text = stringResource(R.string.signin_google),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
+private fun PreviewLoginScreenAgreementAccepted() {
+    MaterialTheme {
+        LoginScreen()
     }
 }
 
 @Composable
-fun EmailSignInButton(onClick: () -> Unit) {
+private fun AuthOptionButton(
+    title: String,
+    subtitle: String,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    accentTint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface,
+    icon: @Composable () -> Unit
+) {
     val semantic = LocalSemanticColors.current
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     Surface(
-        onClick = onClick,
-        modifier = Modifier
+        onClick = if (enabled) onClick else ({}),
+        modifier = modifier
             .fillMaxWidth()
-            .height(52.dp),
-        shape = RoundedCornerShape(14.dp),
-        color = MaterialTheme.colorScheme.primary,
-        shadowElevation = 2.dp
+            .height(72.dp),
+        shape = RoundedCornerShape(18.dp),
+        color = if (isDark) semantic.cardElevated else semantic.cardSubtle,
+        shadowElevation = 2.dp,
+        border = BorderStroke(
+            1.dp,
+            if (enabled) semantic.cardStroke else semantic.cardStroke.copy(alpha = 0.45f)
+        )
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
+            horizontalArrangement = Arrangement.Start,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_email_icon),
-                contentDescription = stringResource(R.string.cd_email_icon),
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(10.dp))
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        accentTint.copy(alpha = if (isDark) 0.18f else 0.12f),
+                        RoundedCornerShape(12.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                icon()
+            }
+            Spacer(modifier = Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             Text(
-                text = stringResource(R.string.continue_with_email),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onPrimary
+                text = stringResource(R.string.login_continue_short),
+                style = MaterialTheme.typography.labelMedium,
+                color = accentTint,
+                fontWeight = FontWeight.SemiBold
             )
         }
     }

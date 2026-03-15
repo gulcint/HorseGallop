@@ -1,15 +1,30 @@
 package com.horsegallop.data.remote.functions
 
 import com.google.firebase.functions.FirebaseFunctions
+import com.horsegallop.data.remote.dto.AiCoachAnswerDto
+import com.horsegallop.data.remote.dto.AiCoachMessageDto
+import com.horsegallop.data.remote.dto.TbfVenueDto
+import com.horsegallop.data.remote.dto.TbfEventCardDto
+import com.horsegallop.data.remote.dto.TbfEventDayDto
+import com.horsegallop.data.remote.dto.TbfCompetitionDto
+import com.horsegallop.data.remote.dto.TbfAthleteDto
+import com.horsegallop.data.remote.dto.TbfUpcomingEventsDto
 import com.horsegallop.data.remote.dto.BarnFunctionsDto
+import com.horsegallop.data.remote.dto.BarnStatsDto
+import com.horsegallop.data.remote.dto.ManagedLessonDto
+import com.horsegallop.data.remote.dto.StudentRosterEntryDto
 import com.horsegallop.data.remote.dto.BarnInstructorFunctionsDto
 import com.horsegallop.data.remote.dto.BarnReviewFunctionsDto
 import com.horsegallop.data.remote.dto.AppContentFunctionsDto
 import com.horsegallop.data.remote.dto.BreedFunctionsDto
+import com.horsegallop.data.remote.dto.FederationSourceHealthFunctionsDto
+import com.horsegallop.data.remote.dto.FederationManualSyncFunctionsDto
+import com.horsegallop.data.remote.dto.FederatedBarnSyncStatusFunctionsDto
 import com.horsegallop.data.remote.dto.HomeDashboardFunctionsDto
 import com.horsegallop.data.remote.dto.HomeRecentActivityFunctionsDto
 import com.horsegallop.data.remote.dto.HomeStatsFunctionsDto
 import com.horsegallop.data.remote.dto.HorseFunctionsDto
+import com.horsegallop.data.remote.dto.HealthEventFunctionsDto
 import com.horsegallop.data.remote.dto.HorseHealthEventFunctionsDto
 import com.horsegallop.data.remote.dto.HorseTipFunctionsDto
 import com.horsegallop.data.remote.dto.LessonFunctionsDto
@@ -59,7 +74,7 @@ class AppFunctionsDataSource @Inject constructor(
 
     suspend fun getBarns(lat: Double? = null, lng: Double? = null): List<BarnFunctionsDto> {
         val params = if (lat != null && lng != null) hashMapOf("lat" to lat, "lng" to lng) else null
-        val result = functions.getHttpsCallable("getBarns").call(params).await()
+        val result = functions.getHttpsCallable("getFederatedBarns").call(params).await()
         val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
         val items = payload["items"] as? List<*> ?: emptyList<Any?>()
         return items.mapNotNull { item ->
@@ -69,9 +84,63 @@ class AppFunctionsDataSource @Inject constructor(
     }
 
     suspend fun getBarnDetail(id: String): BarnFunctionsDto {
-        val result = functions.getHttpsCallable("getBarnDetail").call(hashMapOf("id" to id)).await()
+        val result = functions.getHttpsCallable("getFederatedBarnDetail").call(hashMapOf("id" to id)).await()
         val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
         return mapBarn(payload) ?: throw IllegalStateException("Invalid barn payload")
+    }
+
+    suspend fun getFederatedBarnsSyncStatus(): FederatedBarnSyncStatusFunctionsDto {
+        val result = functions.getHttpsCallable("getFederatedBarnsSyncStatus").call().await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        return FederatedBarnSyncStatusFunctionsDto(
+            status = (payload["status"] as? String).orEmpty(),
+            syncedAt = (payload["syncedAt"] as? String).orEmpty(),
+            itemCount = (payload["itemCount"] as? Number)?.toInt() ?: 0,
+            errorMessage = payload["errorMessage"] as? String
+        )
+    }
+
+    suspend fun triggerFederationManualSync(): FederationManualSyncFunctionsDto {
+        val result = functions.getHttpsCallable("triggerFederationManualSync").call().await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        return FederationManualSyncFunctionsDto(
+            syncedAt = (payload["syncedAt"] as? String).orEmpty(),
+            barnsCount = (payload["barnsCount"] as? Number)?.toInt() ?: 0,
+            announcementsCount = (payload["announcementsCount"] as? Number)?.toInt() ?: 0,
+            competitionsCount = (payload["competitionsCount"] as? Number)?.toInt() ?: 0,
+            throttled = (payload["throttled"] as? Boolean) ?: false
+        )
+    }
+
+    suspend fun triggerFederationDebugSync(): FederationManualSyncFunctionsDto {
+        val result = functions.getHttpsCallable("triggerFederationDebugSync").call().await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        return FederationManualSyncFunctionsDto(
+            syncedAt = (payload["syncedAt"] as? String).orEmpty(),
+            barnsCount = (payload["barnsCount"] as? Number)?.toInt() ?: 0,
+            announcementsCount = (payload["announcementsCount"] as? Number)?.toInt() ?: 0,
+            competitionsCount = (payload["competitionsCount"] as? Number)?.toInt() ?: 0,
+            throttled = (payload["throttled"] as? Boolean) ?: false
+        )
+    }
+
+    suspend fun getFederationSourceHealth(): List<FederationSourceHealthFunctionsDto> {
+        val result = functions.getHttpsCallable("getFederationSourceHealth").call().await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        val items = payload["items"] as? List<*> ?: emptyList<Any?>()
+        return items.mapNotNull { item ->
+            val map = item as? Map<*, *> ?: return@mapNotNull null
+            FederationSourceHealthFunctionsDto(
+                source = (map["source"] as? String).orEmpty(),
+                status = (map["status"] as? String).orEmpty(),
+                itemCount = (map["itemCount"] as? Number)?.toInt() ?: 0,
+                lastAttemptAt = (map["lastAttemptAt"] as? String).orEmpty(),
+                lastSuccessAt = (map["lastSuccessAt"] as? String).orEmpty(),
+                dataAgeMinutes = (map["dataAgeMinutes"] as? Number)?.toInt() ?: -1,
+                isStale = (map["isStale"] as? Boolean) ?: false,
+                errorMessage = map["errorMessage"] as? String
+            )
+        }
     }
 
     suspend fun getLessons(from: String? = null, to: String? = null): List<LessonFunctionsDto> {
@@ -486,56 +555,304 @@ class AppFunctionsDataSource @Inject constructor(
             .call(hashMapOf("lat" to lat, "lng" to lng)).await()
     }
 
-    // ─── TJK ──────────────────────────────────────────────────────────────────
-
-    suspend fun getTjkRaceDay(
-        date: String,
-        cityId: Int
-    ): com.horsegallop.data.remote.dto.TjkRaceDayFunctionsDto {
-        val result = functions.getHttpsCallable("getTjkRaceDay")
-            .call(hashMapOf("date" to date, "cityId" to cityId)).await()
-        val payload = result.data as? Map<*, *> ?: return com.horsegallop.data.remote.dto.TjkRaceDayFunctionsDto()
-
-        val races = (payload["races"] as? List<*>)?.mapNotNull { raceRaw ->
-            val r = raceRaw as? Map<*, *> ?: return@mapNotNull null
-            val results = (r["results"] as? List<*>)?.mapNotNull { resRaw ->
-                val res = resRaw as? Map<*, *> ?: return@mapNotNull null
-                com.horsegallop.data.remote.dto.TjkRaceResultFunctionsDto(
-                    position = (res["position"] as? String).orEmpty(),
-                    horseName = (res["horseName"] as? String).orEmpty(),
-                    jockey = (res["jockey"] as? String).orEmpty(),
-                    trainer = (res["trainer"] as? String).orEmpty(),
-                    weight = (res["weight"] as? String).orEmpty(),
-                    time = (res["time"] as? String).orEmpty()
-                )
-            } ?: emptyList()
-            com.horsegallop.data.remote.dto.TjkRaceFunctionsDto(
-                raceNo = (r["raceNo"] as? Number)?.toInt() ?: 0,
-                raceTitle = (r["raceTitle"] as? String).orEmpty(),
-                distance = (r["distance"] as? String).orEmpty(),
-                surface = (r["surface"] as? String).orEmpty(),
-                startTime = (r["startTime"] as? String).orEmpty(),
-                results = results
+    suspend fun getEquestrianAnnouncements(): List<com.horsegallop.data.remote.dto.EquestrianAnnouncementFunctionsDto> {
+        val result = functions.getHttpsCallable("getEquestrianAnnouncements").call().await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        val items = payload["items"] as? List<*> ?: emptyList<Any?>()
+        return items.mapNotNull { item ->
+            val m = item as? Map<*, *> ?: return@mapNotNull null
+            val id = m["id"]?.toString()?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            com.horsegallop.data.remote.dto.EquestrianAnnouncementFunctionsDto(
+                id = id,
+                title = (m["title"] as? String).orEmpty(),
+                summary = (m["summary"] as? String).orEmpty(),
+                publishedAtLabel = (m["publishedAtLabel"] as? String).orEmpty(),
+                detailUrl = (m["detailUrl"] as? String).orEmpty(),
+                imageUrl = m["imageUrl"] as? String
             )
-        } ?: emptyList()
+        }
+    }
 
-        return com.horsegallop.data.remote.dto.TjkRaceDayFunctionsDto(
-            date = (payload["date"] as? String).orEmpty(),
-            cityId = (payload["cityId"] as? Number)?.toInt() ?: cityId,
-            cityName = (payload["cityName"] as? String).orEmpty(),
-            races = races
+    // ─── At Sağlık Takvimi ───────────────────────────────────────────────────
+
+    suspend fun getHealthEvents(horseId: String? = null): List<HealthEventFunctionsDto> {
+        val params = if (horseId != null) hashMapOf<String, Any>("horseId" to horseId) else hashMapOf()
+        val result = functions.getHttpsCallable("getHealthEvents").call(params).await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        val raw = payload["events"] as? List<*> ?: emptyList<Any?>()
+        return raw.mapNotNull { item ->
+            val m = item as? Map<*, *> ?: return@mapNotNull null
+            HealthEventFunctionsDto(
+                id = m["id"] as? String ?: return@mapNotNull null,
+                userId = (m["userId"] as? String).orEmpty(),
+                horseId = (m["horseId"] as? String).orEmpty(),
+                horseName = (m["horseName"] as? String).orEmpty(),
+                type = (m["type"] as? String) ?: "VET",
+                scheduledDate = (m["scheduledDate"] as? Number)?.toLong() ?: 0L,
+                completedDate = (m["completedDate"] as? Number)?.toLong(),
+                notes = (m["notes"] as? String).orEmpty(),
+                isCompleted = (m["isCompleted"] as? Boolean) ?: false
+            )
+        }
+    }
+
+    suspend fun saveHealthEvent(event: HealthEventFunctionsDto): String {
+        val params = hashMapOf<String, Any?>(
+            "id" to event.id,
+            "horseId" to event.horseId,
+            "horseName" to event.horseName,
+            "type" to event.type,
+            "scheduledDate" to event.scheduledDate,
+            "completedDate" to event.completedDate,
+            "notes" to event.notes,
+            "isCompleted" to event.isCompleted
+        )
+        val result = functions.getHttpsCallable("saveHealthEvent").call(params).await()
+        val map = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        return (map["id"] as? String).orEmpty()
+    }
+
+    suspend fun deleteHealthEvent(eventId: String) {
+        functions.getHttpsCallable("deleteHealthEvent")
+            .call(hashMapOf("eventId" to eventId)).await()
+    }
+
+    suspend fun markHealthEventCompleted(eventId: String, completedDate: Long) {
+        functions.getHttpsCallable("markHealthEventCompleted")
+            .call(hashMapOf("eventId" to eventId, "completedDate" to completedDate)).await()
+    }
+
+    suspend fun getEquestrianCompetitions(): List<com.horsegallop.data.remote.dto.EquestrianCompetitionFunctionsDto> {
+        val result = functions.getHttpsCallable("getEquestrianCompetitions").call().await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        val items = payload["items"] as? List<*> ?: emptyList<Any?>()
+        return items.mapNotNull { item ->
+            val m = item as? Map<*, *> ?: return@mapNotNull null
+            val id = m["id"]?.toString()?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            com.horsegallop.data.remote.dto.EquestrianCompetitionFunctionsDto(
+                id = id,
+                title = (m["title"] as? String).orEmpty(),
+                location = (m["location"] as? String).orEmpty(),
+                dateLabel = (m["dateLabel"] as? String).orEmpty(),
+                detailUrl = (m["detailUrl"] as? String).orEmpty()
+            )
+        }
+    }
+
+    // ─── AI Coach ────────────────────────────────────────────────────────────────
+
+    suspend fun askAiCoach(question: String, conversationHistory: List<AiCoachMessageDto>): AiCoachAnswerDto {
+        val result = functions.getHttpsCallable("askAiCoach")
+            .call(mapOf(
+                "question" to question,
+                "conversationHistory" to conversationHistory.map { mapOf("role" to it.role, "text" to it.text) }
+            )).await()
+        @Suppress("UNCHECKED_CAST")
+        val data = result.getData() as? Map<String, Any> ?: throw Exception("Invalid response")
+        return AiCoachAnswerDto(answer = data["answer"] as? String ?: "")
+    }
+
+    // ─── Challenge / Badge System ─────────────────────────────────────────────
+
+    suspend fun getActiveChallenges(): List<Map<String, Any>> {
+        val result = functions.getHttpsCallable("getActiveChallenges").call(emptyMap<String, Any>()).await()
+        @Suppress("UNCHECKED_CAST")
+        return ((result.getData() as? Map<String, Any>)?.get("challenges") as? List<Map<String, Any>>) ?: emptyList()
+    }
+
+    suspend fun getEarnedBadges(): List<Map<String, Any>> {
+        val result = functions.getHttpsCallable("getEarnedBadges").call(emptyMap<String, Any>()).await()
+        @Suppress("UNCHECKED_CAST")
+        return ((result.getData() as? Map<String, Any>)?.get("badges") as? List<Map<String, Any>>) ?: emptyList()
+    }
+
+    suspend fun checkAndAwardBadges(distanceMeters: Double, durationSeconds: Long, avgSpeedKph: Double): List<String> {
+        val params = mapOf("distanceMeters" to distanceMeters, "durationSeconds" to durationSeconds, "avgSpeedKph" to avgSpeedKph)
+        val result = functions.getHttpsCallable("checkAndAwardBadges").call(params).await()
+        @Suppress("UNCHECKED_CAST")
+        return ((result.getData() as? Map<String, Any>)?.get("newBadges") as? List<String>) ?: emptyList()
+    }
+
+    // ─── TBF Events ───────────────────────────────────────────────────────────
+
+    suspend fun getTbfEventDay(date: String?, type: String): TbfEventDayDto {
+        val params = mutableMapOf<String, Any>("type" to type)
+        if (date != null) params["date"] = date
+        val result = functions.getHttpsCallable("getTbfEventDay").call(params).await()
+        @Suppress("UNCHECKED_CAST")
+        val data = result.getData() as? Map<String, Any> ?: throw Exception("Invalid response")
+        val venues = (data["hippodromes"] as? List<Map<String, Any>>) ?: emptyList()
+        return TbfEventDayDto(
+            date = data["date"] as? String ?: "",
+            type = data["type"] as? String ?: type,
+            venues = venues.map { h ->
+                TbfVenueDto(
+                    code = h["code"] as? String ?: "",
+                    name = h["name"] as? String ?: "",
+                    eventCount = (h["raceCount"] as? Number)?.toInt() ?: 0,
+                    time = h["time"] as? String ?: ""
+                )
+            }
         )
     }
 
-    suspend fun getTjkCities(): List<com.horsegallop.data.remote.dto.TjkCityFunctionsDto> {
-        val result = functions.getHttpsCallable("getTjkCities").call(null).await()
-        val list = result.data as? List<*> ?: return emptyList()
-        return list.mapNotNull { item ->
+    suspend fun getTbfEventCard(date: String?, venue: String, type: String): TbfEventCardDto {
+        val params = mutableMapOf<String, Any>("hippodrome" to venue, "type" to type)
+        if (date != null) params["date"] = date
+        val result = functions.getHttpsCallable("getTbfEventCard").call(params).await()
+        @Suppress("UNCHECKED_CAST")
+        val data = result.getData() as? Map<String, Any> ?: throw Exception("Invalid response")
+        val eventsList = (data["races"] as? List<Map<String, Any>>) ?: emptyList()
+        return TbfEventCardDto(
+            venue = data["hippodrome"] as? String ?: venue,
+            date = data["date"] as? String ?: "",
+            type = data["type"] as? String ?: type,
+            weather = data["weather"] as? String ?: "",
+            trackCondition = data["trackCondition"] as? String ?: "",
+            events = eventsList.map { r ->
+                val athletesList = (r["horses"] as? List<Map<String, Any>>) ?: emptyList()
+                TbfCompetitionDto(
+                    no = r["no"] as? String ?: "",
+                    name = r["name"] as? String ?: "",
+                    distance = (r["distance"] as? Number)?.toInt() ?: 0,
+                    surface = r["surface"] as? String ?: "",
+                    time = r["time"] as? String ?: "",
+                    prize = (r["prize"] as? Number)?.toLong() ?: 0L,
+                    athletes = athletesList.map { h ->
+                        TbfAthleteDto(
+                            no = h["no"] as? String ?: "",
+                            name = h["name"] as? String ?: "",
+                            jockey = h["jockey"] as? String ?: "",
+                            trainer = h["trainer"] as? String ?: "",
+                            owner = h["owner"] as? String ?: "",
+                            weight = (h["weight"] as? Number)?.toInt() ?: 0,
+                            age = h["age"] as? String ?: "",
+                            last6 = h["last6"] as? String ?: "",
+                            odds = h["odds"] as? String ?: "",
+                            bestTime = h["bestTime"] as? String ?: "",
+                            result = h["result"] as? String ?: "",
+                            time = h["time"] as? String ?: "",
+                            gap = h["gap"] as? String ?: ""
+                        )
+                    }
+                )
+            }
+        )
+    }
+
+    suspend fun getTbfUpcomingEvents(): TbfUpcomingEventsDto {
+        val result = functions.getHttpsCallable("getTbfUpcomingEvents").call(null).await()
+        @Suppress("UNCHECKED_CAST")
+        val data = result.getData() as? Map<String, Any> ?: throw Exception("Invalid response")
+        val daysList = (data["days"] as? List<Map<String, Any>>) ?: emptyList()
+        return TbfUpcomingEventsDto(
+            days = daysList.map { d ->
+                val venues = (d["hippodromes"] as? List<Map<String, Any>>) ?: emptyList()
+                TbfEventDayDto(
+                    date = d["date"] as? String ?: "",
+                    type = "program",
+                    venues = venues.map { h ->
+                        TbfVenueDto(
+                            code = h["code"] as? String ?: "",
+                            name = h["name"] as? String ?: "",
+                            eventCount = (h["raceCount"] as? Number)?.toInt() ?: 0
+                        )
+                    }
+                )
+            }
+        )
+    }
+
+    // ─── Barn Management ──────────────────────────────────────────────────────
+
+    suspend fun getBarnStats(barnId: String): BarnStatsDto {
+        val result = functions.getHttpsCallable("getBarnStats")
+            .call(hashMapOf("barnId" to barnId))
+            .await()
+        val map = result.data as? Map<*, *> ?: return BarnStatsDto()
+        return BarnStatsDto(
+            totalLessons = (map["totalLessons"] as? Number)?.toInt() ?: 0,
+            totalReservations = (map["totalReservations"] as? Number)?.toInt() ?: 0,
+            uniqueStudents = (map["uniqueStudents"] as? Number)?.toInt() ?: 0,
+            upcomingLessonsCount = (map["upcomingLessonsCount"] as? Number)?.toInt() ?: 0
+        )
+    }
+
+    suspend fun getManagedLessons(barnId: String): List<ManagedLessonDto> {
+        val result = functions.getHttpsCallable("getManagedLessons")
+            .call(hashMapOf("barnId" to barnId))
+            .await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        val items = payload["items"] as? List<*> ?: emptyList<Any?>()
+        return items.mapNotNull { item ->
             val m = item as? Map<*, *> ?: return@mapNotNull null
-            com.horsegallop.data.remote.dto.TjkCityFunctionsDto(
-                id = (m["id"] as? Number)?.toInt() ?: return@mapNotNull null,
-                name = (m["name"] as? String).orEmpty()
+            mapManagedLesson(m)
+        }
+    }
+
+    suspend fun createLesson(
+        barnId: String,
+        title: String,
+        instructorName: String,
+        startTimeMs: Long,
+        durationMin: Int,
+        level: String,
+        price: Double,
+        spotsTotal: Int
+    ): ManagedLessonDto {
+        val result = functions.getHttpsCallable("createManagedLesson").call(
+            hashMapOf(
+                "barnId" to barnId,
+                "title" to title,
+                "instructorName" to instructorName,
+                "startTimeMs" to startTimeMs,
+                "durationMin" to durationMin,
+                "level" to level,
+                "price" to price,
+                "spotsTotal" to spotsTotal
+            )
+        ).await()
+        val map = result.data as? Map<*, *> ?: error("Invalid response")
+        return mapManagedLesson(map) ?: error("Invalid lesson payload")
+    }
+
+    suspend fun cancelLesson(lessonId: String) {
+        functions.getHttpsCallable("cancelManagedLesson")
+            .call(hashMapOf("lessonId" to lessonId))
+            .await()
+    }
+
+    suspend fun getLessonRoster(lessonId: String): List<StudentRosterEntryDto> {
+        val result = functions.getHttpsCallable("getLessonRoster")
+            .call(hashMapOf("lessonId" to lessonId))
+            .await()
+        val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()
+        val items = payload["items"] as? List<*> ?: emptyList<Any?>()
+        return items.mapNotNull { item ->
+            val m = item as? Map<*, *> ?: return@mapNotNull null
+            StudentRosterEntryDto(
+                userId = m["userId"] as? String ?: return@mapNotNull null,
+                displayName = (m["displayName"] as? String).orEmpty(),
+                email = (m["email"] as? String).orEmpty(),
+                reservationId = (m["reservationId"] as? String).orEmpty(),
+                bookedAtMs = (m["bookedAtMs"] as? Number)?.toLong() ?: 0L
             )
         }
+    }
+
+    private fun mapManagedLesson(m: Map<*, *>): ManagedLessonDto? {
+        return ManagedLessonDto(
+            id = m["id"] as? String ?: return null,
+            title = (m["title"] as? String).orEmpty(),
+            instructorName = (m["instructorName"] as? String).orEmpty(),
+            startTimeMs = (m["startTimeMs"] as? Number)?.toLong() ?: 0L,
+            durationMin = (m["durationMin"] as? Number)?.toInt() ?: 0,
+            level = (m["level"] as? String).orEmpty(),
+            price = (m["price"] as? Number)?.toDouble() ?: 0.0,
+            spotsTotal = (m["spotsTotal"] as? Number)?.toInt() ?: 0,
+            spotsBooked = (m["spotsBooked"] as? Number)?.toInt() ?: 0,
+            barnId = (m["barnId"] as? String).orEmpty(),
+            isCancelled = (m["isCancelled"] as? Boolean) ?: false
+        )
     }
 }

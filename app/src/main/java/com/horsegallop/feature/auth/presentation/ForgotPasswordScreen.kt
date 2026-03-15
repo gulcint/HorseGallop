@@ -19,9 +19,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.horsegallop.core.components.HorseLoadingOverlay
+import com.horsegallop.core.components.ButtonVariant
+import com.horsegallop.core.components.HorseGallopButton
 import com.horsegallop.core.feedback.LocalAppFeedbackController
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
+import com.horsegallop.ui.theme.LocalSemanticColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,6 +34,7 @@ fun ForgotPasswordScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val feedback = LocalAppFeedbackController.current
+    val semantic = LocalSemanticColors.current
 
     LaunchedEffect(uiState.success) {
         if (uiState.success) {
@@ -47,6 +51,7 @@ fun ForgotPasswordScreen(
     }
 
     Scaffold(
+        containerColor = semantic.screenBase,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.forgot_password_title), style = MaterialTheme.typography.titleLarge) },
@@ -54,7 +59,12 @@ fun ForgotPasswordScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = semantic.screenTopBar,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         }
     ) { paddingValues ->
@@ -125,20 +135,14 @@ fun ForgotPasswordScreen(
                         )
                     )
 
-                    Button(
+                    HorseGallopButton(
+                        text = stringResource(R.string.change_password),
                         onClick = viewModel::confirmReset,
-                        enabled = !uiState.loading && uiState.newPassword.isNotBlank(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(dimensionResource(id = R.dimen.height_button_xl)),
-                        shape = RoundedCornerShape(dimensionResource(id = R.dimen.radius_lg)),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (uiState.email.isNotBlank()) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        )
-                    ) {
-                        Text(stringResource(R.string.change_password), style = MaterialTheme.typography.labelLarge)
-                    }
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = uiState.newPassword.isNotBlank(),
+                        isLoading = uiState.loading,
+                        variant = ButtonVariant.Primary
+                    )
 
                 } else {
                     Text(
@@ -180,20 +184,14 @@ fun ForgotPasswordScreen(
                         )
                     )
 
-                    Button(
+                    HorseGallopButton(
+                        text = stringResource(R.string.send_reset_link),
                         onClick = viewModel::sendResetLink,
-                        enabled = !uiState.loading && uiState.email.isNotBlank(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(dimensionResource(id = R.dimen.height_button_xl)),
-                        shape = RoundedCornerShape(dimensionResource(id = R.dimen.radius_lg)),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (uiState.email.isNotBlank()) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        )
-                    ) {
-                        Text(stringResource(R.string.send_reset_link), style = MaterialTheme.typography.labelLarge)
-                    }
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = uiState.email.isNotBlank(),
+                        isLoading = uiState.loading,
+                        variant = ButtonVariant.Primary
+                    )
                 }
             }
         }

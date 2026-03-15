@@ -6,12 +6,19 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
@@ -32,7 +39,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.horsegallop.R
 import com.horsegallop.ui.theme.LocalSemanticColors
 
 data class AppSnackbarVisuals(
@@ -66,12 +75,6 @@ fun HorseGallopSnackbarHost(
             FeedbackTone.Warning -> semantic.calloutBorderWarning
             FeedbackTone.Info -> semantic.calloutBorderInfo
         }
-        val containerColor = when (tone) {
-            FeedbackTone.Success -> semantic.calloutSuccessContainer
-            FeedbackTone.Error -> semantic.calloutErrorContainer
-            FeedbackTone.Warning -> semantic.calloutWarningContainer
-            FeedbackTone.Info -> semantic.calloutInfoContainer
-        }
         val icon = when (tone) {
             FeedbackTone.Success -> Icons.Filled.CheckCircle
             FeedbackTone.Error -> Icons.Filled.ErrorOutline
@@ -86,24 +89,35 @@ fun HorseGallopSnackbarHost(
         ) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-                color = containerColor,
-                border = BorderStroke(1.dp, strokeColor.copy(alpha = 0.6f)),
-                shadowElevation = 8.dp
+                shape = RoundedCornerShape(16.dp),
+                color = semantic.cardElevated,
+                border = BorderStroke(1.dp, semantic.cardStroke),
+                shadowElevation = 14.dp
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        .padding(horizontal = 12.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    ToneIcon(icon = icon, tint = strokeColor)
+                    Image(
+                        painter = painterResource(R.mipmap.ic_launcher_foreground),
+                        contentDescription = null,
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .width(3.dp)
+                            .height(36.dp)
+                            .background(strokeColor, RoundedCornerShape(2.dp))
+                    )
+                    ToneIcon(icon = icon, tint = strokeColor, modifier = Modifier.size(18.dp))
                     Text(
                         text = snackbarData.visuals.message,
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = semantic.calloutOnContainer
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     snackbarData.visuals.actionLabel?.let { label ->
                         TextButton(onClick = { snackbarData.performAction() }) {
@@ -115,7 +129,7 @@ fun HorseGallopSnackbarHost(
                             Icon(
                                 imageVector = Icons.Filled.Close,
                                 contentDescription = null,
-                                tint = semantic.calloutOnContainer.copy(alpha = 0.85f)
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f)
                             )
                         }
                     }
@@ -126,10 +140,15 @@ fun HorseGallopSnackbarHost(
 }
 
 @Composable
-private fun ToneIcon(icon: ImageVector, tint: androidx.compose.ui.graphics.Color) {
+private fun ToneIcon(
+    icon: ImageVector,
+    tint: androidx.compose.ui.graphics.Color,
+    modifier: Modifier = Modifier
+) {
     Icon(
         imageVector = icon,
         contentDescription = null,
-        tint = tint
+        tint = tint,
+        modifier = modifier
     )
 }

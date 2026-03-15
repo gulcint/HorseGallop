@@ -1,5 +1,6 @@
 import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 import type { BarnDto, BarnInstructorDto, BarnReviewDto, BarnListDto, LessonDto, LessonListDto, HorseTipDto, HorseTipListDto, BreedDto, BreedListDto } from "./contracts";
 import { buildHomeDashboard } from "./home-service";
 import {
@@ -11,10 +12,12 @@ import {
 } from "./validators";
 import fetch from "node-fetch";
 import * as cheerio from "cheerio";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 admin.initializeApp();
 
 const db = admin.firestore();
+const FEDERATION_SOURCE_STALE_MINUTES = 24 * 60;
 
 type UserProfileDto = {
   firstName: string;
@@ -194,6 +197,711 @@ function normalizeLessonDto(id: string, data: FirebaseFirestore.DocumentData): L
   };
 }
 
+const FEDERATION_BASE_URL = "https://www.binicilik.org.tr";
+const SCRAPE_CACHE_COLLECTION = "scrape_cache";
+const GEOCODE_CACHE_COLLECTION = "geocode_cache";
+const FEDERATED_BARNS_SYNC_STATUS_KEY = "federated_barns_sync_status";
+const FEDERATION_MANUAL_SYNC_STATUS_KEY = "federation_manual_sync_status";
+const FEDERATED_BARNS_CACHE_KEY = "federated_barns";
+const EQUESTRIAN_ANNOUNCEMENTS_CACHE_KEY = "equestrian_announcements";
+const EQUESTRIAN_COMPETITIONS_CACHE_KEY = "equestrian_competitions";
+const FEDERATION_HEALTH_BARNS_KEY = "federation_health_barns";
+const FEDERATION_HEALTH_ANNOUNCEMENTS_KEY = "federation_health_announcements";
+const FEDERATION_HEALTH_COMPETITIONS_KEY = "federation_health_competitions";
+const MANUAL_SYNC_MIN_INTERVAL_MS = 5 * 60 * 1000;
+const FALLBACK_BARNS: BarnDto[] = [
+  {
+    id: "barn_adin_country",
+    name: "Adin Country",
+    description: "Beginner to pro riding lessons with indoor arena support.",
+    location: "Istanbul, TR",
+    lat: 41.0082,
+    lng: 28.9784,
+    tags: ["cafe", "indoor_arena", "parking", "lessons", "open_now"],
+    amenities: ["cafe", "indoor_arena", "parking", "lessons", "open_now"],
+    rating: 4.7,
+    reviewCount: 124,
+    instructors: [],
+    reviews: [],
+  },
+  {
+    id: "barn_sable_ranch",
+    name: "Sable Ranch",
+    description: "Trail and endurance focused training with boarding support.",
+    location: "Sariyer, Istanbul, TR",
+    lat: 41.0151,
+    lng: 29.0037,
+    tags: ["outdoor_arena", "trail", "parking", "boarding"],
+    amenities: ["outdoor_arena", "trail", "parking", "boarding"],
+    rating: 4.5,
+    reviewCount: 89,
+    instructors: [],
+    reviews: [],
+  },
+];
+
+type EquestrianAnnouncementDto = {
+  id: string;
+  title: string;
+  summary: string;
+  publishedAtLabel: string;
+  detailUrl: string;
+  imageUrl?: string;
+};
+
+type EquestrianCompetitionDto = {
+  id: string;
+  title: string;
+  location: string;
+  dateLabel: string;
+  detailUrl: string;
+};
+
+type CoordinatesDto = {
+  lat: number;
+  lng: number;
+};
+
+type NotificationWriteDto = {
+  type: "general" | "reservation" | "lesson" | "horse_health";
+  title: string;
+  body: string;
+  targetId?: string;
+  targetRoute?: string;
+  notificationKey?: string;
+};
+
+type FederatedBarnSyncStatusDto = {
+  status: string;
+  syncedAt: string;
+  itemCount: number;
+  errorMessage?: string;
+};
+
+type FederationSourceHealthItemDto = {
+  source: "barns" | "announcements" | "competitions";
+  status: string;
+  itemCount: number;
+  lastAttemptAt: string;
+  lastSuccessAt: string;
+  dataAgeMinutes: number;
+  isStale: boolean;
+  errorMessage?: string;
+};
+
+type FederationManualSyncDto = {
+  syncedAt: string;
+  barnsCount: number;
+  announcementsCount: number;
+  competitionsCount: number;
+  throttled: boolean;
+};
+
+const TURKEY_CITY_COORDS: Record<string, CoordinatesDto> = {
+  "İSTANBUL": { lat: 41.0082, lng: 28.9784 },
+  "ANKARA": { lat: 39.9334, lng: 32.8597 },
+  "İZMİR": { lat: 38.4237, lng: 27.1428 },
+  "BURSA": { lat: 40.1885, lng: 29.0610 },
+  "ADANA": { lat: 37.0000, lng: 35.3213 },
+  "KOCAELİ": { lat: 40.7654, lng: 29.9408 },
+  "ANTALYA": { lat: 36.8969, lng: 30.7133 },
+  "KONYA": { lat: 37.8746, lng: 32.4932 },
+  "KAYSERİ": { lat: 38.7205, lng: 35.4826 },
+  "ÇORUM": { lat: 40.5506, lng: 34.9556 },
+  "ESKİŞEHİR": { lat: 39.7667, lng: 30.5256 },
+  "GAZİANTEP": { lat: 37.0662, lng: 37.3833 },
+  "DÜZCE": { lat: 40.8438, lng: 31.1565 },
+  "SAMSUN": { lat: 41.2867, lng: 36.3300 },
+  "NEVŞEHİR": { lat: 38.6244, lng: 34.7240 },
+  "ŞANLIURFA": { lat: 37.1674, lng: 38.7955 },
+};
+
+function toAbsoluteUrl(url: string): string {
+  if (!url) return "";
+  if (/^https?:\/\//i.test(url)) return url;
+  return new URL(url, `${FEDERATION_BASE_URL}/`).toString();
+}
+
+function normalizeHtmlText(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function sanitizeNotificationKey(value: string): string {
+  return value.replace(/[^a-zA-Z0-9_-]+/g, "_").slice(0, 120);
+}
+
+function horseHealthTypeLabel(type: string): string {
+  switch (type) {
+  case "FARRIER":
+    return "nalbant";
+  case "VACCINATION":
+    return "asi";
+  case "DENTAL":
+    return "dis bakimi";
+  case "VET":
+    return "veteriner kontrolu";
+  case "DEWORMING":
+    return "parazit uygulamasi";
+  default:
+    return "saglik takibi";
+  }
+}
+
+function currentIstanbulDateKey(offsetDays = 0): string {
+  const now = new Date();
+  now.setUTCDate(now.getUTCDate() + offsetDays);
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Europe/Istanbul",
+  }).format(now);
+}
+
+function isWithinUpcomingReminderWindow(date: string): boolean {
+  const today = currentIstanbulDateKey(0);
+  const tomorrow = currentIstanbulDateKey(1);
+  return date >= today && date <= tomorrow;
+}
+
+async function writeUserNotification(uid: string, payload: NotificationWriteDto): Promise<string> {
+  const notificationsRef = db.collection("users").doc(uid).collection("notifications");
+  const notificationKey = payload.notificationKey ? sanitizeNotificationKey(payload.notificationKey) : "";
+  const ref = notificationKey ? notificationsRef.doc(notificationKey) : notificationsRef.doc();
+
+  await ref.set({
+    type: payload.type,
+    title: normalizeString(payload.title, 160),
+    body: normalizeString(payload.body, 500),
+    timestamp: Date.now(),
+    isRead: false,
+    targetId: payload.targetId ? normalizeString(payload.targetId, 120) : null,
+    targetRoute: payload.targetRoute ? normalizeString(payload.targetRoute, 160) : null,
+    notificationKey: notificationKey || null,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
+
+  return ref.id;
+}
+
+async function maybeWriteHorseHealthReminder(
+  uid: string,
+  horseId: string,
+  eventId: string,
+  horseName: string,
+  type: string,
+  date: string
+): Promise<void> {
+  if (!isWithinUpcomingReminderWindow(date)) return;
+
+  const typeLabel = horseHealthTypeLabel(type);
+  await writeUserNotification(uid, {
+    type: "horse_health",
+    title: "Yaklasan saglik randevusu",
+    body: `${horseName || "Atin"} icin ${typeLabel} ${date} tarihinde planlandi.`,
+    targetId: horseId,
+    targetRoute: `horseHealth/${horseId}/${encodeURIComponent(horseName || "Saglik")}`,
+    notificationKey: `horse_health_${uid}_${horseId}_${eventId}_${date}`,
+  });
+}
+
+async function fetchFederationHtml(pathOrUrl: string): Promise<string> {
+  const url = /^https?:\/\//i.test(pathOrUrl) ? pathOrUrl : toAbsoluteUrl(pathOrUrl);
+  const response = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml",
+      "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.8",
+      "Referer": FEDERATION_BASE_URL,
+    },
+  } as Record<string, unknown>);
+
+  if (!response.ok) {
+    throw new HttpsError("unavailable", `Federation returned HTTP ${response.status}`);
+  }
+
+  return response.text();
+}
+
+async function readScrapeCache<T>(key: string): Promise<T | null> {
+  const doc = await db.collection(SCRAPE_CACHE_COLLECTION).doc(key).get();
+  if (!doc.exists) return null;
+  const data = doc.data();
+  return (data?.payload as T | undefined) ?? null;
+}
+
+async function writeScrapeCache<T>(key: string, payload: T): Promise<void> {
+  await db.collection(SCRAPE_CACHE_COLLECTION).doc(key).set({
+    payload,
+    fetchedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
+}
+
+function inferCityFromAddress(address: string): string {
+  const normalized = normalizeHtmlText(address);
+  if (!normalized) return "";
+  const slashParts = normalized.split("/").map((x) => x.trim()).filter(Boolean);
+  if (slashParts.length > 0) {
+    return slashParts[slashParts.length - 1];
+  }
+  const words = normalized.split(/\s+/).filter(Boolean);
+  return words.length > 0 ? words[words.length - 1] : "";
+}
+
+function normalizeCityKey(value: string): string {
+  return normalizeHtmlText(value).toLocaleUpperCase("tr-TR");
+}
+
+async function resolveFederatedBarnCoordinates(
+  barnId: string,
+  address: string
+): Promise<CoordinatesDto> {
+  if (!address) return { lat: 0, lng: 0 };
+
+  const cacheRef = db.collection(GEOCODE_CACHE_COLLECTION).doc(`federated_barn_${barnId}`);
+  const cacheDoc = await cacheRef.get();
+  if (cacheDoc.exists) {
+    const data = cacheDoc.data();
+    if (data?.address === address && typeof data.lat === "number" && typeof data.lng === "number") {
+      return { lat: data.lat, lng: data.lng };
+    }
+  }
+
+  const cityKey = normalizeCityKey(inferCityFromAddress(address));
+  const fallbackCoords = TURKEY_CITY_COORDS[cityKey];
+
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=tr&q=${encodeURIComponent(address)}`,
+      {
+        headers: {
+          "User-Agent": "HorseGallop/1.0 (federated-barns-geocode)",
+          "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.8",
+        },
+      } as Record<string, unknown>
+    );
+
+    if (response.ok) {
+      const results = await response.json() as Array<{ lat?: string; lon?: string }>;
+      const lat = Number(results[0]?.lat);
+      const lng = Number(results[0]?.lon);
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        const coords = { lat, lng };
+        await cacheRef.set({
+          address,
+          ...coords,
+          source: "nominatim",
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+        return coords;
+      }
+    }
+  } catch (_error) {
+    // Fall through to city-level fallback.
+  }
+
+  if (fallbackCoords) {
+    await cacheRef.set({
+      address,
+      ...fallbackCoords,
+      source: "city_fallback",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    return fallbackCoords;
+  }
+
+  return { lat: 0, lng: 0 };
+}
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T, index: number) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let cursor = 0;
+
+  const runners = Array.from({ length: Math.max(1, concurrency) }, async () => {
+    while (cursor < items.length) {
+      const currentIndex = cursor++;
+      results[currentIndex] = await worker(items[currentIndex], currentIndex);
+    }
+  });
+
+  await Promise.all(runners);
+  return results;
+}
+
+function buildBarnDescription(address: string, email: string, website: string): string {
+  return [
+    address && `Adres: ${address}`,
+    email && `E-posta: ${email}`,
+    website && `Web: ${website}`,
+  ].filter(Boolean).join(" • ");
+}
+
+async function scrapeFederatedBarns(): Promise<BarnDto[]> {
+  const html = await fetchFederationHtml("/Kulup/11/Federe-kulupler");
+  const $ = cheerio.load(html);
+  const modals = $("div.modal[id^='federedetail']").toArray();
+
+  const barns = await mapWithConcurrency(modals, 3, async (modal) => {
+    const $modal = $(modal);
+    const id = ($modal.attr("id") || "").replace("federedetail", "").trim();
+    if (!id) {
+      return {
+        id: "",
+        name: "",
+        description: "",
+        location: "",
+        lat: 0,
+        lng: 0,
+        tags: [],
+        amenities: [],
+        rating: 0,
+        reviewCount: 0,
+        instructors: [],
+        reviews: [],
+      } satisfies BarnDto;
+    }
+
+    const title = normalizeHtmlText($modal.find(".modal-title").first().text());
+    const imageUrl = toAbsoluteUrl($modal.find("img").first().attr("src") || "");
+
+    const fields: Record<string, string> = {};
+    $modal.find("table tr").each((_rowIndex, row) => {
+      const cells = $(row).find("td");
+      const key = normalizeHtmlText(cells.eq(0).text()).toLowerCase();
+      const rawValueCell = cells.eq(2);
+      let value = normalizeHtmlText(rawValueCell.text());
+      if (key.includes("web")) {
+        const link = rawValueCell.find("a").attr("href") || "";
+        value = normalizeHtmlText(link || value);
+      }
+      if (key) {
+        fields[key] = value;
+      }
+    });
+
+    const address = fields["adres"] || "";
+    const email = fields["e posta"] || "";
+    const website = fields["web sitesi"] || "";
+    const phone = fields["telefon"] || "";
+    const city = inferCityFromAddress(address);
+    const coords = await resolveFederatedBarnCoordinates(id, address);
+
+    return {
+      id,
+      name: title,
+      description: buildBarnDescription(address, email, website),
+      location: city || address,
+      lat: coords.lat,
+      lng: coords.lng,
+      tags: [],
+      amenities: [],
+      rating: 0,
+      reviewCount: 0,
+      heroImageUrl: imageUrl || undefined,
+      capacity: 0,
+      phone: phone || undefined,
+      instructors: [],
+      reviews: [],
+    };
+  });
+
+  return barns
+    .filter((item) => item.id.trim().length > 0)
+    .sort((a, b) => a.name.localeCompare(b.name, "tr"));
+}
+
+async function getFederatedBarnsPayload(): Promise<BarnListDto> {
+  const cached = await readScrapeCache<BarnListDto>(FEDERATED_BARNS_CACHE_KEY);
+  if (cached?.items?.length) return cached;
+  return { items: FALLBACK_BARNS };
+}
+
+async function getFederatedBarnDetailPayload(id: string): Promise<BarnDto> {
+  const cached = await readScrapeCache<BarnListDto>(FEDERATED_BARNS_CACHE_KEY);
+  const barn = cached?.items.find((item) => item.id === id);
+  if (barn) return barn;
+
+  const fallbackBarn = FALLBACK_BARNS.find((item) => item.id === id);
+  if (fallbackBarn) return fallbackBarn;
+
+  throw new HttpsError("not-found", "Barn not found");
+}
+
+async function syncFederatedBarnDirectory(): Promise<BarnListDto> {
+  const items = await scrapeFederatedBarns();
+  const payload = { items };
+  await writeScrapeCache(FEDERATED_BARNS_CACHE_KEY, payload);
+  await db.collection(SCRAPE_CACHE_COLLECTION).doc(FEDERATED_BARNS_SYNC_STATUS_KEY).set({
+    status: "success",
+    itemCount: items.length,
+    syncedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
+  await writeFederationSourceHealth(FEDERATION_HEALTH_BARNS_KEY, {
+    status: "success",
+    itemCount: items.length,
+    errorMessage: admin.firestore.FieldValue.delete(),
+    lastAttemptAt: admin.firestore.FieldValue.serverTimestamp(),
+    lastSuccessAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  return payload;
+}
+
+async function getFederatedBarnSyncStatusPayload(): Promise<FederatedBarnSyncStatusDto> {
+  const doc = await db.collection(SCRAPE_CACHE_COLLECTION).doc(FEDERATED_BARNS_SYNC_STATUS_KEY).get();
+  const data = doc.data() || {};
+  const syncedAtValue = data.syncedAt;
+  let syncedAt = "";
+  if (syncedAtValue instanceof admin.firestore.Timestamp) {
+    syncedAt = syncedAtValue.toDate().toISOString();
+  } else if (typeof syncedAtValue === "string") {
+    syncedAt = syncedAtValue;
+  }
+
+  return {
+    status: typeof data.status === "string" ? data.status : "idle",
+    syncedAt,
+    itemCount: typeof data.itemCount === "number" ? data.itemCount : 0,
+    errorMessage: typeof data.errorMessage === "string" ? data.errorMessage : undefined,
+  };
+}
+
+async function scrapeEquestrianAnnouncements(): Promise<EquestrianAnnouncementDto[]> {
+  const html = await fetchFederationHtml("/Anasayfa/Duyuruarsiv");
+  const $ = cheerio.load(html);
+
+  return $("article.post.haber").map((_index, article) => {
+    const $article = $(article);
+    const linkEl = $article.find("h4.entry-title a").first();
+    const title = normalizeHtmlText(linkEl.text());
+    const detailUrl = toAbsoluteUrl(linkEl.attr("href") || "");
+    const summary = normalizeHtmlText($article.find("p.mt-5").first().clone().find("a").remove().end().text());
+    const imageUrl = toAbsoluteUrl($article.find(".post-thumb img").first().attr("src") || "");
+    const day = normalizeHtmlText($article.find(".entry-date .day").text());
+    const month = normalizeHtmlText($article.find(".entry-date .month").text());
+    const year = normalizeHtmlText($article.find(".entry-date .year").text());
+    const publishedAtLabel = normalizeHtmlText([day, month, year].filter(Boolean).join(" "));
+    const idMatch = detailUrl.match(/\/Duyuru\/(\d+)\//i);
+    const id = idMatch?.[1] || title;
+
+    return {
+      id,
+      title,
+      summary,
+      publishedAtLabel,
+      detailUrl,
+      imageUrl: imageUrl || undefined,
+    };
+  }).get();
+}
+
+async function scrapeEquestrianCompetitions(): Promise<EquestrianCompetitionDto[]> {
+  const html = await fetchFederationHtml("/Anasayfa/Yarislar");
+  const $ = cheerio.load(html);
+
+  return $("table.table-telefon-rehberi tbody tr").map((_index, row) => {
+    const cells = $(row).find("td");
+    const titleLink = cells.eq(0).find("a").first();
+    const title = normalizeHtmlText(titleLink.text());
+    if (!title) return null;
+    const detailUrl = toAbsoluteUrl(titleLink.attr("href") || "");
+    const dateLabel = normalizeHtmlText(cells.eq(1).text());
+    const location = normalizeHtmlText(cells.eq(2).text());
+    const idMatch = detailUrl.match(/\/Yarisma\/(\d+)\//i);
+    const id = idMatch?.[1] || title;
+
+    return {
+      id,
+      title,
+      location,
+      dateLabel,
+      detailUrl,
+    };
+  }).get().filter((item): item is EquestrianCompetitionDto => item !== null);
+}
+
+async function syncEquestrianAgendaCache(): Promise<void> {
+  const attemptedAt = admin.firestore.FieldValue.serverTimestamp();
+  const announcementAttemptIso = new Date().toISOString();
+  const competitionAttemptIso = announcementAttemptIso;
+  const [announcementsResult, competitionsResult] = await Promise.allSettled([
+    scrapeEquestrianAnnouncements(),
+    scrapeEquestrianCompetitions(),
+  ]);
+
+  if (announcementsResult.status === "fulfilled") {
+    await writeScrapeCache(EQUESTRIAN_ANNOUNCEMENTS_CACHE_KEY, { items: announcementsResult.value });
+    await writeFederationSourceHealth(FEDERATION_HEALTH_ANNOUNCEMENTS_KEY, {
+      status: "success",
+      itemCount: announcementsResult.value.length,
+      errorMessage: admin.firestore.FieldValue.delete(),
+      lastAttemptAt: attemptedAt,
+      lastSuccessAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  } else {
+    await writeFederationSourceHealth(FEDERATION_HEALTH_ANNOUNCEMENTS_KEY, {
+      status: "error",
+      itemCount: 0,
+      errorMessage: announcementsResult.reason instanceof Error ? announcementsResult.reason.message : "Unknown scrape error",
+      lastAttemptAt: announcementAttemptIso,
+    });
+  }
+
+  if (competitionsResult.status === "fulfilled") {
+    await writeScrapeCache(EQUESTRIAN_COMPETITIONS_CACHE_KEY, { items: competitionsResult.value });
+    await writeFederationSourceHealth(FEDERATION_HEALTH_COMPETITIONS_KEY, {
+      status: "success",
+      itemCount: competitionsResult.value.length,
+      errorMessage: admin.firestore.FieldValue.delete(),
+      lastAttemptAt: attemptedAt,
+      lastSuccessAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  } else {
+    await writeFederationSourceHealth(FEDERATION_HEALTH_COMPETITIONS_KEY, {
+      status: "error",
+      itemCount: 0,
+      errorMessage: competitionsResult.reason instanceof Error ? competitionsResult.reason.message : "Unknown scrape error",
+      lastAttemptAt: competitionAttemptIso,
+    });
+  }
+
+  if (announcementsResult.status === "rejected" || competitionsResult.status === "rejected") {
+    throw new HttpsError("unavailable", "One or more federation sources could not be refreshed");
+  }
+}
+
+function timestampToIso(value: unknown): string {
+  if (value instanceof admin.firestore.Timestamp) {
+    return value.toDate().toISOString();
+  }
+  return typeof value === "string" ? value : "";
+}
+
+async function triggerManualFederationSync(): Promise<FederationManualSyncDto> {
+  return triggerFederationSyncInternal(false);
+}
+
+async function triggerFederationDebugSyncInternal(): Promise<FederationManualSyncDto> {
+  return triggerFederationSyncInternal(true);
+}
+
+async function triggerFederationSyncInternal(force: boolean): Promise<FederationManualSyncDto> {
+  const statusRef = db.collection(SCRAPE_CACHE_COLLECTION).doc(FEDERATION_MANUAL_SYNC_STATUS_KEY);
+  const statusDoc = await statusRef.get();
+  const statusData = statusDoc.data() || {};
+  const lastTriggered = statusData.syncedAt instanceof admin.firestore.Timestamp
+    ? statusData.syncedAt.toMillis()
+    : 0;
+
+  if (!force && lastTriggered && Date.now() - lastTriggered < MANUAL_SYNC_MIN_INTERVAL_MS) {
+    return {
+      syncedAt: timestampToIso(statusData.syncedAt),
+      barnsCount: typeof statusData.barnsCount === "number" ? statusData.barnsCount : 0,
+      announcementsCount: typeof statusData.announcementsCount === "number" ? statusData.announcementsCount : 0,
+      competitionsCount: typeof statusData.competitionsCount === "number" ? statusData.competitionsCount : 0,
+      throttled: true,
+    };
+  }
+
+  const [barnsPayload, announcements, competitions] = await Promise.all([
+    syncFederatedBarnDirectory(),
+    scrapeEquestrianAnnouncements(),
+    scrapeEquestrianCompetitions(),
+  ]);
+
+  await Promise.all([
+    writeScrapeCache(EQUESTRIAN_ANNOUNCEMENTS_CACHE_KEY, { items: announcements }),
+    writeScrapeCache(EQUESTRIAN_COMPETITIONS_CACHE_KEY, { items: competitions }),
+    writeFederationSourceHealth(FEDERATION_HEALTH_ANNOUNCEMENTS_KEY, {
+      status: "success",
+      itemCount: announcements.length,
+      errorMessage: admin.firestore.FieldValue.delete(),
+      lastAttemptAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastSuccessAt: admin.firestore.FieldValue.serverTimestamp(),
+    }),
+    writeFederationSourceHealth(FEDERATION_HEALTH_COMPETITIONS_KEY, {
+      status: "success",
+      itemCount: competitions.length,
+      errorMessage: admin.firestore.FieldValue.delete(),
+      lastAttemptAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastSuccessAt: admin.firestore.FieldValue.serverTimestamp(),
+    }),
+  ]);
+
+  await statusRef.set({
+    syncedAt: admin.firestore.FieldValue.serverTimestamp(),
+    barnsCount: barnsPayload.items.length,
+    announcementsCount: announcements.length,
+    competitionsCount: competitions.length,
+  }, { merge: true });
+
+  const refreshed = await statusRef.get();
+  const refreshedData = refreshed.data() || {};
+  return {
+    syncedAt: timestampToIso(refreshedData.syncedAt),
+    barnsCount: typeof refreshedData.barnsCount === "number" ? refreshedData.barnsCount : barnsPayload.items.length,
+    announcementsCount: typeof refreshedData.announcementsCount === "number" ? refreshedData.announcementsCount : announcements.length,
+    competitionsCount: typeof refreshedData.competitionsCount === "number" ? refreshedData.competitionsCount : competitions.length,
+    throttled: false,
+  };
+}
+
+async function writeFederationSourceHealth(
+  key: string,
+  payload: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData>
+): Promise<void> {
+  await db.collection(SCRAPE_CACHE_COLLECTION).doc(key).set(payload, { merge: true });
+}
+
+const timestampOrStringToIso = timestampToIso;
+
+function calculateDataAgeMinutes(lastSuccessAt: string): number {
+  if (!lastSuccessAt) return -1;
+  const millis = Date.parse(lastSuccessAt);
+  if (Number.isNaN(millis)) return -1;
+  return Math.max(0, Math.floor((Date.now() - millis) / 60000));
+}
+
+function resolveFederationSourceStatus(status: string, dataAgeMinutes: number): { status: string; isStale: boolean } {
+  const isStale = status === "success" && dataAgeMinutes >= FEDERATION_SOURCE_STALE_MINUTES;
+  return {
+    status: isStale ? "stale" : status,
+    isStale,
+  };
+}
+
+async function getFederationSourceHealthPayload(): Promise<FederationSourceHealthItemDto[]> {
+  const keys: Array<{ source: FederationSourceHealthItemDto["source"]; key: string }> = [
+    { source: "barns", key: FEDERATION_HEALTH_BARNS_KEY },
+    { source: "announcements", key: FEDERATION_HEALTH_ANNOUNCEMENTS_KEY },
+    { source: "competitions", key: FEDERATION_HEALTH_COMPETITIONS_KEY },
+  ];
+
+  const docs = await Promise.all(
+    keys.map(async ({ source, key }) => {
+      const snapshot = await db.collection(SCRAPE_CACHE_COLLECTION).doc(key).get();
+      const data = snapshot.data() || {};
+      const lastAttemptAt = timestampOrStringToIso(data.lastAttemptAt);
+      const lastSuccessAt = timestampOrStringToIso(data.lastSuccessAt);
+      const rawStatus = typeof data.status === "string" ? data.status : "idle";
+      const dataAgeMinutes = calculateDataAgeMinutes(lastSuccessAt);
+      const resolvedStatus = resolveFederationSourceStatus(rawStatus, dataAgeMinutes);
+      return {
+        source,
+        status: resolvedStatus.status,
+        itemCount: typeof data.itemCount === "number" ? data.itemCount : 0,
+        lastAttemptAt,
+        lastSuccessAt,
+        dataAgeMinutes,
+        isStale: resolvedStatus.isStale,
+        errorMessage: typeof data.errorMessage === "string" ? data.errorMessage : undefined,
+      } satisfies FederationSourceHealthItemDto;
+    })
+  );
+
+  return docs;
+}
+
 export const getUserProfile = onCall({ region: "us-central1" }, async (request) => {
   const auth = request.auth;
   if (!auth?.uid) {
@@ -298,10 +1006,7 @@ export const getBarns = onCall({ region: "us-central1" }, async (request): Promi
   parseOptionalNumber((data as { lat?: unknown }).lat, "lat");
   parseOptionalNumber((data as { lng?: unknown }).lng, "lng");
   parseOptionalNumber((data as { radiusKm?: unknown }).radiusKm, "radiusKm");
-
-  const snapshot = await db.collection("barns").get();
-  const items = snapshot.docs.map((doc) => normalizeBarnDto(doc.id, doc.data()));
-  return { items };
+  return getFederatedBarnsPayload();
 });
 
 export const getBarnDetail = onCall({ region: "us-central1" }, async (request): Promise<BarnDto> => {
@@ -310,41 +1015,98 @@ export const getBarnDetail = onCall({ region: "us-central1" }, async (request): 
   }
 
   const id = parseRequiredId((request.data || {}).id, "id");
-  const [doc, instructorSnap, reviewSnap] = await Promise.all([
-    db.collection("barns").doc(id).get(),
-    db.collection("barns").doc(id).collection("instructors").orderBy("rating", "desc").limit(5).get(),
-    db.collection("reviews")
-      .where("targetId", "==", id)
-      .where("targetType", "==", "barn")
-      .orderBy("createdAt", "desc")
-      .limit(5)
-      .get(),
-  ]);
-  if (!doc.exists) {
-    throw new HttpsError("not-found", "Barn not found");
-  }
-  const instructors: BarnInstructorDto[] = instructorSnap.docs.map((d) => {
-    const x = d.data();
-    return {
-      id: d.id,
-      name: normalizeString(x.name, 120),
-      photoUrl: typeof x.photoUrl === "string" ? x.photoUrl : "",
-      specialty: normalizeString(x.specialty, 80),
-      rating: typeof x.rating === "number" ? x.rating : 0,
-    };
-  });
-  const reviews: BarnReviewDto[] = reviewSnap.docs.map((d) => {
-    const x = d.data();
-    return {
-      id: d.id,
-      authorName: normalizeString(x.authorName, 120),
-      rating: typeof x.rating === "number" ? x.rating : 0,
-      comment: normalizeString(x.comment, 500),
-      dateLabel: normalizeString(x.dateLabel, 40),
-    };
-  });
-  return normalizeBarnDto(doc.id, doc.data() || {}, instructors, reviews);
+  return getFederatedBarnDetailPayload(id);
 });
+
+export const getFederatedBarns = onCall({ region: "us-central1" }, async (request): Promise<BarnListDto> => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
+  }
+  return getFederatedBarnsPayload();
+});
+
+export const getFederatedBarnDetail = onCall({ region: "us-central1" }, async (request): Promise<BarnDto> => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
+  }
+  const id = parseRequiredId((request.data || {}).id, "id");
+  return getFederatedBarnDetailPayload(id);
+});
+
+export const syncFederatedBarns = onSchedule(
+  {
+    region: "us-central1",
+    schedule: "every day 04:00",
+    timeZone: "Europe/Istanbul",
+    retryCount: 1,
+  },
+  async () => {
+    try {
+      await syncFederatedBarnDirectory();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown sync error";
+      await db.collection(SCRAPE_CACHE_COLLECTION).doc(FEDERATED_BARNS_SYNC_STATUS_KEY).set({
+        status: "error",
+        errorMessage,
+        syncedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+      throw error;
+    }
+  }
+);
+
+export const syncEquestrianAgenda = onSchedule(
+  {
+    region: "us-central1",
+    schedule: "every day 04:15",
+    timeZone: "Europe/Istanbul",
+    retryCount: 1,
+  },
+  async () => {
+    await syncEquestrianAgendaCache();
+  }
+);
+
+export const getFederatedBarnsSyncStatus = onCall(
+  { region: "us-central1" },
+  async (request): Promise<FederatedBarnSyncStatusDto> => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "Authentication required");
+    }
+    return getFederatedBarnSyncStatusPayload();
+  }
+);
+
+export const getFederationSourceHealth = onCall(
+  { region: "us-central1" },
+  async (request): Promise<{ items: FederationSourceHealthItemDto[] }> => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "Authentication required");
+    }
+    return { items: await getFederationSourceHealthPayload() };
+  }
+);
+
+export const triggerFederationDebugSync = onCall(
+  { region: "us-central1" },
+  async (request): Promise<FederationManualSyncDto> => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "Authentication required");
+    }
+
+    return triggerFederationDebugSyncInternal();
+  }
+);
+
+export const triggerFederationManualSync = onCall(
+  { region: "us-central1" },
+  async (request): Promise<FederationManualSyncDto> => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "Authentication required");
+    }
+    return triggerManualFederationSync();
+  }
+);
 
 export const getLessons = onCall({ region: "us-central1" }, async (request): Promise<LessonListDto> => {
   if (!request.auth?.uid) {
@@ -465,6 +1227,15 @@ export const bookLesson = onCall({ region: "us-central1" }, async (request) => {
     userId: uid, lessonId, lessonTitle, lessonDate, instructorName,
     status: "confirmed",
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  await writeUserNotification(uid, {
+    type: "reservation",
+    title: "Rezervasyon olusturuldu",
+    body: `${lessonTitle} dersi ${lessonDate} icin onaylandi.`,
+    targetId: ref.id,
+    targetRoute: "myReservations",
+    notificationKey: `reservation_confirmed_${ref.id}`,
   });
 
   return { id: ref.id, lessonId, lessonTitle, lessonDate, instructorName, status: "confirmed", createdAt: new Date().toISOString() };
@@ -699,9 +1470,12 @@ export const addHorseHealthEvent = onCall({ region: "us-central1" }, async (requ
 
   const horseDoc = await db.collection("users").doc(uid).collection("horses").doc(horseId).get();
   if (!horseDoc.exists) throw new HttpsError("not-found", "Horse not found");
+  const horseName = normalizeString(horseDoc.data()?.name, 80);
 
   const ref = await db.collection("users").doc(uid).collection("horses").doc(horseId)
     .collection("health_events").add({ type, date, notes, createdAt: admin.firestore.FieldValue.serverTimestamp() });
+
+  await maybeWriteHorseHealthReminder(uid, horseId, ref.id, horseName, type, date);
 
   return { id: ref.id, horseId, type, date, notes, createdAt: new Date().toISOString() };
 });
@@ -725,6 +1499,17 @@ export const updateHorseHealthEvent = onCall({ region: "us-central1" }, async (r
   if (!doc.exists) throw new HttpsError("not-found", "Health event not found");
 
   await ref.update(update);
+  const horseDoc = await db.collection("users").doc(uid).collection("horses").doc(horseId).get();
+  const nextType = typeof update.type === "string" ? update.type : normalizeString(doc.data()?.type, 40) || "OTHER";
+  const nextDate = typeof update.date === "string" ? update.date : normalizeString(doc.data()?.date, 10);
+  await maybeWriteHorseHealthReminder(
+    uid,
+    horseId,
+    eventId,
+    normalizeString(horseDoc.data()?.name, 80),
+    nextType,
+    nextDate
+  );
   return { success: true };
 });
 
@@ -743,6 +1528,66 @@ export const deleteHorseHealthEvent = onCall({ region: "us-central1" }, async (r
 
   await ref.delete();
   return { success: true };
+});
+
+export const syncHorseHealthReminders = onSchedule(
+  {
+    region: "us-central1",
+    schedule: "every 6 hours",
+    timeZone: "Europe/Istanbul",
+    retryCount: 1,
+  },
+  async () => {
+    const today = currentIstanbulDateKey(0);
+    const tomorrow = currentIstanbulDateKey(1);
+    const snapshot = await db.collectionGroup("health_events")
+      .where("date", ">=", today)
+      .where("date", "<=", tomorrow)
+      .get();
+
+    await mapWithConcurrency(snapshot.docs, 10, async (doc) => {
+      const segments = doc.ref.path.split("/");
+      const uid = segments[1] || "";
+      const horseId = segments[3] || "";
+      const eventId = segments[5] || doc.id;
+      if (!uid || !horseId) return;
+
+      const data = doc.data();
+      const horseDoc = await db.collection("users").doc(uid).collection("horses").doc(horseId).get();
+      await maybeWriteHorseHealthReminder(
+        uid,
+        horseId,
+        eventId,
+        normalizeString(horseDoc.data()?.name, 80),
+        normalizeString(data.type, 40) || "OTHER",
+        normalizeString(data.date, 10)
+      );
+    });
+  }
+);
+
+export const sendGeneralNotification = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const uid = request.auth.uid;
+  const data = request.data as Record<string, unknown>;
+
+  const title = normalizeString(data.title, 160);
+  const body = normalizeString(data.body, 500);
+  if (!title || !body) {
+    throw new HttpsError("invalid-argument", "title and body are required");
+  }
+
+  const targetRoute = normalizeString(data.targetRoute, 160);
+  const targetId = normalizeString(data.targetId, 120);
+  const id = await writeUserNotification(uid, {
+    type: "general",
+    title,
+    body,
+    targetId: targetId || undefined,
+    targetRoute: targetRoute || undefined,
+  });
+
+  return { success: true, id };
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -874,207 +1719,601 @@ export const triggerSafetyAlarm = onCall({ region: "us-central1" }, async (reque
   return { success: true, locationLink };
 });
 
-// ─── TJK Yarış Entegrasyonu ──────────────────────────────────────────────────
+// ─── Equestrian Agenda ───────────────────────────────────────────────────────
 
-// City ID → name mapping from tjk.org
-const TJK_CITIES: Record<number, string> = {
-  1: "Adana",
-  2: "İzmir",
-  3: "İstanbul",
-  4: "Bursa",
-  5: "Ankara",
-  6: "Urfa",
-  7: "Elazığ",
-  8: "Diyarbakır",
-  9: "Kocaeli",
-};
-
-interface TjkRaceResultEntry {
-  position: string;
-  horseName: string;
-  jockey: string;
-  trainer: string;
-  weight: string;
-  time: string;
-}
-
-interface TjkRaceEntry {
-  raceNo: number;
-  raceTitle: string;
-  distance: string;
-  surface: string;
-  startTime: string;
-  results: TjkRaceResultEntry[];
-}
-
-interface TjkRaceDayResponse {
-  date: string;
-  cityId: number;
-  cityName: string;
-  races: TjkRaceEntry[];
-}
-
-async function scrapeTjkRaceDay(dateStr: string, cityId: number): Promise<TjkRaceDayResponse> {
-  // Fetch the AJAX endpoint for a specific city — this returns the full race data for that city.
-  // Verified URL pattern from tjk.org inspection (13/03/2026).
-  const cityName = TJK_CITIES[cityId] ?? "";
-  const url =
-    `https://www.tjk.org/TR/YarisSever/Info/Sehir/GunlukYarisSonuclari` +
-    `?SehirId=${cityId}` +
-    `&QueryParameter_Tarih=${encodeURIComponent(dateStr)}` +
-    `&SehirAdi=${encodeURIComponent(cityName)}` +
-    `&Era=today`;
-
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36",
-      "Accept": "text/html,application/xhtml+xml",
-      "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.8",
-      "Referer": "https://www.tjk.org/",
-    },
-  } as Record<string, unknown>);
-
-  if (!response.ok) {
-    throw new HttpsError("unavailable", `TJK returned HTTP ${response.status}`);
+export const getEquestrianAnnouncements = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
   }
 
-  const html = await response.text();
-  const $ = cheerio.load(html);
-  const races: TjkRaceEntry[] = [];
-
-  // ── Confirmed HTML structure (verified 13/03/2026) ──────────────────────────
-  //
-  // <div class="races-panes races-panes{SehirId}">
-  //   <div>   ← one div per race
-  //     <h3 class="race-no">
-  //       <a href="#223638" id="anc223638">1. Koşu 14.30</a>
-  //     </h3>
-  //     <table summary="Kosular" class="tablesorter">
-  //       <thead><tr>
-  //         <th>Forma</th><th>S</th><th>At İsmi</th><th>Yaş</th>
-  //         <th>Orijin</th><th>Sıklet</th><th>Jokey</th><th>Sahip</th>
-  //         <th>Antrenör</th><th>Derece</th>...
-  //       </tr></thead>
-  //       <tbody>
-  //         <tr class="odd|even">
-  //           <td class="gunluk-GunlukYarisSonuclari-FormaKodu">…</td>
-  //           <td class="gunluk-GunlukYarisSonuclari-SONUCNO">1</td>
-  //           <td class="gunluk-GunlukYarisSonuclari-AtAdi3"><a>DİLŞAHKAYA(1)</a></td>
-  //           <td class="gunluk-GunlukYarisSonuclari-Yas">4y k k</td>
-  //           <td class="gunluk-GunlukYarisSonuclari-Baba">…</td>
-  //           <td class="gunluk-GunlukYarisSonuclari-Kilo">58</td>
-  //           <td class="gunluk-GunlukYarisSonuclari-JokeAdi"><a>Y.GÖKÇE</a></td>
-  //           <td class="gunluk-GunlukYarisSonuclari-SahipAdi"><a>ELİF KAYA</a></td>
-  //           <td class="gunluk-GunlukYarisSonuclari-AntronorAdi"><a>RAM. KAYA</a></td>
-  //           <td class="gunluk-GunlukYarisSonuclari-Derece">1.34.43</td>
-  //           …
-  //         </tr>
-  //       </tbody>
-  //     </table>
-  //   </div>
-  // </div>
-
-  // Find the races-panes container (class contains "races-panes")
-  const racesPanes = $(`[class*="races-panes${cityId}"], .races-panes`).first();
-  const container = racesPanes.length ? racesPanes : $("body");
-
-  // Each direct child div of races-panes is one race
-  container.children("div").each((_idx, raceDiv) => {
-    const $raceDiv = $(raceDiv);
-
-    // ── Race header: "1. Koşu 14.30" ──────────────────────────────────────
-    const headingText = $raceDiv.find("h3.race-no a").first().text().trim();
-    // Matches "1. Koşu 14.30" or "1. Koşu: 14.30"
-    const headingMatch = headingText.match(/(\d+)\.\s*Ko[şs]u[:\s]+(\d{1,2}[.:]\d{2})/i);
-    const raceNo = headingMatch ? parseInt(headingMatch[1], 10) : (_idx + 1);
-    const startTime = headingMatch ? headingMatch[2].replace(".", ":") : "";
-
-    // ── Race details: look for sibling/child elements with distance & surface ──
-    // Some pages show these in a <ul> or <p> near the heading.
-    // We'll try common patterns and fall back to empty string.
-    const detailsText = $raceDiv.find(".race-details, .kosu-bilgi, .race-info-row, ul.race-info li")
-      .text().trim();
-    // Try to extract distance (e.g., "1400 m") and surface ("Kum", "Çim", "Sentetik")
-    const distanceMatch = detailsText.match(/(\d{3,5})\s*m/i);
-    const surfaceMatch = detailsText.match(/\b(Kum|Çim|Sentetik|Turf|Sand|Grass)\b/i);
-    const distance = distanceMatch ? `${distanceMatch[1]} m` : "";
-    const surface = surfaceMatch ? surfaceMatch[1] : "";
-
-    // Race title: the link text may include a name after the "Koşu" label
-    // e.g., "1. Koşu — Uğur Koşusu 14.30" — extract the named part if present
-    const raceTitleMatch = headingText.match(/Ko[şs]u[:\s—–-]+(.+?)\s+\d{1,2}[.:]\d{2}/i);
-    const raceTitle = raceTitleMatch ? raceTitleMatch[1].trim() : "";
-
-    // ── Result rows ────────────────────────────────────────────────────────
-    const results: TjkRaceResultEntry[] = [];
-    $raceDiv.find("table.tablesorter tbody tr").each((_ri, row) => {
-      const $row = $(row);
-
-      // Skip rows without enough cells (e.g., spacer rows)
-      const position = $row.find("td.gunluk-GunlukYarisSonuclari-SONUCNO").text().trim();
-      if (!position) return;
-
-      // Horse name: strip "(1)", "(2)" starting-number suffix if present
-      const rawHorse = $row.find("td.gunluk-GunlukYarisSonuclari-AtAdi3 a").first().text().trim();
-      const horseName = rawHorse.replace(/\(\d+\)\s*$/, "").trim();
-
-      // Weight: first text node (before any <sup> bonus/penalty info)
-      const weightRaw = $row.find("td.gunluk-GunlukYarisSonuclari-Kilo").contents().first().text().trim();
-
-      // Jockey: link text
-      const jockey = $row.find("td.gunluk-GunlukYarisSonuclari-JokeAdi a").first().text().trim();
-
-      // Trainer
-      const trainer = $row.find("td.gunluk-GunlukYarisSonuclari-AntronorAdi a").first().text().trim();
-
-      // Finishing time (e.g., "1.34.43")
-      const time = $row.find("td.gunluk-GunlukYarisSonuclari-Derece").text().trim();
-
-      results.push({ position, horseName, jockey, trainer, weight: weightRaw, time });
-    });
-
-    // Only include races that have at least one result row
-    if (results.length > 0 || headingMatch) {
-      races.push({ raceNo, raceTitle, distance, surface, startTime, results });
-    }
-  });
-
-  return {
-    date: dateStr,
-    cityId,
-    cityName: cityName || `City ${cityId}`,
-    races,
-  };
-}
-
-/**
- * getTjkRaceDay — Scrapes tjk.org for daily race results.
- *
- * Input: { date: "DD/MM/YYYY", cityId: number }
- * Output: { date, cityId, cityName, races: [ { raceNo, raceTitle, distance, surface, startTime, results: [...] } ] }
- */
-export const getTjkRaceDay = onCall({ region: "us-central1" }, async (request) => {
-  const data = request.data as Record<string, unknown>;
-  const dateStr = typeof data.date === "string" ? data.date.trim() : "";
-  const cityId = typeof data.cityId === "number" ? data.cityId : 3; // default: İstanbul
-
-  if (!dateStr || !/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
-    throw new HttpsError("invalid-argument", "date must be in DD/MM/YYYY format");
-  }
-  if (!TJK_CITIES[cityId]) {
-    throw new HttpsError("invalid-argument", `Unknown cityId: ${cityId}`);
-  }
-
-  const result = await scrapeTjkRaceDay(dateStr, cityId);
-  return result;
+  const cached = await readScrapeCache<{ items: EquestrianAnnouncementDto[] }>(EQUESTRIAN_ANNOUNCEMENTS_CACHE_KEY);
+  return cached ?? { items: [] };
 });
 
-/**
- * getTjkCities — Returns the list of TJK cities with their IDs.
- */
-export const getTjkCities = onCall({ region: "us-central1" }, async (_request) => {
-  return Object.entries(TJK_CITIES).map(([id, name]) => ({
-    id: parseInt(id, 10),
-    name,
+export const getEquestrianCompetitions = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Authentication required");
+  }
+
+  const cached = await readScrapeCache<{ items: EquestrianCompetitionDto[] }>(EQUESTRIAN_COMPETITIONS_CACHE_KEY);
+  return cached ?? { items: [] };
+});
+
+// ─── At Sağlık Takvimi ───────────────────────────────────────────────────────
+
+export const getHealthEvents = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Login required");
+  }
+  const uid = request.auth.uid;
+  const horseId = request.data?.horseId as string | undefined;
+
+  let query: FirebaseFirestore.Query = db.collection("healthEvents").where("userId", "==", uid);
+  if (horseId) {
+    query = query.where("horseId", "==", horseId);
+  }
+
+  const snapshot = await query.orderBy("scheduledDate", "desc").get();
+  return {
+    events: snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }))
+  };
+});
+
+export const saveHealthEvent = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Login required");
+  }
+  const uid = request.auth.uid;
+  const { id, horseId, horseName, type, scheduledDate, completedDate, notes, isCompleted } = request.data ?? {};
+
+  if (!horseId) throw new HttpsError("invalid-argument", "horseId required");
+  if (!type) throw new HttpsError("invalid-argument", "type required");
+  if (scheduledDate == null) throw new HttpsError("invalid-argument", "scheduledDate required");
+
+  const payload = {
+    userId: uid,
+    horseId,
+    horseName: horseName ?? "",
+    type,
+    scheduledDate,
+    completedDate: completedDate ?? null,
+    notes: notes ?? "",
+    isCompleted: isCompleted ?? false
+  };
+
+  if (id && id !== "") {
+    await db.collection("healthEvents").doc(id as string).set(payload, { merge: true });
+    return { id };
+  } else {
+    const ref = await db.collection("healthEvents").add(payload);
+    return { id: ref.id };
+  }
+});
+
+export const deleteHealthEvent = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Login required");
+  }
+  const uid = request.auth.uid;
+  const { eventId } = request.data ?? {};
+  if (!eventId) throw new HttpsError("invalid-argument", "eventId required");
+  const eventDoc = await db.collection("healthEvents").doc(eventId as string).get();
+  if (!eventDoc.exists) {
+    throw new HttpsError("not-found", "Health event not found");
+  }
+  if (eventDoc.data()?.userId !== uid) {
+    throw new HttpsError("permission-denied", "Not authorized to modify this event");
+  }
+  await db.collection("healthEvents").doc(eventId as string).delete();
+  return { success: true };
+});
+
+export const markHealthEventCompleted = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Login required");
+  }
+  const uid = request.auth.uid;
+  const { eventId, completedDate } = request.data ?? {};
+  if (!eventId) throw new HttpsError("invalid-argument", "eventId required");
+  const eventDoc = await db.collection("healthEvents").doc(eventId as string).get();
+  if (!eventDoc.exists) {
+    throw new HttpsError("not-found", "Health event not found");
+  }
+  if (eventDoc.data()?.userId !== uid) {
+    throw new HttpsError("permission-denied", "Not authorized to modify this event");
+  }
+  await db.collection("healthEvents").doc(eventId as string).update({
+    isCompleted: true,
+    completedDate: completedDate ?? Date.now()
+  });
+  return { success: true };
+});
+
+// ─── Challenge / Badge System ────────────────────────────────────────────────
+
+export const getActiveChallenges = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Login required");
+  const userId = request.auth.uid;
+  const now = Date.now();
+
+  const globalSnapshot = await db.collection("challenges")
+    .where("endDate", ">", now)
+    .orderBy("endDate", "asc")
+    .get();
+
+  const userProgressSnapshot = await db.collection("userChallengeProgress")
+    .where("userId", "==", userId)
+    .get();
+
+  const progressMap = new Map(
+    userProgressSnapshot.docs.map(d => [d.data().challengeId as string, d.data().currentValue as number])
+  );
+
+  return {
+    challenges: globalSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      currentValue: progressMap.get(doc.id) ?? 0,
+      isCompleted: (progressMap.get(doc.id) ?? 0) >= (doc.data().targetValue as number)
+    }))
+  };
+});
+
+export const getEarnedBadges = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Login required");
+  const userId = request.auth.uid;
+
+  const snapshot = await db.collection("userBadges")
+    .where("userId", "==", userId)
+    .orderBy("earnedDate", "desc")
+    .get();
+
+  return {
+    badges: snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  };
+});
+
+export const checkAndAwardBadges = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Login required");
+  const userId = request.auth.uid;
+  const { distanceMeters, durationSeconds, avgSpeedKph } = request.data ?? {};
+
+  const newBadges: string[] = [];
+
+  const ridesSnapshot = await db.collection("trainings").where("userId", "==", userId).get();
+  const totalKm = ridesSnapshot.docs.reduce(
+    (sum, d) => sum + ((d.data().distanceMeters as number) / 1000),
+    0
+  );
+
+  const badgesToCheck = [
+    { type: "FIRST_RIDE", condition: ridesSnapshot.size >= 1 },
+    { type: "DISTANCE_10K", condition: totalKm >= 10 },
+    { type: "DISTANCE_50K", condition: totalKm >= 50 },
+    { type: "DISTANCE_100K", condition: totalKm >= 100 },
+    { type: "SPEED_DEMON", condition: (avgSpeedKph as number) >= 20 },
+  ];
+
+  const existingBadges = await db.collection("userBadges").where("userId", "==", userId).get();
+  const earnedTypes = new Set(existingBadges.docs.map(d => d.data().type as string));
+
+  for (const badge of badgesToCheck) {
+    if (badge.condition && !earnedTypes.has(badge.type)) {
+      await db.collection("userBadges").add({
+        userId,
+        type: badge.type,
+        earnedDate: Date.now()
+      });
+      newBadges.push(badge.type);
+    }
+  }
+
+  return { newBadges };
+});
+
+// ─────────────────────────────────────────────
+// B2B Barn Management Functions
+// ─────────────────────────────────────────────
+
+export const getBarnStats = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Login required");
+  const { barnId } = request.data ?? {};
+  if (!barnId) throw new HttpsError("invalid-argument", "barnId required");
+
+  try {
+    const lessonsSnap = await db.collection("lessons").where("barnId", "==", barnId).get();
+    const reservSnap = await db.collection("reservations").where("barnId", "==", barnId).get();
+    const now = Date.now();
+    const upcoming = lessonsSnap.docs.filter(d => ((d.data().startTimeMs as number) || 0) > now);
+    const uniqueStudents = new Set(reservSnap.docs.map(d => d.data().userId as string)).size;
+    return {
+      totalLessons: lessonsSnap.size,
+      totalReservations: reservSnap.size,
+      uniqueStudents,
+      upcomingLessonsCount: upcoming.length
+    };
+  } catch (_) {
+    throw new HttpsError("internal", "Failed to fetch stats");
+  }
+});
+
+export const getManagedLessons = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Login required");
+  const { barnId } = request.data ?? {};
+  if (!barnId) throw new HttpsError("invalid-argument", "barnId required");
+
+  try {
+    const snap = await db.collection("lessons")
+      .where("barnId", "==", barnId)
+      .orderBy("startTimeMs", "desc")
+      .limit(50)
+      .get();
+
+    const lessons = await Promise.all(snap.docs.map(async doc => {
+      const d = doc.data();
+      const reservSnap = await db.collection("reservations")
+        .where("lessonId", "==", doc.id)
+        .where("status", "!=", "cancelled")
+        .get();
+      return {
+        id: doc.id,
+        title: (d.title as string) || "",
+        instructorName: (d.instructorName as string) || "",
+        startTimeMs: (d.startTimeMs as number) || 0,
+        durationMin: (d.durationMin as number) || 60,
+        level: (d.level as string) || "beginner",
+        price: (d.price as number) || 0,
+        spotsTotal: (d.spotsTotal as number) || 10,
+        spotsBooked: reservSnap.size,
+        barnId: (d.barnId as string) || barnId,
+        isCancelled: (d.isCancelled as boolean) || false
+      };
+    }));
+    return { lessons };
+  } catch (_) {
+    throw new HttpsError("internal", "Failed to fetch lessons");
+  }
+});
+
+export const createLesson = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Login required");
+  const { barnId, title, instructorName, startTimeMs, durationMin, level, price, spotsTotal } = request.data ?? {};
+  if (!barnId || !title || !startTimeMs) {
+    throw new HttpsError("invalid-argument", "barnId, title, startTimeMs required");
+  }
+
+  try {
+    const ref = db.collection("lessons").doc();
+    const lesson = {
+      id: ref.id,
+      barnId,
+      title,
+      instructorName: instructorName || "",
+      startTimeMs,
+      durationMin: durationMin || 60,
+      level: level || "beginner",
+      price: price || 0,
+      spotsTotal: spotsTotal || 10,
+      isCancelled: false,
+      createdBy: request.auth.uid,
+      createdAt: Date.now()
+    };
+    await ref.set(lesson);
+    return { ...lesson, spotsBooked: 0 };
+  } catch (_) {
+    throw new HttpsError("internal", "Failed to create lesson");
+  }
+});
+
+export const cancelLesson = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Login required");
+  const { lessonId } = request.data ?? {};
+  if (!lessonId) throw new HttpsError("invalid-argument", "lessonId required");
+
+  try {
+    await db.collection("lessons").doc(lessonId as string).update({ isCancelled: true });
+    return { success: true };
+  } catch (_) {
+    throw new HttpsError("internal", "Failed to cancel lesson");
+  }
+});
+
+export const getLessonRoster = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Login required");
+  const { lessonId } = request.data ?? {};
+  if (!lessonId) throw new HttpsError("invalid-argument", "lessonId required");
+
+  try {
+    const reservSnap = await db.collection("reservations")
+      .where("lessonId", "==", lessonId)
+      .where("status", "!=", "cancelled")
+      .get();
+
+    const roster = await Promise.all(reservSnap.docs.map(async doc => {
+      const reservData = doc.data();
+      let displayName = "";
+      let email = "";
+      try {
+        const userDoc = await db.collection("users").doc(reservData.userId as string).get();
+        const userData = userDoc.data();
+        displayName = `${userData?.firstName || ""} ${userData?.lastName || ""}`.trim();
+        email = (userData?.email as string) || "";
+      } catch (_) { /* best-effort */ }
+      return {
+        userId: reservData.userId as string,
+        displayName,
+        email,
+        reservationId: doc.id,
+        bookedAtMs: (reservData.createdAt as number) || 0
+      };
+    }));
+    return { roster };
+  } catch (_) {
+    throw new HttpsError("internal", "Failed to fetch roster");
+  }
+});
+
+function getOfflineAnswer(q: string, horses: string[], trainings: string[]): string {
+  const horseInfo = horses.length > 0 ? `Atınız ${horses[0]} için d` : "D";
+
+  if (q.includes("halsiz") || q.includes("yorgun") || q.includes("enerji")) {
+    return `${horseInfo}üşük enerji birkaç nedenden kaynaklanabilir:\n\n• **Beslenme:** Günlük kuru ot ihtiyacı vücut ağırlığının %1.5-2'si. Taze su erişimini kontrol edin.\n• **Dinlenme:** Yoğun antrenman sonrası 24-48 saat dinlenme gerekir.\n• **Sağlık:** Ateş, solunum sayısı (12-20/dk) ve nabzı (28-44/dk) kontrol edin.\n\n⚠️ Halsizlik 2 günden uzun sürüyorsa veterinere danışın.`;
+  }
+  if (q.includes("topallık") || q.includes("topallamak") || q.includes("bacak") || q.includes("ayak")) {
+    return `Topallık durumunda önce şunları kontrol edin:\n\n• **Tırnak:** Çivi, taş veya yabancı cisim var mı?\n• **Nal:** Gevşek veya düşmüş nal?\n• **Eklem:** Şişlik veya sıcaklık var mı?\n\n⚠️ Topallık veteriner gerektiren bir durumdur. Hareketi kısıtlayın ve veterineri arayın.`;
+  }
+  if (q.includes("antrenman") || q.includes("egzersiz") || q.includes("çalışma")) {
+    const lastTraining = trainings.length > 0 ? `\n\nSon antrenmanınız: ${trainings[0]}` : "";
+    return `Etkili bir antrenman programı için:\n\n• **Isınma:** 10 dk yürüyüş ile başlayın\n• **Hafif gün:** Haftada 2-3 gün yürüyüş + hafif tırıs\n• **Yoğun gün:** Haftada 1-2 gün dörtnala + engel\n• **Dinlenme:** Haftada en az 1 tam dinlenme günü\n• **Soğuma:** Her seansonun son 10 dk'sı yürüyüş${lastTraining}`;
+  }
+  if (q.includes("beslenme") || q.includes("yem") || q.includes("saman") || q.includes("yulaf")) {
+    return `At beslenmesinin temelleri:\n\n• **Kuru ot:** Vücut ağırlığının %1.5-2'si/gün (500 kg at → 7.5-10 kg)\n• **Kesif yem:** Yoğun çalışan atlara tahıl takviyesi (mısır, arpa, yulaf)\n• **Su:** Günde 25-45 litre temiz su\n• **Mineral/vitamin:** Tuz yalama taşı zorunlu\n• **Öğün sıklığı:** Günde 3 öğün ideal, mideye aşırı yüklenmeden kaçının`;
+  }
+  if (q.includes("aşı") || q.includes("sağlık") || q.includes("veteriner") || q.includes("hastalık")) {
+    return `Temel sağlık takvimi:\n\n• **Aşılar:** Tetanoz + grip yılda 2 kez, kuduz yılda 1 kez\n• **Parazit tedavisi:** 3 ayda bir, rotasyon ile\n• **Diş kontrolü:** Yılda 1 kez (ağız sağlığı sindirimi etkiler)\n• **Nalbant:** 6-8 haftada bir nal yenileme\n• **Genel kontrol:** Yılda 1-2 veteriner muayenesi\n\nSağlık Takvimi ekranından bu hatırlatıcıları takip edebilirsiniz.`;
+  }
+  if (q.includes("nal") || q.includes("nalbant")) {
+    return `Nal bakımı:\n\n• **Nalbant ziyareti:** 6-8 haftada bir (çalışma yoğunluğuna göre)\n• **Günlük bakım:** Tırnak temizleme fırçasıyla tırnak içini temizleyin\n• **Işlaklık:** Çok ıslak veya çok kuru zemin tırnak sağlığını bozar\n• **Tırnaksız at:** Yumuşak zeminde çalışıyorsa bazen nal gereksiz olabilir\n\nSağlık Takvimi'nde nalbant randevularınızı takip edebilirsiniz.`;
+  }
+  if (q.includes("merhaba") || q.includes("selam") || q.includes("nasıl")) {
+    return `Merhaba! Size at bakımı, antrenman planlaması, beslenme veya sağlık konularında yardımcı olabilirim. Aklınızdaki soruyu yazın! 🐴`;
+  }
+
+  // Genel fallback
+  return `Bu konuda size yardımcı olmak isterim. Sorunuzu biraz daha açar mısınız? Örneğin:\n\n• Atınızın yaşı ve cinsi nedir?\n• Belirtiler ne zaman başladı?\n• Son antrenman ne zamandı?\n\nDaha fazla bilgi ile daha doğru yanıt verebilirim. Acil sağlık durumlarında lütfen veterinerinizi arayın.`;
+}
+
+export const askAiCoach = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Login required");
+  }
+  const userId = request.auth.uid;
+
+  const { question, conversationHistory } = request.data as {
+    question: unknown;
+    conversationHistory?: Array<{ role: string; text: string }>;
+  };
+
+  if (!question || typeof question !== "string" || question.trim().length === 0) {
+    throw new HttpsError("invalid-argument", "question required");
+  }
+  if (question.length > 500) {
+    throw new HttpsError("invalid-argument", "question too long (max 500 chars)");
+  }
+
+  try {
+    const [userDoc, horsesSnap, trainingsSnap] = await Promise.all([
+      db.collection("users").doc(userId).get(),
+      db.collection("horses").where("userId", "==", userId).limit(3).get(),
+      db.collection("trainings").where("userId", "==", userId)
+        .orderBy("startTimeMs", "desc").limit(5).get()
+    ]);
+
+    const userData = userDoc.data() || {};
+    const horses = horsesSnap.docs.map(d => {
+      const h = d.data();
+      return `${h["name"] || "İsimsiz At"} (${h["breed"] || "cins bilinmiyor"}, ${h["ageYears"] || "?"} yaş)`;
+    });
+    const recentTrainings = trainingsSnap.docs.map(d => {
+      const t = d.data();
+      const date = t["startTimeMs"] ? new Date(t["startTimeMs"] as number).toLocaleDateString("tr-TR") : "?";
+      return `${date}: ${Math.round(((t["distanceKm"] as number) || 0) * 10) / 10} km, ${Math.round((t["durationMin"] as number) || 0)} dk`;
+    });
+
+    const systemPrompt = `Sen HorseGallop uygulamasının Türkçe at binicilik koçusun. Kullanıcıya at bakımı, antrenman planlaması, sağlık ve binicilik teknikleri hakkında yardımcı oluyorsun. Kısa, net ve pratik cevaplar ver. Türkçe yaz.
+
+Kullanıcı Profili:
+- Ad: ${userData["firstName"] || ""} ${userData["lastName"] || ""}
+- Atları: ${horses.length > 0 ? horses.join(", ") : "Kayıtlı at yok"}
+- Son Antrenmanlar: ${recentTrainings.length > 0 ? recentTrainings.join(" | ") : "Antrenman kaydı yok"}
+
+Önemli: Veteriner gerektiren tıbbi durumlar için mutlaka veterinere yönlendir.`;
+
+    const apiKey = process.env["GEMINI_API_KEY"];
+
+    let response: string;
+
+    if (!apiKey) {
+      // API key yoksa keyword tabanlı akıllı fallback
+      response = getOfflineAnswer(question.toLowerCase(), horses, recentTrainings);
+    } else {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      const history = ((conversationHistory || []).slice(-6) as Array<{ role: string; text: string }>).map(msg => ({
+        role: msg.role === "assistant" ? "model" : "user",
+        parts: [{ text: msg.text }]
+      }));
+
+      const chat = model.startChat({
+        history,
+        systemInstruction: systemPrompt,
+        generationConfig: { maxOutputTokens: 400, temperature: 0.7 }
+      });
+
+      const result = await chat.sendMessage(question);
+      response = result.response.text();
+    }
+
+    try {
+      const convRef = db.collection("aiConversations").doc(userId);
+      const convDoc = await convRef.get();
+      const existing: Array<{ role: string; text: string; timestamp: number }> =
+        convDoc.exists ? ((convDoc.data()?.["messages"] as Array<{ role: string; text: string; timestamp: number }>) || []) : [];
+      const newMessages = [
+        ...existing,
+        { role: "user", text: question, timestamp: Date.now() },
+        { role: "assistant", text: response, timestamp: Date.now() }
+      ].slice(-20);
+      await convRef.set({ messages: newMessages, updatedAt: Date.now() });
+    } catch (_) {
+      // Kayıt hatası sessizce geç, cevap yine de dön
+    }
+
+    return { answer: response };
+  } catch (error: unknown) {
+    if (error instanceof HttpsError) throw error;
+    console.error("askAiCoach error:", error);
+    throw new HttpsError("internal", "AI service temporarily unavailable");
+  }
+});
+
+// ─── TBF Yarışma Entegrasyonu ─────────────────────────────────────────────────
+
+export const getTbfEventDay = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login required");
+
+  const { date, type } = request.data as { date?: string; type?: string };
+  const today = new Date();
+  const dateStr = (date as string) || `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, "0")}${String(today.getDate()).padStart(2, "0")}`;
+  const dataType = (type as string) === "sonuclar" ? "sonuclar" : "program";
+
+  try {
+    const url = `https://www.tbf.org.tr/s/d/${dataType}/${dateStr}/yarislar.json`;
+    const response = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" }
+    });
+    if (!response.ok) return { hippodromes: [], date: dateStr, type: dataType };
+    const data = await response.json() as any;
+
+    const venues = (data.HipodrumList || data.hipodromeList || []).map((h: any) => ({
+      code: h.KOD || h.kod || "",
+      name: h.AD || h.ad || "",
+      raceCount: h.YARISSAYISI || h.yarisSayisi || 0,
+      time: h.SAAT || h.saat || ""
+    }));
+
+    return { hippodromes: venues, date: dateStr, type: dataType };
+  } catch (error) {
+    console.error("getTbfEventDay error:", error);
+    throw new HttpsError("internal", "Failed to fetch event day data");
+  }
+});
+
+export const getTbfEventCard = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login required");
+
+  const { date, hippodrome, type } = request.data as { date?: string; hippodrome: string; type?: string };
+  if (!hippodrome) throw new HttpsError("invalid-argument", "venue required");
+
+  const today = new Date();
+  const dateStr = (date as string) || `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, "0")}${String(today.getDate()).padStart(2, "0")}`;
+  const dataType = (type as string) === "sonuclar" ? "sonuclar" : "program";
+
+  try {
+    const url = `https://www.tbf.org.tr/s/d/${dataType}/${dateStr}/full/${hippodrome.toUpperCase()}.json`;
+    const response = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" }
+    });
+    if (!response.ok) throw new HttpsError("not-found", "Event card not found");
+    const data = await response.json() as any;
+
+    const events = (data.YarisList || data.yarisList || []).map((race: any) => {
+      const athletes = (race.AtList || race.atList || []).map((at: any) => ({
+        no: at.NO || at.no || "",
+        name: at.AD || at.ad || "",
+        jockey: at.JOKEYADI || at.jokeyAdi || "",
+        trainer: at.ANTRENORADI || at.antrenorAdi || "",
+        owner: at.SAHIPADI || at.sahipAdi || "",
+        weight: at.KILO || at.kilo || 0,
+        age: at.YAS || at.yas || "",
+        last6: at.SON6 || at.son6 || "",
+        odds: at.GANYAN || at.ganyan || "",
+        bestTime: at.ENIYIDERECE || at.eniyi || "",
+        result: at.SONUC || at.sonuc || "",
+        time: at.DERECE || at.derece || "",
+        gap: at.FARK || at.fark || ""
+      }));
+
+      return {
+        no: race.NO || race.no || "",
+        name: race.AD || race.ad || "",
+        distance: race.MESAFE || race.mesafe || 0,
+        surface: race.PIST || race.pist || "",
+        time: race.SAAT || race.saat || "",
+        prize: race.IKRAMIYE || race.ikramiye || 0,
+        horses: athletes
+      };
+    });
+
+    return {
+      hippodrome,
+      date: dateStr,
+      type: dataType,
+      races: events,
+      weather: data.HAVA || data.hava || "",
+      trackCondition: data.PISTDURUMU || data.pistDurumu || ""
+    };
+  } catch (error: any) {
+    if (error instanceof HttpsError) throw error;
+    console.error("getTbfEventCard error:", error);
+    throw new HttpsError("internal", "Failed to fetch event card");
+  }
+});
+
+export const getTbfAthleteStats = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login required");
+  const { horseName } = request.data as { horseName: string };
+  if (!horseName) throw new HttpsError("invalid-argument", "horseName required");
+
+  return {
+    horseName,
+    message: "At detay bilgileri yakında",
+    available: false
+  };
+});
+
+export const getTbfUpcomingEvents = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login required");
+
+  const dates: string[] = [];
+  for (let i = 0; i < 3; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    dates.push(`${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`);
+  }
+
+  const results = await Promise.allSettled(dates.map(async (dateStr) => {
+    const url = `https://www.tbf.org.tr/s/d/program/${dateStr}/yarislar.json`;
+    const response = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" }
+    });
+    if (!response.ok) return { date: dateStr, hippodromes: [] };
+    const data = await response.json() as any;
+    const venues = (data.HipodrumList || data.hipodromeList || []).map((h: any) => ({
+      code: h.KOD || h.kod || "",
+      name: h.AD || h.ad || "",
+      raceCount: h.YARISSAYISI || h.yarisSayisi || 0
+    }));
+    return { date: dateStr, hippodromes: venues };
   }));
+
+  const days = results
+    .filter(r => r.status === "fulfilled")
+    .map(r => (r as PromiseFulfilledResult<any>).value);
+
+  return { days };
 });

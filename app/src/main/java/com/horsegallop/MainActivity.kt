@@ -5,15 +5,19 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import com.horsegallop.feature.settings.presentation.SettingsViewModel
 import com.horsegallop.settings.toLocaleList
@@ -22,16 +26,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
-import android.media.MediaPlayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import com.airbnb.lottie.compose.*
 import com.horsegallop.navigation.AppNavHost
 import com.horsegallop.navigation.Dest
 import dagger.hilt.android.AndroidEntryPoint
@@ -305,20 +309,10 @@ fun SplashScreen(
             .background(semantic.screenBase),
         contentAlignment = Alignment.Center
     ) {
-        val ctx = LocalContext.current
         val titleText: String = title ?: ""
         val subtitleText: String = subtitle ?: ""
-        
-        val composition by rememberLottieComposition(
-            LottieCompositionSpec.RawRes(com.horsegallop.R.raw.horse)
-        )
-        val lottieAnimatable = rememberLottieAnimatable()
-        
-        var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
-        var isSoundCompleted by remember { mutableStateOf(false) }
-        var isAnimationCompleted by remember { mutableStateOf(false) }
         var finished by remember { mutableStateOf(false) }
-        val splashTimeoutMs = 2200L
+        val splashTimeoutMs = 1200L
 
         fun finishOnce(reason: String) {
             if (finished) return
@@ -329,71 +323,7 @@ fun SplashScreen(
         
         DisposableEffect(Unit) {
             AppLog.i("SplashScreen", "splash_started")
-            val mp = runCatching { MediaPlayer.create(ctx, com.horsegallop.R.raw.horse_gallop) }.getOrNull()
-            mediaPlayer = mp
-            if (mp == null) {
-                AppLog.w("SplashScreen", "audio_unavailable")
-                isSoundCompleted = true
-            } else {
-                mp.setVolume(1.0f, 1.0f)
-                mp.setOnCompletionListener {
-                    AppLog.i("SplashScreen", "audio_completed")
-                    isSoundCompleted = true
-                }
-                mp.setOnErrorListener { _, what, extra ->
-                    AppLog.e("SplashScreen", "audio_error what=$what extra=$extra")
-                    isSoundCompleted = true
-                    true
-                }
-            }
-
-            onDispose {
-                try {
-                    if (mp != null && mp.isPlaying) {
-                        mp.stop()
-                    }
-                    mp?.release()
-                    mediaPlayer = null
-                } catch (e: Exception) {
-                    AppLog.e("SplashScreen", "audio_release_error: ${e.message}")
-                }
-            }
-        }
-
-        LaunchedEffect(mediaPlayer) {
-            val player = mediaPlayer ?: return@LaunchedEffect
-            try {
-                withContext(Dispatchers.Main.immediate) {
-                    player.seekTo(0)
-                    player.start()
-                }
-                AppLog.i("SplashScreen", "audio_started")
-            } catch (e: Exception) {
-                AppLog.e("SplashScreen", "Splash sound playback error: ${e.message}")
-                isSoundCompleted = true
-            }
-        }
-
-        LaunchedEffect(composition) {
-            val splashComposition = composition ?: return@LaunchedEffect
-            try {
-                lottieAnimatable.animate(
-                    composition = splashComposition,
-                    iterations = 1
-                )
-            } catch (e: Exception) {
-                AppLog.e("SplashScreen", "Splash lottie playback error: ${e.message}")
-            } finally {
-                AppLog.i("SplashScreen", "lottie_completed")
-                isAnimationCompleted = true
-            }
-        }
-
-        LaunchedEffect(isSoundCompleted, isAnimationCompleted) {
-            if (finished) return@LaunchedEffect
-            if (isSoundCompleted && isAnimationCompleted) {
-                finishOnce("media_lottie_completed")
-            }
+            onDispose {}
         }
 
         LaunchedEffect(Unit) {
@@ -403,12 +333,8 @@ fun SplashScreen(
                 finishOnce("timeout")
             }
         }
-        
-        LottieAnimation(
-            composition = composition,
-            progress = { lottieAnimatable.progress },
-            modifier = Modifier.size(220.dp)
-        )
+
+        SplashBadge()
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -426,6 +352,39 @@ fun SplashScreen(
                 text = subtitleText,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun SplashBadge() {
+    val semantic = LocalSemanticColors.current
+    Surface(
+        modifier = Modifier
+            .size(156.dp)
+            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), CircleShape),
+        shape = CircleShape,
+        color = semantic.cardElevated
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
+                            MaterialTheme.colorScheme.secondary.copy(alpha = 0.12f),
+                            MaterialTheme.colorScheme.surface
+                        )
+                    )
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                contentDescription = null,
+                modifier = Modifier.size(100.dp)
             )
         }
     }

@@ -28,6 +28,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -70,10 +71,12 @@ fun SettingsScreen(
     val state by viewModel.uiState.collectAsState()
     val privacyState by viewModel.privacyState.collectAsState()
     val contentState by viewModel.contentState.collectAsState()
+    val syncState by viewModel.syncState.collectAsState()
     val feedback = LocalAppFeedbackController.current
     val clipboard = LocalClipboardManager.current
     var showDeleteConfirm by remember { mutableStateOf(false) }
     val semantic = LocalSemanticColors.current
+    val settingsControlsEnabled = !syncState.isInitialSyncRunning && !syncState.isSaving
 
     LaunchedEffect(privacyState.errorMessageResId) {
         privacyState.errorMessageResId?.let { messageResId ->
@@ -87,6 +90,20 @@ fun SettingsScreen(
             clipboard.setText(AnnotatedString(json))
             feedback.showSuccess(R.string.privacy_export_ready)
             viewModel.consumeExport()
+        }
+    }
+
+    LaunchedEffect(syncState.remoteErrorMessageResId) {
+        syncState.remoteErrorMessageResId?.let { messageResId ->
+            feedback.showError(messageResId)
+            viewModel.consumeRemoteError()
+        }
+    }
+
+    LaunchedEffect(syncState.saveErrorMessageResId) {
+        syncState.saveErrorMessageResId?.let { messageResId ->
+            feedback.showError(messageResId)
+            viewModel.consumeSaveError()
         }
     }
 
@@ -117,6 +134,32 @@ fun SettingsScreen(
                 .padding(bottom = dimensionResource(id = R.dimen.padding_screen_vertical)),
             verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.section_spacing_md))
         ) {
+            if (syncState.isInitialSyncRunning || syncState.isSaving) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = semantic.cardSubtle),
+                    shape = RoundedCornerShape(dimensionResource(id = R.dimen.radius_lg)),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = stringResource(
+                                id = if (syncState.isInitialSyncRunning) R.string.settings_sync_loading
+                                else R.string.settings_sync_saving
+                            ),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    }
+                }
+            }
+
             SettingsSectionCard(
                 title = stringResource(id = R.string.setting_theme_title),
                 subtitle = contentState.themeSubtitle,
@@ -125,16 +168,19 @@ fun SettingsScreen(
                 SettingsRadioRow(
                     label = stringResource(id = R.string.theme_system),
                     selected = state.themeMode == ThemeMode.SYSTEM,
+                    enabled = settingsControlsEnabled,
                     onClick = { viewModel.onThemeSelected(ThemeMode.SYSTEM) }
                 )
                 SettingsRadioRow(
                     label = stringResource(id = R.string.theme_light),
                     selected = state.themeMode == ThemeMode.LIGHT,
+                    enabled = settingsControlsEnabled,
                     onClick = { viewModel.onThemeSelected(ThemeMode.LIGHT) }
                 )
                 SettingsRadioRow(
                     label = stringResource(id = R.string.theme_dark),
                     selected = state.themeMode == ThemeMode.DARK,
+                    enabled = settingsControlsEnabled,
                     onClick = { viewModel.onThemeSelected(ThemeMode.DARK) }
                 )
             }
@@ -147,16 +193,19 @@ fun SettingsScreen(
                 SettingsRadioRow(
                     label = stringResource(id = R.string.setting_language_system),
                     selected = state.language == AppLanguage.SYSTEM,
+                    enabled = settingsControlsEnabled,
                     onClick = { viewModel.onLanguageSelected(AppLanguage.SYSTEM) }
                 )
                 SettingsRadioRow(
                     label = stringResource(id = R.string.setting_language_english),
                     selected = state.language == AppLanguage.ENGLISH,
+                    enabled = settingsControlsEnabled,
                     onClick = { viewModel.onLanguageSelected(AppLanguage.ENGLISH) }
                 )
                 SettingsRadioRow(
                     label = stringResource(id = R.string.setting_language_turkish),
                     selected = state.language == AppLanguage.TURKISH,
+                    enabled = settingsControlsEnabled,
                     onClick = { viewModel.onLanguageSelected(AppLanguage.TURKISH) }
                 )
             }
@@ -169,6 +218,7 @@ fun SettingsScreen(
                 SettingsSwitchRow(
                     label = stringResource(id = R.string.setting_notifications_subtitle),
                     checked = state.notificationsEnabled,
+                    enabled = settingsControlsEnabled,
                     onCheckedChange = viewModel::onNotificationsChanged
                 )
             }
@@ -292,6 +342,7 @@ private fun SettingsSectionCard(
 private fun SettingsRadioRow(
     label: String,
     selected: Boolean,
+    enabled: Boolean,
     onClick: () -> Unit
 ) {
     Row(
@@ -300,9 +351,13 @@ private fun SettingsRadioRow(
             .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        RadioButton(selected = selected, onClick = onClick)
+        RadioButton(selected = selected, onClick = onClick, enabled = enabled)
         Spacer(modifier = Modifier.width(6.dp))
-        Text(text = label, style = MaterialTheme.typography.bodyMedium)
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+        )
     }
 }
 
@@ -310,6 +365,7 @@ private fun SettingsRadioRow(
 private fun SettingsSwitchRow(
     label: String,
     checked: Boolean,
+    enabled: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
     Row(
@@ -319,8 +375,12 @@ private fun SettingsSwitchRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = label, style = MaterialTheme.typography.bodyMedium)
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+        )
+        Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
     }
 }
 

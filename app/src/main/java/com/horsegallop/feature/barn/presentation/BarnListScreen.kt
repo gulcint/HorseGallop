@@ -260,6 +260,14 @@ fun BarnListScreen(
                   style = MaterialTheme.typography.labelLarge
                 )
               }
+            } else {
+              OutlinedButton(onClick = { viewModel.loadBarns() }) {
+                Text(
+                  text = stringResource(com.horsegallop.R.string.retry),
+                  color = MaterialTheme.colorScheme.primary,
+                  style = MaterialTheme.typography.labelLarge
+                )
+              }
             }
           }
         }

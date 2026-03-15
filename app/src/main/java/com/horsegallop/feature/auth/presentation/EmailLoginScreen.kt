@@ -47,6 +47,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -60,6 +62,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
+import com.horsegallop.core.components.ButtonVariant
+import com.horsegallop.core.components.HorseGallopButton
 import com.horsegallop.core.debug.AppLog
 import com.horsegallop.core.feedback.LocalAppFeedbackController
 import com.horsegallop.ui.theme.LocalSemanticColors
@@ -219,7 +223,8 @@ private fun EmailFormContent(
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(min = 56.dp),
+                            .heightIn(min = 56.dp)
+                            .semantics { contentDescription = "email_input" },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outline,
@@ -271,7 +276,8 @@ private fun EmailFormContent(
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(min = 56.dp),
+                            .heightIn(min = 56.dp)
+                            .semantics { contentDescription = "password_input" },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outline,
@@ -297,32 +303,14 @@ private fun EmailFormContent(
                     }
 
                     // Login button
-                    Button(
+                    HorseGallopButton(
+                        text = stringResource(R.string.login_button),
                         onClick = onLoginClick,
-                        enabled = !uiState.isLoading && uiState.isFormValid,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        )
-                    ) {
-                        if (uiState.isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(22.dp),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text(
-                                text = stringResource(R.string.login_button),
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                    }
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = uiState.isFormValid,
+                        isLoading = uiState.isLoading,
+                        variant = ButtonVariant.Primary
+                    )
 
                     if (uiState.showResendVerification) {
                         TextButton(

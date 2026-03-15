@@ -40,6 +40,8 @@ class BarnRepositoryImpl @Inject constructor(
                         lng = dto.lng,
                         rating = dto.rating,
                         reviewCount = dto.reviewCount,
+                        heroImageUrl = dto.heroImageUrl,
+                        phone = dto.phone,
                         isFavorite = cachedBarns.value.find { it.barn.id == dto.id }?.barn?.isFavorite == true
                     ),
                     lat = dto.lat,
@@ -56,8 +58,12 @@ class BarnRepositoryImpl @Inject constructor(
             }
             cachedBarns.value = remote
             emit(remote)
-        } catch (_: Exception) {
-            emit(cachedBarns.value)
+        } catch (error: Exception) {
+            if (cachedBarns.value.isNotEmpty()) {
+                emit(cachedBarns.value)
+            } else {
+                throw error
+            }
         }
     }
 

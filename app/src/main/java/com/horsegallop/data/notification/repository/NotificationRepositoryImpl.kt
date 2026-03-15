@@ -45,12 +45,15 @@ class NotificationRepositoryImpl @Inject constructor(
                                 type = when (doc.getString("type")) {
                                     "reservation" -> NotificationType.RESERVATION
                                     "lesson" -> NotificationType.LESSON
+                                    "horse_health" -> NotificationType.HORSE_HEALTH
                                     else -> NotificationType.GENERAL
                                 },
                                 title = doc.getString("title").orEmpty(),
                                 body = doc.getString("body").orEmpty(),
                                 timestamp = doc.getLong("timestamp") ?: 0L,
-                                isRead = doc.getBoolean("isRead") ?: false
+                                isRead = doc.getBoolean("isRead") ?: false,
+                                targetId = doc.getString("targetId"),
+                                targetRoute = doc.getString("targetRoute")
                             )
                         }.getOrNull()
                     } ?: emptyList()

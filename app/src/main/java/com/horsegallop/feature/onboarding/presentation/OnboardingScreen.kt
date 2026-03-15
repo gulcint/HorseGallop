@@ -1,14 +1,7 @@
 package com.horsegallop.feature.onboarding.presentation
 
 import android.app.Activity
-import android.media.MediaPlayer
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -48,7 +41,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -57,11 +49,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -93,24 +82,6 @@ fun OnboardingScreen(
     val warmClay = MaterialTheme.colorScheme.primaryContainer
     val semantic = LocalSemanticColors.current
     val uiState by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
-
-    // ── Horse gallop sound — plays once, released on completion or dispose ────
-    DisposableEffect(Unit) {
-        var mp: MediaPlayer? = null
-        try {
-            mp = MediaPlayer.create(context, R.raw.horse_gallop)
-            mp?.setOnCompletionListener { player -> player.release() }
-            mp?.start()
-        } catch (_: Throwable) {
-            mp?.release()
-            mp = null
-        }
-        onDispose {
-            try { mp?.release() } catch (_: Throwable) {}
-        }
-    }
-
     // ── Pages ─────────────────────────────────────────────────────────────────
     val pages: List<OnboardingPage> = remember(
         warmUmber, warmCopper, warmChestnut, warmClay,
@@ -171,8 +142,7 @@ fun OnboardingScreen(
             .fillMaxSize()
             .background(semantic.screenBase)
     ) {
-        ThemedAnimatedBackground(gradient = pages[pagerState.currentPage].gradient)
-        AnimatedCoffeeOverlay()
+        StaticOnboardingBackground(gradient = pages[pagerState.currentPage].gradient)
 
         BackHandler(enabled = true) { activity?.finish() }
 
@@ -289,7 +259,102 @@ fun OnboardingScreen(
     }
 }
 
-// ── Horse Lottie composable ───────────────────────────────────────────────────
+@Composable
+private fun StaticOnboardingBackground(gradient: List<Color>) {
+    val fallbackPrimary = MaterialTheme.colorScheme.primaryContainer
+    val fallbackSecondary = MaterialTheme.colorScheme.secondaryContainer
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        gradient.firstOrNull() ?: fallbackPrimary,
+                        gradient.getOrNull(1) ?: fallbackSecondary,
+                        fallbackPrimary.copy(alpha = 0.88f)
+                    )
+                )
+            )
+    )
+}
+
+// ── Per-page content ──────────────────────────────────────────────────────────
+@Composable
+private fun OnboardingPageContentAnimated(
+    page: OnboardingPage,
+    pageOffset: Float,
+    semantic: SemanticColors
+) {
+    val clamped = pageOffset.coerceIn(-1f, 1f)
+    val alpha = 1f - kotlin.math.abs(clamped) * 0.20f
+    val parallax = 18f * clamped
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Transparent)
+            .graphicsLayer {
+                this.alpha = alpha
+                translationX = parallax
+            }
+            .padding(horizontal = 24.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(200.dp)
+                .clip(RoundedCornerShape(34.dp))
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
+                            MaterialTheme.colorScheme.secondary.copy(alpha = 0.10f),
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
+                        )
+                    )
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            HorseLottieAnimation(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp)
+                    .alpha(alpha)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(18.dp))
+
+        Text(
+            text = page.titleOverride ?: stringResource(page.titleRes),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            color = semantic.onImageOverlay
+        )
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        EngagingCallout(
+            subtitleRes = page.subtitleRes,
+            subtitleOverride = page.subtitleOverride,
+            gradient = page.gradient
+        )
+
+        Spacer(modifier = Modifier.height(18.dp))
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            page.features.forEach { feature ->
+                FeatureBullet(icon = feature.icon, text = stringResource(id = feature.textRes))
+            }
+        }
+    }
+}
+
 @Composable
 private fun HorseLottieAnimation(modifier: Modifier = Modifier) {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.horse))
@@ -302,123 +367,6 @@ private fun HorseLottieAnimation(modifier: Modifier = Modifier) {
         progress = { progress },
         modifier = modifier
     )
-}
-
-// ── Background layers ─────────────────────────────────────────────────────────
-@Composable
-private fun ThemedAnimatedBackground(gradient: List<Color>) {
-    val transition = rememberInfiniteTransition(label = "bg")
-    val shift by transition.animateFloat(
-        initialValue = 0f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(22000, easing = LinearEasing), RepeatMode.Reverse),
-        label = "shift"
-    )
-    val drift by transition.animateFloat(
-        initialValue = 1f, targetValue = 0f,
-        animationSpec = infiniteRepeatable(tween(28000, easing = LinearEasing), RepeatMode.Reverse),
-        label = "drift"
-    )
-    val fallbackPrimary = MaterialTheme.colorScheme.primaryContainer
-    val fallbackSecondary = MaterialTheme.colorScheme.secondaryContainer
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .drawWithCache {
-                val start = Offset(size.width * (0.1f + 0.2f * shift), size.height * (0.1f + 0.2f * drift))
-                val end   = Offset(size.width * (0.9f - 0.2f * shift), size.height * (0.9f - 0.2f * drift))
-                val brush = Brush.linearGradient(
-                    colors = listOf(
-                        gradient.firstOrNull() ?: fallbackPrimary,
-                        gradient.getOrNull(1) ?: fallbackSecondary
-                    ),
-                    start = start, end = end, tileMode = TileMode.Clamp
-                )
-                onDrawBehind { drawRect(brush) }
-            }
-    )
-}
-
-@Composable
-private fun AnimatedCoffeeOverlay() {
-    val transition = rememberInfiniteTransition(label = "coffee")
-    val pulse by transition.animateFloat(
-        initialValue = 0.15f, targetValue = 0.35f,
-        animationSpec = infiniteRepeatable(tween(18000, easing = LinearEasing), RepeatMode.Reverse),
-        label = "pulse"
-    )
-    val slide by transition.animateFloat(
-        initialValue = 0f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(26000, easing = LinearEasing), RepeatMode.Reverse),
-        label = "slide"
-    )
-    val c1 = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f + pulse * 0.30f)
-    val c2 = MaterialTheme.colorScheme.secondary.copy(alpha = 0.10f + pulse * 0.28f)
-    val c3 = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.10f + pulse * 0.24f)
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .drawWithCache {
-                val start = Offset(size.width * (0.15f + 0.2f * slide), size.height * 0.1f)
-                val end   = Offset(size.width * (0.85f - 0.2f * slide), size.height * 0.9f)
-                val brush = Brush.linearGradient(colors = listOf(c1, c2, c3), start = start, end = end)
-                onDrawBehind { drawRect(brush) }
-            }
-            .alpha(0.40f)
-    )
-}
-
-// ── Per-page content ──────────────────────────────────────────────────────────
-@Composable
-private fun OnboardingPageContentAnimated(
-    page: OnboardingPage,
-    pageOffset: Float,
-    semantic: SemanticColors
-) {
-    val clamped  = pageOffset.coerceIn(-1f, 1f)
-    val alpha    = 1f - kotlin.math.abs(clamped) * 0.25f
-    val parallax = 24f * clamped
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Transparent)
-            .graphicsLayer { this.alpha = alpha; translationX = parallax }
-            .padding(horizontal = 24.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // ── Lottie hero animation ─────────────────────────────────────────────
-        HorseLottieAnimation(modifier = Modifier.size(180.dp))
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = page.titleOverride ?: stringResource(page.titleRes),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            color = semantic.onImageOverlay
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        EngagingCallout(
-            subtitleRes = page.subtitleRes,
-            subtitleOverride = page.subtitleOverride,
-            gradient = page.gradient
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            page.features.forEach { feature ->
-                FeatureBullet(icon = feature.icon, text = stringResource(id = feature.textRes))
-            }
-        }
-    }
 }
 
 private data class FeatureRes(
@@ -452,13 +400,11 @@ private fun EngagingCallout(
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, semantic.cardStroke),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(72.dp)
+        modifier = Modifier.fillMaxWidth()
     ) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .background(Brush.linearGradient(colors = listOf(base, start, end)))
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             contentAlignment = Alignment.Center
@@ -470,7 +416,9 @@ private fun EngagingCallout(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 2.dp)
                 )
             }
         }
@@ -482,16 +430,35 @@ private fun FeatureBullet(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     text: String
 ) {
+    val semantic = LocalSemanticColors.current
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.12f), RoundedCornerShape(12.dp))
+            .background(
+                semantic.cardElevated.copy(alpha = 0.72f),
+                RoundedCornerShape(14.dp)
+            )
+            .clip(RoundedCornerShape(14.dp))
             .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
-        Text(text, color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.bodyMedium)
+        Box(
+            modifier = Modifier
+                .size(34.dp)
+                .background(
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.16f),
+                    RoundedCornerShape(10.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+        }
+        Text(
+            text,
+            color = semantic.onImageOverlay,
+            style = MaterialTheme.typography.bodyMedium
+        )
     }
 }
 

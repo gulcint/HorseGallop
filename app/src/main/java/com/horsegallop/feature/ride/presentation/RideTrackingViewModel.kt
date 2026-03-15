@@ -86,9 +86,13 @@ class RideTrackingViewModel @Inject constructor(
 
         barnRepository.getBarns().onEach { barns ->
             _uiState.update { state ->
+                val selectedBarnId = state.selectedBarn?.barn?.id
+                val resolvedSelection = selectedBarnId?.let { currentId ->
+                    barns.firstOrNull { it.barn.id == currentId }
+                } ?: barns.firstOrNull()
                 state.copy(
                     barns = barns,
-                    selectedBarn = state.selectedBarn ?: barns.firstOrNull()
+                    selectedBarn = resolvedSelection
                 )
             }
         }.launchIn(viewModelScope)

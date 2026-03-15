@@ -25,4 +25,20 @@
     <string name="error_name_required">İsim ve soyisim gerekli</string>
     <string name="error_email_invalid">Geçerli e-posta girin</string>
     <string name="error_password_length">Şifre en az 10 karakter olmalı</string>
+
+    <!-- AI Coach -->
+    <string name="ai_coach_title">AI Koç</string>
+    <string name="ai_coach_input_placeholder">Atınız hakkında sorun...</string>
+    <string name="ai_coach_thinking">Düşünüyor...</string>
+    <string name="ai_coach_send">Gönder</string>
+    <string name="ai_coach_error">Yanıt alınamadı. Lütfen tekrar deneyin.</string>
+
+    <!-- TBF Events -->
+    <string name="tbf_events_title">TBF Yarışmaları</string>
+    <string name="tbf_program_tab">Program</string>
+    <string name="tbf_results_tab">Sonuçlar</string>
+    <string name="tbf_no_events">Bugün etkinlik bulunamadı</string>
+    <string name="tbf_event_distance">%1$dm %2$s</string>
+    <string name="tbf_select_venue">Mekân seçin</string>
+    <string name="tbf_loading">Etkinlikler yükleniyor...</string>
 </resources>

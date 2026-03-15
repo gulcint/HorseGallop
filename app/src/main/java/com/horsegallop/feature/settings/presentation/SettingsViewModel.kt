@@ -15,9 +15,10 @@ import com.horsegallop.domain.privacy.usecase.RequestDataExportUseCase
 import com.horsegallop.domain.privacy.usecase.DeleteUserDataUseCase
 import com.horsegallop.domain.auth.usecase.SignOutUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.Locale
 import javax.inject.Inject
@@ -33,6 +34,13 @@ data class SettingsContentUiState(
     val languageSubtitle: String? = null,
     val notificationsSubtitle: String? = null,
     val privacySubtitle: String? = null
+)
+
+data class SettingsSyncUiState(
+    val isInitialSyncRunning: Boolean = false,
+    val isSaving: Boolean = false,
+    val remoteErrorMessageResId: Int? = null,
+    val saveErrorMessageResId: Int? = null
 )
 
 @HiltViewModel
@@ -51,9 +59,12 @@ class SettingsViewModel @Inject constructor(
     val privacyState: StateFlow<PrivacyUiState> = _privacyState.asStateFlow()
     private val _contentState = MutableStateFlow(SettingsContentUiState())
     val contentState: StateFlow<SettingsContentUiState> = _contentState.asStateFlow()
+    private val _syncState = MutableStateFlow(SettingsSyncUiState())
+    val syncState: StateFlow<SettingsSyncUiState> = _syncState.asStateFlow()
+    private var saveJob: Job? = null
 
     init {
-        loadContent(Locale.getDefault().language)
+        loadContent(uiState.value.language)
         syncSettingsFromBackend()
     }
 
@@ -64,6 +75,7 @@ class SettingsViewModel @Inject constructor(
 
     fun onLanguageSelected(language: AppLanguage) {
         settingsRepository.setLanguage(language)
+        loadContent(language)
         syncSettingToBackend()
     }
 
@@ -74,31 +86,59 @@ class SettingsViewModel @Inject constructor(
 
     private fun syncSettingsFromBackend() {
         viewModelScope.launch {
-            getUserSettingsUseCase().onSuccess { remote ->
-                // Apply remote theme and language only if they differ from local default
-                val localState = settingsRepository.state.value
-                if (localState.themeMode == ThemeMode.SYSTEM && remote.themeMode != "SYSTEM") {
-                    runCatching { settingsRepository.setThemeMode(ThemeMode.fromId(remote.themeMode)) }
+            _syncState.value = _syncState.value.copy(
+                isInitialSyncRunning = true,
+                remoteErrorMessageResId = null
+            )
+
+            getUserSettingsUseCase()
+                .onSuccess { remote ->
+                    val remoteThemeMode = ThemeMode.fromId(remote.themeMode.lowercase())
+                    val remoteLanguage = AppLanguage.fromId(remote.language.lowercase())
+                    settingsRepository.replaceState(
+                        themeMode = remoteThemeMode,
+                        language = remoteLanguage,
+                        notificationsEnabled = remote.notificationsEnabled
+                    )
+                    loadContent(remoteLanguage)
+                    _syncState.value = _syncState.value.copy(isInitialSyncRunning = false)
                 }
-                if (localState.language == AppLanguage.SYSTEM && remote.language != "SYSTEM") {
-                    runCatching { settingsRepository.setLanguage(AppLanguage.fromId(remote.language)) }
+                .onFailure { error ->
+                    FeedbackErrorMapper.logTechnicalError("SettingsViewModel.syncSettingsFromBackend", error)
+                    _syncState.value = _syncState.value.copy(
+                        isInitialSyncRunning = false,
+                        remoteErrorMessageResId = FeedbackErrorMapper.toMessageRes(error)
+                    )
                 }
-            }
         }
     }
 
     private fun syncSettingToBackend() {
-        viewModelScope.launch {
+        saveJob?.cancel()
+        saveJob = viewModelScope.launch {
             val state = settingsRepository.state.value
-            runCatching {
-                updateUserSettingsUseCase(
+            _syncState.value = _syncState.value.copy(
+                isSaving = true,
+                saveErrorMessageResId = null
+            )
+
+            updateUserSettingsUseCase(
                     UserSettings(
                         themeMode = state.themeMode.id.uppercase(),
                         language = state.language.id.uppercase(),
                         notificationsEnabled = state.notificationsEnabled
                     )
                 )
-            }
+                .onSuccess {
+                    _syncState.value = _syncState.value.copy(isSaving = false)
+                }
+                .onFailure { error ->
+                    FeedbackErrorMapper.logTechnicalError("SettingsViewModel.syncSettingToBackend", error)
+                    _syncState.value = _syncState.value.copy(
+                        isSaving = false,
+                        saveErrorMessageResId = FeedbackErrorMapper.toMessageRes(error)
+                    )
+                }
         }
     }
 
@@ -148,7 +188,16 @@ class SettingsViewModel @Inject constructor(
         _privacyState.value = _privacyState.value.copy(errorMessageResId = null)
     }
 
-    private fun loadContent(locale: String) {
+    fun consumeRemoteError() {
+        _syncState.value = _syncState.value.copy(remoteErrorMessageResId = null)
+    }
+
+    fun consumeSaveError() {
+        _syncState.value = _syncState.value.copy(saveErrorMessageResId = null)
+    }
+
+    private fun loadContent(language: AppLanguage) {
+        val locale = language.localeTag ?: Locale.getDefault().language
         viewModelScope.launch {
             getAppContentUseCase(locale).collect { result ->
                 result.onSuccess { content ->

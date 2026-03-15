@@ -642,6 +642,7 @@ private fun BarnSelector(
     var expanded by remember { mutableStateOf(false) }
     val selectedBarnName = selectedBarn?.barn?.name
     val selectedBarnDescription = selectedBarn?.barn?.description?.takeIf { it.isNotBlank() }
+        ?: selectedBarn?.barn?.location?.takeIf { it.isNotBlank() }
 
     Card(
         shape = RoundedCornerShape(20.dp),
@@ -773,7 +774,8 @@ private fun BarnSelector(
                                             style = MaterialTheme.typography.bodyMedium,
                                             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
                                         )
-                                        barn.barn.description.takeIf { it.isNotBlank() }?.let { description ->
+                                        (barn.barn.description.takeIf { it.isNotBlank() }
+                                            ?: barn.barn.location.takeIf { it.isNotBlank() })?.let { description ->
                                             Text(
                                                 text = description,
                                                 style = MaterialTheme.typography.bodySmall,

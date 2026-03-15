@@ -1,4 +1,4 @@
-name: Android PR Fast Path
+name: Android PR Gate
 
 on:
   pull_request:
@@ -7,122 +7,14 @@ on:
 
 permissions:
   contents: read
-  actions: write
 
 concurrency:
   group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  android-pr-check:
-    name: android-pr-check
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-      GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: "17"
-          distribution: "temurin"
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: wrapper
-          cache-disabled: false
-          cache-read-only: ${{ github.event.pull_request.head.repo.fork }}
-
-      - name: Grant execute permission
-        run: chmod +x gradlew
-
-      - name: Setup google-services.json
-        run: |
-          if [ -z "${GOOGLE_SERVICES_JSON:-}" ]; then
-            echo "::error::GOOGLE_SERVICES_JSON secret is required for Android build."
-            exit 1
-          fi
-          mkdir -p app
-          printf "%s" "$GOOGLE_SERVICES_JSON" > app/google-services.json
-          test -s app/google-services.json
-
-      - name: Verify Google Maps API key
-        run: |
-          if [ -z "${GOOGLE_MAPS_API_KEY:-}" ]; then
-            echo "::error::GOOGLE_MAPS_API_KEY secret is required for Android build."
-            exit 1
-          fi
-
-      - name: Unit Tests (PR fast path)
-        run: ./gradlew testDebugUnitTest --no-daemon --stacktrace
-
-  android-lint:
-    name: android-lint
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-      GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: "17"
-          distribution: "temurin"
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: wrapper
-          cache-disabled: false
-          cache-read-only: ${{ github.event.pull_request.head.repo.fork }}
-
-      - name: Grant execute permission
-        run: chmod +x gradlew
-
-      - name: Setup google-services.json
-        run: |
-          if [ -z "${GOOGLE_SERVICES_JSON:-}" ]; then
-            echo "::error::GOOGLE_SERVICES_JSON secret is required for Android build."
-            exit 1
-          fi
-          mkdir -p app
-          printf "%s" "$GOOGLE_SERVICES_JSON" > app/google-services.json
-          test -s app/google-services.json
-
-      - name: Verify Google Maps API key
-        run: |
-          if [ -z "${GOOGLE_MAPS_API_KEY:-}" ]; then
-            echo "::error::GOOGLE_MAPS_API_KEY secret is required for Android build."
-            exit 1
-          fi
-
-      - name: Lint Debug
-        run: ./gradlew lintDebug --no-daemon --stacktrace
-
-      - name: Upload Lint Reports
-        if: ${{ always() }}
-        continue-on-error: true
-        uses: actions/upload-artifact@v4
-        with:
-          name: lint-debug-reports
-          path: |
-            app/build/reports/lint-results-debug.html
-            app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt
-          if-no-files-found: warn
-
-  android-pr-build:
-    name: android-pr-build
+  android-pr-gate:
+    name: android-pr-gate
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -166,8 +58,19 @@ jobs:
             exit 1
           fi
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+      - name: Android gate
+        run: ./gradlew lintDebug testDebugUnitTest assembleDebug --no-daemon --stacktrace
+
+      - name: Upload Lint Reports
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-debug-reports
+          path: |
+            app/build/reports/lint-results-debug.html
+            app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt
+          if-no-files-found: warn
 
       - name: Upload APK
         continue-on-error: true
@@ -178,103 +81,25 @@ jobs:
           if-no-files-found: warn
           retention-days: 3
 
-  firebase-test-lab:
-    name: firebase-test-lab
+  backend-check:
+    name: backend-check
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs:
-      - android-pr-build
-    env:
-      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-      FTL_RESULTS_BUCKET: ${{ secrets.FTL_RESULTS_BUCKET }}
-      FTL_MODEL_ID: oriole
-      FTL_VERSION_ID: "33"
-      FTL_LOCALE: en
-      FTL_ORIENTATION: portrait
-
+    timeout-minutes: 12
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download APK Artifact
-        uses: actions/download-artifact@v4
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
         with:
-          name: app-debug-pr-${{ github.event.pull_request.number }}
-          path: app/build/outputs/apk/debug
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
 
-      - name: Verify APK artifact exists
-        run: |
-          set -euo pipefail
-          if [ ! -s app/build/outputs/apk/debug/app-debug.apk ]; then
-            echo "::error::Expected APK artifact not found."
-            exit 1
-          fi
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
 
-      - name: Check GCP Secrets
-        id: gcp_precheck
-        run: |
-          set -euo pipefail
-          if [ -z "${GCP_SA_KEY:-}" ] || [ -z "${GCP_PROJECT_ID:-}" ]; then
-            echo "::warning::GCP secrets not configured — skipping Firebase Test Lab."
-            {
-              echo "## Firebase Test Lab (PR)"
-              echo ""
-              echo "- Skipped: GCP_SA_KEY or GCP_PROJECT_ID secrets not set."
-              echo "- Set these repository secrets to enable FTL on PRs."
-            } >> "${GITHUB_STEP_SUMMARY}"
-            echo "ready=false" >> "${GITHUB_OUTPUT}"
-          else
-            echo "ready=true" >> "${GITHUB_OUTPUT}"
-          fi
-
-      - name: Authenticate to Google Cloud
-        if: ${{ steps.gcp_precheck.outputs.ready == 'true' }}
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ env.GCP_SA_KEY }}
-
-      - name: Set up gcloud CLI
-        if: ${{ steps.gcp_precheck.outputs.ready == 'true' }}
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ env.GCP_PROJECT_ID }}
-
-      - name: Run Firebase Test Lab (Robo Test)
-        if: ${{ steps.gcp_precheck.outputs.ready == 'true' }}
-        id: ftl
-        run: |
-          set -euo pipefail
-          PROJECT_NUMBER="$(gcloud projects describe "${GCP_PROJECT_ID}" --format='value(projectNumber)')"
-          RESULTS_BUCKET="${FTL_RESULTS_BUCKET:-test-lab-${PROJECT_NUMBER}}"
-          RESULTS_DIR="github-actions/pr-${{ github.event.pull_request.number }}/${{ github.run_id }}-${{ github.run_attempt }}"
-          echo "results_bucket=${RESULTS_BUCKET}" >> "${GITHUB_OUTPUT}"
-          echo "results_dir=${RESULTS_DIR}" >> "${GITHUB_OUTPUT}"
-
-          gcloud firebase test android run \
-            --type robo \
-            --app app/build/outputs/apk/debug/app-debug.apk \
-            --device model="${FTL_MODEL_ID}",version="${FTL_VERSION_ID}",locale="${FTL_LOCALE}",orientation="${FTL_ORIENTATION}" \
-            --timeout 240s \
-            --record-video \
-            --results-bucket "gs://${RESULTS_BUCKET}" \
-            --results-dir "${RESULTS_DIR}"
-
-      - name: Download Firebase Test Lab Results
-        if: ${{ always() && steps.ftl.outputs.results_bucket != '' && steps.ftl.outputs.results_dir != '' }}
-        run: |
-          set -euo pipefail
-          mkdir -p firebase_test_results
-          gsutil -m cp -r \
-            "gs://${{ steps.ftl.outputs.results_bucket }}/${{ steps.ftl.outputs.results_dir }}" \
-            firebase_test_results || true
-
-      - name: Upload Firebase Test Results
-        if: ${{ always() && steps.ftl.outputs.results_bucket != '' && steps.ftl.outputs.results_dir != '' }}
-        continue-on-error: true
-        uses: actions/upload-artifact@v4
-        with:
-          name: firebase-test-results-pr-${{ github.event.pull_request.number }}
-          path: firebase_test_results
-          if-no-files-found: warn
-          retention-days: 7
+      - name: Backend build
+        working-directory: backend
+        run: npm run build

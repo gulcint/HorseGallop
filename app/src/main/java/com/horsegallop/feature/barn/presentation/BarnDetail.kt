@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.*
@@ -27,6 +28,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -52,10 +54,12 @@ import java.util.Locale
 @Composable
 fun BarnDetailScreen(
     onBack: () -> Unit,
+    onManageBarn: (barnId: String) -> Unit = {},
     viewModel: BarnDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val bookingState by viewModel.bookingState.collectAsState()
+    val isOwner by viewModel.isOwner.collectAsState()
     val semantic = LocalSemanticColors.current
     val topBarTitle = when (val state = uiState) {
         is BarnDetailUiState.Success -> state.barn.barn.name
@@ -105,8 +109,10 @@ fun BarnDetailScreen(
                 is BarnDetailUiState.Success -> BarnDetailContent(
                     barn = state.barn,
                     bookingState = bookingState,
+                    isOwner = isOwner,
                     onBookLesson = viewModel::bookLesson,
-                    onClearBookingResult = viewModel::clearBookingResult
+                    onClearBookingResult = viewModel::clearBookingResult,
+                    onManageBarn = { onManageBarn(state.barn.barn.id) }
                 )
                 is BarnDetailUiState.Error -> Box(
                     modifier = Modifier.fillMaxSize(),
@@ -135,8 +141,10 @@ fun BarnDetailScreen(
 fun BarnDetailContent(
     barn: BarnWithLocation,
     bookingState: BookingState = BookingState(),
+    isOwner: Boolean = false,
     onBookLesson: (String) -> Unit = {},
-    onClearBookingResult: () -> Unit = {}
+    onClearBookingResult: () -> Unit = {},
+    onManageBarn: () -> Unit = {}
 ) {
     val feedback = LocalAppFeedbackController.current
     val semantic = LocalSemanticColors.current
@@ -184,6 +192,7 @@ fun BarnDetailContent(
             contentPadding = PaddingValues(bottom = 118.dp)
         ) {
             item {
+                val hasCoordinates = barn.lat != 0.0 || barn.lng != 0.0
                 val barnLocation = LatLng(barn.lat, barn.lng)
                 val cameraPositionState = rememberCameraPositionState {
                     position = CameraPosition.fromLatLngZoom(barnLocation, 15f)
@@ -208,7 +217,7 @@ fun BarnDetailContent(
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
                         )
-                    } else {
+                    } else if (hasCoordinates) {
                         GoogleMap(
                             modifier = Modifier.fillMaxSize(),
                             cameraPositionState = cameraPositionState,
@@ -227,6 +236,17 @@ fun BarnDetailContent(
                             Marker(
                                 state = MarkerState(position = barnLocation),
                                 title = barn.barn.name
+                            )
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = barn.barn.location.ifEmpty { stringResource(id = R.string.unknown_location) },
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = semantic.onImageOverlay
                             )
                         }
                     }
@@ -346,7 +366,7 @@ fun BarnDetailContent(
                 }
             }
 
-            item {
+            if ((barn.lat != 0.0 || barn.lng != 0.0)) item {
                 val barnLocation = LatLng(barn.lat, barn.lng)
                 val cameraPositionState = rememberCameraPositionState {
                     position = CameraPosition.fromLatLngZoom(barnLocation, 14f)
@@ -401,7 +421,7 @@ fun BarnDetailContent(
                 }
             }
 
-            item {
+            if (barn.barn.tags.isNotEmpty()) item {
                 Surface(
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 6.dp)
@@ -422,7 +442,7 @@ fun BarnDetailContent(
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(barn.barn.tags.ifEmpty { listOf("Parking", "Cafe", "Lessons", "Trail") }) { tag ->
+                            items(barn.barn.tags) { tag ->
                                 Surface(
                                     shape = RoundedCornerShape(10.dp),
                                     color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.85f),
@@ -470,42 +490,62 @@ fun BarnDetailContent(
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
             )
         ) {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 16.dp)
                     .navigationBarsPadding(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                OutlinedButton(
-                    onClick = { /* Call action */ },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f),
-                        contentColor = MaterialTheme.colorScheme.primary
-                    ),
-                    border = androidx.compose.foundation.BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                    )
-                ) {
-                    Text(stringResource(id = com.horsegallop.R.string.contact))
+                if (isOwner) {
+                    Button(
+                        onClick = onManageBarn,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.tertiary,
+                            contentColor = MaterialTheme.colorScheme.onTertiary
+                        )
+                    ) {
+                        Text(stringResource(id = com.horsegallop.R.string.barn_manage_button))
+                    }
                 }
-                Button(
-                    onClick = { showReservationSheet = true },
-                    modifier = Modifier
-                        .weight(2f)
-                        .height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        contentColor = MaterialTheme.colorScheme.onSecondary
-                    )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text(stringResource(id = com.horsegallop.R.string.book_lesson))
+                    OutlinedButton(
+                        onClick = { /* Call action */ },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f),
+                            contentColor = MaterialTheme.colorScheme.primary
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                        )
+                    ) {
+                        Text(stringResource(id = com.horsegallop.R.string.contact))
+                    }
+                    Button(
+                        onClick = { showReservationSheet = true },
+                        modifier = Modifier
+                            .weight(2f)
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary,
+                            contentColor = MaterialTheme.colorScheme.onSecondary
+                        )
+                    ) {
+                        Text(stringResource(id = com.horsegallop.R.string.book_lesson))
+                    }
                 }
             }
         }
@@ -518,6 +558,7 @@ fun BarnDetailContent(
             ) {
                 ReservationContent(
                     lessons = bookingState.lessons,
+                    isLoadingLessons = bookingState.isLoadingLessons,
                     isBooking = bookingState.isBooking,
                     onConfirm = { lessonId -> onBookLesson(lessonId) }
                 )
@@ -529,6 +570,7 @@ fun BarnDetailContent(
 @Composable
 fun ReservationContent(
     lessons: List<Lesson>,
+    isLoadingLessons: Boolean,
     isBooking: Boolean,
     onConfirm: (String) -> Unit
 ) {
@@ -550,7 +592,7 @@ fun ReservationContent(
         )
 
         when {
-            lessons.isEmpty() -> {
+            isLoadingLessons -> {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -558,6 +600,33 @@ fun ReservationContent(
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
+                }
+            }
+            lessons.isEmpty() -> {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = semantic.cardSubtle
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.EventBusy,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.barn_detail_no_lessons),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
             else -> {

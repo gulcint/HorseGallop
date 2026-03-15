@@ -32,11 +32,6 @@ import com.horsegallop.domain.ride.usecase.RetryPendingRideSyncUseCase
 import com.horsegallop.domain.ride.usecase.SetAutoDetectUseCase
 import com.horsegallop.domain.ride.usecase.StartRideUseCase
 import com.horsegallop.domain.ride.usecase.StopRideUseCase
-import com.horsegallop.domain.safety.model.SafetyContact
-import com.horsegallop.domain.safety.model.SafetySettings
-import com.horsegallop.domain.safety.repository.SafetyRepository
-import com.horsegallop.domain.safety.usecase.GetSafetySettingsUseCase
-import com.horsegallop.domain.safety.usecase.TriggerSafetyAlarmUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -380,14 +375,4 @@ private class FakeAuthRepository(
         flowOf(Result.success("" to ""))
 
     override fun getCurrentUserId(): String? = currentUserId
-}
-
-private class FakeSafetyRepository : SafetyRepository {
-    override suspend fun getSafetySettings(): Result<SafetySettings> =
-        Result.success(SafetySettings(isEnabled = false, contacts = emptyList()))
-    override suspend fun updateSafetyEnabled(isEnabled: Boolean): Result<Unit> = Result.success(Unit)
-    override suspend fun addSafetyContact(name: String, phone: String): Result<SafetyContact> =
-        Result.success(SafetyContact(id = "fake-id", name = name, phone = phone))
-    override suspend fun removeSafetyContact(contactId: String): Result<Unit> = Result.success(Unit)
-    override suspend fun triggerSafetyAlarm(lat: Double, lng: Double): Result<Unit> = Result.success(Unit)
 }

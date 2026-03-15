@@ -1,6 +1,16 @@
 package com.horsegallop.data.di
 
+import com.horsegallop.data.aicoach.repository.AiCoachRepositoryImpl
+import com.horsegallop.domain.aicoach.repository.AiCoachRepository
+import com.horsegallop.data.tbf.repository.TbfRepositoryImpl
+import com.horsegallop.domain.tbf.repository.TbfRepository
 import com.horsegallop.data.auth.FirebaseAuthRepository
+import com.horsegallop.data.barnmanagement.repository.BarnManagementRepositoryImpl
+import com.horsegallop.domain.barnmanagement.repository.BarnManagementRepository
+import com.horsegallop.data.challenge.repository.ChallengeRepositoryImpl
+import com.horsegallop.data.health.repository.HealthRepositoryImpl
+import com.horsegallop.domain.challenge.repository.ChallengeRepository
+import com.horsegallop.domain.health.repository.HealthRepository
 import com.horsegallop.data.horse.repository.HorseHealthRepositoryImpl
 import com.horsegallop.data.horse.repository.HorseRepositoryImpl
 import com.horsegallop.data.safety.repository.SafetyRepositoryImpl
@@ -15,6 +25,7 @@ import com.horsegallop.domain.settings.repository.UserSettingsRepository
 import com.horsegallop.domain.review.repository.ReviewRepository
 import com.horsegallop.data.auth.repository.ProfileRepositoryImpl
 import com.horsegallop.data.barn.repository.BarnRepositoryImpl
+import com.horsegallop.data.equestrian.repository.EquestrianAgendaRepositoryImpl
 import com.horsegallop.data.ride.repository.RideRepositoryImpl
 import com.horsegallop.data.ride.repository.RideHistoryRepositoryImpl
 import com.horsegallop.data.schedule.repository.ScheduleRepositoryImpl
@@ -22,6 +33,7 @@ import com.horsegallop.data.subscription.repository.SubscriptionRepositoryImpl
 import com.horsegallop.data.training.repository.TrainingRepositoryImpl
 import com.horsegallop.data.privacy.repository.PrivacyRepositoryImpl
 import com.horsegallop.domain.barn.repository.BarnRepository
+import com.horsegallop.domain.equestrian.repository.EquestrianAgendaRepository
 import com.horsegallop.domain.ride.repository.RideRepository
 import com.horsegallop.domain.ride.repository.RideHistoryRepository
 import com.horsegallop.domain.schedule.repository.ScheduleRepository
@@ -148,7 +160,37 @@ abstract class DataModule {
 
     @Binds
     @Singleton
-    abstract fun bindTjkRepository(
-        tjkRepositoryImpl: com.horsegallop.data.tjk.repository.TjkRepositoryImpl
-    ): com.horsegallop.domain.tjk.repository.TjkRepository
+    abstract fun bindEquestrianAgendaRepository(
+        equestrianAgendaRepositoryImpl: EquestrianAgendaRepositoryImpl
+    ): EquestrianAgendaRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindHealthRepository(
+        healthRepositoryImpl: HealthRepositoryImpl
+    ): HealthRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindChallengeRepository(
+        challengeRepositoryImpl: ChallengeRepositoryImpl
+    ): ChallengeRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBarnManagementRepository(
+        barnManagementRepositoryImpl: BarnManagementRepositoryImpl
+    ): BarnManagementRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAiCoachRepository(
+        aiCoachRepositoryImpl: AiCoachRepositoryImpl
+    ): AiCoachRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTbfRepository(
+        tbfRepositoryImpl: TbfRepositoryImpl
+    ): TbfRepository
 }

@@ -23,8 +23,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.School
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -43,9 +43,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.horsegallop.R
 import com.horsegallop.domain.notification.model.AppNotification
 import com.horsegallop.domain.notification.model.NotificationType
 import com.horsegallop.ui.theme.LocalSemanticColors
@@ -54,6 +56,7 @@ import java.util.concurrent.TimeUnit
 @Composable
 fun NotificationsScreen(
     onBack: () -> Unit,
+    onOpenTargetRoute: (String) -> Unit = {},
     viewModel: NotificationsViewModel = hiltViewModel()
 ) {
     val state by viewModel.ui.collectAsState()
@@ -69,7 +72,7 @@ fun NotificationsScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Bildirimler",
+                            text = stringResource(R.string.notifications_title),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -94,7 +97,7 @@ fun NotificationsScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Geri"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 },
@@ -114,7 +117,7 @@ fun NotificationsScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Yükleniyor...",
+                    text = stringResource(R.string.notifications_loading),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -135,7 +138,7 @@ fun NotificationsScreen(
                 ) {
                     Text(text = "\uD83D\uDC34", style = MaterialTheme.typography.displayMedium)
                     Text(
-                        text = "Henüz bildirim yok",
+                        text = stringResource(R.string.notifications_empty_title),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -167,7 +170,7 @@ fun NotificationsScreen(
                             )
                         ) {
                             Text(
-                                text = "Tümünü Okundu İşaretle",
+                                text = stringResource(R.string.notifications_mark_all_read),
                                 style = MaterialTheme.typography.labelLarge
                             )
                         }
@@ -178,7 +181,12 @@ fun NotificationsScreen(
             items(state.notifications, key = { it.id }) { notification ->
                 NotificationItem(
                     notification = notification,
-                    onTap = { viewModel.onNotificationTap(notification.id) }
+                    onTap = {
+                        viewModel.onNotificationTap(notification)
+                        notification.targetRoute
+                            ?.takeIf { it.isNotBlank() }
+                            ?.let(onOpenTargetRoute)
+                    }
                 )
                 Box(
                     modifier = Modifier
@@ -264,6 +272,7 @@ private fun NotificationTypeIcon(type: NotificationType) {
     val (icon, tint) = when (type) {
         NotificationType.RESERVATION -> Icons.Filled.CalendarToday to MaterialTheme.colorScheme.primary
         NotificationType.LESSON -> Icons.Filled.School to MaterialTheme.colorScheme.secondary
+        NotificationType.HORSE_HEALTH -> Icons.Filled.MedicalServices to MaterialTheme.colorScheme.tertiary
         NotificationType.GENERAL -> Icons.Filled.Info to MaterialTheme.colorScheme.tertiary
     }
     Surface(

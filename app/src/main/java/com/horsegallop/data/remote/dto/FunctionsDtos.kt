@@ -174,34 +174,145 @@ data class SafetySettingsFunctionsDto(
     val autoAlarmMinutes: Int = 5
 )
 
-// ─── TJK DTOs ─────────────────────────────────────────────────────────────────
-
-data class TjkCityFunctionsDto(
-    val id: Int = 0,
-    val name: String = ""
+data class HealthEventFunctionsDto(
+    val id: String,
+    val userId: String = "",
+    val horseId: String,
+    val horseName: String = "",
+    val type: String,
+    val scheduledDate: Long,
+    val completedDate: Long? = null,
+    val notes: String = "",
+    val isCompleted: Boolean = false
 )
 
-data class TjkRaceResultFunctionsDto(
-    val position: String = "",
-    val horseName: String = "",
-    val jockey: String = "",
-    val trainer: String = "",
-    val weight: String = "",
+data class EquestrianAnnouncementFunctionsDto(
+    val id: String = "",
+    val title: String = "",
+    val summary: String = "",
+    val publishedAtLabel: String = "",
+    val detailUrl: String = "",
+    val imageUrl: String? = null
+)
+
+data class EquestrianCompetitionFunctionsDto(
+    val id: String = "",
+    val title: String = "",
+    val location: String = "",
+    val dateLabel: String = "",
+    val detailUrl: String = ""
+)
+
+data class FederatedBarnSyncStatusFunctionsDto(
+    val status: String = "",
+    val syncedAt: String = "",
+    val itemCount: Int = 0,
+    val errorMessage: String? = null
+)
+
+data class FederationManualSyncFunctionsDto(
+    val syncedAt: String = "",
+    val barnsCount: Int = 0,
+    val announcementsCount: Int = 0,
+    val competitionsCount: Int = 0,
+    val throttled: Boolean = false
+)
+
+data class FederationSourceHealthFunctionsDto(
+    val source: String = "",
+    val status: String = "",
+    val itemCount: Int = 0,
+    val lastAttemptAt: String = "",
+    val lastSuccessAt: String = "",
+    val dataAgeMinutes: Int = -1,
+    val isStale: Boolean = false,
+    val errorMessage: String? = null
+)
+
+// ─── Barn Management DTOs ─────────────────────────────────────────────────────
+
+data class BarnStatsDto(
+    val totalLessons: Int = 0,
+    val totalReservations: Int = 0,
+    val uniqueStudents: Int = 0,
+    val upcomingLessonsCount: Int = 0
+)
+
+data class ManagedLessonDto(
+    val id: String,
+    val title: String,
+    val instructorName: String,
+    val startTimeMs: Long,
+    val durationMin: Int,
+    val level: String,
+    val price: Double,
+    val spotsTotal: Int,
+    val spotsBooked: Int,
+    val barnId: String,
+    val isCancelled: Boolean = false
+)
+
+data class StudentRosterEntryDto(
+    val userId: String,
+    val displayName: String,
+    val email: String,
+    val reservationId: String,
+    val bookedAtMs: Long
+)
+
+// ─── AI Coach DTOs ────────────────────────────────────────────────────────────
+
+data class AiCoachMessageDto(val role: String, val text: String)
+data class AiCoachAnswerDto(val answer: String)
+
+// ─── TBF Event DTOs ───────────────────────────────────────────────────────────
+
+data class TbfVenueDto(
+    val code: String,
+    val name: String,
+    val eventCount: Int,
     val time: String = ""
 )
 
-data class TjkRaceFunctionsDto(
-    val raceNo: Int = 0,
-    val raceTitle: String = "",
-    val distance: String = "",
-    val surface: String = "",
-    val startTime: String = "",
-    val results: List<TjkRaceResultFunctionsDto> = emptyList()
+data class TbfEventDayDto(
+    val date: String,
+    val type: String,
+    val venues: List<TbfVenueDto>
 )
 
-data class TjkRaceDayFunctionsDto(
-    val date: String = "",
-    val cityId: Int = 0,
-    val cityName: String = "",
-    val races: List<TjkRaceFunctionsDto> = emptyList()
+data class TbfAthleteDto(
+    val no: String,
+    val name: String,
+    val jockey: String,
+    val trainer: String,
+    val owner: String,
+    val weight: Int,
+    val age: String,
+    val last6: String,
+    val odds: String,
+    val bestTime: String,
+    val result: String = "",
+    val time: String = "",
+    val gap: String = ""
 )
+
+data class TbfCompetitionDto(
+    val no: String,
+    val name: String,
+    val distance: Int,
+    val surface: String,
+    val time: String,
+    val prize: Long,
+    val athletes: List<TbfAthleteDto>
+)
+
+data class TbfEventCardDto(
+    val venue: String,
+    val date: String,
+    val type: String,
+    val events: List<TbfCompetitionDto>,
+    val weather: String = "",
+    val trackCondition: String = ""
+)
+
+data class TbfUpcomingEventsDto(val days: List<TbfEventDayDto>)

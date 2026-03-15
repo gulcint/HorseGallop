@@ -59,7 +59,16 @@ import com.horsegallop.feature.ride.presentation.RideTrackingViewModel
 
 import com.horsegallop.feature.ride.presentation.RideDetailScreen
 import com.horsegallop.feature.safety.presentation.SafetyScreen
-import com.horsegallop.feature.tjk.presentation.TjkRacesScreen
+import com.horsegallop.feature.equestrian.presentation.EquestrianAgendaScreen
+import com.horsegallop.feature.challenge.presentation.ChallengeScreen
+import com.horsegallop.feature.aicoach.presentation.AiCoachScreen
+import com.horsegallop.feature.tbf.presentation.TbfScreen
+import com.horsegallop.feature.tbf.presentation.TbfEventDetailScreen
+import com.horsegallop.feature.barnmanagement.presentation.BarnDashboardScreen
+import com.horsegallop.feature.barnmanagement.presentation.CreateLessonScreen
+import com.horsegallop.feature.barnmanagement.presentation.LessonRosterScreen
+import com.horsegallop.feature.health.presentation.AddHealthEventScreen
+import com.horsegallop.feature.health.presentation.HealthScreen
 import com.horsegallop.feature.subscription.presentation.SubscriptionScreen
 import com.horsegallop.feature.training.presentation.TrainingPlansScreen
 import com.horsegallop.ui.theme.LocalSemanticColors
@@ -100,7 +109,24 @@ sealed class Dest(val route: String) {
       "horseHealth/$horseId/${android.net.Uri.encode(horseName)}"
   }
   object Safety : Dest("safety")
-  object TjkRaces : Dest("tjkRaces")
+  object EquestrianAgenda : Dest("equestrianAgenda")
+  object HealthCalendar : Dest("health_calendar")
+  object AddHealthEvent : Dest("add_health_event")
+  object Challenges : Dest("challenges")
+  object BarnDashboard : Dest("barn_dashboard/{barnId}") {
+    fun route(barnId: String) = "barn_dashboard/$barnId"
+  }
+  object CreateLesson : Dest("create_lesson/{barnId}") {
+    fun route(barnId: String) = "create_lesson/$barnId"
+  }
+  object LessonRoster : Dest("lesson_roster/{lessonId}") {
+    fun route(lessonId: String) = "lesson_roster/$lessonId"
+  }
+  object AiCoach : Dest("ai_coach")
+  object TbfEvents : Dest("tbf_events")
+  object TbfEventDetail : Dest("tbf_event_detail/{venueCode}/{eventIndex}") {
+    fun route(code: String, index: Int) = "tbf_event_detail/$code/$index"
+  }
 }
 
 @Composable
@@ -307,7 +333,7 @@ fun AppNavHost(
         onStartRide = { navController.navigate(Dest.Ride.route) },
         onViewBarns = { navController.navigate(Dest.Barns.route) },
         onOpenTrainingPlans = { navController.navigate(Dest.Training.route) },
-        onOpenTjkRaces = { navController.navigate(Dest.TjkRaces.route) },
+        onOpenEquestrianAgenda = { navController.navigate(Dest.EquestrianAgenda.route) },
         onProfileClick = { navController.navigate(Dest.Profile.route) },
         onOpenRideDetail = { rideId ->
           navController.navigate(Dest.RideDetail.routeWithId(rideId))
@@ -334,6 +360,10 @@ fun AppNavHost(
         onEditProfile = { navController.navigate(Dest.ProfileEdit.route) },
         onMyHorses = { navController.navigate(Dest.MyHorses.route) },
         onNotifications = { navController.navigate(Dest.Notifications.route) },
+        onHealthCalendar = { navController.navigate(Dest.HealthCalendar.route) },
+        onChallenges = { navController.navigate(Dest.Challenges.route) },
+        onAiCoach = { navController.navigate(Dest.AiCoach.route) },
+        onTbfEvents = { navController.navigate(Dest.TbfEvents.route) },
         onLogout = {
           navController.navigate(Dest.Onboarding.route) {
             popUpTo(Dest.Home.route) { inclusive = true }
@@ -367,9 +397,9 @@ fun AppNavHost(
       BackHandler { navController.popBackStack() }
       SafetyScreen(onBack = { navController.popBackStack() })
     }
-    composable(Dest.TjkRaces.route) {
+    composable(Dest.EquestrianAgenda.route) {
       BackHandler { navController.popBackStack() }
-      TjkRacesScreen(onBack = { navController.popBackStack() })
+      EquestrianAgendaScreen(onBack = { navController.popBackStack() })
     }
     composable(Dest.Ride.route) {
       com.horsegallop.feature.ride.presentation.RideTrackingRoute(
@@ -454,7 +484,12 @@ fun AppNavHost(
       arguments = listOf(navArgument("id") { type = NavType.StringType })
     ) { backStackEntry ->
       BackHandler { navController.popBackStack() }
-      BarnDetailScreen(onBack = { navController.popBackStack() })
+      BarnDetailScreen(
+        onBack = { navController.popBackStack() },
+        onManageBarn = { barnId ->
+          navController.navigate(Dest.BarnDashboard.route(barnId))
+        }
+      )
     }
     composable(Dest.RecentActivityDetail.route) {
       BackHandler { navController.popBackStack() }
@@ -480,11 +515,91 @@ fun AppNavHost(
         navController = navController
       )
     }
+    composable(Dest.HealthCalendar.route) {
+      BackHandler { navController.popBackStack() }
+      HealthScreen(
+        onBack = { navController.popBackStack() },
+        onAddEvent = { navController.navigate(Dest.AddHealthEvent.route) }
+      )
+    }
+    composable(Dest.AddHealthEvent.route) {
+      BackHandler { navController.popBackStack() }
+      AddHealthEventScreen(
+        onBack = { navController.popBackStack() }
+      )
+    }
+    composable(Dest.Challenges.route) {
+      BackHandler { navController.popBackStack() }
+      ChallengeScreen(
+        onBack = { navController.popBackStack() }
+      )
+    }
     composable(Dest.Notifications.route) {
       BackHandler { navController.popBackStack() }
       NotificationsScreen(
+        onBack = { navController.popBackStack() },
+        onOpenTargetRoute = { route ->
+          navController.navigate(route)
+        }
+      )
+    }
+    composable(
+      route = Dest.BarnDashboard.route,
+      arguments = listOf(navArgument("barnId") { type = NavType.StringType })
+    ) { backStackEntry ->
+      BackHandler { navController.popBackStack() }
+      val barnId = backStackEntry.arguments?.getString("barnId") ?: ""
+      BarnDashboardScreen(
+        onBack = { navController.popBackStack() },
+        onCreateLesson = { _ ->
+          navController.navigate(Dest.CreateLesson.route(barnId))
+        },
+        onViewRoster = { lessonId ->
+          navController.navigate(Dest.LessonRoster.route(lessonId))
+        }
+      )
+    }
+    composable(
+      route = Dest.CreateLesson.route,
+      arguments = listOf(navArgument("barnId") { type = NavType.StringType })
+    ) {
+      BackHandler { navController.popBackStack() }
+      CreateLessonScreen(
+        onBack = { navController.popBackStack() },
+        onSuccess = { navController.popBackStack() }
+      )
+    }
+    composable(
+      route = Dest.LessonRoster.route,
+      arguments = listOf(navArgument("lessonId") { type = NavType.StringType })
+    ) {
+      BackHandler { navController.popBackStack() }
+      LessonRosterScreen(
         onBack = { navController.popBackStack() }
       )
+    }
+    composable(Dest.AiCoach.route) {
+      BackHandler { navController.popBackStack() }
+      AiCoachScreen(onBack = { navController.popBackStack() })
+    }
+    composable(Dest.TbfEvents.route) {
+      BackHandler { navController.popBackStack() }
+      TbfScreen(
+        onBack = { navController.popBackStack() },
+        onEventClick = { venueCode, eventIndex ->
+          navController.navigate(Dest.TbfEventDetail.route(venueCode, eventIndex))
+        }
+      )
+    }
+    composable(
+      route = Dest.TbfEventDetail.route,
+      arguments = listOf(
+        navArgument("venueCode") { type = NavType.StringType },
+        navArgument("eventIndex") { type = NavType.StringType }
+      )
+    ) {
+      BackHandler { navController.popBackStack() }
+      TbfEventDetailScreen(onBack = { navController.popBackStack() })
     }
   }
   }

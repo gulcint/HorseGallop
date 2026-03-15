@@ -38,7 +38,7 @@ fun HomeScreen(
   onStartRide: () -> Unit,
   onViewBarns: () -> Unit,
   onOpenTrainingPlans: () -> Unit = {},
-  onOpenTjkRaces: () -> Unit = {},
+  onOpenEquestrianAgenda: () -> Unit = {},
   onProfileClick: () -> Unit,
   onOpenRideDetail: (String) -> Unit = {},
   onViewAllActivities: (() -> Unit)? = null,
@@ -49,7 +49,7 @@ fun HomeScreen(
     onStartRide = onStartRide,
     onViewBarns = onViewBarns,
     onOpenTrainingPlans = onOpenTrainingPlans,
-    onOpenTjkRaces = onOpenTjkRaces,
+    onOpenEquestrianAgenda = onOpenEquestrianAgenda,
     onProfileClick = onProfileClick,
     onOpenRideDetail = onOpenRideDetail,
     onViewAllActivities = onViewAllActivities,
@@ -76,7 +76,7 @@ private fun HomeDashboard(
   onStartRide: () -> Unit,
   onViewBarns: () -> Unit,
   onOpenTrainingPlans: () -> Unit,
-  onOpenTjkRaces: () -> Unit = {},
+  onOpenEquestrianAgenda: () -> Unit = {},
   onProfileClick: () -> Unit,
   onOpenRideDetail: (String) -> Unit = {},
   onViewAllActivities: (() -> Unit)? = null,
@@ -91,15 +91,7 @@ private fun HomeDashboard(
     LazyColumn(
       modifier = Modifier
         .fillMaxSize()
-        .background(
-          Brush.verticalGradient(
-            colors = listOf(
-              MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.18f),
-              MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.12f),
-              semantic.screenBase
-            )
-          )
-        ),
+        .background(semantic.screenBase),
       contentPadding = PaddingValues(
         start = dimensionResource(id = com.horsegallop.R.dimen.padding_screen_horizontal),
         end = dimensionResource(id = com.horsegallop.R.dimen.padding_screen_horizontal),
@@ -122,7 +114,7 @@ private fun HomeDashboard(
           onStartRide = onStartRide,
           onViewBarns = onViewBarns,
           onOpenTrainingPlans = onOpenTrainingPlans,
-          onOpenTjkRaces = onOpenTjkRaces
+          onOpenEquestrianAgenda = onOpenEquestrianAgenda
         )
       }
       
@@ -147,8 +139,10 @@ private fun HomeDashboard(
         )
       }
       
-      item {
-        TipsSection(tip = uiState.currentTip)
+      if (uiState.currentTip != null || !uiState.loading) {
+        item {
+          TipsSection(tip = uiState.currentTip)
+        }
       }
     }
   }
@@ -248,7 +242,7 @@ private fun QuickActionsSection(
   onStartRide: () -> Unit,
   onViewBarns: () -> Unit,
   onOpenTrainingPlans: () -> Unit,
-  onOpenTjkRaces: () -> Unit = {}
+  onOpenEquestrianAgenda: () -> Unit = {}
 ) {
   Column {
     Text(
@@ -294,11 +288,11 @@ private fun QuickActionsSection(
         modifier = Modifier.weight(1f)
       )
       QuickActionCard(
-        title = stringResource(id = R.string.qa_tjk_title),
-        subtitle = stringResource(id = R.string.qa_tjk_subtitle),
+        title = stringResource(id = R.string.qa_equestrian_agenda_title),
+        subtitle = stringResource(id = R.string.qa_equestrian_agenda_subtitle),
         icon = Icons.Filled.EmojiEvents,
         color = MaterialTheme.colorScheme.error,
-        onClick = onOpenTjkRaces,
+        onClick = onOpenEquestrianAgenda,
         modifier = Modifier.weight(1f)
       )
     }

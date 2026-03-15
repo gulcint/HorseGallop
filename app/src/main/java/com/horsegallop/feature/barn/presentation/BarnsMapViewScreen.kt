@@ -52,7 +52,8 @@ fun BarnsMapViewScreen(
     viewModel: BarnViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val barns = uiState.filteredBarns
+    val barns = uiState.filteredBarns.filter { it.barn.lat != 0.0 || it.barn.lng != 0.0 }
+    val coordinateLessBarns = uiState.filteredBarns.filterNot { it.barn.lat != 0.0 || it.barn.lng != 0.0 }
     val feedback = LocalAppFeedbackController.current
     val coroutineScope = rememberCoroutineScope()
     val semantic = LocalSemanticColors.current
@@ -225,14 +226,14 @@ fun BarnsMapViewScreen(
             ) {
                 // "Search this area" button (Visible when moved - simulated always visible for now)
                 Button(
-                    onClick = { /* Re-search */ },
+                    onClick = { viewModel.loadBarns() },
                     colors = ButtonDefaults.buttonColors(containerColor = semantic.panelOverlay, contentColor = MaterialTheme.colorScheme.primary),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(bottom = 16.dp)
                 ) {
-                    Text("Search this area", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.retry), fontWeight = FontWeight.SemiBold)
                 }
 
                 LazyRow(
@@ -245,6 +246,51 @@ fun BarnsMapViewScreen(
                             barn = barnWithLocation.barn,
                             onClick = { navController.navigate("barnDetail/${barnWithLocation.barn.id}") }
                         )
+                    }
+                }
+            }
+        }
+
+        if (uiState.filteredBarns.isNotEmpty() && barns.isEmpty()) {
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 24.dp, vertical = 24.dp),
+                shape = RoundedCornerShape(20.dp),
+                color = semantic.cardElevated,
+                border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke),
+                shadowElevation = 6.dp
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.barn_map_no_coordinates_title),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.barn_map_no_coordinates_subtitle,
+                            coordinateLessBarns.size
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(coordinateLessBarns.take(8)) { barnWithLocation ->
+                            BarnListItemHorizontal(
+                                barn = barnWithLocation.barn,
+                                onClick = { navController.navigate("barnDetail/${barnWithLocation.barn.id}") }
+                            )
+                        }
                     }
                 }
             }

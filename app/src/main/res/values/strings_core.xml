@@ -48,8 +48,16 @@
     <!-- Auth/Login -->
     <string name="login_title_brand">Horse Gallop</string>
     <string name="login_subtitle">Your horse riding experience starts here</string>
+    <string name="login_google_helper">Use your Google account for the fastest start</string>
+    <string name="login_email_helper">Continue with your email and password</string>
+    <string name="login_continue_short">Continue</string>
     <string name="or_label">or</string>
     <string name="terms_consent">By continuing you agree to the Terms of Use and Privacy Policy</string>
+    <string name="agreement_label_prefix">I have read and accept the </string>
+    <string name="agreement_terms_link">Terms of Use</string>
+    <string name="agreement_label_connector"> and </string>
+    <string name="agreement_privacy_link">Privacy Policy</string>
+    <string name="agreement_label_suffix">.</string>
     <string name="continue_with_google">Continue with Google</string>
     <string name="auto_detect_ride">Auto detect ride</string>
     <string name="prompt_create_account">Create Account</string>
@@ -62,6 +70,12 @@
     <string name="setting_language_turkish">Turkish</string>
     <string name="setting_notifications_title">Notifications</string>
     <string name="setting_notifications_subtitle">Enable app notifications</string>
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_loading">Loading notifications...</string>
+    <string name="notifications_empty_title">No notifications yet</string>
+    <string name="notifications_mark_all_read">Mark all as read</string>
+    <string name="settings_sync_loading">Loading your saved settings...</string>
+    <string name="settings_sync_saving">Saving your changes...</string>
     <string name="setting_privacy_title">Privacy &amp; Data</string>
     <string name="privacy_export_title">Export your data</string>
     <string name="privacy_export_subtitle">Get a JSON copy of your account data for KVKK compliance.</string>
@@ -77,8 +91,8 @@
     <string name="qa_view_barns_subtitle">Find nearby horse facilities</string>
     <string name="qa_training_title">Training Plans</string>
     <string name="qa_training_subtitle">Follow your weekly goals</string>
-    <string name="qa_tjk_title">TJK Races</string>
-    <string name="qa_tjk_subtitle">Daily race results</string>
+    <string name="qa_equestrian_agenda_title">Equestrian Agenda</string>
+    <string name="qa_equestrian_agenda_subtitle">Announcements and competitions</string>
     <string name="stats_yours_title">Your Stats</string>
     <string name="stats_total_rides">Total Rides</string>
     <string name="stats_hours_suffix">h</string>
@@ -97,6 +111,8 @@
     <string name="barn_search_placeholder">Search barns...</string>
     <string name="search_placeholder">Search...</string>
     <string name="barn_map_title">Map View</string>
+    <string name="barn_map_no_coordinates_title">Map locations are still being prepared</string>
+    <string name="barn_map_no_coordinates_subtitle">%1$d barns are available below while map coordinates finish syncing.</string>
     <string name="barn_results_prefix">Showing</string>
     <string name="barn_search_results">%1$d of %2$d barns</string>
     <string name="barn_empty_title">No barns found</string>
@@ -164,22 +180,22 @@
     <string name="onboarding_feature_sharing">Ride Sharing</string>
     <string name="onboarding_feature_leaderboard">Leaderboards</string>
     <string name="onboarding_feature_nearby">Find Nearby Riders</string>
-    <string name="onboarding_title_ranch">Safe Riding Experience</string>
-    <string name="onboarding_subtitle_ranch">Verified stables, expert instructors, and clear safety rules.</string>
-    <string name="onboarding_title_packages">How It Works</string>
-    <string name="onboarding_subtitle_packages">Sign up, pick a stable, plan a lesson, and reserve instantly.</string>
-    <string name="onboarding_title_boarding">Rules &amp; Responsibilities</string>
-    <string name="onboarding_subtitle_boarding">Helmet required, fair cancellations, and animal welfare.</string>
-    <string name="onboarding_title_cafe">Community &amp; Progress</string>
-    <string name="onboarding_subtitle_cafe">Reviews, ratings, and progress tracking for every ride.</string>
-    <string name="onboarding_feature_signup">Quick membership</string>
-    <string name="onboarding_feature_barn_select">Choose verified stables</string>
-    <string name="onboarding_feature_reserve">Instant reservations</string>
-    <string name="onboarding_feature_safety">Safety-first rules</string>
-    <string name="onboarding_feature_kvkk">KVKK data controls</string>
-    <string name="onboarding_feature_reviews">Real community reviews</string>
-    <string name="onboarding_feature_support">Support &amp; guidance</string>
-    <string name="onboarding_feature_progress">Track your progress</string>
+    <string name="onboarding_title_ranch">Start With Confidence</string>
+    <string name="onboarding_subtitle_ranch">Choose verified barns, find expert instructors, and ride with safety tools ready.</string>
+    <string name="onboarding_title_packages">Measure Every Ride</string>
+    <string name="onboarding_subtitle_packages">Track route, elevation, and performance while staying consistent with training plans.</string>
+    <string name="onboarding_title_boarding">Safety and Race Insights</string>
+    <string name="onboarding_subtitle_boarding">Use trusted contacts, live location sharing, and follow federation announcements and competitions from one place.</string>
+    <string name="onboarding_title_cafe">Your Horse, Your Progress</string>
+    <string name="onboarding_subtitle_cafe">Keep horse health records, review your development, and learn from real rider feedback.</string>
+    <string name="onboarding_feature_signup">Fast account setup</string>
+    <string name="onboarding_feature_barn_select">Verified barns and instructors</string>
+    <string name="onboarding_feature_reserve">Structured training plans</string>
+    <string name="onboarding_feature_safety">Safety tracking for solo rides</string>
+    <string name="onboarding_feature_kvkk">Federation agenda</string>
+    <string name="onboarding_feature_reviews">Trusted rider reviews</string>
+    <string name="onboarding_feature_support">Horse health and care tracking</string>
+    <string name="onboarding_feature_progress">Route, elevation, and progress insights</string>
     <string name="onboarding_progress">%1$d of %2$d</string>
     <string name="onboarding_skip">Skip</string>
     <string name="onboarding_start">Start</string>
@@ -194,7 +210,8 @@
     <string name="label_instructor">Instructor</string>
     <string name="confirm_booking">Confirm Booking</string>
     <string name="barn_description_fallback">Experience the joy of riding with our professional instructors and well-trained horses. Perfect for beginners and advanced riders alike.</string>
-    
+    <string name="barn_detail_no_lessons">No lessons available at this barn yet.</string>
+
     <!-- Ride Detail -->
     <string name="ride_details_title">Ride Details</string>
     <string name="ride_not_found">Ride not found</string>
@@ -620,16 +637,99 @@
     <string name="safety_alarm_sent">Alert sent to your contacts</string>
     <string name="elevation_profile_title">Elevation Profile</string>
 
-    <!-- TJK Race Integration -->
-    <string name="tjk_title">TJK Race Results</string>
-    <string name="tjk_date_label">Date: %s</string>
-    <string name="tjk_results_header" formatted="false">%s — %s</string>
-    <string name="tjk_race_number">Race %d</string>
-    <string name="tjk_no_races">No race data available for this date</string>
-    <string name="tjk_error_load">Could not load race results</string>
-    <string name="tjk_col_pos">Pos</string>
-    <string name="tjk_col_horse">Horse</string>
-    <string name="tjk_col_jockey">Jockey</string>
-    <string name="tjk_col_time">Time</string>
+    <string name="equestrian_agenda_title">Equestrian Agenda</string>
+    <string name="equestrian_agenda_tab_announcements">Announcements</string>
+    <string name="equestrian_agenda_tab_competitions">Competitions</string>
+    <string name="equestrian_agenda_chip_announcements">Federation</string>
+    <string name="equestrian_agenda_chip_competitions">Calendar</string>
+    <string name="equestrian_agenda_sync_title">Federation sync</string>
+    <string name="equestrian_agenda_sync_loading">Preparing federated clubs and map locations...</string>
+    <string name="equestrian_agenda_sync_idle">Sync status is not available yet.</string>
+    <string name="equestrian_agenda_sync_success">%1$d federated clubs synced. Last update: %2$s</string>
+    <string name="equestrian_agenda_sync_error">Federation sync status could not be loaded.</string>
+    <string name="equestrian_agenda_sync_now">Sync now</string>
+    <string name="equestrian_agenda_sync_force_refresh">Force refresh</string>
+    <string name="equestrian_agenda_sync_refreshed">Federation data refreshed</string>
+    <string name="equestrian_agenda_sync_debug_refreshed">Debug refresh completed</string>
+    <string name="equestrian_agenda_sync_throttled">Synced recently. Please wait a few minutes.</string>
+    <string name="equestrian_agenda_health_loading">Checking federation source health…</string>
+    <string name="equestrian_agenda_health_error">Federation source health is unavailable.</string>
+    <string name="equestrian_agenda_health_barns">Barns</string>
+    <string name="equestrian_agenda_health_announcements">Announcements</string>
+    <string name="equestrian_agenda_health_competitions">Competitions</string>
+    <string name="equestrian_agenda_health_failed">Latest refresh failed</string>
+    <string name="equestrian_agenda_health_stale">Stale for %1$d min</string>
+    <string name="equestrian_agenda_health_waiting">Waiting for first sync</string>
+    <string name="equestrian_agenda_health_age_minutes">%1$d min ago</string>
+    <string name="equestrian_agenda_health_item_count">%1$d items</string>
+    <string name="equestrian_agenda_preview_open_source">Open source page</string>
+    <string name="equestrian_agenda_preview_summary_fallback">Open the source page to see the full announcement content and attachments.</string>
+    <string name="equestrian_agenda_preview_competition_fallback">Competition venue and full program details are available on the federation source page.</string>
+    <string name="equestrian_agenda_empty_announcements">No federation announcements available right now.</string>
+    <string name="equestrian_agenda_empty_competitions">No competition data available right now.</string>
+    <string name="equestrian_agenda_empty_subtitle">Data will appear here once it is updated.</string>
+    <string name="equestrian_agenda_error_title">Failed to Load Data</string>
+    <string name="equestrian_agenda_error_subtitle">Check your connection and try syncing again.</string>
     <string name="refresh">Refresh</string>
+
+    <!-- Health Calendar (cross-horse) -->
+    <string name="health_calendar_title">Health Calendar</string>
+    <string name="health_event_type_farrier">Farrier</string>
+    <string name="health_event_type_vaccine">Vaccine</string>
+    <string name="health_event_type_dental">Dental Care</string>
+    <string name="health_event_type_vet">Vet Visit</string>
+    <string name="health_event_overdue">Overdue</string>
+    <string name="health_event_due_soon">Due Soon</string>
+    <string name="health_event_completed">Completed</string>
+    <string name="health_calendar_empty">No health events yet</string>
+    <string name="health_calendar_empty_subtitle">Track farrier, vaccine and vet appointments here.</string>
+    <string name="health_add_event">Add Event</string>
+    <string name="health_mark_complete">Mark Complete</string>
+
+    <!-- Challenge & Badge System -->
+    <string name="challenge_screen_title">Challenges</string>
+    <string name="challenge_tab_challenges">Challenges</string>
+    <string name="challenge_tab_badges">Badges</string>
+    <string name="challenge_empty">No active challenges yet</string>
+    <string name="challenge_empty_subtitle">New challenges coming soon.</string>
+    <string name="badge_empty">No badges earned yet</string>
+    <string name="badge_empty_subtitle">Start riding to earn your first badge!</string>
+    <string name="challenge_days_left">%d days left</string>
+    <string name="challenge_completed">Completed!</string>
+    <string name="badge_earned_date">Earned: %s</string>
+    <string name="badge_type_first_ride">First Ride</string>
+    <string name="badge_type_distance_10k">10 km Total</string>
+    <string name="badge_type_distance_50k">50 km Total</string>
+    <string name="badge_type_distance_100k">100 km Total</string>
+    <string name="badge_type_streak_7">7-Day Streak</string>
+    <string name="badge_type_streak_30">30-Day Streak</string>
+    <string name="badge_type_speed_demon">Speed Demon</string>
+    <string name="badge_type_early_bird">Early Bird</string>
+    <string name="badge_type_monthly_champion">Monthly Champion</string>
+    <string name="badge_type_social_rider">Social Rider</string>
+
+    <!-- Barn Management -->
+    <string name="barn_management_title">Barn Management</string>
+    <string name="barn_stats_total_lessons">Total Lessons</string>
+    <string name="barn_stats_reservations">Reservations</string>
+    <string name="barn_stats_students">Students</string>
+    <string name="barn_manage_button">Manage My Barn</string>
+    <string name="barn_create_lesson_title">New Lesson</string>
+    <string name="barn_lesson_title_label">Lesson Title</string>
+    <string name="barn_instructor_label">Instructor</string>
+    <string name="barn_lesson_duration_label">Duration (min)</string>
+    <string name="barn_lesson_level_label">Level</string>
+    <string name="barn_lesson_price_label">Price</string>
+    <string name="barn_lesson_capacity_label">Capacity</string>
+    <string name="barn_lesson_save">Save Lesson</string>
+    <string name="barn_lesson_cancel">Cancel Lesson</string>
+    <string name="barn_lesson_roster_title">Roster</string>
+    <string name="barn_roster_empty">No reservations yet</string>
+    <string name="barn_roster_empty_subtitle">Students who book this lesson will appear here</string>
+    <string name="barn_upcoming_lessons">Upcoming Lessons</string>
+    <string name="barn_no_upcoming_lessons">No upcoming lessons</string>
+    <string name="barn_level_beginner">Beginner</string>
+    <string name="barn_level_intermediate">Intermediate</string>
+    <string name="barn_level_advanced">Advanced</string>
+
 </resources>

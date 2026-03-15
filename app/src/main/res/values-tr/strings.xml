@@ -25,6 +25,20 @@
     <string name="error_name_required">İsim gerekli</string>
     <string name="error_email_invalid">Geçersiz e-posta</string>
     <string name="error_password_length">Şifre en az 10 karakter olmalı</string>
+    <!-- Health Calendar (cross-horse) -->
+    <string name="health_calendar_title">Sağlık Takvimi</string>
+    <string name="health_event_type_farrier">Nalbant</string>
+    <string name="health_event_type_vaccine">Aşı</string>
+    <string name="health_event_type_dental">Diş Bakımı</string>
+    <string name="health_event_type_vet">Veteriner</string>
+    <string name="health_event_overdue">Gecikmiş</string>
+    <string name="health_event_due_soon">Yaklaşıyor</string>
+    <string name="health_event_completed">Tamamlandı</string>
+    <string name="health_calendar_empty">Sağlık takvimi boş</string>
+    <string name="health_calendar_empty_subtitle">Nalbant, aşı ve veteriner randevularını buradan takip edin.</string>
+    <string name="health_add_event">Etkinlik Ekle</string>
+    <string name="health_mark_complete">Tamamlandı İşaretle</string>
+
     <string name="app_name">horsegallop</string>
     <string name="signin_google">Google ile devam et</string>
     <string name="signin_apple">Apple ile devam et</string>
@@ -71,8 +85,16 @@
     <string name="nav_settings">Ayarlar</string>
     <string name="login_title_brand">Horse Gallop</string>
     <string name="login_subtitle">At binme deneyiminiz burada başlıyor</string>
+    <string name="login_google_helper">En hızlı başlangıç için Google hesabınla devam et</string>
+    <string name="login_email_helper">E-posta ve şifrenle giriş yap</string>
+    <string name="login_continue_short">Devam et</string>
     <string name="or_label">veya</string>
     <string name="terms_consent">Devam ederek Kullanım Koşulları ve Gizlilik Politikasını kabul etmiş olursunuz</string>
+    <string name="agreement_label_prefix">Okudum, kabul ediyorum: </string>
+    <string name="agreement_terms_link">Kullanım Koşulları</string>
+    <string name="agreement_label_connector"> ve </string>
+    <string name="agreement_privacy_link">Gizlilik Politikası</string>
+    <string name="agreement_label_suffix">.</string>
     <string name="continue_with_google">Google ile devam et</string>
     <string name="auto_detect_ride">Auto detect ride</string>
     <string name="prompt_create_account">Create Account</string>
@@ -83,6 +105,12 @@
     <string name="setting_language_turkish">Türkçe</string>
     <string name="setting_notifications_title">Bildirimler</string>
     <string name="setting_notifications_subtitle">Uygulama bildirimlerini etkinleştir</string>
+    <string name="notifications_title">Bildirimler</string>
+    <string name="notifications_loading">Bildirimler yükleniyor...</string>
+    <string name="notifications_empty_title">Henüz bildirim yok</string>
+    <string name="notifications_mark_all_read">Tümünü okundu işaretle</string>
+    <string name="settings_sync_loading">Kayıtlı ayarların yükleniyor…</string>
+    <string name="settings_sync_saving">Değişikliklerin kaydediliyor…</string>
     <string name="setting_privacy_title">Gizlilik &amp; Veri</string>
     <string name="privacy_export_title">Verilerini dışa aktar</string>
     <string name="privacy_export_subtitle">KVKK için hesabınızın JSON kopyasını alın.</string>
@@ -96,8 +124,8 @@
     <string name="qa_view_barns_subtitle">Yakındaki çiftlikleri keşfet</string>
     <string name="qa_training_title">Antrenman Planları</string>
     <string name="qa_training_subtitle">Haftalık hedeflerini takip et</string>
-    <string name="qa_tjk_title">TJK Yarışları</string>
-    <string name="qa_tjk_subtitle">Günlük yarış sonuçları</string>
+    <string name="qa_equestrian_agenda_title">Binicilik Gündemi</string>
+    <string name="qa_equestrian_agenda_subtitle">Duyurular ve yarışmalar</string>
     <string name="stats_yours_title">İstatistikleriniz</string>
     <string name="stats_total_rides">Toplam Sürüş</string>
     <string name="stats_hours_suffix">saat</string>
@@ -114,10 +142,12 @@
     <string name="barn_search_placeholder">Search barns...</string>
     <string name="search_placeholder">Search...</string>
     <string name="barn_map_title">Map View</string>
+    <string name="barn_map_no_coordinates_title">Harita konumlari hazirlaniyor</string>
+    <string name="barn_map_no_coordinates_subtitle">%1$d kulup harita koordinati beklerken asagida listeleniyor.</string>
     <string name="barn_results_prefix">Showing</string>
     <string name="barn_search_results">%1$d of %2$d barns</string>
-    <string name="barn_empty_title">No barns found</string>
-    <string name="barn_empty_subtitle">Try adjusting your search or filters</string>
+    <string name="barn_empty_title">Ahır bulunamadı</string>
+    <string name="barn_empty_subtitle">Aramanı veya filtrelerini değiştirip tekrar dene</string>
     <string name="barn_clear_filters">Clear Filters</string>
     <string name="barn_filter_cafe">Cafe</string>
     <string name="barn_filter_indoor_arena">Indoor Arena</string>
@@ -175,22 +205,22 @@
     <string name="onboarding_feature_sharing">Paylaşım ve yorumlar</string>
     <string name="onboarding_feature_leaderboard">Haftalık liderlik tablosu</string>
     <string name="onboarding_feature_nearby">Yakındaki Biniciler</string>
-    <string name="onboarding_title_ranch">Güvenli Binicilik Deneyimi</string>
-    <string name="onboarding_subtitle_ranch">Onaylı ahırlar, uzman eğitmenler ve net güvenlik kuralları.</string>
-    <string name="onboarding_title_packages">Nasıl Kullanılır?</string>
-    <string name="onboarding_subtitle_packages">Üye ol, ahır seç, dersi planla ve anında rezervasyon yap.</string>
-    <string name="onboarding_title_boarding">Kurallar &amp; Sorumluluklar</string>
-    <string name="onboarding_subtitle_boarding">Kask zorunluluğu, iptal koşulları ve hayvan refahı.</string>
-    <string name="onboarding_title_cafe">Topluluk &amp; Gelişim</string>
-    <string name="onboarding_subtitle_cafe">Yorumlar, puanlar ve biniş gelişim takibi.</string>
-    <string name="onboarding_feature_signup">Hızlı üyelik</string>
-    <string name="onboarding_feature_barn_select">Onaylı ahır seçimi</string>
-    <string name="onboarding_feature_reserve">Anında rezervasyon</string>
-    <string name="onboarding_feature_safety">Öncelik güvenlik</string>
-    <string name="onboarding_feature_kvkk">KVKK veri kontrolleri</string>
-    <string name="onboarding_feature_reviews">Topluluk yorumları</string>
-    <string name="onboarding_feature_support">Destek ve yönlendirme</string>
-    <string name="onboarding_feature_progress">Gelişim takibi</string>
+    <string name="onboarding_title_ranch">Güvenle Başla</string>
+    <string name="onboarding_subtitle_ranch">Onaylı ahırları seç, uzman eğitmenleri keşfet ve güvenlik araçları hazır şekilde sürüşe başla.</string>
+    <string name="onboarding_title_packages">Her Sürüşü Ölç</string>
+    <string name="onboarding_subtitle_packages">Rota, rakım ve performansını takip et; antrenman planlarıyla düzenli ilerle.</string>
+    <string name="onboarding_title_boarding">Güvenlik ve Yarış İçgörüleri</string>
+    <string name="onboarding_subtitle_boarding">Güvenilen kişiler, canlı konum paylaşımı ve federasyon duyuruları tek yerde.</string>
+    <string name="onboarding_title_cafe">Atın ve Gelişimin Tek Yerde</string>
+    <string name="onboarding_subtitle_cafe">At sağlığı kayıtlarını tut, gelişimini izle ve gerçek binici yorumlarından yararlan.</string>
+    <string name="onboarding_feature_signup">Hızlı hesap kurulumu</string>
+    <string name="onboarding_feature_barn_select">Onaylı ahırlar ve eğitmenler</string>
+    <string name="onboarding_feature_reserve">Yapılandırılmış antrenman planları</string>
+    <string name="onboarding_feature_safety">Yalnız sürüşler için güvenlik takibi</string>
+    <string name="onboarding_feature_kvkk">Federasyon gündemi</string>
+    <string name="onboarding_feature_reviews">Güvenilir binici yorumları</string>
+    <string name="onboarding_feature_support">At sağlığı ve bakım takibi</string>
+    <string name="onboarding_feature_progress">Rota, rakım ve gelişim içgörüleri</string>
     <string name="onboarding_progress">%1$d / %2$d</string>
     <string name="onboarding_skip">Atla</string>
     <string name="onboarding_start">Başla</string>
@@ -204,6 +234,7 @@
     <string name="label_instructor">Instructor</string>
     <string name="confirm_booking">Confirm Booking</string>
     <string name="barn_description_fallback">Experience the joy of riding with our professional instructors and well-trained horses. Perfect for beginners and advanced riders alike.</string>
+    <string name="barn_detail_no_lessons">Bu ahırda henüz ders bulunmuyor.</string>
     <string name="ride_details_title">Ride Details</string>
     <string name="ride_not_found">Ride not found</string>
     <string name="no_route_data">No route data available</string>
@@ -465,8 +496,8 @@
     <string name="horse_tip_category_default">At Bilgisi</string>
 
     <!-- Ahır -->
-    <string name="barn_no_barns_title">Henüz ahır yok</string>
-    <string name="barn_no_barns_subtitle">Ahırlar ve stüdyolar hazır olduğunda burada görünecek</string>
+    <string name="barn_no_barns_title">Henüz ahır listesi yok</string>
+    <string name="barn_no_barns_subtitle">Federasyon kulüpleri ve ahırlar hazır olduğunda burada görünecek</string>
     <string name="barn_detail_instructors">Eğitmenler</string>
     <string name="barn_detail_reviews">Değerlendirmeler</string>
 
@@ -588,16 +619,100 @@
     <string name="safety_alarm_sent">Kişilerine uyarı gönderildi</string>
     <string name="elevation_profile_title">Rakım Profili</string>
 
-    <!-- TJK Yarış Entegrasyonu -->
-    <string name="tjk_title">TJK Yarış Sonuçları</string>
-    <string name="tjk_date_label">Tarih: %s</string>
-    <string name="tjk_results_header" formatted="false">%s — %s</string>
-    <string name="tjk_race_number">%d. Koşu</string>
-    <string name="tjk_no_races">Bu tarihte yarış bilgisi bulunamadı</string>
-    <string name="tjk_error_load">Yarış sonuçları yüklenemedi</string>
-    <string name="tjk_col_pos">Sıra</string>
-    <string name="tjk_col_horse">At</string>
-    <string name="tjk_col_jockey">Jokey</string>
-    <string name="tjk_col_time">Süre</string>
+    <string name="equestrian_agenda_title">Binicilik Gündemi</string>
+    <string name="equestrian_agenda_tab_announcements">Duyurular</string>
+    <string name="equestrian_agenda_tab_competitions">Yarışmalar</string>
+    <string name="equestrian_agenda_chip_announcements">Federasyon</string>
+    <string name="equestrian_agenda_chip_competitions">Takvim</string>
+    <string name="equestrian_agenda_sync_title">Federasyon senkronu</string>
+    <string name="equestrian_agenda_sync_loading">Federe kulüpler ve harita konumları hazırlanıyor...</string>
+    <string name="equestrian_agenda_sync_idle">Senkron durumu henüz hazır değil.</string>
+    <string name="equestrian_agenda_sync_success">%1$d federe kulüp senkronlandı. Son güncelleme: %2$s</string>
+    <string name="equestrian_agenda_sync_error">Federasyon senkron durumu yüklenemedi.</string>
+    <string name="equestrian_agenda_sync_now">Şimdi senkronla</string>
+    <string name="equestrian_agenda_sync_force_refresh">Zorla yenile</string>
+    <string name="equestrian_agenda_sync_refreshed">Federasyon verileri yenilendi</string>
+    <string name="equestrian_agenda_sync_debug_refreshed">Debug yenilemesi tamamlandi</string>
+    <string name="equestrian_agenda_sync_throttled">Az önce senkronlandı. Lütfen birkaç dakika sonra tekrar dene.</string>
+    <string name="equestrian_agenda_health_loading">Federasyon kaynak sagligi kontrol ediliyor…</string>
+    <string name="equestrian_agenda_health_error">Federasyon kaynak sagligi su anda goruntulenemiyor.</string>
+    <string name="equestrian_agenda_health_barns">Kulupler</string>
+    <string name="equestrian_agenda_health_announcements">Duyurular</string>
+    <string name="equestrian_agenda_health_competitions">Yarismalar</string>
+    <string name="equestrian_agenda_health_failed">Son yenileme basarisiz</string>
+    <string name="equestrian_agenda_health_stale">%1$d dkdir guncel degil</string>
+    <string name="equestrian_agenda_health_waiting">Ilk senkron bekleniyor</string>
+    <string name="equestrian_agenda_health_age_minutes">%1$d dk once</string>
+    <string name="equestrian_agenda_health_item_count">%1$d kayit</string>
+    <string name="equestrian_agenda_preview_open_source">Kaynak sayfasini ac</string>
+    <string name="equestrian_agenda_preview_summary_fallback">Duyurunun tam icerigi ve ekleri icin federasyon kaynak sayfasini ac.</string>
+    <string name="equestrian_agenda_preview_competition_fallback">Yarisma alani ve tam program detaylari federasyon kaynak sayfasinda yer aliyor.</string>
+    <string name="equestrian_agenda_empty_announcements">Şu anda gösterilecek duyuru bulunmuyor.</string>
+    <string name="equestrian_agenda_empty_competitions">Şu anda gösterilecek yarışma bulunmuyor.</string>
+    <string name="equestrian_agenda_empty_subtitle">Veriler güncellendiğinde burada görünecek.</string>
+    <string name="equestrian_agenda_error_title">Veriler Yüklenemedi</string>
+    <string name="equestrian_agenda_error_subtitle">Bağlantınızı kontrol edin ve senkronizasyonu yeniden deneyin.</string>
     <string name="refresh">Yenile</string>
+
+    <!-- Challenge & Badge System -->
+    <string name="challenge_screen_title">Meydan Okumalar</string>
+    <string name="challenge_tab_challenges">Meydan Okumalar</string>
+    <string name="challenge_tab_badges">Rozetler</string>
+    <string name="challenge_empty">Henüz aktif meydan okuma yok</string>
+    <string name="challenge_empty_subtitle">Yeni meydan okumalar yakında eklenecek.</string>
+    <string name="badge_empty">Henüz rozet kazanılmadı</string>
+    <string name="badge_empty_subtitle">İlk rozeti kazanmak için sürüşe çık!</string>
+    <string name="challenge_days_left">%d gün kaldı</string>
+    <string name="challenge_completed">Tamamlandı!</string>
+    <string name="badge_earned_date">Kazanıldı: %s</string>
+    <string name="badge_type_first_ride">İlk Sürüş</string>
+    <string name="badge_type_distance_10k">10 km Toplam</string>
+    <string name="badge_type_distance_50k">50 km Toplam</string>
+    <string name="badge_type_distance_100k">100 km Toplam</string>
+    <string name="badge_type_streak_7">7 Günlük Seri</string>
+    <string name="badge_type_streak_30">30 Günlük Seri</string>
+    <string name="badge_type_speed_demon">Hız Şeytanı</string>
+    <string name="badge_type_early_bird">Erken Kalkan</string>
+    <string name="badge_type_monthly_champion">Aylık Şampiyon</string>
+    <string name="badge_type_social_rider">Sosyal Binici</string>
+
+    <!-- Ahır Yönetimi -->
+    <string name="barn_management_title">Ahır Yönetimi</string>
+    <string name="barn_stats_total_lessons">Toplam Ders</string>
+    <string name="barn_stats_reservations">Rezervasyonlar</string>
+    <string name="barn_stats_students">Öğrenciler</string>
+    <string name="barn_manage_button">Ahırımı Yönet</string>
+    <string name="barn_create_lesson_title">Yeni Ders</string>
+    <string name="barn_lesson_title_label">Ders Başlığı</string>
+    <string name="barn_instructor_label">Eğitmen</string>
+    <string name="barn_lesson_duration_label">Süre (dk)</string>
+    <string name="barn_lesson_level_label">Seviye</string>
+    <string name="barn_lesson_price_label">Fiyat</string>
+    <string name="barn_lesson_capacity_label">Kapasite</string>
+    <string name="barn_lesson_save">Dersi Kaydet</string>
+    <string name="barn_lesson_cancel">Dersi İptal Et</string>
+    <string name="barn_lesson_roster_title">Katılımcılar</string>
+    <string name="barn_roster_empty">Henüz rezervasyon yok</string>
+    <string name="barn_roster_empty_subtitle">Ders rezerve eden öğrenciler burada görünecek</string>
+    <string name="barn_upcoming_lessons">Yaklaşan Dersler</string>
+    <string name="barn_no_upcoming_lessons">Yaklaşan ders yok</string>
+    <string name="barn_level_beginner">Başlangıç</string>
+    <string name="barn_level_intermediate">Orta</string>
+    <string name="barn_level_advanced">İleri</string>
+
+    <!-- AI Coach -->
+    <string name="ai_coach_title">AI Koç</string>
+    <string name="ai_coach_input_placeholder">Atınız hakkında sorun...</string>
+    <string name="ai_coach_thinking">Düşünüyor...</string>
+    <string name="ai_coach_send">Gönder</string>
+    <string name="ai_coach_error">Yanıt alınamadı. Lütfen tekrar deneyin.</string>
+
+    <!-- TBF Etkinlikler -->
+    <string name="tbf_events_title">TBF Yarışmaları</string>
+    <string name="tbf_program_tab">Program</string>
+    <string name="tbf_results_tab">Sonuçlar</string>
+    <string name="tbf_no_events">Bugün etkinlik bulunamadı</string>
+    <string name="tbf_event_distance">%1$dm %2$s</string>
+    <string name="tbf_select_venue">Mekân seçin</string>
+    <string name="tbf_loading">Etkinlikler yükleniyor...</string>
 </resources>

@@ -331,7 +331,11 @@ fun ProfileActionsCard(
     onEditProfile: () -> Unit,
     onMyHorses: () -> Unit,
     onSettings: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onHealthCalendar: () -> Unit = {},
+    onChallenges: () -> Unit = {},
+    onAiCoach: () -> Unit = {},
+    onTbfEvents: () -> Unit = {}
 ) {
     val semantic = LocalSemanticColors.current
     val infiniteTransition = rememberInfiniteTransition(label = "edit_cta_pulse")
@@ -402,6 +406,46 @@ fun ProfileActionsCard(
                 emoji = "🐴",
                 label = "Atlarım",
                 onClick = onMyHorses
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(start = 40.dp),
+                color = semantic.cardStroke,
+                thickness = 0.5.dp
+            )
+            ProfileActionItem(
+                emoji = "🩺",
+                label = "Sağlık Takvimi",
+                onClick = onHealthCalendar
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(start = 40.dp),
+                color = semantic.cardStroke,
+                thickness = 0.5.dp
+            )
+            ProfileActionItem(
+                emoji = "🏆",
+                label = "Meydan Okumalar",
+                onClick = onChallenges
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(start = 40.dp),
+                color = semantic.cardStroke,
+                thickness = 0.5.dp
+            )
+            ProfileActionItem(
+                emoji = "🤖",
+                label = "AI Koç",
+                onClick = onAiCoach
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(start = 40.dp),
+                color = semantic.cardStroke,
+                thickness = 0.5.dp
+            )
+            ProfileActionItem(
+                emoji = "🏇",
+                label = "TBF Yarışmaları",
+                onClick = onTbfEvents
             )
             HorizontalDivider(
                 modifier = Modifier.padding(start = 40.dp),

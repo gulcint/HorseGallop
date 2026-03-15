@@ -61,6 +61,10 @@ fun ProfileScreen(
     onEditProfile: () -> Unit,
     onMyHorses: () -> Unit = {},
     onNotifications: () -> Unit = {},
+    onHealthCalendar: () -> Unit = {},
+    onChallenges: () -> Unit = {},
+    onAiCoach: () -> Unit = {},
+    onTbfEvents: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -204,7 +208,11 @@ fun ProfileScreen(
                     },
                     onMyHorses = onMyHorses,
                     onSettings = onSettings,
-                    onLogout = { viewModel.signOut(onLogout) }
+                    onLogout = { viewModel.signOut(onLogout) },
+                    onHealthCalendar = onHealthCalendar,
+                    onChallenges = onChallenges,
+                    onAiCoach = onAiCoach,
+                    onTbfEvents = onTbfEvents
                 )
             }
 

@@ -6,7 +6,9 @@ data class AppNotification(
     val title: String,
     val body: String,
     val timestamp: Long,
-    val isRead: Boolean
+    val isRead: Boolean,
+    val targetId: String? = null,
+    val targetRoute: String? = null
 )
 
-enum class NotificationType { GENERAL, RESERVATION, LESSON }
+enum class NotificationType { GENERAL, RESERVATION, LESSON, HORSE_HEALTH }
