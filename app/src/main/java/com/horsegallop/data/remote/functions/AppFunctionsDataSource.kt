@@ -3,12 +3,12 @@ package com.horsegallop.data.remote.functions
 import com.google.firebase.functions.FirebaseFunctions
 import com.horsegallop.data.remote.dto.AiCoachAnswerDto
 import com.horsegallop.data.remote.dto.AiCoachMessageDto
-import com.horsegallop.data.remote.dto.TjkHippodromeDto
-import com.horsegallop.data.remote.dto.TjkRaceCardDto
-import com.horsegallop.data.remote.dto.TjkRaceDayDto
-import com.horsegallop.data.remote.dto.TjkRaceDto
-import com.horsegallop.data.remote.dto.TjkHorseDto
-import com.horsegallop.data.remote.dto.TjkUpcomingRacesDto
+import com.horsegallop.data.remote.dto.TbfVenueDto
+import com.horsegallop.data.remote.dto.TbfEventCardDto
+import com.horsegallop.data.remote.dto.TbfEventDayDto
+import com.horsegallop.data.remote.dto.TbfCompetitionDto
+import com.horsegallop.data.remote.dto.TbfAthleteDto
+import com.horsegallop.data.remote.dto.TbfUpcomingEventsDto
 import com.horsegallop.data.remote.dto.BarnFunctionsDto
 import com.horsegallop.data.remote.dto.BarnStatsDto
 import com.horsegallop.data.remote.dto.ManagedLessonDto
@@ -671,53 +671,53 @@ class AppFunctionsDataSource @Inject constructor(
         return ((result.getData() as? Map<String, Any>)?.get("newBadges") as? List<String>) ?: emptyList()
     }
 
-    // ─── TJK Races ────────────────────────────────────────────────────────────
+    // ─── TBF Events ───────────────────────────────────────────────────────────
 
-    suspend fun getTjkRaceDay(date: String?, type: String): TjkRaceDayDto {
+    suspend fun getTbfEventDay(date: String?, type: String): TbfEventDayDto {
         val params = mutableMapOf<String, Any>("type" to type)
         if (date != null) params["date"] = date
-        val result = functions.getHttpsCallable("getTjkRaceDay").call(params).await()
+        val result = functions.getHttpsCallable("getTbfEventDay").call(params).await()
         @Suppress("UNCHECKED_CAST")
         val data = result.getData() as Map<String, Any>
-        val hipps = (data["hippodromes"] as? List<Map<String, Any>>) ?: emptyList()
-        return TjkRaceDayDto(
+        val venues = (data["hippodromes"] as? List<Map<String, Any>>) ?: emptyList()
+        return TbfEventDayDto(
             date = data["date"] as? String ?: "",
             type = data["type"] as? String ?: type,
-            hippodromes = hipps.map { h ->
-                TjkHippodromeDto(
+            venues = venues.map { h ->
+                TbfVenueDto(
                     code = h["code"] as? String ?: "",
                     name = h["name"] as? String ?: "",
-                    raceCount = (h["raceCount"] as? Number)?.toInt() ?: 0,
+                    eventCount = (h["raceCount"] as? Number)?.toInt() ?: 0,
                     time = h["time"] as? String ?: ""
                 )
             }
         )
     }
 
-    suspend fun getTjkRaceCard(date: String?, hippodrome: String, type: String): TjkRaceCardDto {
-        val params = mutableMapOf<String, Any>("hippodrome" to hippodrome, "type" to type)
+    suspend fun getTbfEventCard(date: String?, venue: String, type: String): TbfEventCardDto {
+        val params = mutableMapOf<String, Any>("hippodrome" to venue, "type" to type)
         if (date != null) params["date"] = date
-        val result = functions.getHttpsCallable("getTjkRaceCard").call(params).await()
+        val result = functions.getHttpsCallable("getTbfEventCard").call(params).await()
         @Suppress("UNCHECKED_CAST")
         val data = result.getData() as Map<String, Any>
-        val racesList = (data["races"] as? List<Map<String, Any>>) ?: emptyList()
-        return TjkRaceCardDto(
-            hippodrome = data["hippodrome"] as? String ?: hippodrome,
+        val eventsList = (data["races"] as? List<Map<String, Any>>) ?: emptyList()
+        return TbfEventCardDto(
+            venue = data["hippodrome"] as? String ?: venue,
             date = data["date"] as? String ?: "",
             type = data["type"] as? String ?: type,
             weather = data["weather"] as? String ?: "",
             trackCondition = data["trackCondition"] as? String ?: "",
-            races = racesList.map { r ->
-                val horsesList = (r["horses"] as? List<Map<String, Any>>) ?: emptyList()
-                TjkRaceDto(
+            events = eventsList.map { r ->
+                val athletesList = (r["horses"] as? List<Map<String, Any>>) ?: emptyList()
+                TbfCompetitionDto(
                     no = r["no"] as? String ?: "",
                     name = r["name"] as? String ?: "",
                     distance = (r["distance"] as? Number)?.toInt() ?: 0,
                     surface = r["surface"] as? String ?: "",
                     time = r["time"] as? String ?: "",
                     prize = (r["prize"] as? Number)?.toLong() ?: 0L,
-                    horses = horsesList.map { h ->
-                        TjkHorseDto(
+                    athletes = athletesList.map { h ->
+                        TbfAthleteDto(
                             no = h["no"] as? String ?: "",
                             name = h["name"] as? String ?: "",
                             jockey = h["jockey"] as? String ?: "",
@@ -738,22 +738,22 @@ class AppFunctionsDataSource @Inject constructor(
         )
     }
 
-    suspend fun getTjkUpcomingRaces(): TjkUpcomingRacesDto {
-        val result = functions.getHttpsCallable("getTjkUpcomingRaces").call(null).await()
+    suspend fun getTbfUpcomingEvents(): TbfUpcomingEventsDto {
+        val result = functions.getHttpsCallable("getTbfUpcomingEvents").call(null).await()
         @Suppress("UNCHECKED_CAST")
         val data = result.getData() as Map<String, Any>
         val daysList = (data["days"] as? List<Map<String, Any>>) ?: emptyList()
-        return TjkUpcomingRacesDto(
+        return TbfUpcomingEventsDto(
             days = daysList.map { d ->
-                val hipps = (d["hippodromes"] as? List<Map<String, Any>>) ?: emptyList()
-                TjkRaceDayDto(
+                val venues = (d["hippodromes"] as? List<Map<String, Any>>) ?: emptyList()
+                TbfEventDayDto(
                     date = d["date"] as? String ?: "",
                     type = "program",
-                    hippodromes = hipps.map { h ->
-                        TjkHippodromeDto(
+                    venues = venues.map { h ->
+                        TbfVenueDto(
                             code = h["code"] as? String ?: "",
                             name = h["name"] as? String ?: "",
-                            raceCount = (h["raceCount"] as? Number)?.toInt() ?: 0
+                            eventCount = (h["raceCount"] as? Number)?.toInt() ?: 0
                         )
                     }
                 )

@@ -39,6 +39,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -181,7 +183,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.weight(0.45f))
 
             Image(
-                painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                painter = painterResource(id = R.mipmap.ic_launcher_round),
                 contentDescription = stringResource(R.string.app_name),
                 modifier = Modifier.size(88.dp)
             )
@@ -304,6 +306,9 @@ fun LoginScreen(
                         Checkbox(
                             checked = uiState.agreementAccepted,
                             onCheckedChange = { vm.toggleAgreement() },
+                            modifier = Modifier.semantics {
+                                contentDescription = "agreement_checkbox"
+                            },
                             colors = CheckboxDefaults.colors(
                                 checkedColor = MaterialTheme.colorScheme.primary,
                                 uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant

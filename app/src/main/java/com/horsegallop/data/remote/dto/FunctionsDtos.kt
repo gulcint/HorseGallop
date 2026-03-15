@@ -265,22 +265,22 @@ data class StudentRosterEntryDto(
 data class AiCoachMessageDto(val role: String, val text: String)
 data class AiCoachAnswerDto(val answer: String)
 
-// ─── TJK Race DTOs ────────────────────────────────────────────────────────────
+// ─── TBF Event DTOs ───────────────────────────────────────────────────────────
 
-data class TjkHippodromeDto(
+data class TbfVenueDto(
     val code: String,
     val name: String,
-    val raceCount: Int,
+    val eventCount: Int,
     val time: String = ""
 )
 
-data class TjkRaceDayDto(
+data class TbfEventDayDto(
     val date: String,
     val type: String,
-    val hippodromes: List<TjkHippodromeDto>
+    val venues: List<TbfVenueDto>
 )
 
-data class TjkHorseDto(
+data class TbfAthleteDto(
     val no: String,
     val name: String,
     val jockey: String,
@@ -296,23 +296,23 @@ data class TjkHorseDto(
     val gap: String = ""
 )
 
-data class TjkRaceDto(
+data class TbfCompetitionDto(
     val no: String,
     val name: String,
     val distance: Int,
     val surface: String,
     val time: String,
     val prize: Long,
-    val horses: List<TjkHorseDto>
+    val athletes: List<TbfAthleteDto>
 )
 
-data class TjkRaceCardDto(
-    val hippodrome: String,
+data class TbfEventCardDto(
+    val venue: String,
     val date: String,
     val type: String,
-    val races: List<TjkRaceDto>,
+    val events: List<TbfCompetitionDto>,
     val weather: String = "",
     val trackCondition: String = ""
 )
 
-data class TjkUpcomingRacesDto(val days: List<TjkRaceDayDto>)
+data class TbfUpcomingEventsDto(val days: List<TbfEventDayDto>)

@@ -1,6 +1,6 @@
-package com.horsegallop.domain.tjk.model
+package com.horsegallop.domain.tbf.model
 
-data class TjkHorse(
+data class TbfAthlete(
     val no: String,
     val name: String,
     val jockey: String,

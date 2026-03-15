@@ -38,7 +38,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -302,34 +301,27 @@ private fun OnboardingPageContentAnimated(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Surface(
-            modifier = Modifier.size(200.dp),
-            shape = RoundedCornerShape(34.dp),
-            color = semantic.cardElevated.copy(alpha = 0.82f),
-            border = BorderStroke(1.dp, semantic.cardStroke),
-            shadowElevation = 6.dp
+        Box(
+            modifier = Modifier
+                .size(200.dp)
+                .clip(RoundedCornerShape(34.dp))
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
+                            MaterialTheme.colorScheme.secondary.copy(alpha = 0.10f),
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
+                        )
+                    )
+                ),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
+            HorseLottieAnimation(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.22f),
-                                MaterialTheme.colorScheme.secondary.copy(alpha = 0.10f),
-                                semantic.cardElevated
-                            )
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                HorseLottieAnimation(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(20.dp)
-                        .alpha(alpha)
-                )
-            }
+                    .padding(20.dp)
+                    .alpha(alpha)
+            )
         }
 
         Spacer(modifier = Modifier.height(18.dp))
@@ -412,7 +404,7 @@ private fun EngagingCallout(
     ) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .background(Brush.linearGradient(colors = listOf(base, start, end)))
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             contentAlignment = Alignment.Center

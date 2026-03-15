@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.horsegallop.feature.tjk.presentation
+package com.horsegallop.feature.tbf.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,32 +38,32 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
-import com.horsegallop.domain.tjk.model.TjkHorse
-import com.horsegallop.domain.tjk.model.TjkRace
-import com.horsegallop.domain.tjk.model.TjkRaceCard
+import com.horsegallop.domain.tbf.model.TbfAthlete
+import com.horsegallop.domain.tbf.model.TbfCompetition
+import com.horsegallop.domain.tbf.model.TbfEventCard
 import com.horsegallop.ui.theme.AppTheme
 import com.horsegallop.ui.theme.LocalSemanticColors
 
 @Composable
-fun TjkRaceDetailScreen(
+fun TbfEventDetailScreen(
     onBack: () -> Unit,
-    viewModel: TjkRaceDetailViewModel = hiltViewModel()
+    viewModel: TbfEventDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.ui.collectAsState()
-    TjkRaceDetailContent(
+    TbfEventDetailContent(
         state = state,
         onBack = onBack
     )
 }
 
 @Composable
-private fun TjkRaceDetailContent(
-    state: TjkRaceDetailUiState,
+private fun TbfEventDetailContent(
+    state: TbfEventDetailUiState,
     onBack: () -> Unit
 ) {
     val semantic = LocalSemanticColors.current
-    val race = state.raceCard?.races?.getOrNull(state.selectedRaceIndex)
-    val isResults = state.raceCard?.type == "results"
+    val competition = state.eventCard?.events?.getOrNull(state.selectedEventIndex)
+    val isResults = state.eventCard?.type == "results"
 
     Scaffold(
         containerColor = semantic.screenBase,
@@ -71,10 +71,10 @@ private fun TjkRaceDetailContent(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = if (race != null)
-                            stringResource(R.string.tjk_race_distance, race.distance, race.surface)
+                        text = if (competition != null)
+                            stringResource(R.string.tbf_event_distance, competition.distance, competition.surface)
                         else
-                            stringResource(R.string.tjk_races_title),
+                            stringResource(R.string.tbf_events_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -107,7 +107,7 @@ private fun TjkRaceDetailContent(
                 }
             }
 
-            race == null -> {
+            competition == null -> {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -115,7 +115,7 @@ private fun TjkRaceDetailContent(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = stringResource(R.string.tjk_no_races),
+                        text = stringResource(R.string.tbf_no_events),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -123,8 +123,8 @@ private fun TjkRaceDetailContent(
             }
 
             else -> {
-                RaceDetailBody(
-                    race = race,
+                EventDetailBody(
+                    competition = competition,
                     isResults = isResults,
                     innerPadding = innerPadding
                 )
@@ -134,8 +134,8 @@ private fun TjkRaceDetailContent(
 }
 
 @Composable
-private fun RaceDetailBody(
-    race: TjkRace,
+private fun EventDetailBody(
+    competition: TbfCompetition,
     isResults: Boolean,
     innerPadding: PaddingValues
 ) {
@@ -148,7 +148,7 @@ private fun RaceDetailBody(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
-        // Race info header
+        // Event info header
         item {
             Surface(
                 modifier = Modifier
@@ -166,29 +166,29 @@ private fun RaceDetailBody(
                 ) {
                     Column {
                         Text(
-                            text = "${race.no}. Koşu",
+                            text = "${competition.no}. Koşu",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        if (race.name.isNotBlank()) {
+                        if (competition.name.isNotBlank()) {
                             Text(
-                                text = race.name,
+                                text = competition.name,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                     Column(horizontalAlignment = Alignment.End) {
-                        if (race.time.isNotBlank()) {
+                        if (competition.time.isNotBlank()) {
                             Text(
-                                text = race.time,
+                                text = competition.time,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         Text(
-                            text = stringResource(R.string.tjk_race_distance, race.distance, race.surface),
+                            text = stringResource(R.string.tbf_event_distance, competition.distance, competition.surface),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -199,17 +199,17 @@ private fun RaceDetailBody(
 
         // Column header
         item {
-            HorseTableHeader(isResults = isResults)
+            AthleteTableHeader(isResults = isResults)
             HorizontalDivider(
                 color = semantic.cardStroke,
                 thickness = 0.5.dp
             )
         }
 
-        // Horses
-        itemsIndexed(race.horses) { index, horse ->
-            HorseDetailRow(horse = horse, isResults = isResults)
-            if (index < race.horses.lastIndex) {
+        // Athletes
+        itemsIndexed(competition.athletes) { index, athlete ->
+            AthleteDetailRow(athlete = athlete, isResults = isResults)
+            if (index < competition.athletes.lastIndex) {
                 HorizontalDivider(
                     modifier = Modifier.padding(start = 32.dp),
                     color = semantic.cardStroke,
@@ -221,7 +221,7 @@ private fun RaceDetailBody(
 }
 
 @Composable
-private fun HorseTableHeader(isResults: Boolean) {
+private fun AthleteTableHeader(isResults: Boolean) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -261,8 +261,8 @@ private fun HorseTableHeader(isResults: Boolean) {
 }
 
 @Composable
-private fun HorseDetailRow(
-    horse: TjkHorse,
+private fun AthleteDetailRow(
+    athlete: TbfAthlete,
     isResults: Boolean
 ) {
     Row(
@@ -273,21 +273,21 @@ private fun HorseDetailRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = horse.no,
+            text = athlete.no,
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.width(24.dp)
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = horse.name,
+                text = athlete.name,
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            if (horse.last6.isNotBlank()) {
+            if (athlete.last6.isNotBlank()) {
                 Text(
-                    text = horse.last6,
+                    text = athlete.last6,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -295,30 +295,30 @@ private fun HorseDetailRow(
         }
         Column(modifier = Modifier.width(80.dp)) {
             Text(
-                text = horse.jockey,
+                text = athlete.jockey,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Text(
-                text = "${horse.weight} kg",
+                text = "${athlete.weight} kg",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        if (isResults && horse.result.isNotBlank()) {
+        if (isResults && athlete.result.isNotBlank()) {
             Column(
                 modifier = Modifier.width(50.dp),
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
-                    text = horse.result,
+                    text = athlete.result,
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
-                if (horse.time.isNotBlank()) {
+                if (athlete.time.isNotBlank()) {
                     Text(
-                        text = horse.time,
+                        text = athlete.time,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -326,7 +326,7 @@ private fun HorseDetailRow(
             }
         } else {
             Text(
-                text = horse.odds,
+                text = athlete.odds,
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.primary,
@@ -338,67 +338,67 @@ private fun HorseDetailRow(
 
 // ─── Previews ─────────────────────────────────────────────────────────────────
 
-private fun previewHorses() = listOf(
-    TjkHorse(no = "1", name = "RÜZGAR", jockey = "A.Çelik", trainer = "M.Yılmaz", owner = "F.Demir", weight = 58, age = "4", last6 = "1-2-3-1-2-1", odds = "2.50", bestTime = "1:23.5", result = "1", time = "1:22.3"),
-    TjkHorse(no = "2", name = "KARABURUN", jockey = "B.Kaya", trainer = "S.Arslan", owner = "T.Öztürk", weight = 56, age = "5", last6 = "3-1-2-4-1-3", odds = "5.00", bestTime = "1:24.1", result = "2", time = "1:22.8"),
-    TjkHorse(no = "3", name = "YILDIZHAN", jockey = "C.Doğan", trainer = "R.Şahin", owner = "E.Koç", weight = 57, age = "4", last6 = "2-3-1-2-3-2", odds = "7.50", bestTime = "1:24.8", result = "3", time = "1:23.1"),
-    TjkHorse(no = "4", name = "SÜRPRIZ", jockey = "D.Yıldız", trainer = "K.Güneş", owner = "A.Çetin", weight = 55, age = "3", last6 = "4-4-3-5-4-4", odds = "12.00", bestTime = "1:25.2", result = "", time = "")
+private fun previewAthletes() = listOf(
+    TbfAthlete(no = "1", name = "RÜZGAR", jockey = "A.Çelik", trainer = "M.Yılmaz", owner = "F.Demir", weight = 58, age = "4", last6 = "1-2-3-1-2-1", odds = "2.50", bestTime = "1:23.5", result = "1", time = "1:22.3"),
+    TbfAthlete(no = "2", name = "KARABURUN", jockey = "B.Kaya", trainer = "S.Arslan", owner = "T.Öztürk", weight = 56, age = "5", last6 = "3-1-2-4-1-3", odds = "5.00", bestTime = "1:24.1", result = "2", time = "1:22.8"),
+    TbfAthlete(no = "3", name = "YILDIZHAN", jockey = "C.Doğan", trainer = "R.Şahin", owner = "E.Koç", weight = 57, age = "4", last6 = "2-3-1-2-3-2", odds = "7.50", bestTime = "1:24.8", result = "3", time = "1:23.1"),
+    TbfAthlete(no = "4", name = "SÜRPRIZ", jockey = "D.Yıldız", trainer = "K.Güneş", owner = "A.Çetin", weight = 55, age = "3", last6 = "4-4-3-5-4-4", odds = "12.00", bestTime = "1:25.2", result = "", time = "")
 )
 
-@Preview(showBackground = true, name = "TjkRaceDetail - Program Modu")
+@Preview(showBackground = true, name = "TbfEventDetail - Program Modu")
 @Composable
-private fun TjkRaceDetailProgramPreview() {
+private fun TbfEventDetailProgramPreview() {
     AppTheme {
-        TjkRaceDetailContent(
-            state = TjkRaceDetailUiState(
+        TbfEventDetailContent(
+            state = TbfEventDetailUiState(
                 isLoading = false,
-                raceCard = TjkRaceCard(
-                    hippodrome = "Ankara",
+                eventCard = TbfEventCard(
+                    venue = "Ankara",
                     date = "2026-03-15",
                     type = "program",
-                    races = listOf(
-                        TjkRace(
+                    events = listOf(
+                        TbfCompetition(
                             no = "3",
                             name = "Üçüncü Koşu",
                             distance = 1600,
                             surface = "Kum",
                             time = "14:20",
                             prize = 300_000,
-                            horses = previewHorses()
+                            athletes = previewAthletes()
                         )
                     )
                 ),
-                selectedRaceIndex = 0
+                selectedEventIndex = 0
             ),
             onBack = {}
         )
     }
 }
 
-@Preview(showBackground = true, name = "TjkRaceDetail - Sonuç Modu")
+@Preview(showBackground = true, name = "TbfEventDetail - Sonuç Modu")
 @Composable
-private fun TjkRaceDetailResultsPreview() {
+private fun TbfEventDetailResultsPreview() {
     AppTheme {
-        TjkRaceDetailContent(
-            state = TjkRaceDetailUiState(
+        TbfEventDetailContent(
+            state = TbfEventDetailUiState(
                 isLoading = false,
-                raceCard = TjkRaceCard(
-                    hippodrome = "Ankara",
+                eventCard = TbfEventCard(
+                    venue = "Ankara",
                     date = "2026-03-15",
                     type = "results",
-                    races = listOf(
-                        TjkRace(
+                    events = listOf(
+                        TbfCompetition(
                             no = "3",
                             name = "Üçüncü Koşu",
                             distance = 1600,
                             surface = "Kum",
                             time = "14:20",
                             prize = 300_000,
-                            horses = previewHorses()
+                            athletes = previewAthletes()
                         )
                     )
                 ),
-                selectedRaceIndex = 0
+                selectedEventIndex = 0
             ),
             onBack = {}
         )

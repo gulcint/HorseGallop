@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.horsegallop.feature.tjk.presentation
+package com.horsegallop.feature.tbf.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,36 +45,36 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
-import com.horsegallop.domain.tjk.model.TjkHippodrome
-import com.horsegallop.domain.tjk.model.TjkHorse
-import com.horsegallop.domain.tjk.model.TjkRace
-import com.horsegallop.domain.tjk.model.TjkRaceCard
+import com.horsegallop.domain.tbf.model.TbfVenue
+import com.horsegallop.domain.tbf.model.TbfAthlete
+import com.horsegallop.domain.tbf.model.TbfCompetition
+import com.horsegallop.domain.tbf.model.TbfEventCard
 import com.horsegallop.ui.theme.AppTheme
 import com.horsegallop.ui.theme.LocalSemanticColors
 
 @Composable
-fun TjkScreen(
+fun TbfScreen(
     onBack: () -> Unit,
-    onRaceClick: (hippodromeCode: String, raceIndex: Int) -> Unit,
-    viewModel: TjkViewModel = hiltViewModel()
+    onEventClick: (venueCode: String, eventIndex: Int) -> Unit,
+    viewModel: TbfViewModel = hiltViewModel()
 ) {
     val state by viewModel.ui.collectAsState()
-    TjkScreenContent(
+    TbfScreenContent(
         state = state,
         onBack = onBack,
-        onRaceClick = onRaceClick,
-        onHippodromeSelected = viewModel::selectHippodrome,
+        onEventClick = onEventClick,
+        onVenueSelected = viewModel::selectVenue,
         onModeSwitch = viewModel::switchMode
     )
 }
 
 @Composable
-private fun TjkScreenContent(
-    state: TjkUiState,
+private fun TbfScreenContent(
+    state: TbfUiState,
     onBack: () -> Unit,
-    onRaceClick: (hippodromeCode: String, raceIndex: Int) -> Unit,
-    onHippodromeSelected: (String) -> Unit,
-    onModeSwitch: (TjkViewMode) -> Unit
+    onEventClick: (venueCode: String, eventIndex: Int) -> Unit,
+    onVenueSelected: (String) -> Unit,
+    onModeSwitch: (TbfViewMode) -> Unit
 ) {
     val semantic = LocalSemanticColors.current
 
@@ -84,7 +84,7 @@ private fun TjkScreenContent(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = stringResource(R.string.tjk_races_title),
+                        text = stringResource(R.string.tbf_events_title),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -121,10 +121,10 @@ private fun TjkScreenContent(
         ) {
             // Tab row: Program | Sonuçlar
             val tabs = listOf(
-                stringResource(R.string.tjk_program_tab),
-                stringResource(R.string.tjk_results_tab)
+                stringResource(R.string.tbf_program_tab),
+                stringResource(R.string.tbf_results_tab)
             )
-            val selectedTabIndex = if (state.viewMode == TjkViewMode.PROGRAM) 0 else 1
+            val selectedTabIndex = if (state.viewMode == TbfViewMode.PROGRAM) 0 else 1
             TabRow(
                 selectedTabIndex = selectedTabIndex,
                 containerColor = semantic.screenTopBar,
@@ -134,7 +134,7 @@ private fun TjkScreenContent(
                     Tab(
                         selected = selectedTabIndex == index,
                         onClick = {
-                            onModeSwitch(if (index == 0) TjkViewMode.PROGRAM else TjkViewMode.RESULTS)
+                            onModeSwitch(if (index == 0) TbfViewMode.PROGRAM else TbfViewMode.RESULTS)
                         },
                         text = {
                             Text(
@@ -158,7 +158,7 @@ private fun TjkScreenContent(
                         ) {
                             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                             Text(
-                                text = stringResource(R.string.tjk_loading),
+                                text = stringResource(R.string.tbf_loading),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -167,23 +167,23 @@ private fun TjkScreenContent(
                 }
 
                 else -> {
-                    // Hippodrome selector
-                    if (state.hippodromes.isNotEmpty()) {
+                    // Venue selector
+                    if (state.venues.isNotEmpty()) {
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            items(state.hippodromes) { hippodrome ->
-                                HippodromeChip(
-                                    hippodrome = hippodrome,
-                                    isSelected = hippodrome.code == state.selectedHippodrome,
-                                    onClick = { onHippodromeSelected(hippodrome.code) }
+                            items(state.venues) { venue ->
+                                VenueChip(
+                                    venue = venue,
+                                    isSelected = venue.code == state.selectedVenue,
+                                    onClick = { onVenueSelected(venue.code) }
                                 )
                             }
                         }
                     }
 
-                    // Race list
+                    // Event list
                     if (state.isLoadingCard) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -192,29 +192,29 @@ private fun TjkScreenContent(
                             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                         }
                     } else {
-                        val races = state.raceCard?.races ?: emptyList()
-                        if (races.isEmpty()) {
+                        val events = state.eventCard?.events ?: emptyList()
+                        if (events.isEmpty()) {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = stringResource(R.string.tjk_no_races),
+                                    text = stringResource(R.string.tbf_no_events),
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         } else {
-                            val hippodromeCode = state.selectedHippodrome ?: ""
+                            val venueCode = state.selectedVenue ?: ""
                             LazyColumn(
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                                 verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
-                                items(races.size) { index ->
-                                    TjkRaceCard(
-                                        race = races[index],
-                                        isResults = state.viewMode == TjkViewMode.RESULTS,
-                                        onClick = { onRaceClick(hippodromeCode, index) }
+                                items(events.size) { index ->
+                                    TbfCompetitionCard(
+                                        competition = events[index],
+                                        isResults = state.viewMode == TbfViewMode.RESULTS,
+                                        onClick = { onEventClick(venueCode, index) }
                                     )
                                 }
                             }
@@ -227,8 +227,8 @@ private fun TjkScreenContent(
 }
 
 @Composable
-private fun HippodromeChip(
-    hippodrome: TjkHippodrome,
+private fun VenueChip(
+    venue: TbfVenue,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
@@ -237,7 +237,7 @@ private fun HippodromeChip(
         onClick = onClick,
         label = {
             Text(
-                text = "${hippodrome.name} (${hippodrome.raceCount})",
+                text = "${venue.name} (${venue.eventCount})",
                 style = MaterialTheme.typography.labelMedium
             )
         },
@@ -249,8 +249,8 @@ private fun HippodromeChip(
 }
 
 @Composable
-private fun TjkRaceCard(
-    race: TjkRace,
+private fun TbfCompetitionCard(
+    competition: TbfCompetition,
     isResults: Boolean,
     onClick: () -> Unit
 ) {
@@ -267,21 +267,21 @@ private fun TjkRaceCard(
                 .padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // Header row: race no + time | distance/surface | prize
+            // Header row: event no + time | distance/surface | prize
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "${race.no}. Koşu",
+                        text = "${competition.no}. Koşu",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    if (race.time.isNotBlank()) {
+                    if (competition.time.isNotBlank()) {
                         Text(
-                            text = race.time,
+                            text = competition.time,
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -292,30 +292,30 @@ private fun TjkRaceCard(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = stringResource(R.string.tjk_race_distance, race.distance, race.surface),
+                        text = stringResource(R.string.tbf_event_distance, competition.distance, competition.surface),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 Text(
-                    text = formatPrize(race.prize),
+                    text = formatPrize(competition.prize),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
                 )
             }
 
-            // Top horses
-            race.horses.take(3).forEach { horse ->
-                HorseRow(horse = horse, isResults = isResults)
+            // Top athletes
+            competition.athletes.take(3).forEach { athlete ->
+                AthleteRow(athlete = athlete, isResults = isResults)
             }
         }
     }
 }
 
 @Composable
-private fun HorseRow(
-    horse: TjkHorse,
+private fun AthleteRow(
+    athlete: TbfAthlete,
     isResults: Boolean
 ) {
     Row(
@@ -324,36 +324,36 @@ private fun HorseRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = horse.no,
+            text = athlete.no,
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.width(20.dp)
         )
         Text(
-            text = horse.name,
+            text = athlete.name,
             style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
-        if (isResults && horse.result.isNotBlank()) {
+        if (isResults && athlete.result.isNotBlank()) {
             Text(
-                text = horse.result,
+                text = athlete.result,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(Modifier.width(4.dp))
-            if (horse.time.isNotBlank()) {
+            if (athlete.time.isNotBlank()) {
                 Text(
-                    text = horse.time,
+                    text = athlete.time,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         } else {
             Text(
-                text = horse.odds,
+                text = athlete.odds,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -371,69 +371,69 @@ private fun formatPrize(prize: Long): String {
 
 // ─── Previews ─────────────────────────────────────────────────────────────────
 
-private fun fakeHippodromes() = listOf(
-    TjkHippodrome(code = "ANK", name = "Ankara", raceCount = 9, time = "13:00"),
-    TjkHippodrome(code = "IST", name = "İstanbul", raceCount = 8, time = "14:00"),
-    TjkHippodrome(code = "IZM", name = "İzmir", raceCount = 7, time = "15:00")
+private fun fakeVenues() = listOf(
+    TbfVenue(code = "ANK", name = "Ankara", eventCount = 9, time = "13:00"),
+    TbfVenue(code = "IST", name = "İstanbul", eventCount = 8, time = "14:00"),
+    TbfVenue(code = "IZM", name = "İzmir", eventCount = 7, time = "15:00")
 )
 
-private fun fakeHorses() = listOf(
-    TjkHorse(no = "1", name = "RÜZGAR", jockey = "A.Çelik", trainer = "M.Yılmaz", owner = "F.Demir", weight = 58, age = "4", last6 = "1-2-3-1-2-1", odds = "2.50", bestTime = "1:23.5"),
-    TjkHorse(no = "2", name = "KARABURUN", jockey = "B.Kaya", trainer = "S.Arslan", owner = "T.Öztürk", weight = 56, age = "5", last6 = "3-1-2-4-1-3", odds = "5.00", bestTime = "1:24.1"),
-    TjkHorse(no = "3", name = "YILDIZHAN", jockey = "C.Doğan", trainer = "R.Şahin", owner = "E.Koç", weight = 57, age = "4", last6 = "2-3-1-2-3-2", odds = "7.50", bestTime = "1:24.8")
+private fun fakeAthletes() = listOf(
+    TbfAthlete(no = "1", name = "RÜZGAR", jockey = "A.Çelik", trainer = "M.Yılmaz", owner = "F.Demir", weight = 58, age = "4", last6 = "1-2-3-1-2-1", odds = "2.50", bestTime = "1:23.5"),
+    TbfAthlete(no = "2", name = "KARABURUN", jockey = "B.Kaya", trainer = "S.Arslan", owner = "T.Öztürk", weight = 56, age = "5", last6 = "3-1-2-4-1-3", odds = "5.00", bestTime = "1:24.1"),
+    TbfAthlete(no = "3", name = "YILDIZHAN", jockey = "C.Doğan", trainer = "R.Şahin", owner = "E.Koç", weight = 57, age = "4", last6 = "2-3-1-2-3-2", odds = "7.50", bestTime = "1:24.8")
 )
 
-private fun fakeRaces() = listOf(
-    TjkRace(no = "1", name = "Birinci Koşu", distance = 1200, surface = "Kum", time = "13:00", prize = 150_000, horses = fakeHorses()),
-    TjkRace(no = "2", name = "İkinci Koşu", distance = 1600, surface = "Çim", time = "13:40", prize = 250_000, horses = fakeHorses())
+private fun fakeCompetitions() = listOf(
+    TbfCompetition(no = "1", name = "Birinci Koşu", distance = 1200, surface = "Kum", time = "13:00", prize = 150_000, athletes = fakeAthletes()),
+    TbfCompetition(no = "2", name = "İkinci Koşu", distance = 1600, surface = "Çim", time = "13:40", prize = 250_000, athletes = fakeAthletes())
 )
 
-private fun fakeRaceCard() = TjkRaceCard(
-    hippodrome = "Ankara",
+private fun fakeEventCard() = TbfEventCard(
+    venue = "Ankara",
     date = "2026-03-15",
     type = "program",
-    races = fakeRaces(),
+    events = fakeCompetitions(),
     weather = "Açık",
     trackCondition = "Sert"
 )
 
-@Preview(showBackground = true, name = "TjkScreen - Program Modu")
+@Preview(showBackground = true, name = "TbfScreen - Program Modu")
 @Composable
-private fun TjkScreenProgramPreview() {
+private fun TbfScreenProgramPreview() {
     AppTheme {
-        TjkScreenContent(
-            state = TjkUiState(
+        TbfScreenContent(
+            state = TbfUiState(
                 isLoading = false,
-                hippodromes = fakeHippodromes(),
-                selectedHippodrome = "ANK",
-                raceCard = fakeRaceCard(),
-                viewMode = TjkViewMode.PROGRAM
+                venues = fakeVenues(),
+                selectedVenue = "ANK",
+                eventCard = fakeEventCard(),
+                viewMode = TbfViewMode.PROGRAM
             ),
             onBack = {},
-            onRaceClick = { _, _ -> },
-            onHippodromeSelected = {},
+            onEventClick = { _, _ -> },
+            onVenueSelected = {},
             onModeSwitch = {}
         )
     }
 }
 
-@Preview(showBackground = true, name = "TjkScreen - Sonuç Modu")
+@Preview(showBackground = true, name = "TbfScreen - Sonuç Modu")
 @Composable
-private fun TjkScreenResultsPreview() {
+private fun TbfScreenResultsPreview() {
     AppTheme {
-        val resultHorses = fakeHorses().map { it.copy(result = (fakeHorses().indexOf(it) + 1).toString(), time = "1:23.${fakeHorses().indexOf(it) + 1}") }
-        val resultRaces = fakeRaces().map { it.copy(horses = resultHorses) }
-        TjkScreenContent(
-            state = TjkUiState(
+        val resultAthletes = fakeAthletes().map { it.copy(result = (fakeAthletes().indexOf(it) + 1).toString(), time = "1:23.${fakeAthletes().indexOf(it) + 1}") }
+        val resultCompetitions = fakeCompetitions().map { it.copy(athletes = resultAthletes) }
+        TbfScreenContent(
+            state = TbfUiState(
                 isLoading = false,
-                hippodromes = fakeHippodromes(),
-                selectedHippodrome = "ANK",
-                raceCard = fakeRaceCard().copy(races = resultRaces),
-                viewMode = TjkViewMode.RESULTS
+                venues = fakeVenues(),
+                selectedVenue = "ANK",
+                eventCard = fakeEventCard().copy(events = resultCompetitions),
+                viewMode = TbfViewMode.RESULTS
             ),
             onBack = {},
-            onRaceClick = { _, _ -> },
-            onHippodromeSelected = {},
+            onEventClick = { _, _ -> },
+            onVenueSelected = {},
             onModeSwitch = {}
         )
     }

@@ -11,8 +11,8 @@ FIREBASE_PROJECT="com-horse-gallop"
 # Varsayılan parametreler
 BUILD=false
 TIMEOUT="5m"
-DEVICE_MODEL="Pixel6"
-DEVICE_API="33"
+DEVICE_MODEL="caiman"   # Pixel 9 Pro (physical) — API 34/35
+DEVICE_API="35"
 LOCALE="tr"
 
 # Argüman parse
@@ -65,7 +65,7 @@ gcloud firebase test android run \
   --device "model=$DEVICE_MODEL,version=$DEVICE_API,locale=$LOCALE,orientation=portrait" \
   --timeout "$TIMEOUT" \
   --robo-directives \
-    "text:email_input=test@horsegallop.com,text:password_input=Test1234!" \
+    "click:agreement_checkbox,text:email_input=test@horsegallop.com,text:password_input=Test1234!" \
   2>&1
 
 echo ""

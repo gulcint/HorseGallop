@@ -2165,9 +2165,9 @@ Kullanıcı Profili:
   }
 });
 
-// ─── TJK Yarış Entegrasyonu ───────────────────────────────────────────────────
+// ─── TBF Yarışma Entegrasyonu ─────────────────────────────────────────────────
 
-export const getTjkRaceDay = onCall({ region: "us-central1" }, async (request) => {
+export const getTbfEventDay = onCall({ region: "us-central1" }, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "Login required");
 
   const { date, type } = request.data as { date?: string; type?: string };
@@ -2176,47 +2176,47 @@ export const getTjkRaceDay = onCall({ region: "us-central1" }, async (request) =
   const dataType = (type as string) === "sonuclar" ? "sonuclar" : "program";
 
   try {
-    const url = `https://ebayi.tjk.org/s/d/${dataType}/${dateStr}/yarislar.json`;
+    const url = `https://www.tbf.org.tr/s/d/${dataType}/${dateStr}/yarislar.json`;
     const response = await fetch(url, {
       headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" }
     });
     if (!response.ok) return { hippodromes: [], date: dateStr, type: dataType };
     const data = await response.json() as any;
 
-    const hippodromes = (data.HipodrumList || data.hipodromeList || []).map((h: any) => ({
+    const venues = (data.HipodrumList || data.hipodromeList || []).map((h: any) => ({
       code: h.KOD || h.kod || "",
       name: h.AD || h.ad || "",
       raceCount: h.YARISSAYISI || h.yarisSayisi || 0,
       time: h.SAAT || h.saat || ""
     }));
 
-    return { hippodromes, date: dateStr, type: dataType };
+    return { hippodromes: venues, date: dateStr, type: dataType };
   } catch (error) {
-    console.error("getTjkRaceDay error:", error);
-    throw new HttpsError("internal", "Failed to fetch race day data");
+    console.error("getTbfEventDay error:", error);
+    throw new HttpsError("internal", "Failed to fetch event day data");
   }
 });
 
-export const getTjkRaceCard = onCall({ region: "us-central1" }, async (request) => {
+export const getTbfEventCard = onCall({ region: "us-central1" }, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "Login required");
 
   const { date, hippodrome, type } = request.data as { date?: string; hippodrome: string; type?: string };
-  if (!hippodrome) throw new HttpsError("invalid-argument", "hippodrome required");
+  if (!hippodrome) throw new HttpsError("invalid-argument", "venue required");
 
   const today = new Date();
   const dateStr = (date as string) || `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, "0")}${String(today.getDate()).padStart(2, "0")}`;
   const dataType = (type as string) === "sonuclar" ? "sonuclar" : "program";
 
   try {
-    const url = `https://ebayi.tjk.org/s/d/${dataType}/${dateStr}/full/${hippodrome.toUpperCase()}.json`;
+    const url = `https://www.tbf.org.tr/s/d/${dataType}/${dateStr}/full/${hippodrome.toUpperCase()}.json`;
     const response = await fetch(url, {
       headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" }
     });
-    if (!response.ok) throw new HttpsError("not-found", "Race card not found");
+    if (!response.ok) throw new HttpsError("not-found", "Event card not found");
     const data = await response.json() as any;
 
-    const races = (data.YarisList || data.yarisList || []).map((race: any) => {
-      const horses = (race.AtList || race.atList || []).map((at: any) => ({
+    const events = (data.YarisList || data.yarisList || []).map((race: any) => {
+      const athletes = (race.AtList || race.atList || []).map((at: any) => ({
         no: at.NO || at.no || "",
         name: at.AD || at.ad || "",
         jockey: at.JOKEYADI || at.jokeyAdi || "",
@@ -2239,7 +2239,7 @@ export const getTjkRaceCard = onCall({ region: "us-central1" }, async (request) 
         surface: race.PIST || race.pist || "",
         time: race.SAAT || race.saat || "",
         prize: race.IKRAMIYE || race.ikramiye || 0,
-        horses
+        horses: athletes
       };
     });
 
@@ -2247,18 +2247,18 @@ export const getTjkRaceCard = onCall({ region: "us-central1" }, async (request) 
       hippodrome,
       date: dateStr,
       type: dataType,
-      races,
+      races: events,
       weather: data.HAVA || data.hava || "",
       trackCondition: data.PISTDURUMU || data.pistDurumu || ""
     };
   } catch (error: any) {
     if (error instanceof HttpsError) throw error;
-    console.error("getTjkRaceCard error:", error);
-    throw new HttpsError("internal", "Failed to fetch race card");
+    console.error("getTbfEventCard error:", error);
+    throw new HttpsError("internal", "Failed to fetch event card");
   }
 });
 
-export const getTjkHorseStats = onCall({ region: "us-central1" }, async (request) => {
+export const getTbfAthleteStats = onCall({ region: "us-central1" }, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "Login required");
   const { horseName } = request.data as { horseName: string };
   if (!horseName) throw new HttpsError("invalid-argument", "horseName required");
@@ -2270,7 +2270,7 @@ export const getTjkHorseStats = onCall({ region: "us-central1" }, async (request
   };
 });
 
-export const getTjkUpcomingRaces = onCall({ region: "us-central1" }, async (request) => {
+export const getTbfUpcomingEvents = onCall({ region: "us-central1" }, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "Login required");
 
   const dates: string[] = [];
@@ -2281,18 +2281,18 @@ export const getTjkUpcomingRaces = onCall({ region: "us-central1" }, async (requ
   }
 
   const results = await Promise.allSettled(dates.map(async (dateStr) => {
-    const url = `https://ebayi.tjk.org/s/d/program/${dateStr}/yarislar.json`;
+    const url = `https://www.tbf.org.tr/s/d/program/${dateStr}/yarislar.json`;
     const response = await fetch(url, {
       headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" }
     });
     if (!response.ok) return { date: dateStr, hippodromes: [] };
     const data = await response.json() as any;
-    const hippodromes = (data.HipodrumList || data.hipodromeList || []).map((h: any) => ({
+    const venues = (data.HipodrumList || data.hipodromeList || []).map((h: any) => ({
       code: h.KOD || h.kod || "",
       name: h.AD || h.ad || "",
       raceCount: h.YARISSAYISI || h.yarisSayisi || 0
     }));
-    return { date: dateStr, hippodromes };
+    return { date: dateStr, hippodromes: venues };
   }));
 
   const days = results
