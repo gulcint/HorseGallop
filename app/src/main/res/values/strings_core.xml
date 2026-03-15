@@ -53,6 +53,11 @@
     <string name="login_continue_short">Continue</string>
     <string name="or_label">or</string>
     <string name="terms_consent">By continuing you agree to the Terms of Use and Privacy Policy</string>
+    <string name="agreement_label_prefix">I have read and accept the </string>
+    <string name="agreement_terms_link">Terms of Use</string>
+    <string name="agreement_label_connector"> and </string>
+    <string name="agreement_privacy_link">Privacy Policy</string>
+    <string name="agreement_label_suffix">.</string>
     <string name="continue_with_google">Continue with Google</string>
     <string name="auto_detect_ride">Auto detect ride</string>
     <string name="prompt_create_account">Create Account</string>
@@ -661,5 +666,8 @@
     <string name="equestrian_agenda_preview_competition_fallback">Competition venue and full program details are available on the federation source page.</string>
     <string name="equestrian_agenda_empty_announcements">No federation announcements available right now.</string>
     <string name="equestrian_agenda_empty_competitions">No competition data available right now.</string>
+    <string name="equestrian_agenda_empty_subtitle">Data will appear here once it is updated.</string>
+    <string name="equestrian_agenda_error_title">Failed to Load Data</string>
+    <string name="equestrian_agenda_error_subtitle">Check your connection and try syncing again.</string>
     <string name="refresh">Refresh</string>
 </resources>

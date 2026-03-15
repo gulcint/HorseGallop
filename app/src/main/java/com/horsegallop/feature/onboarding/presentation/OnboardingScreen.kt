@@ -38,6 +38,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -47,9 +48,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -57,6 +60,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.horsegallop.R
 import com.horsegallop.ui.theme.LocalSemanticColors
 import com.horsegallop.ui.theme.SemanticColors
@@ -278,20 +286,53 @@ private fun OnboardingPageContentAnimated(
     pageOffset: Float,
     semantic: SemanticColors
 ) {
-    val clamped  = pageOffset.coerceIn(-1f, 1f)
-    val alpha    = 1f - kotlin.math.abs(clamped) * 0.25f
+    val clamped = pageOffset.coerceIn(-1f, 1f)
+    val alpha = 1f - kotlin.math.abs(clamped) * 0.20f
+    val parallax = 18f * clamped
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Transparent)
+            .graphicsLayer {
+                this.alpha = alpha
+                translationX = parallax
+            }
             .padding(horizontal = 24.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        OnboardingHeroBadge(modifier = Modifier.size(180.dp), alpha = alpha)
+        Surface(
+            modifier = Modifier.size(200.dp),
+            shape = RoundedCornerShape(34.dp),
+            color = semantic.cardElevated.copy(alpha = 0.82f),
+            border = BorderStroke(1.dp, semantic.cardStroke),
+            shadowElevation = 6.dp
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.22f),
+                                MaterialTheme.colorScheme.secondary.copy(alpha = 0.10f),
+                                semantic.cardElevated
+                            )
+                        )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                HorseLottieAnimation(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(20.dp)
+                        .alpha(alpha)
+                )
+            }
+        }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
         Text(
             text = page.titleOverride ?: stringResource(page.titleRes),
@@ -301,7 +342,7 @@ private fun OnboardingPageContentAnimated(
             color = semantic.onImageOverlay
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         EngagingCallout(
             subtitleRes = page.subtitleRes,
@@ -309,7 +350,7 @@ private fun OnboardingPageContentAnimated(
             gradient = page.gradient
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
         Column(
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -323,39 +364,17 @@ private fun OnboardingPageContentAnimated(
 }
 
 @Composable
-private fun OnboardingHeroBadge(
-    modifier: Modifier = Modifier,
-    alpha: Float
-) {
-    val semantic = LocalSemanticColors.current
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(32.dp),
-        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
-        border = BorderStroke(1.dp, semantic.cardStroke)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.22f * alpha),
-                            MaterialTheme.colorScheme.secondary.copy(alpha = 0.14f * alpha),
-                            semantic.cardElevated
-                        )
-                    )
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Filled.EmojiEvents,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(72.dp)
-            )
-        }
-    }
+private fun HorseLottieAnimation(modifier: Modifier = Modifier) {
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.horse))
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = LottieConstants.IterateForever
+    )
+    LottieAnimation(
+        composition = composition,
+        progress = { progress },
+        modifier = modifier
+    )
 }
 
 private data class FeatureRes(
@@ -389,9 +408,7 @@ private fun EngagingCallout(
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, semantic.cardStroke),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(72.dp)
+        modifier = Modifier.fillMaxWidth()
     ) {
         Box(
             modifier = Modifier
@@ -407,7 +424,9 @@ private fun EngagingCallout(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 2.dp)
                 )
             }
         }
@@ -419,16 +438,35 @@ private fun FeatureBullet(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     text: String
 ) {
+    val semantic = LocalSemanticColors.current
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.12f), RoundedCornerShape(12.dp))
+            .background(
+                semantic.cardElevated.copy(alpha = 0.72f),
+                RoundedCornerShape(14.dp)
+            )
+            .clip(RoundedCornerShape(14.dp))
             .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
-        Text(text, color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.bodyMedium)
+        Box(
+            modifier = Modifier
+                .size(34.dp)
+                .background(
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.16f),
+                    RoundedCornerShape(10.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+        }
+        Text(
+            text,
+            color = semantic.onImageOverlay,
+            style = MaterialTheme.typography.bodyMedium
+        )
     }
 }
 

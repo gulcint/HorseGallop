@@ -81,7 +81,7 @@ class BarnViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         loading = false,
-                        error = e.localizedMessage ?: "Failed to load barns",
+                        error = null,
                         allBarns = emptyList(),
                         filteredBarns = emptyList()
                     )

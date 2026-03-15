@@ -115,6 +115,10 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+    fun toggleAgreement() {
+        _uiState.value = _uiState.value.copy(agreementAccepted = !_uiState.value.agreementAccepted)
+    }
+
     fun onSignInCancelled() {
         _uiState.value = _uiState.value.copy(isLoading = false)
         viewModelScope.launch {
@@ -175,6 +179,7 @@ data class LoginUiState(
     val errorMessage: String? = null,
     val isFormValid: Boolean = false,
     val showResendVerification: Boolean = false,
+    val agreementAccepted: Boolean = false,
     val title: String? = null,
     val subtitle: String? = null,
     val emailLoginTitle: String? = null,

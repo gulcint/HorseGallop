@@ -852,12 +852,7 @@ async function writeFederationSourceHealth(
   await db.collection(SCRAPE_CACHE_COLLECTION).doc(key).set(payload, { merge: true });
 }
 
-function timestampOrStringToIso(value: unknown): string {
-  if (value instanceof admin.firestore.Timestamp) {
-    return value.toDate().toISOString();
-  }
-  return typeof value === "string" ? value : "";
-}
+const timestampOrStringToIso = timestampToIso;
 
 function calculateDataAgeMinutes(lastSuccessAt: string): number {
   if (!lastSuccessAt) return -1;

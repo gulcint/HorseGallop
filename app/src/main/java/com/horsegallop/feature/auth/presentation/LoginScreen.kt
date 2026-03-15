@@ -9,6 +9,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,8 +43,12 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -220,9 +226,10 @@ fun LoginScreen(
                     AuthOptionButton(
                         title = stringResource(R.string.signin_google),
                         subtitle = stringResource(R.string.login_google_helper),
-                        enabled = !uiState.isLoading,
+                        enabled = !uiState.isLoading && uiState.agreementAccepted,
+                        modifier = Modifier.alpha(if (uiState.agreementAccepted) 1f else 0.5f),
                         onClick = {
-                        if (!uiState.isLoading) {
+                        if (!uiState.isLoading && uiState.agreementAccepted) {
                             scope.launch(Dispatchers.IO) {
                                 val available = GoogleApiAvailability.getInstance()
                                     .isGooglePlayServicesAvailable(context)
@@ -274,7 +281,8 @@ fun LoginScreen(
                         title = stringResource(R.string.signin_email),
                         subtitle = stringResource(R.string.login_email_helper),
                         onClick = onEmailClick,
-                        enabled = !uiState.isLoading,
+                        enabled = !uiState.isLoading && uiState.agreementAccepted,
+                        modifier = Modifier.alpha(if (uiState.agreementAccepted) 1f else 0.5f),
                         accentTint = MaterialTheme.colorScheme.primary,
                         icon = {
                             Icon(
@@ -285,6 +293,44 @@ fun LoginScreen(
                             )
                         }
                     )
+
+                    // ── Agreement checkbox ────────────────────────────────────
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = uiState.agreementAccepted,
+                            onCheckedChange = { vm.toggleAgreement() },
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = MaterialTheme.colorScheme.primary,
+                                uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        )
+                        val primaryColor = MaterialTheme.colorScheme.primary
+                        val textColor = LocalTextColors.current.bodySecondary
+                        val termsText = stringResource(R.string.agreement_terms_link)
+                        val privacyText = stringResource(R.string.agreement_privacy_link)
+                        val fullLabel = buildAnnotatedString {
+                            append(stringResource(R.string.agreement_label_prefix))
+                            withStyle(SpanStyle(color = primaryColor, fontWeight = FontWeight.SemiBold)) {
+                                append(termsText)
+                            }
+                            append(stringResource(R.string.agreement_label_connector))
+                            withStyle(SpanStyle(color = primaryColor, fontWeight = FontWeight.SemiBold)) {
+                                append(privacyText)
+                            }
+                            append(stringResource(R.string.agreement_label_suffix))
+                        }
+                        Text(
+                            text = fullLabel,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = textColor,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
 
@@ -300,25 +346,22 @@ fun LoginScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Terms
-            Text(
-                text = stringResource(R.string.terms_consent),
-                style = MaterialTheme.typography.bodySmall,
-                color = LocalTextColors.current.bodyTertiary,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
             Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
 
-@Preview(showBackground = true, name = "LoginScreen")
+@Preview(showBackground = true, name = "LoginScreen – agreement unchecked")
 @Composable
 private fun PreviewLoginScreen() {
+    MaterialTheme {
+        LoginScreen()
+    }
+}
+
+@Preview(showBackground = true, name = "LoginScreen – agreement checked")
+@Composable
+private fun PreviewLoginScreenAgreementAccepted() {
     MaterialTheme {
         LoginScreen()
     }
@@ -330,6 +373,7 @@ private fun AuthOptionButton(
     subtitle: String,
     enabled: Boolean = true,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
     accentTint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface,
     icon: @Composable () -> Unit
 ) {
@@ -337,7 +381,7 @@ private fun AuthOptionButton(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     Surface(
         onClick = if (enabled) onClick else ({}),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(72.dp),
         shape = RoundedCornerShape(18.dp),
