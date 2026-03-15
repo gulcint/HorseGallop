@@ -220,6 +220,7 @@
     <string name="label_instructor">Instructor</string>
     <string name="confirm_booking">Confirm Booking</string>
     <string name="barn_description_fallback">Experience the joy of riding with our professional instructors and well-trained horses. Perfect for beginners and advanced riders alike.</string>
+    <string name="barn_detail_no_lessons">Bu ahırda henüz ders bulunmuyor.</string>
     <string name="ride_details_title">Ride Details</string>
     <string name="ride_not_found">Ride not found</string>
     <string name="no_route_data">No route data available</string>

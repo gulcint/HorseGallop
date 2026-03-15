@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.*
@@ -27,6 +28,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -413,7 +415,7 @@ fun BarnDetailContent(
                 }
             }
 
-            item {
+            if (barn.barn.tags.isNotEmpty()) item {
                 Surface(
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 6.dp)
@@ -433,21 +435,8 @@ fun BarnDetailContent(
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(12.dp))
-                        val detailTags = barn.barn.tags.ifEmpty {
-                            listOfNotNull(
-                                barn.barn.phone?.takeIf { it.isNotBlank() }?.let { "Phone" },
-                                barn.barn.location.takeIf { it.isNotBlank() }?.let { "Federated Club" }
-                            )
-                        }
-                        if (detailTags.isEmpty()) {
-                            Text(
-                                text = stringResource(id = R.string.barn_description_fallback),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        } else {
-                            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                items(detailTags) { tag ->
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(barn.barn.tags) { tag ->
                                 Surface(
                                     shape = RoundedCornerShape(10.dp),
                                     color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.85f),
@@ -467,7 +456,6 @@ fun BarnDetailContent(
                         }
                     }
                 }
-            }
             }
 
             if (barn.barn.instructors.isNotEmpty()) {
@@ -544,6 +532,7 @@ fun BarnDetailContent(
             ) {
                 ReservationContent(
                     lessons = bookingState.lessons,
+                    isLoadingLessons = bookingState.isLoadingLessons,
                     isBooking = bookingState.isBooking,
                     onConfirm = { lessonId -> onBookLesson(lessonId) }
                 )
@@ -555,6 +544,7 @@ fun BarnDetailContent(
 @Composable
 fun ReservationContent(
     lessons: List<Lesson>,
+    isLoadingLessons: Boolean,
     isBooking: Boolean,
     onConfirm: (String) -> Unit
 ) {
@@ -576,7 +566,7 @@ fun ReservationContent(
         )
 
         when {
-            lessons.isEmpty() -> {
+            isLoadingLessons -> {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -584,6 +574,33 @@ fun ReservationContent(
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
+                }
+            }
+            lessons.isEmpty() -> {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = semantic.cardSubtle
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.EventBusy,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.barn_detail_no_lessons),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
             else -> {
