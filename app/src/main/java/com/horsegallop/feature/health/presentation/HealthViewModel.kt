@@ -7,6 +7,7 @@ import com.horsegallop.domain.health.usecase.DeleteHealthEventUseCase
 import com.horsegallop.domain.health.usecase.GetHealthEventsUseCase
 import com.horsegallop.domain.health.usecase.SaveHealthEventUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,13 +33,16 @@ class HealthViewModel @Inject constructor(
     private val _ui = MutableStateFlow(HealthUiState())
     val ui: StateFlow<HealthUiState> = _ui.asStateFlow()
 
+    private var loadJob: Job? = null
+
     init {
         load()
     }
 
     fun load() {
         _ui.update { it.copy(loading = true, error = null) }
-        viewModelScope.launch {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             getHealthEventsUseCase(_ui.value.selectedHorseId)
                 .collect { events ->
                     _ui.update { it.copy(loading = false, events = events) }
@@ -62,8 +66,6 @@ class HealthViewModel @Inject constructor(
 
     fun markCompleted(event: HealthEvent) {
         viewModelScope.launch {
-            val repo = getHealthEventsUseCase // use use case only; markCompleted goes through repo
-            // We call it through save with updated state
             val updated = event.copy(
                 isCompleted = true,
                 completedDate = System.currentTimeMillis()

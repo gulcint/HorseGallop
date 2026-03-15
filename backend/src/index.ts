@@ -1797,8 +1797,16 @@ export const deleteHealthEvent = onCall({ region: "us-central1" }, async (reques
   if (!request.auth?.uid) {
     throw new HttpsError("unauthenticated", "Login required");
   }
+  const uid = request.auth.uid;
   const { eventId } = request.data ?? {};
   if (!eventId) throw new HttpsError("invalid-argument", "eventId required");
+  const eventDoc = await db.collection("healthEvents").doc(eventId as string).get();
+  if (!eventDoc.exists) {
+    throw new HttpsError("not-found", "Health event not found");
+  }
+  if (eventDoc.data()?.userId !== uid) {
+    throw new HttpsError("permission-denied", "Not authorized to modify this event");
+  }
   await db.collection("healthEvents").doc(eventId as string).delete();
   return { success: true };
 });
@@ -1807,8 +1815,16 @@ export const markHealthEventCompleted = onCall({ region: "us-central1" }, async 
   if (!request.auth?.uid) {
     throw new HttpsError("unauthenticated", "Login required");
   }
+  const uid = request.auth.uid;
   const { eventId, completedDate } = request.data ?? {};
   if (!eventId) throw new HttpsError("invalid-argument", "eventId required");
+  const eventDoc = await db.collection("healthEvents").doc(eventId as string).get();
+  if (!eventDoc.exists) {
+    throw new HttpsError("not-found", "Health event not found");
+  }
+  if (eventDoc.data()?.userId !== uid) {
+    throw new HttpsError("permission-denied", "Not authorized to modify this event");
+  }
   await db.collection("healthEvents").doc(eventId as string).update({
     isCompleted: true,
     completedDate: completedDate ?? Date.now()

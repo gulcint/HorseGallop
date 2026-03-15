@@ -561,8 +561,9 @@ class AppFunctionsDataSource @Inject constructor(
         val items = payload["items"] as? List<*> ?: emptyList<Any?>()
         return items.mapNotNull { item ->
             val m = item as? Map<*, *> ?: return@mapNotNull null
+            val id = m["id"]?.toString()?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
             com.horsegallop.data.remote.dto.EquestrianAnnouncementFunctionsDto(
-                id = (m["id"] as? String).orEmpty(),
+                id = id,
                 title = (m["title"] as? String).orEmpty(),
                 summary = (m["summary"] as? String).orEmpty(),
                 publishedAtLabel = (m["publishedAtLabel"] as? String).orEmpty(),
@@ -627,8 +628,9 @@ class AppFunctionsDataSource @Inject constructor(
         val items = payload["items"] as? List<*> ?: emptyList<Any?>()
         return items.mapNotNull { item ->
             val m = item as? Map<*, *> ?: return@mapNotNull null
+            val id = m["id"]?.toString()?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
             com.horsegallop.data.remote.dto.EquestrianCompetitionFunctionsDto(
-                id = (m["id"] as? String).orEmpty(),
+                id = id,
                 title = (m["title"] as? String).orEmpty(),
                 location = (m["location"] as? String).orEmpty(),
                 dateLabel = (m["dateLabel"] as? String).orEmpty(),
@@ -646,7 +648,7 @@ class AppFunctionsDataSource @Inject constructor(
                 "conversationHistory" to conversationHistory.map { mapOf("role" to it.role, "text" to it.text) }
             )).await()
         @Suppress("UNCHECKED_CAST")
-        val data = result.getData() as Map<String, Any>
+        val data = result.getData() as? Map<String, Any> ?: throw Exception("Invalid response")
         return AiCoachAnswerDto(answer = data["answer"] as? String ?: "")
     }
 
@@ -678,7 +680,7 @@ class AppFunctionsDataSource @Inject constructor(
         if (date != null) params["date"] = date
         val result = functions.getHttpsCallable("getTbfEventDay").call(params).await()
         @Suppress("UNCHECKED_CAST")
-        val data = result.getData() as Map<String, Any>
+        val data = result.getData() as? Map<String, Any> ?: throw Exception("Invalid response")
         val venues = (data["hippodromes"] as? List<Map<String, Any>>) ?: emptyList()
         return TbfEventDayDto(
             date = data["date"] as? String ?: "",
@@ -699,7 +701,7 @@ class AppFunctionsDataSource @Inject constructor(
         if (date != null) params["date"] = date
         val result = functions.getHttpsCallable("getTbfEventCard").call(params).await()
         @Suppress("UNCHECKED_CAST")
-        val data = result.getData() as Map<String, Any>
+        val data = result.getData() as? Map<String, Any> ?: throw Exception("Invalid response")
         val eventsList = (data["races"] as? List<Map<String, Any>>) ?: emptyList()
         return TbfEventCardDto(
             venue = data["hippodrome"] as? String ?: venue,
@@ -741,7 +743,7 @@ class AppFunctionsDataSource @Inject constructor(
     suspend fun getTbfUpcomingEvents(): TbfUpcomingEventsDto {
         val result = functions.getHttpsCallable("getTbfUpcomingEvents").call(null).await()
         @Suppress("UNCHECKED_CAST")
-        val data = result.getData() as Map<String, Any>
+        val data = result.getData() as? Map<String, Any> ?: throw Exception("Invalid response")
         val daysList = (data["days"] as? List<Map<String, Any>>) ?: emptyList()
         return TbfUpcomingEventsDto(
             days = daysList.map { d ->

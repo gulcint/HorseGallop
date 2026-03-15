@@ -27,11 +27,11 @@
     <string name="error_password_length">Şifre en az 10 karakter olmalı</string>
 
     <!-- AI Coach -->
-    <string name="ai_coach_title">AI Coach</string>
-    <string name="ai_coach_input_placeholder">Ask about your horse...</string>
-    <string name="ai_coach_thinking">Thinking...</string>
-    <string name="ai_coach_send">Send</string>
-    <string name="ai_coach_error">Unable to get response. Please try again.</string>
+    <string name="ai_coach_title">AI Koç</string>
+    <string name="ai_coach_input_placeholder">Atınız hakkında sorun...</string>
+    <string name="ai_coach_thinking">Düşünüyor...</string>
+    <string name="ai_coach_send">Gönder</string>
+    <string name="ai_coach_error">Yanıt alınamadı. Lütfen tekrar deneyin.</string>
 
     <!-- TBF Events -->
     <string name="tbf_events_title">TBF Yarışmaları</string>

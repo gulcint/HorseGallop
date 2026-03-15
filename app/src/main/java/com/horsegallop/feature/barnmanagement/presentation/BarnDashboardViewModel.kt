@@ -18,6 +18,7 @@ import javax.inject.Inject
 
 data class BarnDashboardUiState(
     val loading: Boolean = true,
+    val barnId: String = "",
     val stats: BarnStats? = null,
     val lessons: List<ManagedLesson> = emptyList(),
     val error: String? = null,
@@ -34,7 +35,7 @@ class BarnDashboardViewModel @Inject constructor(
 
     private val barnId: String = checkNotNull(savedStateHandle["barnId"])
 
-    private val _ui = MutableStateFlow(BarnDashboardUiState())
+    private val _ui = MutableStateFlow(BarnDashboardUiState(barnId = barnId))
     val ui: StateFlow<BarnDashboardUiState> = _ui.asStateFlow()
 
     init {

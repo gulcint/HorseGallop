@@ -42,8 +42,7 @@ fun BarnDashboardScreen(
         uiState = uiState,
         onBack = onBack,
         onCreateLesson = {
-            // barnId comes from ViewModel's savedStateHandle, pass via nav
-            onCreateLesson("")
+            onCreateLesson(uiState.barnId)
         },
         onViewRoster = onViewRoster,
         onCancelLesson = viewModel::cancelLesson,

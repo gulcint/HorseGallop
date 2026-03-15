@@ -11,6 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -41,17 +42,21 @@ class ChallengeViewModel @Inject constructor(
 
     private fun loadChallenges(userId: String) {
         viewModelScope.launch {
-            getActiveChallengesUseCase(userId).collect { challenges ->
-                _ui.update { it.copy(loadingChallenges = false, challenges = challenges) }
-            }
+            getActiveChallengesUseCase(userId)
+                .catch { e -> _ui.update { it.copy(loadingChallenges = false, error = e.message ?: "Hata oluştu") } }
+                .collect { challenges ->
+                    _ui.update { it.copy(loadingChallenges = false, challenges = challenges) }
+                }
         }
     }
 
     private fun loadBadges(userId: String) {
         viewModelScope.launch {
-            getEarnedBadgesUseCase(userId).collect { badges ->
-                _ui.update { it.copy(loadingBadges = false, badges = badges) }
-            }
+            getEarnedBadgesUseCase(userId)
+                .catch { e -> _ui.update { it.copy(loadingBadges = false, error = e.message ?: "Hata oluştu") } }
+                .collect { badges ->
+                    _ui.update { it.copy(loadingBadges = false, badges = badges) }
+                }
         }
     }
 

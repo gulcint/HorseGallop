@@ -50,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.firebase.auth.FirebaseAuth
 import com.horsegallop.R
 import com.horsegallop.domain.health.model.HealthEvent
 import com.horsegallop.domain.health.model.HealthEventType
@@ -210,9 +211,10 @@ fun AddHealthEventScreen(
             Button(
                 onClick = {
                     val horse = selectedHorse ?: return@Button
+                    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@Button
                     val event = HealthEvent(
                         id = UUID.randomUUID().toString(),
-                        userId = "",
+                        userId = userId,
                         horseId = horse.id,
                         horseName = horse.name,
                         type = selectedType,

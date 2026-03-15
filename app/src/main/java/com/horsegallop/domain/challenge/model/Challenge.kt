@@ -15,6 +15,7 @@ data class Challenge(
     val isCompleted: Boolean = false,
     val reward: BadgeType? = null
 ) {
-    val progress: Float get() = (currentValue / targetValue).toFloat().coerceIn(0f, 1f)
+    val progress: Float
+        get() = if (targetValue == 0.0) 0f else (currentValue / targetValue).toFloat().coerceIn(0f, 1f)
     val daysLeft: Int get() = ((endDate - System.currentTimeMillis()) / 86400_000L).toInt().coerceAtLeast(0)
 }

@@ -78,10 +78,6 @@ fun ChallengeScreen(
     val semantic = LocalSemanticColors.current
     var selectedTab by remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(uiState.error) {
-        uiState.error?.let { viewModel.clearError() }
-    }
-
     Scaffold(
         containerColor = semantic.screenBase,
         topBar = {
@@ -353,7 +349,6 @@ private fun BadgesTab(
             }
         }
         else -> {
-            val earnedTypes = earnedBadges.map { it.type }.toSet()
             val allBadgeTypes = BadgeType.entries.toList()
 
             if (earnedBadges.isEmpty()) {

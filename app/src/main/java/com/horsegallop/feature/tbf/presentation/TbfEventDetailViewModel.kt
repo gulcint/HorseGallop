@@ -26,7 +26,7 @@ class TbfEventDetailViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val venueCode: String = checkNotNull(savedStateHandle["venueCode"])
-    private val eventIndex: Int = checkNotNull(savedStateHandle.get<String>("eventIndex"))?.toIntOrNull() ?: 0
+    private val eventIndex: Int = savedStateHandle.get<String>("eventIndex")?.toIntOrNull() ?: 0
 
     private val _ui = MutableStateFlow(TbfEventDetailUiState(selectedEventIndex = eventIndex))
     val ui: StateFlow<TbfEventDetailUiState> = _ui
