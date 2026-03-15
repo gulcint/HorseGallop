@@ -71,6 +71,9 @@
     <string name="nav_settings">Ayarlar</string>
     <string name="login_title_brand">Horse Gallop</string>
     <string name="login_subtitle">At binme deneyiminiz burada başlıyor</string>
+    <string name="login_google_helper">En hızlı başlangıç için Google hesabınla devam et</string>
+    <string name="login_email_helper">E-posta ve şifrenle giriş yap</string>
+    <string name="login_continue_short">Devam et</string>
     <string name="or_label">veya</string>
     <string name="terms_consent">Devam ederek Kullanım Koşulları ve Gizlilik Politikasını kabul etmiş olursunuz</string>
     <string name="continue_with_google">Google ile devam et</string>

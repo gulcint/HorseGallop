@@ -6,11 +6,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,11 +23,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -220,8 +217,11 @@ fun LoginScreen(
                         color = LocalTextColors.current.titlePrimary
                     )
 
-                    // Google — first option
-                    GoogleSignInButton(loading = uiState.isLoading) {
+                    AuthOptionButton(
+                        title = stringResource(R.string.signin_google),
+                        subtitle = stringResource(R.string.login_google_helper),
+                        enabled = !uiState.isLoading,
+                        onClick = {
                         if (!uiState.isLoading) {
                             scope.launch(Dispatchers.IO) {
                                 val available = GoogleApiAvailability.getInstance()
@@ -239,7 +239,15 @@ fun LoginScreen(
                                 }
                             }
                         }
-                    }
+                        },
+                        icon = {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_google_logo),
+                                contentDescription = stringResource(R.string.cd_google_logo),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    )
 
                     // Divider
                     Row(
@@ -262,55 +270,21 @@ fun LoginScreen(
                         )
                     }
 
-                    // Email — second option (navigates to EmailLoginScreen)
-                    OutlinedButton(
+                    AuthOptionButton(
+                        title = stringResource(R.string.signin_email),
+                        subtitle = stringResource(R.string.login_email_helper),
                         onClick = onEmailClick,
                         enabled = !uiState.isLoading,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
-                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
-                            } else {
-                                semantic.cardSubtle
-                            },
-                            contentColor = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.primary
-                            }
-                        ),
-                        border = BorderStroke(
-                            1.dp,
-                            MaterialTheme.colorScheme.primary.copy(
-                                alpha = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) 0.8f else 0.35f
+                        accentTint = MaterialTheme.colorScheme.primary,
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Filled.Email,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
                             )
-                        )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Email,
-                            contentDescription = null,
-                            tint = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.primary
-                            },
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = stringResource(R.string.signin_email),
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.primary
-                            }
-                        )
-                    }
+                        }
+                    )
                 }
             }
 
@@ -351,71 +325,67 @@ private fun PreviewLoginScreen() {
 }
 
 @Composable
-fun GoogleSignInButton(loading: Boolean = false, onClick: () -> Unit) {
+private fun AuthOptionButton(
+    title: String,
+    subtitle: String,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+    accentTint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface,
+    icon: @Composable () -> Unit
+) {
     val semantic = LocalSemanticColors.current
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     Surface(
-        onClick = if (loading) ({}) else onClick,
+        onClick = if (enabled) onClick else ({}),
         modifier = Modifier
             .fillMaxWidth()
-            .height(52.dp),
-        shape = RoundedCornerShape(14.dp),
-        color = semantic.cardElevated,
+            .height(72.dp),
+        shape = RoundedCornerShape(18.dp),
+        color = if (isDark) semantic.cardElevated else semantic.cardSubtle,
         shadowElevation = 2.dp,
-        border = androidx.compose.foundation.BorderStroke(1.dp, semantic.cardStroke)
+        border = BorderStroke(
+            1.dp,
+            if (enabled) semantic.cardStroke else semantic.cardStroke.copy(alpha = 0.45f)
+        )
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
+            horizontalArrangement = Arrangement.Start,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_google_logo),
-                contentDescription = stringResource(R.string.cd_google_logo),
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(10.dp))
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        accentTint.copy(alpha = if (isDark) 0.18f else 0.12f),
+                        RoundedCornerShape(12.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                icon()
+            }
+            Spacer(modifier = Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             Text(
-                text = stringResource(R.string.signin_google),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
-
-@Composable
-fun EmailSignInButton(onClick: () -> Unit) {
-    val semantic = LocalSemanticColors.current
-    Surface(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(52.dp),
-        shape = RoundedCornerShape(14.dp),
-        color = MaterialTheme.colorScheme.primary,
-        shadowElevation = 2.dp
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_email_icon),
-                contentDescription = stringResource(R.string.cd_email_icon),
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(
-                text = stringResource(R.string.continue_with_email),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onPrimary
+                text = stringResource(R.string.login_continue_short),
+                style = MaterialTheme.typography.labelMedium,
+                color = accentTint,
+                fontWeight = FontWeight.SemiBold
             )
         }
     }
