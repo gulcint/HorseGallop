@@ -12,6 +12,7 @@ import {
 } from "./validators";
 import fetch from "node-fetch";
 import * as cheerio from "cheerio";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 admin.initializeApp();
 
@@ -2036,5 +2037,130 @@ export const getLessonRoster = onCall({ region: "us-central1" }, async (request)
     return { roster };
   } catch (_) {
     throw new HttpsError("internal", "Failed to fetch roster");
+  }
+});
+
+function getOfflineAnswer(q: string, horses: string[], trainings: string[]): string {
+  const horseInfo = horses.length > 0 ? `Atınız ${horses[0]} için d` : "D";
+
+  if (q.includes("halsiz") || q.includes("yorgun") || q.includes("enerji")) {
+    return `${horseInfo}üşük enerji birkaç nedenden kaynaklanabilir:\n\n• **Beslenme:** Günlük kuru ot ihtiyacı vücut ağırlığının %1.5-2'si. Taze su erişimini kontrol edin.\n• **Dinlenme:** Yoğun antrenman sonrası 24-48 saat dinlenme gerekir.\n• **Sağlık:** Ateş, solunum sayısı (12-20/dk) ve nabzı (28-44/dk) kontrol edin.\n\n⚠️ Halsizlik 2 günden uzun sürüyorsa veterinere danışın.`;
+  }
+  if (q.includes("topallık") || q.includes("topallamak") || q.includes("bacak") || q.includes("ayak")) {
+    return `Topallık durumunda önce şunları kontrol edin:\n\n• **Tırnak:** Çivi, taş veya yabancı cisim var mı?\n• **Nal:** Gevşek veya düşmüş nal?\n• **Eklem:** Şişlik veya sıcaklık var mı?\n\n⚠️ Topallık veteriner gerektiren bir durumdur. Hareketi kısıtlayın ve veterineri arayın.`;
+  }
+  if (q.includes("antrenman") || q.includes("egzersiz") || q.includes("çalışma")) {
+    const lastTraining = trainings.length > 0 ? `\n\nSon antrenmanınız: ${trainings[0]}` : "";
+    return `Etkili bir antrenman programı için:\n\n• **Isınma:** 10 dk yürüyüş ile başlayın\n• **Hafif gün:** Haftada 2-3 gün yürüyüş + hafif tırıs\n• **Yoğun gün:** Haftada 1-2 gün dörtnala + engel\n• **Dinlenme:** Haftada en az 1 tam dinlenme günü\n• **Soğuma:** Her seansonun son 10 dk'sı yürüyüş${lastTraining}`;
+  }
+  if (q.includes("beslenme") || q.includes("yem") || q.includes("saman") || q.includes("yulaf")) {
+    return `At beslenmesinin temelleri:\n\n• **Kuru ot:** Vücut ağırlığının %1.5-2'si/gün (500 kg at → 7.5-10 kg)\n• **Kesif yem:** Yoğun çalışan atlara tahıl takviyesi (mısır, arpa, yulaf)\n• **Su:** Günde 25-45 litre temiz su\n• **Mineral/vitamin:** Tuz yalama taşı zorunlu\n• **Öğün sıklığı:** Günde 3 öğün ideal, mideye aşırı yüklenmeden kaçının`;
+  }
+  if (q.includes("aşı") || q.includes("sağlık") || q.includes("veteriner") || q.includes("hastalık")) {
+    return `Temel sağlık takvimi:\n\n• **Aşılar:** Tetanoz + grip yılda 2 kez, kuduz yılda 1 kez\n• **Parazit tedavisi:** 3 ayda bir, rotasyon ile\n• **Diş kontrolü:** Yılda 1 kez (ağız sağlığı sindirimi etkiler)\n• **Nalbant:** 6-8 haftada bir nal yenileme\n• **Genel kontrol:** Yılda 1-2 veteriner muayenesi\n\nSağlık Takvimi ekranından bu hatırlatıcıları takip edebilirsiniz.`;
+  }
+  if (q.includes("nal") || q.includes("nalbant")) {
+    return `Nal bakımı:\n\n• **Nalbant ziyareti:** 6-8 haftada bir (çalışma yoğunluğuna göre)\n• **Günlük bakım:** Tırnak temizleme fırçasıyla tırnak içini temizleyin\n• **Işlaklık:** Çok ıslak veya çok kuru zemin tırnak sağlığını bozar\n• **Tırnaksız at:** Yumuşak zeminde çalışıyorsa bazen nal gereksiz olabilir\n\nSağlık Takvimi'nde nalbant randevularınızı takip edebilirsiniz.`;
+  }
+  if (q.includes("merhaba") || q.includes("selam") || q.includes("nasıl")) {
+    return `Merhaba! Size at bakımı, antrenman planlaması, beslenme veya sağlık konularında yardımcı olabilirim. Aklınızdaki soruyu yazın! 🐴`;
+  }
+
+  // Genel fallback
+  return `Bu konuda size yardımcı olmak isterim. Sorunuzu biraz daha açar mısınız? Örneğin:\n\n• Atınızın yaşı ve cinsi nedir?\n• Belirtiler ne zaman başladı?\n• Son antrenman ne zamandı?\n\nDaha fazla bilgi ile daha doğru yanıt verebilirim. Acil sağlık durumlarında lütfen veterinerinizi arayın.`;
+}
+
+export const askAiCoach = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Login required");
+  }
+  const userId = request.auth.uid;
+
+  const { question, conversationHistory } = request.data as {
+    question: unknown;
+    conversationHistory?: Array<{ role: string; text: string }>;
+  };
+
+  if (!question || typeof question !== "string" || question.trim().length === 0) {
+    throw new HttpsError("invalid-argument", "question required");
+  }
+  if (question.length > 500) {
+    throw new HttpsError("invalid-argument", "question too long (max 500 chars)");
+  }
+
+  try {
+    const [userDoc, horsesSnap, trainingsSnap] = await Promise.all([
+      db.collection("users").doc(userId).get(),
+      db.collection("horses").where("userId", "==", userId).limit(3).get(),
+      db.collection("trainings").where("userId", "==", userId)
+        .orderBy("startTimeMs", "desc").limit(5).get()
+    ]);
+
+    const userData = userDoc.data() || {};
+    const horses = horsesSnap.docs.map(d => {
+      const h = d.data();
+      return `${h["name"] || "İsimsiz At"} (${h["breed"] || "cins bilinmiyor"}, ${h["ageYears"] || "?"} yaş)`;
+    });
+    const recentTrainings = trainingsSnap.docs.map(d => {
+      const t = d.data();
+      const date = t["startTimeMs"] ? new Date(t["startTimeMs"] as number).toLocaleDateString("tr-TR") : "?";
+      return `${date}: ${Math.round(((t["distanceKm"] as number) || 0) * 10) / 10} km, ${Math.round((t["durationMin"] as number) || 0)} dk`;
+    });
+
+    const systemPrompt = `Sen HorseGallop uygulamasının Türkçe at binicilik koçusun. Kullanıcıya at bakımı, antrenman planlaması, sağlık ve binicilik teknikleri hakkında yardımcı oluyorsun. Kısa, net ve pratik cevaplar ver. Türkçe yaz.
+
+Kullanıcı Profili:
+- Ad: ${userData["firstName"] || ""} ${userData["lastName"] || ""}
+- Atları: ${horses.length > 0 ? horses.join(", ") : "Kayıtlı at yok"}
+- Son Antrenmanlar: ${recentTrainings.length > 0 ? recentTrainings.join(" | ") : "Antrenman kaydı yok"}
+
+Önemli: Veteriner gerektiren tıbbi durumlar için mutlaka veterinere yönlendir.`;
+
+    const apiKey = process.env["GEMINI_API_KEY"];
+
+    let response: string;
+
+    if (!apiKey) {
+      // API key yoksa keyword tabanlı akıllı fallback
+      response = getOfflineAnswer(question.toLowerCase(), horses, recentTrainings);
+    } else {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      const history = ((conversationHistory || []).slice(-6) as Array<{ role: string; text: string }>).map(msg => ({
+        role: msg.role === "assistant" ? "model" : "user",
+        parts: [{ text: msg.text }]
+      }));
+
+      const chat = model.startChat({
+        history,
+        systemInstruction: systemPrompt,
+        generationConfig: { maxOutputTokens: 400, temperature: 0.7 }
+      });
+
+      const result = await chat.sendMessage(question);
+      response = result.response.text();
+    }
+
+    try {
+      const convRef = db.collection("aiConversations").doc(userId);
+      const convDoc = await convRef.get();
+      const existing: Array<{ role: string; text: string; timestamp: number }> =
+        convDoc.exists ? ((convDoc.data()?.["messages"] as Array<{ role: string; text: string; timestamp: number }>) || []) : [];
+      const newMessages = [
+        ...existing,
+        { role: "user", text: question, timestamp: Date.now() },
+        { role: "assistant", text: response, timestamp: Date.now() }
+      ].slice(-20);
+      await convRef.set({ messages: newMessages, updatedAt: Date.now() });
+    } catch (_) {
+      // Kayıt hatası sessizce geç, cevap yine de dön
+    }
+
+    return { answer: response };
+  } catch (error: unknown) {
+    if (error instanceof HttpsError) throw error;
+    console.error("askAiCoach error:", error);
+    throw new HttpsError("internal", "AI service temporarily unavailable");
   }
 });

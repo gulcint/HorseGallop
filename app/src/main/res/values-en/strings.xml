@@ -704,4 +704,11 @@
     <string name="barn_level_beginner">Beginner</string>
     <string name="barn_level_intermediate">Intermediate</string>
     <string name="barn_level_advanced">Advanced</string>
+
+    <!-- AI Coach -->
+    <string name="ai_coach_title">AI Coach</string>
+    <string name="ai_coach_input_placeholder">Ask about your horse...</string>
+    <string name="ai_coach_thinking">Thinking...</string>
+    <string name="ai_coach_send">Send</string>
+    <string name="ai_coach_error">Unable to get response. Please try again.</string>
 </resources>

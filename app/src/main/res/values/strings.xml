@@ -25,4 +25,11 @@
     <string name="error_name_required">İsim ve soyisim gerekli</string>
     <string name="error_email_invalid">Geçerli e-posta girin</string>
     <string name="error_password_length">Şifre en az 10 karakter olmalı</string>
+
+    <!-- AI Coach -->
+    <string name="ai_coach_title">AI Coach</string>
+    <string name="ai_coach_input_placeholder">Ask about your horse...</string>
+    <string name="ai_coach_thinking">Thinking...</string>
+    <string name="ai_coach_send">Send</string>
+    <string name="ai_coach_error">Unable to get response. Please try again.</string>
 </resources>

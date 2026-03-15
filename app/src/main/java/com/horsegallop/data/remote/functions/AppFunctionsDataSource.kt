@@ -1,6 +1,8 @@
 package com.horsegallop.data.remote.functions
 
 import com.google.firebase.functions.FirebaseFunctions
+import com.horsegallop.data.remote.dto.AiCoachAnswerDto
+import com.horsegallop.data.remote.dto.AiCoachMessageDto
 import com.horsegallop.data.remote.dto.BarnFunctionsDto
 import com.horsegallop.data.remote.dto.BarnStatsDto
 import com.horsegallop.data.remote.dto.ManagedLessonDto
@@ -627,6 +629,19 @@ class AppFunctionsDataSource @Inject constructor(
                 detailUrl = (m["detailUrl"] as? String).orEmpty()
             )
         }
+    }
+
+    // ─── AI Coach ────────────────────────────────────────────────────────────────
+
+    suspend fun askAiCoach(question: String, conversationHistory: List<AiCoachMessageDto>): AiCoachAnswerDto {
+        val result = functions.getHttpsCallable("askAiCoach")
+            .call(mapOf(
+                "question" to question,
+                "conversationHistory" to conversationHistory.map { mapOf("role" to it.role, "text" to it.text) }
+            )).await()
+        @Suppress("UNCHECKED_CAST")
+        val data = result.getData() as Map<String, Any>
+        return AiCoachAnswerDto(answer = data["answer"] as? String ?: "")
     }
 
     // ─── Challenge / Badge System ─────────────────────────────────────────────

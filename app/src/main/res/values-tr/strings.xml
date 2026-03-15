@@ -699,4 +699,11 @@
     <string name="barn_level_beginner">Başlangıç</string>
     <string name="barn_level_intermediate">Orta</string>
     <string name="barn_level_advanced">İleri</string>
+
+    <!-- AI Coach -->
+    <string name="ai_coach_title">AI Koç</string>
+    <string name="ai_coach_input_placeholder">Atınız hakkında sorun...</string>
+    <string name="ai_coach_thinking">Düşünüyor...</string>
+    <string name="ai_coach_send">Gönder</string>
+    <string name="ai_coach_error">Yanıt alınamadı. Lütfen tekrar deneyin.</string>
 </resources>

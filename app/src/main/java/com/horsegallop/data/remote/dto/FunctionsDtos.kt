@@ -259,3 +259,8 @@ data class StudentRosterEntryDto(
     val reservationId: String,
     val bookedAtMs: Long
 )
+
+// ─── AI Coach DTOs ────────────────────────────────────────────────────────────
+
+data class AiCoachMessageDto(val role: String, val text: String)
+data class AiCoachAnswerDto(val answer: String)

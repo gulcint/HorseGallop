@@ -333,7 +333,8 @@ fun ProfileActionsCard(
     onSettings: () -> Unit,
     onLogout: () -> Unit,
     onHealthCalendar: () -> Unit = {},
-    onChallenges: () -> Unit = {}
+    onChallenges: () -> Unit = {},
+    onAiCoach: () -> Unit = {}
 ) {
     val semantic = LocalSemanticColors.current
     val infiniteTransition = rememberInfiniteTransition(label = "edit_cta_pulse")
@@ -424,6 +425,16 @@ fun ProfileActionsCard(
                 emoji = "🏆",
                 label = "Meydan Okumalar",
                 onClick = onChallenges
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(start = 40.dp),
+                color = semantic.cardStroke,
+                thickness = 0.5.dp
+            )
+            ProfileActionItem(
+                emoji = "🤖",
+                label = "AI Koç",
+                onClick = onAiCoach
             )
             HorizontalDivider(
                 modifier = Modifier.padding(start = 40.dp),

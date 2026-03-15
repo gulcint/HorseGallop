@@ -61,6 +61,7 @@ import com.horsegallop.feature.ride.presentation.RideDetailScreen
 import com.horsegallop.feature.safety.presentation.SafetyScreen
 import com.horsegallop.feature.equestrian.presentation.EquestrianAgendaScreen
 import com.horsegallop.feature.challenge.presentation.ChallengeScreen
+import com.horsegallop.feature.aicoach.presentation.AiCoachScreen
 import com.horsegallop.feature.barnmanagement.presentation.BarnDashboardScreen
 import com.horsegallop.feature.barnmanagement.presentation.CreateLessonScreen
 import com.horsegallop.feature.barnmanagement.presentation.LessonRosterScreen
@@ -119,6 +120,7 @@ sealed class Dest(val route: String) {
   object LessonRoster : Dest("lesson_roster/{lessonId}") {
     fun route(lessonId: String) = "lesson_roster/$lessonId"
   }
+  object AiCoach : Dest("ai_coach")
 }
 
 @Composable
@@ -354,6 +356,7 @@ fun AppNavHost(
         onNotifications = { navController.navigate(Dest.Notifications.route) },
         onHealthCalendar = { navController.navigate(Dest.HealthCalendar.route) },
         onChallenges = { navController.navigate(Dest.Challenges.route) },
+        onAiCoach = { navController.navigate(Dest.AiCoach.route) },
         onLogout = {
           navController.navigate(Dest.Onboarding.route) {
             popUpTo(Dest.Home.route) { inclusive = true }
@@ -567,6 +570,10 @@ fun AppNavHost(
       LessonRosterScreen(
         onBack = { navController.popBackStack() }
       )
+    }
+    composable(Dest.AiCoach.route) {
+      BackHandler { navController.popBackStack() }
+      AiCoachScreen(onBack = { navController.popBackStack() })
     }
   }
   }
