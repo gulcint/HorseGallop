@@ -129,6 +129,8 @@ fun RideTrackingScreen(
     val semantic = LocalSemanticColors.current
 
     var hasLocationPermission by remember { mutableStateOf(context.hasLocationPermission()) }
+    var permissionRequestedOnce by remember { mutableStateOf(false) }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { grantResult ->
@@ -138,7 +140,9 @@ fun RideTrackingScreen(
     LaunchedEffect(Unit) {
         hasLocationPermission = context.hasLocationPermission()
         // Ride tab'ına ilk girildiğinde izin yoksa sistem diyaloğunu otomatik aç
-        if (!hasLocationPermission) {
+        // Only request once to avoid multiple dialogs and navigation issues
+        if (!hasLocationPermission && !permissionRequestedOnce) {
+            permissionRequestedOnce = true
             permissionLauncher.launch(
                 arrayOf(
                     Manifest.permission.ACCESS_FINE_LOCATION,
