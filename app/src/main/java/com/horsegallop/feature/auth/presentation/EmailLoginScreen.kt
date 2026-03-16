@@ -340,7 +340,9 @@ internal fun EmailFormContent(
             // Sign-up link
             TextButton(
                 onClick = onSignupClick,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { testTag = "create_account_link" }
             ) {
                 Text(
                     text = stringResource(R.string.prompt_create_account),
