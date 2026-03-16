@@ -32,7 +32,9 @@ fun NameFieldsSection(
     lastName: String,
     onFirstNameChange: (String) -> Unit,
     onLastNameChange: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    firstNameModifier: Modifier = Modifier,
+    lastNameModifier: Modifier = Modifier
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.horsegallop.R.dimen.spacing_md))) {
         OutlinedTextField(
@@ -40,7 +42,9 @@ fun NameFieldsSection(
             onValueChange = onFirstNameChange,
             label = { Text(stringResource(R.string.label_first_name), style = MaterialTheme.typography.bodySmall) },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(firstNameModifier),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline
@@ -53,7 +57,9 @@ fun NameFieldsSection(
             label = { Text(stringResource(R.string.label_last_name), style = MaterialTheme.typography.bodySmall) },
             placeholder = { Text(stringResource(R.string.label_last_name), style = MaterialTheme.typography.bodySmall) },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(lastNameModifier),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline
@@ -67,10 +73,11 @@ fun NameFieldsSection(
 fun PasswordFieldSection(
     password: String,
     onPasswordChange: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    fieldModifier: Modifier = Modifier
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
-    
+
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedTextField(
             value = password,
@@ -82,7 +89,9 @@ fun PasswordFieldSection(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline
             ),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(fieldModifier),
             trailingIcon = {
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
                     Icon(

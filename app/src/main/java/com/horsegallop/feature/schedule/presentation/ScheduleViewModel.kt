@@ -47,7 +47,7 @@ class ScheduleViewModel @Inject constructor(
                     loading = false,
                     lessons = emptyList(),
                     isEmpty = true,
-                    error = e.localizedMessage ?: "Failed to load lessons"
+                    error = e.localizedMessage ?: ERROR_LOAD_LESSONS
                 )
             }
         }
@@ -59,7 +59,12 @@ class ScheduleViewModel @Inject constructor(
                 getMyReservationsUseCase().collect { reservations ->
                     _uiState.value = _uiState.value.copy(reservations = reservations)
                 }
-            } catch (_: Exception) { }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    reservations = emptyList(),
+                    error = e.localizedMessage ?: ERROR_LOAD_RESERVATIONS
+                )
+            }
         }
     }
 
@@ -78,7 +83,7 @@ class ScheduleViewModel @Inject constructor(
                 .onFailure { e ->
                     _uiState.value = _uiState.value.copy(
                         bookingInProgress = false,
-                        bookingError = e.localizedMessage ?: "Rezervasyon başarısız"
+                        bookingError = e.localizedMessage ?: ERROR_BOOKING_FAILED
                     )
                 }
         }
@@ -98,6 +103,10 @@ class ScheduleViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(bookingSuccess = false, bookingError = null)
     }
 }
+
+private const val ERROR_LOAD_LESSONS = "Dersler yüklenemedi"
+private const val ERROR_LOAD_RESERVATIONS = "Rezervasyonlar yüklenemedi"
+private const val ERROR_BOOKING_FAILED = "Rezervasyon başarısız"
 
 data class ScheduleUiState(
     val loading: Boolean = true,

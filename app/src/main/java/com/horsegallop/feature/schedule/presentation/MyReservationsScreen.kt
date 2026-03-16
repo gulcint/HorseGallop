@@ -40,9 +40,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.horsegallop.R
 import com.horsegallop.domain.schedule.model.Reservation
 import com.horsegallop.domain.schedule.model.ReservationStatus
 import com.horsegallop.ui.theme.LocalSemanticColors
@@ -65,7 +68,7 @@ fun MyReservationsScreen(
                 title = { Text("Rezervasyonlarım", fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -118,6 +121,25 @@ fun MyReservationsScreen(
             dismissButton = {
                 TextButton(onClick = { cancelTarget = null }) { Text("Vazgeç") }
             }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MyReservationsScreenPreview() {
+    MaterialTheme {
+        ReservationCard(
+            reservation = Reservation(
+                id = "res-1",
+                lessonId = "lesson-1",
+                lessonTitle = "Temel Binicilik",
+                lessonDate = "Cumartesi, 15 Mart 10:00",
+                instructorName = "Ahmet Yılmaz",
+                status = ReservationStatus.CONFIRMED
+            ),
+            onCancel = {},
+            onReview = {}
         )
     }
 }

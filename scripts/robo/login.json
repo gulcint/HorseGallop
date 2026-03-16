@@ -1,0 +1,34 @@
+[
+  {
+    "eventType": "VIEW_CLICKED",
+    "elementDescriptors": [
+      {"resourceId": "com.horsegallop:id/agreement_checkbox"}
+    ]
+  },
+  {
+    "eventType": "VIEW_CLICKED",
+    "elementDescriptors": [
+      {"resourceId": "com.horsegallop:id/email_login_button"}
+    ]
+  },
+  {
+    "eventType": "VIEW_TEXT_CHANGED",
+    "replacementText": "test@horsegallop.com",
+    "elementDescriptors": [
+      {"resourceId": "com.horsegallop:id/email_input"}
+    ]
+  },
+  {
+    "eventType": "VIEW_TEXT_CHANGED",
+    "replacementText": "Test1234!",
+    "elementDescriptors": [
+      {"resourceId": "com.horsegallop:id/password_input"}
+    ]
+  },
+  {
+    "eventType": "VIEW_CLICKED",
+    "elementDescriptors": [
+      {"resourceId": "com.horsegallop:id/login_button"}
+    ]
+  }
+]

@@ -74,6 +74,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -426,6 +427,27 @@ fun BarnCard(barn: BarnUi, distanceKm: Double? = null, onClick: () -> Unit, onFa
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BarnListScreenPreview() {
+    MaterialTheme {
+        BarnCard(
+            barn = BarnUi(
+                id = "1",
+                name = "Ankara Hipodromu",
+                description = "Modern at binicilik merkezi",
+                location = "Ankara, Türkiye",
+                tags = listOf("indoor_arena", "lessons"),
+                rating = 4.8,
+                reviewCount = 120
+            ),
+            distanceKm = 3.2,
+            onClick = {},
+            onFavoriteClick = {}
+        )
     }
 }
 

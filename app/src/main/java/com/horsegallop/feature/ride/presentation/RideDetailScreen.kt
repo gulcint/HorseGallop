@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -706,6 +707,32 @@ private fun formatDuration(seconds: Int): String {
         String.format(Locale.getDefault(), "%d:%02d:%02d", h, m, s)
     } else {
         String.format(Locale.getDefault(), "%02d:%02d", m, s)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RideDetailScreenPreview() {
+    MaterialTheme {
+        val stubRide = RideSession(
+            id = "ride-1",
+            dateMillis = System.currentTimeMillis(),
+            durationSec = 3720,
+            distanceKm = 12.4f,
+            calories = 420,
+            pathPoints = emptyList(),
+            barnName = "Ankara Hipodromu",
+            avgSpeedKmh = 12.0f,
+            maxSpeedKmh = 28.5f,
+            rideType = "trail_riding"
+        )
+        androidx.compose.foundation.layout.Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            RideDetailHeroCard(ride = stubRide)
+            RideStatsCard(ride = stubRide)
+        }
     }
 }
 

@@ -42,10 +42,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.horsegallop.R
 import com.horsegallop.domain.horse.model.Horse
+import com.horsegallop.domain.horse.model.HorseGender
 import com.horsegallop.ui.theme.LocalSemanticColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,7 +71,7 @@ fun HorseListScreen(
                 title = { Text("Atlarım", fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -140,6 +144,25 @@ fun HorseListScreen(
             dismissButton = {
                 TextButton(onClick = { deleteTarget = null }) { Text("İptal") }
             }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HorseListScreenPreview() {
+    MaterialTheme {
+        HorseCard(
+            horse = Horse(
+                id = "1",
+                name = "Rüzgar",
+                breed = "Arap",
+                birthYear = 2018,
+                color = "Doru",
+                gender = HorseGender.STALLION
+            ),
+            onDelete = {},
+            onHealthClick = {}
         )
     }
 }
