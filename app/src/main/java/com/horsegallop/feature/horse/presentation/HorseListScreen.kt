@@ -68,7 +68,7 @@ fun HorseListScreen(
         containerColor = semantic.screenBase,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Atlarım", fontWeight = FontWeight.SemiBold) },
+                title = { Text(stringResource(R.string.my_horses_title), fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
@@ -200,10 +200,10 @@ private fun HorseCard(horse: Horse, onDelete: () -> Unit, onHealthClick: () -> U
             }
             Row {
                 IconButton(onClick = onHealthClick) {
-                    Icon(Icons.Default.MedicalServices, contentDescription = "Sağlık", tint = MaterialTheme.colorScheme.primary)
+                    Icon(Icons.Default.MedicalServices, contentDescription = stringResource(R.string.horse_health_cd), tint = MaterialTheme.colorScheme.primary)
                 }
                 IconButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, contentDescription = "Sil", tint = MaterialTheme.colorScheme.error)
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = MaterialTheme.colorScheme.error)
                 }
             }
         }

@@ -739,4 +739,30 @@
     <string name="error_load_lessons">Dersler yüklenemedi</string>
     <string name="error_load_reservations">Rezervasyonlar yüklenemedi</string>
     <string name="error_booking_failed">Rezervasyon başarısız</string>
+
+    <!-- Profile Components -->
+    <string name="profile_stat_rides">Sürüş</string>
+    <string name="profile_stat_rating">puan</string>
+    <string name="profile_action_my_horses">Atlarım</string>
+    <string name="profile_action_health_calendar">Sağlık Takvimi</string>
+    <string name="profile_action_challenges">Meydan Okumalar</string>
+    <string name="profile_action_ai_coach">AI Koç</string>
+    <string name="profile_action_tbf">TBF Yarışmaları</string>
+    <string name="profile_action_settings">Ayarlar</string>
+    <string name="profile_action_logout">Çıkış Yap</string>
+    <string name="profile_horses_section_title">Atlarım</string>
+    <string name="profile_horses_see_all">Tümü</string>
+    <string name="profile_horses_empty">Henüz at eklemediniz.</string>
+    <string name="profile_notifications_cd">Bildirimler</string>
+
+    <!-- My Reservations / My Horses -->
+    <string name="my_reservations_title">Rezervasyonlarım</string>
+    <string name="my_horses_title">Atlarım</string>
+    <string name="horse_health_cd">Sağlık</string>
+
+    <!-- AddHealthEvent horse selector -->
+    <string name="health_select_horse_label">At Seçin</string>
+    <string name="health_select_horse_placeholder">Seçiniz…</string>
+    <string name="health_horse_not_found">At bulunamadı</string>
+    <string name="health_horse_field_label">At</string>
 </resources>

@@ -44,10 +44,12 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.horsegallop.R
 import com.horsegallop.domain.auth.model.UserProfile
 import com.horsegallop.domain.horse.model.Horse
 import com.horsegallop.ui.theme.LocalSemanticColors
@@ -183,7 +185,7 @@ fun ProfileHeroCard(
                 HeroStatChip(
                     emoji = "🏇",
                     value = totalRides.toString(),
-                    label = "Sürüş",
+                    label = stringResource(R.string.profile_stat_rides),
                     modifier = Modifier.weight(1f)
                 )
                 HeroStatChip(
@@ -201,7 +203,7 @@ fun ProfileHeroCard(
                 HeroStatChip(
                     emoji = "⭐",
                     value = if (avgRating > 0.0) String.format(Locale.US, "%.1f", avgRating) else "—",
-                    label = "puan",
+                    label = stringResource(R.string.profile_stat_rating),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -404,7 +406,7 @@ fun ProfileActionsCard(
             // Secondary actions — list items with dividers
             ProfileActionItem(
                 emoji = "🐴",
-                label = "Atlarım",
+                label = stringResource(R.string.profile_action_my_horses),
                 onClick = onMyHorses
             )
             HorizontalDivider(
@@ -414,7 +416,7 @@ fun ProfileActionsCard(
             )
             ProfileActionItem(
                 emoji = "🩺",
-                label = "Sağlık Takvimi",
+                label = stringResource(R.string.profile_action_health_calendar),
                 onClick = onHealthCalendar
             )
             HorizontalDivider(
@@ -424,7 +426,7 @@ fun ProfileActionsCard(
             )
             ProfileActionItem(
                 emoji = "🏆",
-                label = "Meydan Okumalar",
+                label = stringResource(R.string.profile_action_challenges),
                 onClick = onChallenges
             )
             HorizontalDivider(
@@ -434,7 +436,7 @@ fun ProfileActionsCard(
             )
             ProfileActionItem(
                 emoji = "🤖",
-                label = "AI Koç",
+                label = stringResource(R.string.profile_action_ai_coach),
                 onClick = onAiCoach
             )
             HorizontalDivider(
@@ -444,7 +446,7 @@ fun ProfileActionsCard(
             )
             ProfileActionItem(
                 emoji = "🏇",
-                label = "TBF Yarışmaları",
+                label = stringResource(R.string.profile_action_tbf),
                 onClick = onTbfEvents
             )
             HorizontalDivider(
@@ -454,7 +456,7 @@ fun ProfileActionsCard(
             )
             ProfileActionItem(
                 emoji = "⚙️",
-                label = "Ayarlar",
+                label = stringResource(R.string.profile_action_settings),
                 onClick = onSettings
             )
             HorizontalDivider(
@@ -464,7 +466,7 @@ fun ProfileActionsCard(
             )
             ProfileActionItem(
                 emoji = "🚪",
-                label = "Çıkış Yap",
+                label = stringResource(R.string.profile_action_logout),
                 onClick = onLogout,
                 tint = MaterialTheme.colorScheme.error
             )
@@ -535,7 +537,7 @@ fun HorsesMiniCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Atlarım",
+                    text = stringResource(R.string.profile_horses_section_title),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -546,7 +548,7 @@ fun HorsesMiniCard(
                     horizontalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     Text(
-                        text = "Tümü",
+                        text = stringResource(R.string.profile_horses_see_all),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -561,7 +563,7 @@ fun HorsesMiniCard(
 
             if (horses.isEmpty()) {
                 Text(
-                    text = "Henüz at eklemediniz.",
+                    text = stringResource(R.string.profile_horses_empty),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

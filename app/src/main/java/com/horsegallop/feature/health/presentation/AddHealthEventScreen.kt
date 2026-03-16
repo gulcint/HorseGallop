@@ -137,7 +137,7 @@ fun AddHealthEventScreen(
 
             // Horse selector dropdown
             Text(
-                text = "At Seçin",
+                text = stringResource(R.string.health_select_horse_label),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -146,13 +146,13 @@ fun AddHealthEventScreen(
                 onExpandedChange = { horseMenuExpanded = it }
             ) {
                 OutlinedTextField(
-                    value = selectedHorse?.name ?: "Seçiniz...",
+                    value = selectedHorse?.name ?: stringResource(R.string.health_select_horse_placeholder),
                     onValueChange = {},
                     readOnly = true,
                     modifier = Modifier
                         .fillMaxWidth()
                         .menuAnchor(MenuAnchorType.PrimaryNotEditable),
-                    label = { Text("At") },
+                    label = { Text(stringResource(R.string.health_horse_field_label)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = horseMenuExpanded) },
                     shape = RoundedCornerShape(12.dp)
                 )
@@ -171,7 +171,7 @@ fun AddHealthEventScreen(
                     }
                     if (horseUiState.horses.isEmpty()) {
                         DropdownMenuItem(
-                            text = { Text("At bulunamadı") },
+                            text = { Text(stringResource(R.string.health_horse_not_found)) },
                             onClick = { horseMenuExpanded = false },
                             enabled = false
                         )

@@ -131,7 +131,7 @@ fun ProfileScreen(
                     IconButton(onClick = onNotifications) {
                         Icon(
                             imageVector = Icons.Filled.Notifications,
-                            contentDescription = "Bildirimler"
+                            contentDescription = stringResource(R.string.profile_notifications_cd)
                         )
                     }
                     IconButton(onClick = onSettings) {
