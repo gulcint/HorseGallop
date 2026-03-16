@@ -2,7 +2,6 @@ package com.horsegallop.data.ride.repository
 
 import android.content.Context
 import com.horsegallop.core.debug.AppLog
-import com.horsegallop.data.remote.ApiService
 import com.horsegallop.data.remote.dto.PathPointDto
 import com.horsegallop.data.remote.dto.SaveRideDto
 import com.horsegallop.data.remote.functions.AppFunctionsDataSource
@@ -27,7 +26,6 @@ import javax.inject.Singleton
 @Singleton
 class RideHistoryRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val apiService: ApiService,
     private val functionsDataSource: AppFunctionsDataSource
 ) : RideHistoryRepository {
     
@@ -51,7 +49,7 @@ class RideHistoryRepositoryImpl @Inject constructor(
             }
 
             try {
-                val remote = apiService.getMyRidesV2().map { dto ->
+                val remote = functionsDataSource.getMyRides().map { dto ->
                     val seconds = (dto.startedAt?.get("_seconds") as? Number)?.toLong() ?: 0L
                     val distanceKm = (dto.distanceKm ?: 0.0).toFloat()
                     val durationSec = ((dto.durationMin ?: 0.0) * 60).toInt()
