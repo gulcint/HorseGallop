@@ -3,7 +3,10 @@
 package com.horsegallop.feature.auth.presentation
 
 import android.app.DatePickerDialog
+import android.net.Uri
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -78,6 +81,12 @@ fun EditProfileScreen(
     val saveLabel = stringResource(id = R.string.button_save)
     val saveChangesLabel = stringResource(id = R.string.save_changes)
 
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { viewModel.updateProfileImage(it) }
+    }
+
     LaunchedEffect(Unit) { viewModel.startEditSession() }
 
     LaunchedEffect(state.errorMessageResId) {
@@ -116,6 +125,7 @@ fun EditProfileScreen(
             onBack()
         },
         onSave = { viewModel.saveProfile(onSuccess = onBack) },
+        onPhotoClick = { photoPickerLauncher.launch("image/*") },
         onFirstNameChange = { viewModel.updateDraft(firstName = it) },
         onLastNameChange = { viewModel.updateDraft(lastName = it) },
         onCountryCodeChange = { viewModel.updateDraft(countryCode = it) },
@@ -136,6 +146,7 @@ private fun EditProfileContent(
     saveChangesLabel: String,
     onBack: () -> Unit,
     onSave: () -> Unit,
+    onPhotoClick: () -> Unit,
     onFirstNameChange: (String) -> Unit,
     onLastNameChange: (String) -> Unit,
     onCountryCodeChange: (String) -> Unit,
@@ -196,7 +207,7 @@ private fun EditProfileContent(
                 ProfileHeroCard(
                     profile = profile,
                     fullName = fullName,
-                    onPhotoClick = { /* TODO: photo picker */ }
+                    onPhotoClick = onPhotoClick
                 )
             }
 
@@ -449,6 +460,7 @@ private fun EditProfileScreenPreview() {
             saveChangesLabel = "Değişiklikleri Kaydet",
             onBack = {},
             onSave = {},
+            onPhotoClick = {},
             onFirstNameChange = {},
             onLastNameChange = {},
             onCountryCodeChange = {},

@@ -1,7 +1,11 @@
 package com.horsegallop.data.ride.repository
 
 import android.content.Context
+import com.horsegallop.core.debug.AppLog
 import com.horsegallop.data.remote.ApiService
+import com.horsegallop.data.remote.dto.PathPointDto
+import com.horsegallop.data.remote.dto.SaveRideDto
+import com.horsegallop.data.remote.functions.AppFunctionsDataSource
 import com.horsegallop.domain.ride.model.GeoPoint
 import com.horsegallop.domain.ride.model.RideSession
 import com.horsegallop.domain.ride.repository.RideHistoryRepository
@@ -23,7 +27,8 @@ import javax.inject.Singleton
 @Singleton
 class RideHistoryRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val functionsDataSource: AppFunctionsDataSource
 ) : RideHistoryRepository {
     
     private val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
@@ -85,6 +90,7 @@ class RideHistoryRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveRide(ride: RideSession) {
+        // Önce local cache'e yaz (offline-first)
         val updatedList = listOf(ride) + _history.value
         _history.value = updatedList
         withContext(Dispatchers.IO) {
@@ -94,6 +100,35 @@ class RideHistoryRepositoryImpl @Inject constructor(
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+
+            // Backend'e async gönder (hata olursa local zaten kaydedildi)
+            try {
+                val dto = ride.toSaveRideDto()
+                functionsDataSource.saveRide(dto)
+            } catch (e: Exception) {
+                AppLog.e("RideHistoryRepo", "Backend sync failed: ${e.message}")
+            }
         }
+    }
+
+    private fun RideSession.toSaveRideDto(): SaveRideDto {
+        return SaveRideDto(
+            rideId = id,
+            durationSec = durationSec,
+            distanceKm = distanceKm.toDouble(),
+            calories = calories.toDouble(),
+            avgSpeedKmh = avgSpeedKmh.toDouble(),
+            maxSpeedKmh = maxSpeedKmh.toDouble(),
+            rideType = rideType ?: "FREE",
+            barnName = barnName,
+            startedAt = dateMillis,
+            pathPoints = pathPoints.map { geoPoint ->
+                PathPointDto(
+                    lat = geoPoint.latitude,
+                    lng = geoPoint.longitude,
+                    altM = geoPoint.altitudeM.toDouble()
+                )
+            }
+        )
     }
 }

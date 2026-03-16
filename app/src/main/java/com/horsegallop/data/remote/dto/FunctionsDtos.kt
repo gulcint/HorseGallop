@@ -316,3 +316,26 @@ data class TbfEventCardDto(
 )
 
 data class TbfUpcomingEventsDto(val days: List<TbfEventDayDto>)
+
+// ─── Ride DTOs ────────────────────────────────────────────────────────────────
+
+data class PathPointDto(
+    val lat: Double,
+    val lng: Double,
+    val altM: Double? = null,
+    val speedKmh: Double? = null,
+    val timestampMs: Long? = null
+)
+
+data class SaveRideDto(
+    val rideId: String,
+    val durationSec: Int,
+    val distanceKm: Double,
+    val calories: Double = 0.0,
+    val avgSpeedKmh: Double = 0.0,
+    val maxSpeedKmh: Double = 0.0,
+    val rideType: String = "FREE",
+    val barnName: String? = null,
+    val pathPoints: List<PathPointDto> = emptyList(),
+    val startedAt: Long
+)

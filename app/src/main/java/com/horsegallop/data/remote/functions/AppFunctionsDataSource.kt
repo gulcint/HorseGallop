@@ -2,6 +2,7 @@ package com.horsegallop.data.remote.functions
 
 import com.google.firebase.functions.FirebaseFunctions
 import com.horsegallop.data.remote.dto.AiCoachAnswerDto
+import com.horsegallop.data.remote.dto.SaveRideDto
 import com.horsegallop.data.remote.dto.AiCoachMessageDto
 import com.horsegallop.data.remote.dto.TbfVenueDto
 import com.horsegallop.data.remote.dto.TbfEventCardDto
@@ -838,6 +839,36 @@ class AppFunctionsDataSource @Inject constructor(
                 bookedAtMs = (m["bookedAtMs"] as? Number)?.toLong() ?: 0L
             )
         }
+    }
+
+    // ─── Ride ──────────────────────────────────────────────────────────────────
+
+    suspend fun saveRide(ride: SaveRideDto): Boolean {
+        val pathPointsList = ride.pathPoints.map { p ->
+            val point = hashMapOf<String, Any?>(
+                "lat" to p.lat,
+                "lng" to p.lng
+            )
+            p.altM?.let { point["altM"] = it }
+            p.speedKmh?.let { point["speedKmh"] = it }
+            p.timestampMs?.let { point["timestampMs"] = it }
+            point
+        }
+        val params = hashMapOf<String, Any?>(
+            "rideId" to ride.rideId,
+            "durationSec" to ride.durationSec,
+            "distanceKm" to ride.distanceKm,
+            "calories" to ride.calories,
+            "avgSpeedKmh" to ride.avgSpeedKmh,
+            "maxSpeedKmh" to ride.maxSpeedKmh,
+            "rideType" to ride.rideType,
+            "barnName" to ride.barnName,
+            "pathPoints" to pathPointsList,
+            "startedAt" to ride.startedAt
+        )
+        val result = functions.getHttpsCallable("saveRide").call(params).await()
+        val map = result.data as? Map<*, *> ?: return false
+        return (map["success"] as? Boolean) ?: false
     }
 
     private fun mapManagedLesson(m: Map<*, *>): ManagedLessonDto? {

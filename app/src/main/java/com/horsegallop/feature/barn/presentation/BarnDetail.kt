@@ -523,12 +523,11 @@ fun BarnDetailContent(
                     OutlinedButton(
                         onClick = {
                             val phone = barn.barn.phone
-                            if (!phone.isNullOrBlank()) {
-                                context.startActivity(
-                                    Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
-                                )
-                            }
+                            context.startActivity(
+                                Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
+                            )
                         },
+                        enabled = !barn.barn.phone.isNullOrBlank(),
                         modifier = Modifier
                             .weight(1f)
                             .height(56.dp),

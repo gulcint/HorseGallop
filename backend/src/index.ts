@@ -2286,6 +2286,75 @@ export const getTbfAthleteStats = onCall({ region: "us-central1" }, async (reque
   };
 });
 
+// ─── Ride ─────────────────────────────────────────────────────────────────────
+
+export const saveRide = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Login required");
+  }
+  const uid = request.auth.uid;
+  const {
+    rideId,
+    durationSec,
+    distanceKm,
+    calories,
+    avgSpeedKmh,
+    maxSpeedKmh,
+    rideType,
+    barnName,
+    pathPoints,
+    startedAt
+  } = request.data ?? {};
+
+  if (!rideId || typeof rideId !== "string" || rideId.trim() === "") {
+    throw new HttpsError("invalid-argument", "rideId required");
+  }
+  if (durationSec == null || typeof durationSec !== "number") {
+    throw new HttpsError("invalid-argument", "durationSec required");
+  }
+  if (distanceKm == null || typeof distanceKm !== "number") {
+    throw new HttpsError("invalid-argument", "distanceKm required");
+  }
+
+  // pathPoints: array of { lat, lng, altM?, speedKmh?, timestampMs? }
+  // Firestore'da raw object olarak saklanır — GeoPoint dönüşümü gerekmez.
+  const normalizedPathPoints = Array.isArray(pathPoints)
+    ? (pathPoints as Array<Record<string, unknown>>).map((p) => ({
+        lat: typeof p["lat"] === "number" ? p["lat"] : 0,
+        lng: typeof p["lng"] === "number" ? p["lng"] : 0,
+        altM: typeof p["altM"] === "number" ? p["altM"] : null,
+        speedKmh: typeof p["speedKmh"] === "number" ? p["speedKmh"] : null,
+        timestampMs: typeof p["timestampMs"] === "number" ? p["timestampMs"] : null
+      }))
+    : [];
+
+  const payload = {
+    userId: uid,
+    durationSec: durationSec as number,
+    distanceKm: distanceKm as number,
+    calories: typeof calories === "number" ? calories : 0,
+    avgSpeedKmh: typeof avgSpeedKmh === "number" ? avgSpeedKmh : 0,
+    maxSpeedKmh: typeof maxSpeedKmh === "number" ? maxSpeedKmh : 0,
+    rideType: typeof rideType === "string" ? rideType : "FREE",
+    barnName: typeof barnName === "string" ? barnName : null,
+    pathPoints: normalizedPathPoints,
+    startedAt: typeof startedAt === "number" ? startedAt : Date.now(),
+    savedAt: Date.now()
+  };
+
+  try {
+    await db
+      .collection("users")
+      .doc(uid)
+      .collection("rides")
+      .doc(rideId.trim())
+      .set(payload);
+    return { success: true, rideId: rideId.trim() };
+  } catch (error) {
+    throw new HttpsError("internal", "Failed to save ride");
+  }
+});
+
 export const getTbfUpcomingEvents = onCall({ region: "us-central1" }, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "Login required");
 
