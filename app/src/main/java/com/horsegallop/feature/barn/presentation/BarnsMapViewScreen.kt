@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -120,8 +121,8 @@ fun BarnsMapViewScreen(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack, 
-                            contentDescription = "Back",
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -603,5 +604,23 @@ private fun BarnListItemHorizontal(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BarnListItemHorizontalPreview() {
+    MaterialTheme {
+        BarnListItemHorizontal(
+            barn = BarnUi(
+                id = "1",
+                name = "İstanbul Atlı Spor",
+                description = "Şehrin kalbinde at binicilik merkezi",
+                location = "Beşiktaş, İstanbul",
+                rating = 4.7,
+                reviewCount = 85
+            ),
+            onClick = {}
+        )
     }
 }

@@ -19,6 +19,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.horsegallop.core.components.HorseLoadingOverlay
 import com.horsegallop.core.components.ButtonVariant
@@ -258,6 +259,21 @@ internal fun ForgotPasswordContent(
             enabled = uiState.email.isNotBlank(),
             isLoading = uiState.loading,
             variant = ButtonVariant.Primary
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ForgotPasswordScreenPreview() {
+    MaterialTheme {
+        ForgotPasswordContent(
+            uiState = ForgotPasswordUiState(
+                email = "rider@example.com",
+                loading = false
+            ),
+            onEmailChange = {},
+            onSendClick = {}
         )
     }
 }

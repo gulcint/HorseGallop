@@ -30,10 +30,12 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.horsegallop.core.components.ActivityItem
 import com.horsegallop.ui.theme.LocalSemanticColors
 
@@ -579,5 +581,23 @@ private fun AnimatedDistanceBarChart(dailyDistance: List<Float>) {
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RecentActivityDetailScreenPreview() {
+    MaterialTheme {
+        AnimatedStatsSection(
+            uiState = HomeUiState(
+                loading = false,
+                totalRides = "12",
+                totalDistance = "87.4",
+                totalDuration = "6h 30m",
+                totalCalories = "3200",
+                favoriteBarn = "Ankara Hipodromu",
+                dailyDistance = listOf(5f, 0f, 8f, 3f, 12f, 0f, 6f)
+            )
+        )
     }
 }

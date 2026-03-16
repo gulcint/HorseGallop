@@ -52,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.horsegallop.R
@@ -309,6 +310,42 @@ fun ScheduleScreen(
                 Spacer(modifier = Modifier.height(12.dp))
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ScheduleScreenPreview() {
+    MaterialTheme {
+        ScheduleScreen(
+            uiState = ScheduleUiState(
+                loading = false,
+                lessons = listOf(
+                    Lesson(
+                        id = "1",
+                        date = "Cumartesi, 15 Mart 10:00",
+                        title = "Temel Binicilik",
+                        instructorName = "Ahmet Yılmaz",
+                        durationMin = 60,
+                        level = "Başlangıç",
+                        price = 250.0,
+                        spotsTotal = 8,
+                        spotsAvailable = 3
+                    ),
+                    Lesson(
+                        id = "2",
+                        date = "Pazar, 16 Mart 14:00",
+                        title = "İleri Atlama",
+                        instructorName = "Zeynep Kaya",
+                        durationMin = 90,
+                        level = "İleri",
+                        price = 400.0,
+                        spotsTotal = 5,
+                        spotsAvailable = 0
+                    )
+                )
+            )
+        )
     }
 }
 

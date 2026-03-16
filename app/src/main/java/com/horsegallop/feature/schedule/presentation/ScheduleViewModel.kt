@@ -59,7 +59,12 @@ class ScheduleViewModel @Inject constructor(
                 getMyReservationsUseCase().collect { reservations ->
                     _uiState.value = _uiState.value.copy(reservations = reservations)
                 }
-            } catch (_: Exception) { }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    reservations = emptyList(),
+                    error = e.localizedMessage ?: "Rezervasyonlar yüklenemedi"
+                )
+            }
         }
     }
 
