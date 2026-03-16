@@ -65,7 +65,7 @@ gcloud firebase test android run \
   --device "model=$DEVICE_MODEL,version=$DEVICE_API,locale=$LOCALE,orientation=portrait" \
   --timeout "$TIMEOUT" \
   --robo-directives \
-    "click:agreement_checkbox,text:email_input=test@horsegallop.com,text:password_input=Test1234!" \
+    "click:agreement_checkbox,click:email_login_button,text:email_input=test@horsegallop.com,text:password_input=Test1234!,click:login_button" \
   2>&1
 
 echo ""
