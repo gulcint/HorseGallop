@@ -86,67 +86,12 @@ fun ForgotPasswordScreen(
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.spacing_md))
             ) {
                 if (uiState.isResetMode) {
-                    Text(
-                        text = stringResource(R.string.enter_new_password),
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ForgotPasswordResetContent(
+                        uiState = uiState,
+                        onNewPasswordChange = viewModel::updateNewPassword,
+                        onConfirmPasswordChange = viewModel::updateConfirmPassword,
+                        onConfirmClick = viewModel::confirmReset
                     )
-
-                    OutlinedTextField(
-                        value = uiState.newPassword,
-                        onValueChange = viewModel::updateNewPassword,
-                        label = { Text(stringResource(R.string.new_password), style = MaterialTheme.typography.bodySmall) },
-                        leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                            focusedLabelColor = MaterialTheme.colorScheme.primary
-                        )
-                    )
-                    
-                    OutlinedTextField(
-                        value = uiState.confirmPassword,
-                        onValueChange = viewModel::updateConfirmPassword,
-                        label = { Text(stringResource(R.string.confirm_password), style = MaterialTheme.typography.bodySmall) },
-                        leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-                        isError = uiState.errorMessage != null,
-                        supportingText = { 
-                            if (uiState.errorMessage != null) {
-                                val msg = if (uiState.errorMessage == "passwords_do_not_match") {
-                                    stringResource(R.string.passwords_do_not_match)
-                                } else {
-                                    uiState.errorMessage!!
-                                }
-                                Text(msg, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
-                            }
-                        },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                            errorBorderColor = MaterialTheme.colorScheme.error,
-                            focusedLabelColor = MaterialTheme.colorScheme.primary,
-                            errorLabelColor = MaterialTheme.colorScheme.error
-                        )
-                    )
-
-                    HorseGallopButton(
-                        text = stringResource(R.string.change_password),
-                        onClick = viewModel::confirmReset,
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = uiState.newPassword.isNotBlank(),
-                        isLoading = uiState.loading,
-                        variant = ButtonVariant.Primary
-                    )
-
                 } else {
                     Text(
                         text = uiState.subtitle ?: stringResource(R.string.forgot_password_subtitle),
@@ -259,6 +204,107 @@ internal fun ForgotPasswordContent(
             enabled = uiState.email.isNotBlank(),
             isLoading = uiState.loading,
             variant = ButtonVariant.Primary
+        )
+    }
+}
+
+@Composable
+internal fun ForgotPasswordResetContent(
+    uiState: ForgotPasswordUiState,
+    onNewPasswordChange: (String) -> Unit,
+    onConfirmPasswordChange: (String) -> Unit,
+    onConfirmClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 0.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.enter_new_password),
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        OutlinedTextField(
+            value = uiState.newPassword,
+            onValueChange = onNewPasswordChange,
+            label = { Text(stringResource(R.string.new_password), style = MaterialTheme.typography.bodySmall) },
+            leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { testTag = "new_password_input" },
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedLabelColor = MaterialTheme.colorScheme.primary
+            )
+        )
+
+        OutlinedTextField(
+            value = uiState.confirmPassword,
+            onValueChange = onConfirmPasswordChange,
+            label = { Text(stringResource(R.string.confirm_password), style = MaterialTheme.typography.bodySmall) },
+            leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { testTag = "confirm_password_input" },
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+            isError = uiState.errorMessage != null,
+            supportingText = {
+                if (uiState.errorMessage != null) {
+                    val msg = if (uiState.errorMessage == "passwords_do_not_match") {
+                        stringResource(R.string.passwords_do_not_match)
+                    } else {
+                        uiState.errorMessage!!
+                    }
+                    Text(msg, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                }
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                errorBorderColor = MaterialTheme.colorScheme.error,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                errorLabelColor = MaterialTheme.colorScheme.error
+            )
+        )
+
+        HorseGallopButton(
+            text = stringResource(R.string.change_password),
+            onClick = onConfirmClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { testTag = "change_password_button" },
+            enabled = uiState.newPassword.isNotBlank(),
+            isLoading = uiState.loading,
+            variant = ButtonVariant.Primary
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ForgotPasswordResetContentPreview() {
+    MaterialTheme {
+        ForgotPasswordResetContent(
+            uiState = ForgotPasswordUiState(
+                newPassword = "",
+                confirmPassword = "",
+                isResetMode = true,
+                loading = false
+            ),
+            onNewPasswordChange = {},
+            onConfirmPasswordChange = {},
+            onConfirmClick = {}
         )
     }
 }

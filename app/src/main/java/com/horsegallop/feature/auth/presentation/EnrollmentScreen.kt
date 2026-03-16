@@ -44,6 +44,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -111,83 +113,130 @@ fun EnrollmentScreen(
                     onDismiss = viewModel::dismissVerificationResult
                 )
             } else {
-                Column(
+                EnrollmentFormContent(
+                    uiState = uiState,
+                    onFirstNameChange = viewModel::updateFirstName,
+                    onLastNameChange = viewModel::updateLastName,
+                    onEmailChange = viewModel::updateEmail,
+                    onPasswordChange = viewModel::updatePassword,
+                    onSignUpClick = viewModel::signUp,
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(scrollState)
-                        .padding(horizontal = dimensionResource(CoreR.dimen.padding_screen_horizontal)),
-                    verticalArrangement = Arrangement.spacedBy(dimensionResource(CoreR.dimen.spacing_lg))
-                ) {
-                    AuthHeader(
-                        title = uiState.enrollTitle ?: stringResource(CoreR.string.login_title_brand),
-                        subtitle = uiState.enrollSubtitle ?: stringResource(CoreR.string.signup_prompt)
-                    )
-
-                    Surface(
-                        shape = RoundedCornerShape(24.dp),
-                        color = semantic.cardElevated,
-                        tonalElevation = 2.dp,
-                        shadowElevation = 6.dp,
-                        border = androidx.compose.foundation.BorderStroke(
-                            1.dp,
-                            semantic.cardStroke
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            NameFieldsSection(
-                                firstName = uiState.firstName,
-                                lastName = uiState.lastName,
-                                onFirstNameChange = viewModel::updateFirstName,
-                                onLastNameChange = viewModel::updateLastName
-                            )
-
-                            HorseGallopTextField(
-                                value = uiState.email,
-                                onValueChange = viewModel::updateEmail,
-                                label = stringResource(AppR.string.label_email),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-
-                            PasswordFieldSection(
-                                password = uiState.password,
-                                onPasswordChange = viewModel::updatePassword
-                            )
-
-                            if (uiState.error != null) {
-                                Text(
-                                    text = stringResource(uiState.error!!),
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-
-                            if (uiState.errorMessage != null) {
-                                Text(
-                                    text = uiState.errorMessage!!,
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-
-                            HorseGallopButton(
-                                text = stringResource(AppR.string.enrollment_title),
-                                onClick = viewModel::signUp,
-                                enabled = uiState.isFormValid && !uiState.loading,
-                                isLoading = uiState.loading,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(dimensionResource(CoreR.dimen.spacing_xl)))
-                }
+                        .padding(horizontal = dimensionResource(CoreR.dimen.padding_screen_horizontal))
+                )
             }
         }
+    }
+}
+
+@Composable
+internal fun EnrollmentFormContent(
+    uiState: EnrollmentUiState,
+    onFirstNameChange: (String) -> Unit,
+    onLastNameChange: (String) -> Unit,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onSignUpClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val semantic = LocalSemanticColors.current
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(CoreR.dimen.spacing_lg))
+    ) {
+        AuthHeader(
+            title = uiState.enrollTitle ?: stringResource(CoreR.string.login_title_brand),
+            subtitle = uiState.enrollSubtitle ?: stringResource(CoreR.string.signup_prompt)
+        )
+
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = semantic.cardElevated,
+            tonalElevation = 2.dp,
+            shadowElevation = 6.dp,
+            border = BorderStroke(1.dp, semantic.cardStroke)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                NameFieldsSection(
+                    firstName = uiState.firstName,
+                    lastName = uiState.lastName,
+                    onFirstNameChange = onFirstNameChange,
+                    onLastNameChange = onLastNameChange,
+                    firstNameModifier = Modifier.semantics { testTag = "enrollment_first_name" },
+                    lastNameModifier = Modifier.semantics { testTag = "enrollment_last_name" }
+                )
+
+                HorseGallopTextField(
+                    value = uiState.email,
+                    onValueChange = onEmailChange,
+                    label = stringResource(AppR.string.label_email),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { testTag = "enrollment_email" }
+                )
+
+                PasswordFieldSection(
+                    password = uiState.password,
+                    onPasswordChange = onPasswordChange,
+                    fieldModifier = Modifier.semantics { testTag = "enrollment_password" }
+                )
+
+                if (uiState.error != null) {
+                    Text(
+                        text = stringResource(uiState.error!!),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+                if (uiState.errorMessage != null) {
+                    Text(
+                        text = uiState.errorMessage!!,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+                HorseGallopButton(
+                    text = stringResource(AppR.string.enrollment_title),
+                    onClick = onSignUpClick,
+                    enabled = uiState.isFormValid && !uiState.loading,
+                    isLoading = uiState.loading,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { testTag = "signup_button" }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(dimensionResource(CoreR.dimen.spacing_xl)))
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun EnrollmentFormContentPreview() {
+    com.horsegallop.ui.theme.AppTheme {
+        EnrollmentFormContent(
+            uiState = EnrollmentUiState(
+                firstName = "Elif",
+                lastName = "Yılmaz",
+                email = "elif@horsegallop.com",
+                password = "",
+                isFormValid = false
+            ),
+            onFirstNameChange = {},
+            onLastNameChange = {},
+            onEmailChange = {},
+            onPasswordChange = {},
+            onSignUpClick = {}
+        )
     }
 }
 
@@ -361,7 +410,9 @@ fun VerificationSentContent(
             text = stringResource(AppR.string.btn_confirm_verified),
             onClick = onVerifiedCheck,
             isLoading = uiState.verifying,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { testTag = "confirm_verified_button" }
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -370,7 +421,9 @@ fun VerificationSentContent(
         FilledTonalButton(
             onClick = onResendClick,
             enabled = uiState.resendCooldownRemaining == 0 && !uiState.verifying,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { testTag = "resend_verification_button" }
         ) {
             Text(
                 text = if (uiState.resendCooldownRemaining > 0)

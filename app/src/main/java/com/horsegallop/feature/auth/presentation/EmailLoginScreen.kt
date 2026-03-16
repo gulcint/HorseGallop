@@ -146,6 +146,7 @@ fun EmailLoginScreen(
             onLoginClick = viewModel::login,
             onSignupClick = onSignup,
             onForgotPasswordClick = onForgotPassword,
+            onResendVerificationClick = viewModel::resendVerification,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -160,6 +161,7 @@ internal fun EmailFormContent(
     onLoginClick: () -> Unit,
     onSignupClick: () -> Unit,
     onForgotPasswordClick: () -> Unit,
+    onResendVerificationClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val semantic = LocalSemanticColors.current
@@ -319,8 +321,10 @@ internal fun EmailFormContent(
 
                     if (uiState.showResendVerification) {
                         TextButton(
-                            onClick = {},
-                            modifier = Modifier.fillMaxWidth()
+                            onClick = onResendVerificationClick,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .semantics { testTag = "resend_verification_button" }
                         ) {
                             Text(
                                 text = stringResource(R.string.btn_resend_verification),
