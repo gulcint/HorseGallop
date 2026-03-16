@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -216,11 +217,23 @@ internal fun LoginScreenContent(
         ) {
             Spacer(modifier = Modifier.weight(0.45f))
 
-            Image(
-                painter = painterResource(id = R.mipmap.ic_launcher_round),
-                contentDescription = stringResource(R.string.app_name),
-                modifier = Modifier.size(88.dp)
-            )
+            // ic_launcher_round XML adaptive icon → Compose'da çöküyor.
+            // ic_launcher_foreground: sadece foreground layer (PNG/Vector), her zaman çalışır.
+            Box(
+                modifier = Modifier
+                    .size(88.dp)
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                    contentDescription = stringResource(R.string.app_name),
+                    modifier = Modifier.size(72.dp)
+                )
+            }
             Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = stringResource(R.string.app_name),
