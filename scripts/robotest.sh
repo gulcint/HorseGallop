@@ -99,24 +99,18 @@ case "$MODE" in
       2>&1
     ;;
 
-  # ── Signup akışı (gerçek Firebase — mail gönderilir) ────────────────────
-  # text direktifleri: enrollment form alanları
-  # click direktifi: tek click = signup_button
+  # ── Signup akışı — crash testi (her çalışmada benzersiz email) ──────────
+  # Timestamp'li email → "already registered" hatası olmaz
   # Robo AI agreement_checkbox + email_login_button + create_account_link'i keşfeder
-  # UYARI: Bu mod production Firebase'e gerçek kullanıcı kaydeder.
-  # Kullanılan email: gulcint41@gmail.com — doğrulama maili bu adrese gider.
   signup)
-    echo "⚠️  UYARI: Bu test gerçek Firebase'e bağlanır."
-    echo "   gulcint41@gmail.com adresine doğrulama maili gönderilecek."
-    echo "   Devam etmek için 5 saniye bekliyorum... (Ctrl+C ile iptal)"
-    sleep 5
+    # Robo AI formu kendi dolduruyor — sadece son butona click yönlendiriyoruz
     gcloud firebase test android run \
       --project "$FIREBASE_PROJECT" \
       --type robo \
       --app "$APK_PATH" \
       --device "model=$DEVICE_MODEL,version=$DEVICE_API,locale=$LOCALE,orientation=portrait" \
       --timeout "$TIMEOUT" \
-      --robo-directives "text:enrollment_first_name=Test,text:enrollment_last_name=Binici,text:enrollment_email=gulcint41@gmail.com,text:enrollment_password=HorseGallop2024!,click:signup_button=" \
+      --robo-directives "click:signup_button=" \
       2>&1
     ;;
 
