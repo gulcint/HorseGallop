@@ -85,7 +85,9 @@ echo "🚀 Test Lab'a gönderiliyor..."
 
 case "$MODE" in
 
-  # ── Login akışı (mevcut, varsayılan) ────────────────────────────────────
+  # ── Login akışı ─────────────────────────────────────────────────────────
+  # text direktifleri: email + şifre form alanlarını doldur
+  # click direktifi: tek click = login_button (Robo AI checkpoint'e kadar kendi geziyor)
   login)
     gcloud firebase test android run \
       --project "$FIREBASE_PROJECT" \
@@ -93,12 +95,14 @@ case "$MODE" in
       --app "$APK_PATH" \
       --device "model=$DEVICE_MODEL,version=$DEVICE_API,locale=$LOCALE,orientation=portrait" \
       --timeout "$TIMEOUT" \
-      --robo-directives \
-        "click:agreement_checkbox,click:email_login_button,text:email_input=test@horsegallop.com,text:password_input=Test1234!,click:login_button" \
+      --robo-directives "text:email_input=test@horsegallop.com,text:password_input=Test1234!,click:login_button=" \
       2>&1
     ;;
 
   # ── Signup akışı (gerçek Firebase — mail gönderilir) ────────────────────
+  # text direktifleri: enrollment form alanları
+  # click direktifi: tek click = signup_button
+  # Robo AI agreement_checkbox + email_login_button + create_account_link'i keşfeder
   # UYARI: Bu mod production Firebase'e gerçek kullanıcı kaydeder.
   # Kullanılan email: gulcint41@gmail.com — doğrulama maili bu adrese gider.
   signup)
@@ -112,8 +116,7 @@ case "$MODE" in
       --app "$APK_PATH" \
       --device "model=$DEVICE_MODEL,version=$DEVICE_API,locale=$LOCALE,orientation=portrait" \
       --timeout "$TIMEOUT" \
-      --robo-directives \
-        "click:agreement_checkbox,click:email_login_button,click:create_account_link,text:enrollment_first_name=Test,text:enrollment_last_name=Binici,text:enrollment_email=gulcint41@gmail.com,text:enrollment_password=HorseGallop2024!,click:signup_button" \
+      --robo-directives "text:enrollment_first_name=Test,text:enrollment_last_name=Binici,text:enrollment_email=gulcint41@gmail.com,text:enrollment_password=HorseGallop2024!,click:signup_button=" \
       2>&1
     ;;
 

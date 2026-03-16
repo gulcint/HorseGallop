@@ -1,0 +1,54 @@
+[
+  {
+    "eventType": "VIEW_CLICKED",
+    "elementDescriptors": [
+      {"resourceId": "com.horsegallop:id/agreement_checkbox"}
+    ]
+  },
+  {
+    "eventType": "VIEW_CLICKED",
+    "elementDescriptors": [
+      {"resourceId": "com.horsegallop:id/email_login_button"}
+    ]
+  },
+  {
+    "eventType": "VIEW_CLICKED",
+    "elementDescriptors": [
+      {"resourceId": "com.horsegallop:id/create_account_link"}
+    ]
+  },
+  {
+    "eventType": "VIEW_TEXT_CHANGED",
+    "replacementText": "Test",
+    "elementDescriptors": [
+      {"resourceId": "com.horsegallop:id/enrollment_first_name"}
+    ]
+  },
+  {
+    "eventType": "VIEW_TEXT_CHANGED",
+    "replacementText": "Binici",
+    "elementDescriptors": [
+      {"resourceId": "com.horsegallop:id/enrollment_last_name"}
+    ]
+  },
+  {
+    "eventType": "VIEW_TEXT_CHANGED",
+    "replacementText": "gulcint41@gmail.com",
+    "elementDescriptors": [
+      {"resourceId": "com.horsegallop:id/enrollment_email"}
+    ]
+  },
+  {
+    "eventType": "VIEW_TEXT_CHANGED",
+    "replacementText": "HorseGallop2024!",
+    "elementDescriptors": [
+      {"resourceId": "com.horsegallop:id/enrollment_password"}
+    ]
+  },
+  {
+    "eventType": "VIEW_CLICKED",
+    "elementDescriptors": [
+      {"resourceId": "com.horsegallop:id/signup_button"}
+    ]
+  }
+]
