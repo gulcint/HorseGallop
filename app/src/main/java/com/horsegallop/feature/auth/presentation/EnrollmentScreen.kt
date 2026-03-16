@@ -141,13 +141,15 @@ internal fun EnrollmentFormContent(
     modifier: Modifier = Modifier
 ) {
     val semantic = LocalSemanticColors.current
+    val title = uiState.enrollTitle ?: stringResource(CoreR.string.login_title_brand)
+    val subtitle = uiState.enrollSubtitle ?: stringResource(CoreR.string.signup_prompt)
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(dimensionResource(CoreR.dimen.spacing_lg))
     ) {
         AuthHeader(
-            title = uiState.enrollTitle ?: stringResource(CoreR.string.login_title_brand),
-            subtitle = uiState.enrollSubtitle ?: stringResource(CoreR.string.signup_prompt)
+            title = title,
+            subtitle = subtitle
         )
 
         Surface(

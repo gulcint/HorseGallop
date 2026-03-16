@@ -1,8 +1,0 @@
-[
-  {
-    "eventType": "VIEW_CLICKED",
-    "elementDescriptors": [
-      {"resourceId": "com.horsegallop:id/agreement_checkbox"}
-    ]
-  }
-]
