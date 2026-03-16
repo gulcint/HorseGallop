@@ -251,7 +251,7 @@ private fun AthleteTableHeader(isResults: Boolean) {
             modifier = Modifier.width(80.dp)
         )
         Text(
-            text = if (isResults) "Derece" else "Oran",
+            text = if (isResults) stringResource(R.string.tbf_col_degree) else stringResource(R.string.tbf_col_odds),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

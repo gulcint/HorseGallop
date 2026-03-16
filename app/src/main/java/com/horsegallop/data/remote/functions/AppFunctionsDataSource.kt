@@ -3,6 +3,7 @@ package com.horsegallop.data.remote.functions
 import com.google.firebase.functions.FirebaseFunctions
 import com.horsegallop.data.remote.dto.AiCoachAnswerDto
 import com.horsegallop.data.remote.dto.SaveRideDto
+import com.horsegallop.data.remote.dto.VerifyPurchaseFunctionsDto
 import com.horsegallop.data.remote.dto.AiCoachMessageDto
 import com.horsegallop.data.remote.dto.TbfVenueDto
 import com.horsegallop.data.remote.dto.TbfEventCardDto
@@ -869,6 +870,70 @@ class AppFunctionsDataSource @Inject constructor(
         val result = functions.getHttpsCallable("saveRide").call(params).await()
         val map = result.data as? Map<*, *> ?: return false
         return (map["success"] as? Boolean) ?: false
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    suspend fun getMyRides(): List<com.horsegallop.data.remote.dto.BackendRideDto> {
+        val result = functions.getHttpsCallable("getMyRides").call().await()
+        val root = result.data as? Map<*, *> ?: return emptyList()
+        val ridesRaw = root["rides"] as? List<*> ?: return emptyList()
+        return ridesRaw.mapNotNull { item ->
+            val m = item as? Map<*, *> ?: return@mapNotNull null
+            val pathPointsRaw = m["pathPoints"] as? List<*>
+            val pathPoints = pathPointsRaw?.mapNotNull { pt ->
+                val ptMap = pt as? Map<*, *> ?: return@mapNotNull null
+                com.horsegallop.data.remote.dto.GeoPointDto(
+                    lat = (ptMap["lat"] as? Number)?.toDouble() ?: 0.0,
+                    lng = (ptMap["lng"] as? Number)?.toDouble() ?: 0.0,
+                    timestamp = null
+                )
+            }
+            val startedAtRaw = m["startedAt"] as? Map<*, *>
+            val startedAt: Map<String, Any>? = startedAtRaw?.let {
+                mapOf("_seconds" to (it["_seconds"] ?: 0L))
+            }
+            com.horsegallop.data.remote.dto.BackendRideDto(
+                id = m["id"] as? String ?: return@mapNotNull null,
+                startedAt = startedAt,
+                distanceKm = (m["distanceKm"] as? Number)?.toDouble(),
+                durationMin = (m["durationMin"] as? Number)?.toDouble(),
+                calories = (m["calories"] as? Number)?.toDouble(),
+                status = m["status"] as? String,
+                barnName = m["barnName"] as? String,
+                avgSpeedKmh = (m["avgSpeedKmh"] as? Number)?.toDouble(),
+                maxSpeedKmh = (m["maxSpeedKmh"] as? Number)?.toDouble(),
+                rideType = m["rideType"] as? String,
+                pathPoints = pathPoints
+            )
+        }
+    }
+
+    // ─── Subscription ──────────────────────────────────────────────────────────
+
+    suspend fun verifyPurchase(purchaseToken: String, productId: String): VerifyPurchaseFunctionsDto {
+        val params = hashMapOf<String, Any>(
+            "purchaseToken" to purchaseToken,
+            "productId" to productId
+        )
+        val result = functions.getHttpsCallable("verifyPurchase").call(params).await()
+        val map = result.data as? Map<*, *> ?: return VerifyPurchaseFunctionsDto(success = false, isPro = false, tier = "FREE", expiresAt = null)
+        return VerifyPurchaseFunctionsDto(
+            success = (map["success"] as? Boolean) ?: false,
+            isPro = (map["isPro"] as? Boolean) ?: false,
+            tier = (map["tier"] as? String) ?: "FREE",
+            expiresAt = (map["expiresAt"] as? Number)?.toLong()
+        )
+    }
+
+    suspend fun getSubscriptionStatus(): VerifyPurchaseFunctionsDto {
+        val result = functions.getHttpsCallable("getSubscriptionStatus").call().await()
+        val map = result.data as? Map<*, *> ?: return VerifyPurchaseFunctionsDto(success = true, isPro = false, tier = "FREE", expiresAt = null)
+        return VerifyPurchaseFunctionsDto(
+            success = true,
+            isPro = (map["isPro"] as? Boolean) ?: false,
+            tier = (map["tier"] as? String) ?: "FREE",
+            expiresAt = (map["expiresAt"] as? Number)?.toLong()
+        )
     }
 
     private fun mapManagedLesson(m: Map<*, *>): ManagedLessonDto? {

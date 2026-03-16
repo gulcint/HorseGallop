@@ -2355,6 +2355,47 @@ export const saveRide = onCall({ region: "us-central1" }, async (request) => {
   }
 });
 
+export const getMyRides = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Login required");
+  }
+  const uid = request.auth.uid;
+
+  const snap = await db
+    .collection("users")
+    .doc(uid)
+    .collection("rides")
+    .orderBy("startedAt", "desc")
+    .limit(50)
+    .get();
+
+  const rides = snap.docs.map((doc) => {
+    const d = doc.data();
+    return {
+      id: doc.id,
+      startedAt: typeof d["startedAt"] === "number"
+        ? { _seconds: Math.floor(d["startedAt"] / 1000) }
+        : null,
+      distanceKm: typeof d["distanceKm"] === "number" ? d["distanceKm"] : null,
+      durationMin: typeof d["durationSec"] === "number" ? d["durationSec"] / 60 : null,
+      calories: typeof d["calories"] === "number" ? d["calories"] : null,
+      status: "completed",
+      barnName: typeof d["barnName"] === "string" ? d["barnName"] : null,
+      avgSpeedKmh: typeof d["avgSpeedKmh"] === "number" ? d["avgSpeedKmh"] : null,
+      maxSpeedKmh: typeof d["maxSpeedKmh"] === "number" ? d["maxSpeedKmh"] : null,
+      rideType: typeof d["rideType"] === "string" ? d["rideType"] : null,
+      pathPoints: Array.isArray(d["pathPoints"])
+        ? (d["pathPoints"] as Array<Record<string, unknown>>).map((p) => ({
+            lat: typeof p["lat"] === "number" ? p["lat"] : 0,
+            lng: typeof p["lng"] === "number" ? p["lng"] : 0,
+          }))
+        : []
+    };
+  });
+
+  return { rides };
+});
+
 export const getTbfUpcomingEvents = onCall({ region: "us-central1" }, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "Login required");
 
@@ -2385,4 +2426,82 @@ export const getTbfUpcomingEvents = onCall({ region: "us-central1" }, async (req
     .map(r => (r as PromiseFulfilledResult<any>).value);
 
   return { days };
+});
+
+// ─── Billing: Purchase Verification ─────────────────────────────────────────
+
+export const verifyPurchase = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Login required");
+  }
+  const uid = request.auth.uid;
+  const { purchaseToken, productId } = request.data ?? {};
+
+  if (!purchaseToken || typeof purchaseToken !== "string") {
+    throw new HttpsError("invalid-argument", "purchaseToken required");
+  }
+  if (!productId || typeof productId !== "string") {
+    throw new HttpsError("invalid-argument", "productId required");
+  }
+
+  // Play Integrity / server-side verification burada Google Play Developer API
+  // ile yapılır. Şimdilik token'ı Firestore'a kaydedip isPro flag'i set ediyoruz.
+  // Production'da googleapis paketi ile receipt doğrulaması eklenecek.
+  const isYearly = (productId as string).includes("year");
+  const now = Date.now();
+  const expiresAt = isYearly
+    ? now + 365 * 24 * 60 * 60 * 1000
+    : now + 30 * 24 * 60 * 60 * 1000;
+
+  await db.collection("users").doc(uid).set(
+    {
+      isPro: true,
+      subscriptionTier: isYearly ? "PRO_YEARLY" : "PRO_MONTHLY",
+      subscriptionExpiresAt: expiresAt,
+      lastPurchaseToken: purchaseToken as string,
+      lastPurchaseProductId: productId as string,
+      lastPurchaseVerifiedAt: now,
+    },
+    { merge: true }
+  );
+
+  return {
+    success: true,
+    isPro: true,
+    tier: isYearly ? "PRO_YEARLY" : "PRO_MONTHLY",
+    expiresAt,
+  };
+});
+
+export const getSubscriptionStatus = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Login required");
+  }
+  const uid = request.auth.uid;
+
+  const snap = await db.collection("users").doc(uid).get();
+  const data = snap.data() ?? {};
+
+  const isPro = data["isPro"] === true;
+  const tier: string = typeof data["subscriptionTier"] === "string"
+    ? data["subscriptionTier"]
+    : "FREE";
+  const expiresAt: number | null = typeof data["subscriptionExpiresAt"] === "number"
+    ? data["subscriptionExpiresAt"]
+    : null;
+
+  // Süresi dolmuşsa isPro'yu false'a çek
+  const isActive = isPro && (expiresAt == null || expiresAt > Date.now());
+  if (isPro && !isActive) {
+    await db.collection("users").doc(uid).set(
+      { isPro: false },
+      { merge: true }
+    );
+  }
+
+  return {
+    isPro: isActive,
+    tier: isActive ? tier : "FREE",
+    expiresAt: isActive ? expiresAt : null,
+  };
 });

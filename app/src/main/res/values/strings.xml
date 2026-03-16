@@ -47,6 +47,8 @@
     <string name="tbf_col_jockey">Jokey</string>
     <string name="tbf_weight_kg">%1$s kg</string>
     <string name="tbf_venue_event_count">%1$s (%2$d)</string>
+    <string name="tbf_col_degree">Derece</string>
+    <string name="tbf_col_odds">Oran</string>
 
     <!-- Write Review Screen -->
     <string name="review_screen_title">Değerlendirme Yaz</string>

@@ -1,7 +1,11 @@
 package com.horsegallop.data.subscription.repository
 
+import com.android.billingclient.api.Purchase
+import com.horsegallop.core.debug.AppLog
 import com.horsegallop.data.billing.BillingManager
 import com.horsegallop.data.billing.PurchaseState
+import com.horsegallop.data.remote.dto.VerifyPurchaseFunctionsDto
+import com.horsegallop.data.remote.functions.AppFunctionsDataSource
 import com.horsegallop.domain.subscription.model.SubscriptionStatus
 import com.horsegallop.domain.subscription.model.SubscriptionTier
 import com.horsegallop.domain.subscription.repository.SubscriptionRepository
@@ -17,7 +21,8 @@ import kotlinx.coroutines.launch
 
 @Singleton
 class SubscriptionRepositoryImpl @Inject constructor(
-    private val billingManager: BillingManager
+    private val billingManager: BillingManager,
+    private val functionsDataSource: AppFunctionsDataSource
 ) : SubscriptionRepository {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -32,6 +37,7 @@ class SubscriptionRepositoryImpl @Inject constructor(
 
     init {
         observeBillingPurchases()
+        refreshFromBackend()
     }
 
     override fun observeSubscriptionStatus(): Flow<SubscriptionStatus> = statusState.asStateFlow()
@@ -40,40 +46,85 @@ class SubscriptionRepositoryImpl @Inject constructor(
         Result.success(statusState.value)
 
     override suspend fun startSubscriptionPurchase(productId: String): Result<Unit> {
-        updateStatusFromProductId(productId)
         return Result.success(Unit)
     }
 
-    override suspend fun refreshEntitlements(): Result<SubscriptionStatus> =
-        Result.success(statusState.value)
+    override suspend fun refreshEntitlements(): Result<SubscriptionStatus> = runCatching {
+        val dto = functionsDataSource.getSubscriptionStatus()
+        val status = dto.toSubscriptionStatus()
+        statusState.value = status
+        status
+    }.onFailure {
+        AppLog.e("SubscriptionRepo", "refreshEntitlements failed: ${it.message}")
+    }
 
     override suspend fun restorePurchases(): Result<SubscriptionStatus> = runCatching {
         val purchases = billingManager.queryActivePurchases()
         val activePurchase = purchases.firstOrNull()
         if (activePurchase != null) {
-            val productId = activePurchase.products.firstOrNull() ?: ""
-            updateStatusFromProductId(productId)
+            verifyAndUpdateFromPurchase(activePurchase)
         } else {
-            statusState.value = SubscriptionStatus(
-                tier = SubscriptionTier.FREE,
-                isActive = true,
-                expiresAtEpochMillis = null
-            )
+            // Backend'den son durumu çek — Play Store'da aktif purchase yoksa FREE
+            val dto = functionsDataSource.getSubscriptionStatus()
+            statusState.value = dto.toSubscriptionStatus()
         }
         statusState.value
+    }.onFailure {
+        AppLog.e("SubscriptionRepo", "restorePurchases failed: ${it.message}")
     }
 
     private fun observeBillingPurchases() {
         scope.launch {
             billingManager.purchaseState.collect { state ->
                 if (state is PurchaseState.Purchased) {
-                    updateStatusFromProductId(state.productId)
+                    // purchaseToken'ı backend'e gönder, Firestore'da isPro set et
+                    val purchases = billingManager.queryActivePurchases()
+                    val purchase = purchases.firstOrNull { p ->
+                        p.products.contains(state.productId)
+                    }
+                    if (purchase != null) {
+                        verifyAndUpdateFromPurchase(purchase)
+                    } else {
+                        // Token erişilemiyor ama purchase acknowledge edildi — local güncelle
+                        updateStatusLocalFromProductId(state.productId)
+                    }
                 }
             }
         }
     }
 
-    private fun updateStatusFromProductId(productId: String) {
+    private fun refreshFromBackend() {
+        scope.launch {
+            runCatching {
+                val dto = functionsDataSource.getSubscriptionStatus()
+                statusState.value = dto.toSubscriptionStatus()
+            }.onFailure {
+                AppLog.w("SubscriptionRepo", "Backend status fetch failed, using local: ${it.message}")
+            }
+        }
+    }
+
+    private suspend fun verifyAndUpdateFromPurchase(purchase: Purchase) {
+        val productId = purchase.products.firstOrNull() ?: return
+        runCatching {
+            val dto = functionsDataSource.verifyPurchase(
+                purchaseToken = purchase.purchaseToken,
+                productId = productId
+            )
+            if (dto.success) {
+                statusState.value = dto.toSubscriptionStatus()
+                AppLog.i("SubscriptionRepo", "Purchase verified via backend: isPro=${dto.isPro}, tier=${dto.tier}")
+            } else {
+                updateStatusLocalFromProductId(productId)
+            }
+        }.onFailure {
+            AppLog.e("SubscriptionRepo", "Backend purchase verification failed: ${it.message}")
+            // Fallback: local update (backend'e ulaşılamadı)
+            updateStatusLocalFromProductId(productId)
+        }
+    }
+
+    private fun updateStatusLocalFromProductId(productId: String) {
         val tier = when {
             productId.contains("year") -> SubscriptionTier.PRO_YEARLY
             productId.contains("month") -> SubscriptionTier.PRO_MONTHLY
@@ -91,4 +142,17 @@ class SubscriptionRepositoryImpl @Inject constructor(
             expiresAtEpochMillis = expiresAt
         )
     }
+}
+
+private fun VerifyPurchaseFunctionsDto.toSubscriptionStatus(): SubscriptionStatus {
+    val tier = when (this.tier) {
+        "PRO_YEARLY" -> SubscriptionTier.PRO_YEARLY
+        "PRO_MONTHLY" -> SubscriptionTier.PRO_MONTHLY
+        else -> SubscriptionTier.FREE
+    }
+    return SubscriptionStatus(
+        tier = tier,
+        isActive = this.isPro,
+        expiresAtEpochMillis = this.expiresAt
+    )
 }

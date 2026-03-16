@@ -339,3 +339,10 @@ data class SaveRideDto(
     val pathPoints: List<PathPointDto> = emptyList(),
     val startedAt: Long
 )
+
+data class VerifyPurchaseFunctionsDto(
+    val success: Boolean,
+    val isPro: Boolean,
+    val tier: String,
+    val expiresAt: Long?
+)
