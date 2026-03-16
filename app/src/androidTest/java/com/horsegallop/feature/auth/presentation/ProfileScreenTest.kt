@@ -16,6 +16,15 @@ import com.horsegallop.domain.auth.usecase.GetUserProfileUseCase
 import com.horsegallop.domain.auth.usecase.SignOutUseCase
 import com.horsegallop.domain.auth.usecase.UpdateProfileImageUseCase
 import com.horsegallop.domain.auth.usecase.UpdateUserProfileUseCase
+import com.horsegallop.domain.home.model.RideSession
+import com.horsegallop.domain.home.model.UserStats
+import com.horsegallop.domain.home.repository.HomeRepository
+import com.horsegallop.domain.home.usecase.GetRecentActivitiesUseCase
+import com.horsegallop.domain.home.usecase.GetUserStatsUseCase
+import com.horsegallop.domain.horse.model.Horse
+import com.horsegallop.domain.horse.model.HorseTip
+import com.horsegallop.domain.horse.repository.HorseRepository
+import com.horsegallop.domain.horse.usecase.GetMyHorsesUseCase
 import com.horsegallop.domain.model.User
 import com.horsegallop.domain.model.UserRole
 import kotlinx.coroutines.flow.Flow
@@ -115,13 +124,18 @@ class ProfileScreenTest {
     private fun buildViewModel(seedProfile: UserProfile = defaultProfile()): Pair<ProfileViewModel, FakeProfileRepositoryAndroid> {
         val authRepository = FakeAuthRepositoryAndroid("uid-android")
         val profileRepository = FakeProfileRepositoryAndroid(seedProfile)
+        val horseRepository = FakeHorseRepositoryAndroid()
+        val homeRepository = FakeHomeRepositoryAndroid()
 
         val viewModel = ProfileViewModel(
             getCurrentUserIdUseCase = GetCurrentUserIdUseCase(authRepository),
             getUserProfileUseCase = GetUserProfileUseCase(profileRepository),
             updateUserProfileUseCase = UpdateUserProfileUseCase(profileRepository),
             updateProfileImageUseCase = UpdateProfileImageUseCase(profileRepository),
-            signOutUseCase = SignOutUseCase(authRepository)
+            signOutUseCase = SignOutUseCase(authRepository),
+            getMyHorsesUseCase = GetMyHorsesUseCase(horseRepository),
+            getUserStatsUseCase = GetUserStatsUseCase(homeRepository),
+            getRecentActivitiesUseCase = GetRecentActivitiesUseCase(homeRepository)
         )
 
         return viewModel to profileRepository
@@ -196,4 +210,19 @@ private class FakeAuthRepositoryAndroid(
     override fun getSplashTexts(locale: String): Flow<Result<Pair<String, String>>> = flowOf(Result.success("" to ""))
 
     override fun getCurrentUserId(): String? = currentUserId
+}
+
+private class FakeHorseRepositoryAndroid : HorseRepository {
+    override fun getMyHorses(): Flow<List<Horse>> = flowOf(emptyList())
+    override suspend fun addHorse(horse: Horse): Result<Horse> = Result.success(horse)
+    override suspend fun deleteHorse(horseId: String): Result<Unit> = Result.success(Unit)
+    override suspend fun getBreeds(locale: String): Result<List<String>> = Result.success(emptyList())
+    override suspend fun getHorseTips(locale: String): Result<List<HorseTip>> = Result.success(emptyList())
+}
+
+private class FakeHomeRepositoryAndroid : HomeRepository {
+    override fun getRecentActivities(userId: String, limit: Int): Flow<Result<List<RideSession>>> =
+        flowOf(Result.success(emptyList()))
+    override fun getUserStats(userId: String): Flow<Result<UserStats>> =
+        flowOf(Result.success(UserStats(totalRides = 0, totalDistance = 0.0)))
 }

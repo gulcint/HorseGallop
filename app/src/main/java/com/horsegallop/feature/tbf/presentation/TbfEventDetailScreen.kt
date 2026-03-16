@@ -166,7 +166,7 @@ private fun EventDetailBody(
                 ) {
                     Column {
                         Text(
-                            text = "${competition.no}. Koşu",
+                            text = stringResource(R.string.tbf_competition_label, competition.no),
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -230,21 +230,21 @@ private fun AthleteTableHeader(isResults: Boolean) {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = "No",
+            text = stringResource(R.string.tbf_col_no),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.width(24.dp)
         )
         Text(
-            text = "At Adı",
+            text = stringResource(R.string.tbf_col_horse),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
         )
         Text(
-            text = "Jokey",
+            text = stringResource(R.string.tbf_col_jockey),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -300,7 +300,7 @@ private fun AthleteDetailRow(
                 color = MaterialTheme.colorScheme.onSurface
             )
             Text(
-                text = "${athlete.weight} kg",
+                text = stringResource(R.string.tbf_weight_kg, athlete.weight),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

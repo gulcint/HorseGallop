@@ -13,6 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -159,7 +161,9 @@ fun ForgotPasswordScreen(
                         placeholder = { Text(stringResource(R.string.login_email_placeholder), style = MaterialTheme.typography.bodySmall) },
                         leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null) },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .semantics { testTag = "forgot_email_input" },
                         isError = uiState.errorMessage != null,
                         supportingText = { 
                             if (uiState.errorMessage != null) {
@@ -187,7 +191,9 @@ fun ForgotPasswordScreen(
                     HorseGallopButton(
                         text = stringResource(R.string.send_reset_link),
                         onClick = viewModel::sendResetLink,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .semantics { testTag = "send_reset_button" },
                         enabled = uiState.email.isNotBlank(),
                         isLoading = uiState.loading,
                         variant = ButtonVariant.Primary
@@ -195,5 +201,63 @@ fun ForgotPasswordScreen(
                 }
             }
         }
+    }
+}
+
+/**
+ * Test edilebilir şifre-sıfırlama içerik composable'ı.
+ * Sadece email giriş modunu (isResetMode=false) gösterir.
+ * ViewModel bağımlılığı yoktur.
+ */
+@Composable
+internal fun ForgotPasswordContent(
+    uiState: ForgotPasswordUiState,
+    onEmailChange: (String) -> Unit,
+    onSendClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = uiState.subtitle ?: "",
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        OutlinedTextField(
+            value = uiState.email,
+            onValueChange = onEmailChange,
+            label = { Text(stringResource(R.string.login_email_label)) },
+            placeholder = { Text(stringResource(R.string.login_email_placeholder)) },
+            leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null) },
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { testTag = "forgot_email_input" },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Done
+            ),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline
+            )
+        )
+
+        HorseGallopButton(
+            text = stringResource(R.string.send_reset_link),
+            onClick = onSendClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { testTag = "send_reset_button" },
+            enabled = uiState.email.isNotBlank(),
+            isLoading = uiState.loading,
+            variant = ButtonVariant.Primary
+        )
     }
 }

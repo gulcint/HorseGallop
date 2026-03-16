@@ -41,4 +41,10 @@
     <string name="tbf_event_distance">%1$dm %2$s</string>
     <string name="tbf_select_venue">Mekân seçin</string>
     <string name="tbf_loading">Etkinlikler yükleniyor...</string>
+    <string name="tbf_competition_label">%1$d. Koşu</string>
+    <string name="tbf_col_no">No</string>
+    <string name="tbf_col_horse">At Adı</string>
+    <string name="tbf_col_jockey">Jokey</string>
+    <string name="tbf_weight_kg">%1$s kg</string>
+    <string name="tbf_venue_event_count">%1$s (%2$d)</string>
 </resources>

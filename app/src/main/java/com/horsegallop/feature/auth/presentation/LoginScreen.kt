@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -39,8 +40,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -156,6 +157,41 @@ fun LoginScreen(
         }
     }
 
+        LoginScreenContent(
+            uiState = uiState,
+            onGoogleClick = {
+                if (!uiState.isLoading && uiState.agreementAccepted) {
+                    scope.launch(Dispatchers.IO) {
+                        val available = GoogleApiAvailability.getInstance()
+                            .isGooglePlayServicesAvailable(context)
+                        withContext(Dispatchers.Main) {
+                            if (available != ConnectionResult.SUCCESS) {
+                                feedback.showError(R.string.auth_error_play_services)
+                            } else {
+                                googleClient.signOut().addOnCompleteListener {
+                                    launcher.launch(googleClient.signInIntent)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            onEmailClick = onEmailClick,
+            onSignupClick = onSignupClick,
+            onToggleAgreement = { vm.toggleAgreement() }
+        )
+}
+
+/** Test edilebilir içerik composable — ViewModel bağımlılığı yok. */
+@Composable
+internal fun LoginScreenContent(
+    uiState: LoginUiState,
+    onGoogleClick: () -> Unit,
+    onEmailClick: () -> Unit,
+    onSignupClick: () -> Unit,
+    onToggleAgreement: () -> Unit
+) {
+    val semantic = LocalSemanticColors.current
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -179,14 +215,25 @@ fun LoginScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // ── Hero ──────────────────────────────────────────────────────────
             Spacer(modifier = Modifier.weight(0.45f))
 
-            Image(
-                painter = painterResource(id = R.mipmap.ic_launcher_round),
-                contentDescription = stringResource(R.string.app_name),
-                modifier = Modifier.size(88.dp)
-            )
+            // ic_launcher_round XML adaptive icon → Compose'da çöküyor.
+            // ic_launcher_foreground: sadece foreground layer (PNG/Vector), her zaman çalışır.
+            Box(
+                modifier = Modifier
+                    .size(88.dp)
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                    contentDescription = stringResource(R.string.app_name),
+                    modifier = Modifier.size(72.dp)
+                )
+            }
             Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = stringResource(R.string.app_name),
@@ -204,7 +251,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.weight(0.45f))
 
-            // ── Auth card ─────────────────────────────────────────────────────
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
@@ -230,25 +276,7 @@ fun LoginScreen(
                         subtitle = stringResource(R.string.login_google_helper),
                         enabled = !uiState.isLoading && uiState.agreementAccepted,
                         modifier = Modifier.alpha(if (uiState.agreementAccepted) 1f else 0.5f),
-                        onClick = {
-                        if (!uiState.isLoading && uiState.agreementAccepted) {
-                            scope.launch(Dispatchers.IO) {
-                                val available = GoogleApiAvailability.getInstance()
-                                    .isGooglePlayServicesAvailable(context)
-                                withContext(Dispatchers.Main) {
-                                    if (available != ConnectionResult.SUCCESS) {
-                                        feedback.showError(R.string.auth_error_play_services)
-                                    } else {
-                                        // Reusing the cached idToken is unsafe here because Google may return
-                                        // a stale token from a previous session. Always request a fresh sign-in.
-                                        googleClient.signOut().addOnCompleteListener {
-                                            launcher.launch(googleClient.signInIntent)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        },
+                        onClick = onGoogleClick,
                         icon = {
                             Image(
                                 painter = painterResource(id = R.drawable.ic_google_logo),
@@ -258,7 +286,6 @@ fun LoginScreen(
                         }
                     )
 
-                    // Divider
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
@@ -284,7 +311,9 @@ fun LoginScreen(
                         subtitle = stringResource(R.string.login_email_helper),
                         onClick = onEmailClick,
                         enabled = !uiState.isLoading && uiState.agreementAccepted,
-                        modifier = Modifier.alpha(if (uiState.agreementAccepted) 1f else 0.5f),
+                        modifier = Modifier
+                            .alpha(if (uiState.agreementAccepted) 1f else 0.5f)
+                            .semantics { testTag = "email_login_button" },
                         accentTint = MaterialTheme.colorScheme.primary,
                         icon = {
                             Icon(
@@ -296,7 +325,6 @@ fun LoginScreen(
                         }
                     )
 
-                    // ── Agreement checkbox ────────────────────────────────────
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -305,9 +333,9 @@ fun LoginScreen(
                     ) {
                         Checkbox(
                             checked = uiState.agreementAccepted,
-                            onCheckedChange = { vm.toggleAgreement() },
+                            onCheckedChange = { onToggleAgreement() },
                             modifier = Modifier.semantics {
-                                contentDescription = "agreement_checkbox"
+                                testTag = "agreement_checkbox"
                             },
                             colors = CheckboxDefaults.colors(
                                 checkedColor = MaterialTheme.colorScheme.primary,
@@ -341,7 +369,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Sign-up link
             TextButton(onClick = onSignupClick) {
                 Text(
                     text = stringResource(R.string.prompt_create_account),

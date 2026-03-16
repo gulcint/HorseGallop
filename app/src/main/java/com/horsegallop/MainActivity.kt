@@ -49,6 +49,9 @@ import com.horsegallop.core.feedback.HorseGallopSnackbarHost
 import com.horsegallop.core.feedback.LocalAppFeedbackController
 import com.horsegallop.core.feedback.SnackbarAppFeedbackController
 import com.horsegallop.ui.theme.AppTheme
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import com.horsegallop.ui.theme.LocalSemanticColors
 
 import com.horsegallop.feature.common.presentation.NoInternetScreen
@@ -118,7 +121,7 @@ private fun PreviewSplashScreen() {
         }
     }
 }
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun AppContent(initialFeedbackMessageResId: Int? = null) {
     val mainVm: MainViewModel = androidx.hilt.navigation.compose.hiltViewModel()
@@ -200,7 +203,7 @@ fun AppContent(initialFeedbackMessageResId: Int? = null) {
             }
         }
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().semantics { testTagsAsResourceId = true }) {
             if (showNoInternet) {
                 NoInternetScreen(
                     message = ui.offlineHelpText,

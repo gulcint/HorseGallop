@@ -41,3 +41,8 @@ mcp-server-*/
 # Firebase Functions (backend)
 /functions
 horsegallop-backend/
+
+# Leftover scaffold module directories
+/core/
+/data/
+/domain/

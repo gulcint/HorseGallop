@@ -720,4 +720,10 @@
     <string name="tbf_event_distance">%1$dm %2$s</string>
     <string name="tbf_select_venue">Select venue</string>
     <string name="tbf_loading">Loading events...</string>
+    <string name="tbf_competition_label">Race %1$d</string>
+    <string name="tbf_col_no">No</string>
+    <string name="tbf_col_horse">Horse</string>
+    <string name="tbf_col_jockey">Jockey</string>
+    <string name="tbf_weight_kg">%1$s kg</string>
+    <string name="tbf_venue_event_count">%1$s (%2$d)</string>
 </resources>

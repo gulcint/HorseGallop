@@ -47,8 +47,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -152,7 +152,7 @@ fun EmailLoginScreen(
 }
 
 @Composable
-private fun EmailFormContent(
+internal fun EmailFormContent(
     uiState: LoginUiState,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
@@ -224,7 +224,7 @@ private fun EmailFormContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(min = 56.dp)
-                            .semantics { contentDescription = "email_input" },
+                            .semantics { testTag = "email_input" },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outline,
@@ -277,7 +277,7 @@ private fun EmailFormContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(min = 56.dp)
-                            .semantics { contentDescription = "password_input" },
+                            .semantics { testTag = "password_input" },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outline,
@@ -292,7 +292,10 @@ private fun EmailFormContent(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        TextButton(onClick = onForgotPasswordClick) {
+                        TextButton(
+                            onClick = onForgotPasswordClick,
+                            modifier = Modifier.semantics { testTag = "forgot_password_link" }
+                        ) {
                             Text(
                                 text = stringResource(R.string.forgot_password),
                                 style = MaterialTheme.typography.bodySmall,
@@ -306,7 +309,9 @@ private fun EmailFormContent(
                     HorseGallopButton(
                         text = stringResource(R.string.login_button),
                         onClick = onLoginClick,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .semantics { testTag = "login_button" },
                         enabled = uiState.isFormValid,
                         isLoading = uiState.isLoading,
                         variant = ButtonVariant.Primary
