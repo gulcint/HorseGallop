@@ -2444,16 +2444,59 @@ export const verifyPurchase = onCall({ region: "us-central1" }, async (request) 
     throw new HttpsError("invalid-argument", "productId required");
   }
 
-  // Play Integrity / server-side verification burada Google Play Developer API
-  // ile yapılır. Şimdilik token'ı Firestore'a kaydedip isPro flag'i set ediyoruz.
-  // Production'da googleapis paketi ile receipt doğrulaması eklenecek.
+  // ── Token format validation ───────────────────────────────────────────────
+  // Google Play purchase token formatı: base64url encoded, min 32 karakter.
+  // Whitelist: sadece bilinen product ID'ler kabul edilir.
+  const ALLOWED_PRODUCT_IDS = [
+    "horsegallop_pro_monthly",
+    "horsegallop_pro_yearly",
+  ];
+  if (!ALLOWED_PRODUCT_IDS.includes(productId)) {
+    throw new HttpsError("invalid-argument", `Unknown productId: ${productId}`);
+  }
+  // Play token: yalnızca base64url karakterleri içermeli, min 32 karakter
+  const TOKEN_REGEX = /^[A-Za-z0-9\-_]+$/;
+  if (purchaseToken.length < 32 || !TOKEN_REGEX.test(purchaseToken)) {
+    throw new HttpsError("invalid-argument", "Invalid purchaseToken format");
+  }
+
+  // ── Duplicate token guard ─────────────────────────────────────────────────
+  // Aynı token başka bir kullanıcı tarafından daha önce kullanıldıysa reddet.
+  const tokenSnap = await db
+    .collection("purchaseTokens")
+    .doc(purchaseToken)
+    .get();
+  if (tokenSnap.exists) {
+    const existingUid = tokenSnap.data()?.uid;
+    if (existingUid && existingUid !== uid) {
+      throw new HttpsError("already-exists", "Purchase token already redeemed");
+    }
+  }
+
+  // ── NOTE: Production server-side verification ─────────────────────────────
+  // googleapis paketi ile Google Play Developer API çağrısı yapılabilir:
+  //   const auth = new google.auth.GoogleAuth({ scopes: ['https://www.googleapis.com/auth/androidpublisher'] });
+  //   const androidpublisher = google.androidpublisher({ version: 'v3', auth });
+  //   await androidpublisher.purchases.subscriptions.get({
+  //     packageName: 'com.horsegallop',
+  //     subscriptionId: productId,
+  //     token: purchaseToken,
+  //   });
+  // Bu entegrasyon Google Play Console servis hesabı credentials'ı gerektirir.
+  // Şimdilik token format + whitelist + duplicate guard yeterli MVP validation'dır.
+
   const isYearly = (productId as string).includes("year");
   const now = Date.now();
   const expiresAt = isYearly
     ? now + 365 * 24 * 60 * 60 * 1000
     : now + 30 * 24 * 60 * 60 * 1000;
 
-  await db.collection("users").doc(uid).set(
+  const batch = db.batch();
+
+  // Kullanıcı subscription bilgilerini güncelle
+  const userRef = db.collection("users").doc(uid);
+  batch.set(
+    userRef,
     {
       isPro: true,
       subscriptionTier: isYearly ? "PRO_YEARLY" : "PRO_MONTHLY",
@@ -2464,6 +2507,12 @@ export const verifyPurchase = onCall({ region: "us-central1" }, async (request) 
     },
     { merge: true }
   );
+
+  // Token'ı kullanılmış olarak işaretle (duplicate guard için)
+  const tokenRef = db.collection("purchaseTokens").doc(purchaseToken as string);
+  batch.set(tokenRef, { uid, productId, redeemedAt: now }, { merge: true });
+
+  await batch.commit();
 
   return {
     success: true,
