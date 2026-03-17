@@ -44,6 +44,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -396,6 +398,25 @@ private fun RideTrackingActiveSection(
             hasLocationPermission = hasLocationPermission
         )
         RideTrackingMetricsBar(state = state)
+        if (state.activeChallengeCount > 0) {
+            SuggestionChip(
+                onClick = { /* no-op */ },
+                label = {
+                    Text(
+                        text = stringResource(R.string.ride_active_challenges, state.activeChallengeCount),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Filled.EmojiEvents,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                },
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+        }
         if (state.isSaving) {
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         }
@@ -1496,7 +1517,8 @@ private fun RideTrackingActiveSectionPreview() {
             distanceKm = 3.21f,
             calories = 142,
             horseCalories = 850,
-            altitudeM = 34.0f
+            altitudeM = 34.0f,
+            activeChallengeCount = 3
         ),
         hasLocationPermission = true,
         autoDetect = true,

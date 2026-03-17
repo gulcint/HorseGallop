@@ -54,6 +54,7 @@ data class RideUiState(
     val permissionTitle: String? = null,
     val permissionHint: String? = null,
     val grantLocationCta: String? = null,
+    val activeChallengeCount: Int = 0,
     @StringRes val errorMessageResId: Int? = null
 )
 

@@ -7,6 +7,7 @@ import com.horsegallop.domain.auth.usecase.GetCurrentUserIdUseCase
 import com.horsegallop.domain.auth.usecase.GetUserProfileUseCase
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.barn.repository.BarnRepository
+import com.horsegallop.domain.challenge.usecase.GetActiveChallengesUseCase
 import com.horsegallop.domain.content.usecase.GetAppContentUseCase
 import com.horsegallop.domain.ride.model.RideSyncStatus
 import com.horsegallop.domain.ride.usecase.ObserveAutoStopSignalUseCase
@@ -43,7 +44,8 @@ class RideTrackingViewModel @Inject constructor(
     private val barnRepository: BarnRepository,
     private val getUserProfileUseCase: GetUserProfileUseCase,
     private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase,
-    private val getAppContentUseCase: GetAppContentUseCase
+    private val getAppContentUseCase: GetAppContentUseCase,
+    private val getActiveChallengesUseCase: GetActiveChallengesUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RideUiState())
@@ -121,6 +123,8 @@ class RideTrackingViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+
+        loadActiveChallenges()
     }
 
     fun dismissAutoStopDialog() {
@@ -255,6 +259,15 @@ class RideTrackingViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun loadActiveChallenges() {
+        val uid = getCurrentUserIdUseCase() ?: return
+        getActiveChallengesUseCase(uid)
+            .onEach { challenges ->
+                _uiState.update { it.copy(activeChallengeCount = challenges.size) }
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun loadDynamicContent() {
