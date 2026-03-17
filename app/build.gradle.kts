@@ -125,6 +125,21 @@ tasks.named("preBuild").configure {
     dependsOn("enforceSemanticSurfaceTokens")
 }
 
+tasks.register("androidQualityConventions") {
+    group = "verification"
+    description = "Runs lightweight Android quality checks for changed Kotlin and resource files."
+    doLast {
+        exec {
+            commandLine(
+                "python3",
+                rootProject.file("scripts/android_quality_checks.py").absolutePath,
+                "--project-dir",
+                rootProject.projectDir.absolutePath
+            )
+        }
+    }
+}
+
 kapt {
     correctErrorTypes = true
     showProcessorStats = true
@@ -173,6 +188,8 @@ dependencies {
 	debugImplementation(libs.compose.tooling)
 	testImplementation("junit:junit:4.13.2")
 	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+	testImplementation("org.mockito:mockito-inline:5.2.0")
+	testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
 	androidTestImplementation("androidx.test.ext:junit:1.2.1")
 	androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 	androidTestImplementation(libs.compose.ui.test.junit4)
