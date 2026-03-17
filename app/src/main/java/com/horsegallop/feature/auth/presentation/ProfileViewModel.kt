@@ -16,11 +16,14 @@ import com.horsegallop.domain.horse.usecase.GetMyHorsesUseCase
 import com.horsegallop.domain.home.usecase.GetUserStatsUseCase
 import com.horsegallop.domain.home.usecase.GetRecentActivitiesUseCase
 import com.horsegallop.domain.home.model.RideSession
+import com.horsegallop.domain.barn.repository.BarnRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import java.util.Locale
@@ -55,7 +58,9 @@ data class ProfileUiState(
     // My Horses (first 2)
     val myHorses: List<Horse> = emptyList(),
     // Recent activities (last 3 rides)
-    val recentActivities: List<RideSession> = emptyList()
+    val recentActivities: List<RideSession> = emptyList(),
+    // Owned barn (barn owners only)
+    val ownedBarnId: String? = null
 )
 
 @HiltViewModel
@@ -67,7 +72,8 @@ class ProfileViewModel @Inject constructor(
     private val signOutUseCase: SignOutUseCase,
     private val getMyHorsesUseCase: GetMyHorsesUseCase,
     private val getUserStatsUseCase: GetUserStatsUseCase,
-    private val getRecentActivitiesUseCase: GetRecentActivitiesUseCase
+    private val getRecentActivitiesUseCase: GetRecentActivitiesUseCase,
+    private val barnRepository: BarnRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -78,6 +84,7 @@ class ProfileViewModel @Inject constructor(
         loadHorses()
         loadStats()
         loadRecentActivities()
+        loadOwnedBarn()
     }
 
     fun loadProfile() {
@@ -150,6 +157,16 @@ class ProfileViewModel @Inject constructor(
                 // On failure, keep empty list — non-critical
             }
         }
+    }
+
+    private fun loadOwnedBarn() {
+        val currentUserId = getCurrentUserIdUseCase() ?: return
+        barnRepository.getBarns()
+            .onEach { barns ->
+                val ownedBarnId = barns.firstOrNull { it.barn.ownerUserId == currentUserId }?.barn?.id
+                _uiState.value = _uiState.value.copy(ownedBarnId = ownedBarnId)
+            }
+            .launchIn(viewModelScope)
     }
 
     fun startEditSession(force: Boolean = false) {

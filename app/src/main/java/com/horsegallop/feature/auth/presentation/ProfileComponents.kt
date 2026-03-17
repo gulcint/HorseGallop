@@ -340,7 +340,9 @@ fun ProfileActionsCard(
     onHealthCalendar: () -> Unit = {},
     onChallenges: () -> Unit = {},
     onAiCoach: () -> Unit = {},
-    onTbfEvents: () -> Unit = {}
+    onTbfEvents: () -> Unit = {},
+    ownedBarnId: String? = null,
+    onMyBarn: (barnId: String) -> Unit = {}
 ) {
     val semantic = LocalSemanticColors.current
     val infiniteTransition = rememberInfiniteTransition(label = "edit_cta_pulse")
@@ -465,6 +467,18 @@ fun ProfileActionsCard(
                 color = semantic.cardStroke,
                 thickness = 0.5.dp
             )
+            if (ownedBarnId != null) {
+                ProfileActionItem(
+                    emoji = "🏠",
+                    label = stringResource(R.string.profile_action_my_barn),
+                    onClick = { onMyBarn(ownedBarnId) }
+                )
+                HorizontalDivider(
+                    modifier = Modifier.padding(start = 40.dp),
+                    color = semantic.cardStroke,
+                    thickness = 0.5.dp
+                )
+            }
             ProfileActionItem(
                 emoji = "🚪",
                 label = stringResource(R.string.profile_action_logout),

@@ -362,6 +362,9 @@ fun AppNavHost(
         onChallenges = { navController.navigate(Dest.Challenges.route) },
         onAiCoach = { navController.navigate(Dest.AiCoach.route) },
         onTbfEvents = { navController.navigate(Dest.TbfEvents.route) },
+        onMyBarn = { barnId ->
+          navController.navigate(Dest.BarnDashboard.route(barnId))
+        },
         onLogout = {
           navController.navigate(Dest.Onboarding.route) {
             popUpTo(Dest.Home.route) { inclusive = true }
