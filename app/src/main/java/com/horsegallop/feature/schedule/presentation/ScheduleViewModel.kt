@@ -69,8 +69,8 @@ class ScheduleViewModel @Inject constructor(
     }
 
     fun bookLesson(lessonId: String) {
+        _uiState.value = _uiState.value.copy(bookingInProgress = true, bookingError = null)
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(bookingInProgress = true, bookingError = null)
             bookLessonUseCase(lessonId)
                 .onSuccess {
                     _uiState.value = _uiState.value.copy(
