@@ -1,5 +1,7 @@
 # Equestrian Agenda Implementation Plan
 
+> **Status: COMPLETED** — Merged to main. Bu doküman referans amaçlıdır.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Replace the legacy TJK flow with a two-tab equestrian agenda backed by federation scraping, and feed federated club data into existing Barns flows.
