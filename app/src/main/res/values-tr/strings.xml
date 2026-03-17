@@ -26,7 +26,7 @@
     <string name="error_email_invalid">Geçersiz e-posta</string>
     <string name="error_password_length">Şifre en az 10 karakter olmalı</string>
     <!-- Health Calendar (cross-horse) -->
-    <string name="health_calendar_title">Sağlık Takvimi</string>
+    <string name="health_calendar_title">Sağlık Takvimim</string>
     <string name="health_event_type_farrier">Nalbant</string>
     <string name="health_event_type_vaccine">Aşı</string>
     <string name="health_event_type_dental">Diş Bakımı</string>
@@ -399,6 +399,10 @@
     <string name="add_horse_weight_add">Ekle</string>
     <string name="add_horse_save_button">Kaydet</string>
     <string name="add_horse_cancel">Vazgeç</string>
+    <string name="add_horse_quick_mode_label">Hızlı Ekle (sadece isim)</string>
+    <string name="add_horse_discard_title">Değişiklikler iptal edilsin mi?</string>
+    <string name="add_horse_discard_message">Kaydedilmemiş veri var. Geri dönmek istediğinizden emin misiniz?</string>
+    <string name="add_horse_discard_confirm">İptal Et</string>
 
     <string name="enrollment_title">Kayıt Ol</string>
     <string name="verify_email_title">E-postayı Doğrula</string>
@@ -566,6 +570,11 @@
     <string name="subscription_already_pro_subtitle">Tüm özelliklere tam erişimin var.</string>
     <string name="subscription_plan_yearly_savings">2 ay bedava</string>
     <string name="subscription_guarantee">30 gün iade garantisi</string>
+    <string name="pro_features_title">Pro\'da neler var</string>
+    <string name="pro_feature_gait">Renk kodlu yürüyüş analizi</string>
+    <string name="pro_feature_training">Sınırsız antrenman planı</string>
+    <string name="pro_feature_calories">At kalori takibi</string>
+    <string name="pro_feature_challenges">Gelişmiş meydan okumalar ve rozetler</string>
     <!-- ProGate -->
     <string name="pro_gate_requires_pro">Bu özellik Pro üyelik gerektirir</string>
     <string name="pro_gate_upgrade">Pro\'ya Geç</string>
@@ -594,35 +603,6 @@
     <string name="horse_health_type_label">Etkinlik Türü</string>
     <string name="verification_spam_hint">💡 Mail gelmemişse spam veya önemsiz klasörünü kontrol et</string>
 
-    <!-- Safety Tracking -->
-    <string name="safety_title">Güvenlik Takibi</string>
-    <string name="safety_subtitle">Yalnız binerken güvende kal</string>
-    <string name="safety_section_tracking">Otomatik Alarm</string>
-    <string name="safety_enable_label">Güvenlik takibini etkinleştir</string>
-    <string name="safety_enable_desc">Sürüş sırasında 5 dakika hareket etmezsen güvenilir kişilerini otomatik olarak uyarır</string>
-    <string name="safety_section_contacts">Güvenilir Kişiler</string>
-    <string name="safety_contacts_desc">Acil durumda uyarılacak en fazla 5 kişi</string>
-    <string name="safety_add_contact">Kişi Ekle</string>
-    <string name="safety_contact_name_label">Ad</string>
-    <string name="safety_contact_phone_label">Telefon</string>
-    <string name="safety_add_contact_title">Güvenilir Kişi Ekle</string>
-    <string name="safety_no_contacts">Henüz güvenilir kişi eklenmedi.\nAcil durumda yardım edebilecek birini ekle.</string>
-    <string name="safety_remove_contact_confirm">Bu kişiyi kaldır?</string>
-    <string name="safety_section_location">Canlı Konum</string>
-    <string name="safety_share_location">Konumumu Paylaş</string>
-    <string name="safety_share_location_desc">WhatsApp veya SMS ile gönderebileceğin anlık konum linki oluştur</string>
-    <string name="safety_location_copied">Konum linki kopyalandı!</string>
-    <string name="safety_location_unavailable">Konum henüz alınamadı</string>
-    <string name="safety_alarm_title">İyi misin? 🛡️</string>
-    <string name="safety_alarm_body">5 dakikadır hareket etmiyorsun. Güvenilir kişilerine uyarı gönderelim mi?</string>
-    <string name="safety_alarm_send">Uyarı Gönder</string>
-    <string name="safety_alarm_dismiss">İyiyim</string>
-    <string name="safety_pro_required">Güvenlik takibi Pro üyelik gerektirir</string>
-    <string name="safety_settings_link">Güvenlik Takibi</string>
-    <string name="safety_max_contacts">En fazla 5 kişi eklenebilir</string>
-    <string name="safety_contact_added">Kişi eklendi</string>
-    <string name="safety_contact_removed">Kişi kaldırıldı</string>
-    <string name="safety_alarm_sent">Kişilerine uyarı gönderildi</string>
     <string name="elevation_profile_title">Rakım Profili</string>
 
     <string name="equestrian_agenda_title">Binicilik Gündemi</string>
@@ -712,6 +692,7 @@
     <string name="ai_coach_thinking">Düşünüyor...</string>
     <string name="ai_coach_send">Gönder</string>
     <string name="ai_coach_error">Yanıt alınamadı. Lütfen tekrar deneyin.</string>
+    <string name="ai_coach_context_hint">Son sürüş verilerin baz alınıyor</string>
 
     <!-- TBF Etkinlikler -->
     <string name="tbf_events_title">TBF Yarışmaları</string>
@@ -729,9 +710,12 @@
     <string name="tbf_venue_event_count">%1$s (%2$d)</string>
     <string name="tbf_col_degree">Derece</string>
     <string name="tbf_col_odds">Oran</string>
+    <string name="equestrian_tab_tbf">TBF Yarışları</string>
 
     <!-- Write Review Screen -->
     <string name="review_screen_title">Değerlendirme Yaz</string>
+    <string name="review_title_lesson">Ders Değerlendirmesi</string>
+    <string name="review_title_instructor">Eğitmen Değerlendirmesi</string>
     <string name="review_type_instructor">Eğitmen değerlendirmesi</string>
     <string name="review_type_lesson">Ders değerlendirmesi</string>
     <string name="review_your_rating">Puanınız *</string>
@@ -755,7 +739,8 @@
     <string name="profile_action_health_calendar">Sağlık Takvimi</string>
     <string name="profile_action_challenges">Meydan Okumalar</string>
     <string name="profile_action_ai_coach">AI Koç</string>
-    <string name="profile_action_tbf">TBF Yarışmaları</string>
+    <string name="profile_action_tbf">At Sporları Haberleri</string>
+    <string name="profile_section_explore">Keşfet</string>
     <string name="profile_action_settings">Ayarlar</string>
     <string name="profile_action_logout">Çıkış Yap</string>
     <string name="profile_horses_section_title">Atlarım</string>
@@ -768,6 +753,20 @@
     <string name="my_horses_title">Atlarım</string>
     <string name="horse_health_cd">Sağlık</string>
 
+    <!-- Schedule tabs -->
+    <string name="schedule_tab_browse">Ders Bul</string>
+    <string name="schedule_tab_reservations">Rezervasyonlarım</string>
+    <!-- My Reservations empty state -->
+    <string name="my_reservations_empty_title">Henüz rezervasyonunuz yok</string>
+    <string name="my_reservations_empty_subtitle">Ders programından rezervasyon yapabilirsiniz.</string>
+    <string name="my_reservations_go_to_schedule">Ders Programına Git</string>
+    <!-- Reservation dialog actions -->
+    <string name="reservation_cancel_title">Rezervasyonu İptal Et</string>
+    <string name="reservation_cancel_confirm">\"%1$s\" dersine ait rezervasyonunuzu iptal etmek istediğinize emin misiniz?</string>
+    <string name="reservation_cancel_action">İptal Et</string>
+    <string name="cancel_dismiss">Vazgeç</string>
+    <string name="reservation_review_action">⭐ Değerlendir</string>
+
     <!-- AddHealthEvent horse selector -->
     <string name="health_select_horse_label">At Seçin</string>
     <string name="health_select_horse_placeholder">Seçiniz…</string>
@@ -779,10 +778,18 @@
     <string name="cd_add_horse">At Ekle</string>
     <string name="cd_favorite_add">Favorilere ekle</string>
     <string name="cd_favorite_remove">Favorilerden çıkar</string>
-    <string name="cd_safety_tracking_toggle">Güvenlik takibini aç/kapat</string>
     <string name="cd_profile_photo">Profil fotoğrafı</string>
     <string name="cd_edit_profile">Profili düzenle</string>
     <string name="cd_see_all_rides">Tüm sürüşleri gör</string>
     <string name="cd_pick_date">Tarih seç</string>
     <string name="cd_toggle_password_visibility">Şifre görünürlüğünü değiştir</string>
+    <string name="ride_view_history">Sürüş Geçmişine Git</string>
+    <string name="ride_view_history_cd">Sürüş geçmişine git</string>
+    <string name="ride_active_challenges">%1$d aktif meydan okuma</string>
+    <string name="barn_view_map_cd">Harita görünümüne geç</string>
+    <string name="barn_view_list_cd">Liste görünümüne geç</string>
+    <string name="profile_action_my_barn">Ahırım</string>
+    <string name="my_reviews_title">Değerlendirmelerim</string>
+    <string name="my_reviews_empty">Henüz değerlendirme yapmadınız.</string>
+    <string name="profile_action_my_reviews">Değerlendirmelerim</string>
 </resources>

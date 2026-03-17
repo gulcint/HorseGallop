@@ -25,14 +25,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DirectionsRun
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.filled.Check
@@ -61,6 +62,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,6 +74,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -80,13 +85,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.horsegallop.navigation.Dest
-import com.horsegallop.core.components.ViewAllButton
 import com.horsegallop.core.components.HorseGallopSearchBar
 import com.horsegallop.domain.barn.model.BarnUi
 import com.horsegallop.domain.barn.model.BarnWithLocation
+import com.horsegallop.R
 import com.horsegallop.ui.theme.LocalSemanticColors
 
-
+enum class BarnViewMode { LIST, MAP }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -99,18 +104,19 @@ fun BarnListScreen(
 ) {
   val uiState by viewModel.uiState.collectAsState()
   val semantic = LocalSemanticColors.current
+  var viewMode by remember { mutableStateOf(BarnViewMode.LIST) }
 
   Column(modifier = Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 16.dp)) {
       Spacer(modifier = Modifier.height(24.dp))
-      com.horsegallop.core.components.HorseGallopSearchBar(
+      HorseGallopSearchBar(
         query = uiState.query,
         onQueryChange = viewModel::updateQuery,
-        placeholder = stringResource(com.horsegallop.R.string.barn_search_placeholder),
+        placeholder = stringResource(R.string.barn_search_placeholder),
         modifier = Modifier
           .fillMaxWidth()
           .padding(top = 16.dp, bottom = 12.dp)
       )
-      
+
       if (uiState.availableFilters.isNotEmpty()) {
         val listState = androidx.compose.foundation.lazy.rememberLazyListState()
         Box(modifier = Modifier.fillMaxWidth()) {
@@ -152,146 +158,483 @@ fun BarnListScreen(
               }
             }
           }
-          
         }
       }
       Spacer(modifier = Modifier.height(8.dp))
 
       Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.End
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically
       ) {
-        com.horsegallop.core.components.ViewAllButton(
-          onClick = { navController?.navigate(Dest.BarnsMapView.route) }
-        )
+        IconButton(
+          onClick = {
+            viewMode = if (viewMode == BarnViewMode.LIST) BarnViewMode.MAP else BarnViewMode.LIST
+          }
+        ) {
+          Icon(
+            imageVector = if (viewMode == BarnViewMode.LIST) Icons.Filled.Map else Icons.AutoMirrored.Filled.List,
+            contentDescription = stringResource(
+              if (viewMode == BarnViewMode.LIST) R.string.barn_view_map_cd else R.string.barn_view_list_cd
+            ),
+            tint = MaterialTheme.colorScheme.primary
+          )
+        }
       }
-      
 
-      
-      if (uiState.loading) {
-        Box(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 24.dp),
-          contentAlignment = Alignment.Center
-        ) {
-          CircularProgressIndicator()
-        }
-      } else if (uiState.error != null) {
-        Spacer(modifier = Modifier.height(12.dp))
-        Card(
-          shape = RoundedCornerShape(24.dp),
-          colors = CardDefaults.cardColors(containerColor = semantic.calloutErrorContainer),
-          border = BorderStroke(1.dp, semantic.calloutBorderError),
-          modifier = Modifier.fillMaxWidth()
-        ) {
-          Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+      when (viewMode) {
+        BarnViewMode.MAP -> {
+          BarnInlineMapContent(
+            barns = uiState.filteredBarns,
+            onBarnClick = { barn -> onBarnClick(barn) },
             modifier = Modifier
               .fillMaxWidth()
-              .padding(16.dp)
-          ) {
-            Text(
-              text = uiState.error ?: stringResource(com.horsegallop.R.string.backend_error_generic),
-              style = MaterialTheme.typography.bodyMedium,
-              color = semantic.calloutOnContainer,
-              textAlign = TextAlign.Center
-            )
-            OutlinedButton(onClick = { viewModel.loadBarns() }) {
-              Text(text = stringResource(com.horsegallop.R.string.retry))
-            }
-          }
+              .weight(1f)
+          )
         }
-      } else if (uiState.filteredBarns.isEmpty()) {
-        val hasActiveFilters = uiState.selectedFilters.isNotEmpty()
-        val hasActiveSearch = hasActiveFilters || uiState.query.isNotBlank()
-        Spacer(modifier = Modifier.height(12.dp))
-        Card(
-          shape = RoundedCornerShape(24.dp),
-          colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
-          border = BorderStroke(1.dp, semantic.cardStroke),
-          elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-          modifier = Modifier.fillMaxWidth()
-        ) {
-          Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(16.dp)
-          ) {
-            Surface(
-              shape = CircleShape,
-              color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-              modifier = Modifier.size(64.dp)
+        BarnViewMode.LIST -> {
+          if (uiState.loading) {
+            Box(
+              modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 24.dp),
+              contentAlignment = Alignment.Center
             ) {
-              Box(contentAlignment = Alignment.Center) {
-                Icon(
-                  Icons.Filled.Search,
-                  contentDescription = null,
-                  tint = MaterialTheme.colorScheme.primary,
-                  modifier = Modifier.size(28.dp)
+              CircularProgressIndicator()
+            }
+          } else if (uiState.error != null) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Card(
+              shape = RoundedCornerShape(24.dp),
+              colors = CardDefaults.cardColors(containerColor = semantic.calloutErrorContainer),
+              border = BorderStroke(1.dp, semantic.calloutBorderError),
+              modifier = Modifier.fillMaxWidth()
+            ) {
+              Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .padding(16.dp)
+              ) {
+                Text(
+                  text = uiState.error ?: stringResource(R.string.backend_error_generic),
+                  style = MaterialTheme.typography.bodyMedium,
+                  color = semantic.calloutOnContainer,
+                  textAlign = TextAlign.Center
                 )
+                OutlinedButton(onClick = { viewModel.loadBarns() }) {
+                  Text(text = stringResource(R.string.retry))
+                }
               }
             }
-            Text(
-              text = stringResource(
-                if (hasActiveSearch) com.horsegallop.R.string.barn_empty_title
-                else com.horsegallop.R.string.barn_no_barns_title
-              ),
-              style = MaterialTheme.typography.titleMedium,
-              color = MaterialTheme.colorScheme.primary,
-              fontWeight = FontWeight.Bold,
-              textAlign = TextAlign.Center
-            )
-            Text(
-              text = stringResource(
-                if (hasActiveSearch) com.horsegallop.R.string.barn_empty_subtitle
-                else com.horsegallop.R.string.barn_no_barns_subtitle
-              ),
-              style = MaterialTheme.typography.bodyMedium,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-              textAlign = TextAlign.Center
-            )
-            if (hasActiveFilters) {
-              OutlinedButton(onClick = viewModel::clearFilters) {
+          } else if (uiState.filteredBarns.isEmpty()) {
+            val hasActiveFilters = uiState.selectedFilters.isNotEmpty()
+            val hasActiveSearch = hasActiveFilters || uiState.query.isNotBlank()
+            Spacer(modifier = Modifier.height(12.dp))
+            Card(
+              shape = RoundedCornerShape(24.dp),
+              colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+              border = BorderStroke(1.dp, semantic.cardStroke),
+              elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+              modifier = Modifier.fillMaxWidth()
+            ) {
+              Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .padding(16.dp)
+              ) {
+                Surface(
+                  shape = CircleShape,
+                  color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                  modifier = Modifier.size(64.dp)
+                ) {
+                  Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                      Icons.Filled.Search,
+                      contentDescription = null,
+                      tint = MaterialTheme.colorScheme.primary,
+                      modifier = Modifier.size(28.dp)
+                    )
+                  }
+                }
                 Text(
-                  text = stringResource(com.horsegallop.R.string.barn_clear_filters),
+                  text = stringResource(
+                    if (hasActiveSearch) R.string.barn_empty_title
+                    else R.string.barn_no_barns_title
+                  ),
+                  style = MaterialTheme.typography.titleMedium,
                   color = MaterialTheme.colorScheme.primary,
-                  style = MaterialTheme.typography.labelLarge
+                  fontWeight = FontWeight.Bold,
+                  textAlign = TextAlign.Center
                 )
-              }
-            } else {
-              OutlinedButton(onClick = { viewModel.loadBarns() }) {
                 Text(
-                  text = stringResource(com.horsegallop.R.string.retry),
-                  color = MaterialTheme.colorScheme.primary,
-                  style = MaterialTheme.typography.labelLarge
+                  text = stringResource(
+                    if (hasActiveSearch) R.string.barn_empty_subtitle
+                    else R.string.barn_no_barns_subtitle
+                  ),
+                  style = MaterialTheme.typography.bodyMedium,
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
+                  textAlign = TextAlign.Center
                 )
+                if (hasActiveFilters) {
+                  OutlinedButton(onClick = viewModel::clearFilters) {
+                    Text(
+                      text = stringResource(R.string.barn_clear_filters),
+                      color = MaterialTheme.colorScheme.primary,
+                      style = MaterialTheme.typography.labelLarge
+                    )
+                  }
+                } else {
+                  OutlinedButton(onClick = { viewModel.loadBarns() }) {
+                    Text(
+                      text = stringResource(R.string.retry),
+                      color = MaterialTheme.colorScheme.primary,
+                      style = MaterialTheme.typography.labelLarge
+                    )
+                  }
+                }
               }
+            }
+          } else {
+            Spacer(modifier = Modifier.height(4.dp))
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp, top = 8.dp)
+            ) {
+                items(uiState.filteredBarns) { barnWithLocation ->
+                    BarnCard(
+                        barn = barnWithLocation.barn,
+                        distanceKm = barnWithLocation.distanceKm.takeIf { it < Double.MAX_VALUE },
+                        onClick = { onBarnClick(barnWithLocation.barn) },
+                        onFavoriteClick = { viewModel.toggleFavorite(barnWithLocation.barn.id) }
+                    )
+                }
             }
           }
-        }
-      } else {
-        Spacer(modifier = Modifier.height(4.dp))
-        LazyColumn(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp, top = 8.dp)
-        ) {
-            items(uiState.filteredBarns) { barnWithLocation ->
-                BarnCard(
-                    barn = barnWithLocation.barn,
-                    distanceKm = barnWithLocation.distanceKm.takeIf { it < Double.MAX_VALUE },
-                    onClick = { onBarnClick(barnWithLocation.barn) },
-                    onFavoriteClick = { viewModel.toggleFavorite(barnWithLocation.barn.id) }
-                )
-            }
         }
       }
     }
 }
+
+@Composable
+private fun BarnInlineMapContent(
+    barns: List<BarnWithLocation>,
+    onBarnClick: (BarnUi) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val semantic = LocalSemanticColors.current
+    val barnsWithCoords = remember(barns) {
+        barns.filter { it.barn.lat != 0.0 || it.barn.lng != 0.0 }
+    }
+    var zoomLevel by remember { mutableStateOf(1f) }
+    val maxZoom = 3f
+    val minZoom = 0.5f
+    val groupedBarns = remember(barnsWithCoords, zoomLevel) {
+        groupBarnsByProximityInline(barnsWithCoords.map { it.barn }, zoomLevel)
+    }
+
+    Box(modifier = modifier.background(semantic.screenBase)) {
+        BarnInlineMapCanvas(
+            groups = groupedBarns,
+            allBarnsBounds = barnsWithCoords.map { it.barn },
+            zoomLevel = zoomLevel,
+            onGroupClick = { group ->
+                if (group.barns.size == 1) {
+                    onBarnClick(group.barns.first())
+                } else {
+                    zoomLevel = (zoomLevel * 1.5f).coerceAtMost(maxZoom)
+                }
+            }
+        )
+
+        // Zoom Controls
+        Column(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = semantic.panelOverlay,
+                shadowElevation = 4.dp,
+                modifier = Modifier.width(48.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    IconButton(
+                        onClick = { zoomLevel = (zoomLevel * 1.2f).coerceAtMost(maxZoom) }
+                    ) {
+                        Icon(
+                            Icons.Filled.Add,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    androidx.compose.material3.HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                    IconButton(
+                        onClick = { zoomLevel = (zoomLevel / 1.2f).coerceAtLeast(minZoom) }
+                    ) {
+                        Icon(
+                            Icons.Filled.Remove,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+        }
+
+        // Bottom horizontal barn list
+        if (barnsWithCoords.isNotEmpty()) {
+            LazyRow(
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ) {
+                items(barnsWithCoords.take(10), key = { it.barn.id }) { barnWithLocation ->
+                    BarnMapCard(
+                        barn = barnWithLocation.barn,
+                        onClick = { onBarnClick(barnWithLocation.barn) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BarnMapCard(
+    barn: BarnUi,
+    onClick: () -> Unit
+) {
+    val semantic = LocalSemanticColors.current
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .width(220.dp)
+            .height(80.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+        border = BorderStroke(1.dp, semantic.cardStroke),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Filled.Home,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = barn.name,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = barn.location,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BarnInlineMapCanvas(
+    groups: List<InlineBarnGroup>,
+    allBarnsBounds: List<BarnUi>,
+    zoomLevel: Float,
+    onGroupClick: (InlineBarnGroup) -> Unit
+) {
+    val semantic = LocalSemanticColors.current
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
+    val gridColor = semantic.mapGrid
+    val clusterColor = MaterialTheme.colorScheme.secondary
+    val textMeasurer = androidx.compose.ui.text.rememberTextMeasurer()
+    val textStyle = MaterialTheme.typography.labelSmall.copy(
+        color = onPrimaryColor,
+        fontWeight = FontWeight.Bold
+    )
+
+    Canvas(
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable(
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                indication = null
+            ) { /* handled per group below */ }
+    ) {
+        val w = this.size.width
+        val h = this.size.height
+        drawInlineGrid(this, w, h, gridColor)
+        if (allBarnsBounds.isEmpty()) return@Canvas
+
+        val minLat = allBarnsBounds.minOfOrNull { it.lat } ?: 0.0
+        val maxLat = allBarnsBounds.maxOfOrNull { it.lat } ?: 1.0
+        val minLng = allBarnsBounds.minOfOrNull { it.lng } ?: 0.0
+        val maxLng = allBarnsBounds.maxOfOrNull { it.lng } ?: 1.0
+        val centerXNorm = 0.5f
+        val centerYNorm = 0.5f
+
+        groups.forEach { group ->
+            val nx = if (maxLng != minLng) ((group.centerLng - minLng) / (maxLng - minLng)).toFloat() else 0.5f
+            val ny = if (maxLat != minLat) (1f - ((group.centerLat - minLat) / (maxLat - minLat)).toFloat()) else 0.5f
+            val zoomedNx = ((nx - centerXNorm) * zoomLevel + centerXNorm).coerceIn(0f, 1f)
+            val zoomedNy = ((ny - centerYNorm) * zoomLevel + centerYNorm).coerceIn(0f, 1f)
+            val x = zoomedNx * w
+            val y = zoomedNy * h
+
+            if (group.barns.size == 1) {
+                drawInlinePin(
+                    scope = this,
+                    x = x,
+                    y = y,
+                    color = primaryColor,
+                    centerColor = onPrimaryColor,
+                    size = 14.dp.toPx(),
+                    shadowColor = semantic.imageOverlaySoft.copy(alpha = 0.20f),
+                    borderColor = semantic.onImageOverlay
+                )
+            } else {
+                drawInlineClusterPin(
+                    scope = this,
+                    x = x,
+                    y = y,
+                    count = group.barns.size,
+                    color = clusterColor,
+                    textColor = onPrimaryColor,
+                    size = 18.dp.toPx(),
+                    textMeasurer = textMeasurer,
+                    textStyle = textStyle,
+                    shadowColor = semantic.imageOverlaySoft.copy(alpha = 0.20f),
+                    borderColor = semantic.onImageOverlay
+                )
+            }
+        }
+    }
+}
+
+private fun drawInlineGrid(scope: DrawScope, width: Float, height: Float, gridColor: Color) {
+    val gridSize = 60f
+    for (y in 0..(height / gridSize).toInt()) {
+        val yPos = y * gridSize
+        scope.drawLine(color = gridColor, start = Offset(0f, yPos), end = Offset(width, yPos), strokeWidth = 1f)
+    }
+    for (x in 0..(width / gridSize).toInt()) {
+        val xPos = x * gridSize
+        scope.drawLine(color = gridColor, start = Offset(xPos, 0f), end = Offset(xPos, height), strokeWidth = 1f)
+    }
+}
+
+private fun drawInlinePin(
+    scope: DrawScope,
+    x: Float,
+    y: Float,
+    color: Color,
+    centerColor: Color,
+    size: Float,
+    shadowColor: Color,
+    borderColor: Color
+) {
+    scope.drawCircle(color = shadowColor, radius = size * 0.8f, center = Offset(x, y + size * 0.5f))
+    scope.drawCircle(color = color, radius = size, center = Offset(x, y - size * 0.3f))
+    scope.drawCircle(color = centerColor, radius = size * 0.4f, center = Offset(x, y - size * 0.3f))
+    scope.drawCircle(
+        color = borderColor,
+        radius = size,
+        center = Offset(x, y - size * 0.3f),
+        style = androidx.compose.ui.graphics.drawscope.Stroke(width = size * 0.1f)
+    )
+}
+
+private fun drawInlineClusterPin(
+    scope: DrawScope,
+    x: Float,
+    y: Float,
+    count: Int,
+    color: Color,
+    textColor: Color,
+    size: Float,
+    textMeasurer: androidx.compose.ui.text.TextMeasurer,
+    textStyle: androidx.compose.ui.text.TextStyle,
+    shadowColor: Color,
+    borderColor: Color
+) {
+    scope.drawCircle(color = shadowColor, radius = size, center = Offset(x, y + 2f))
+    scope.drawCircle(color = color, radius = size, center = Offset(x, y))
+    scope.drawCircle(
+        color = borderColor,
+        radius = size,
+        center = Offset(x, y),
+        style = androidx.compose.ui.graphics.drawscope.Stroke(width = size * 0.15f)
+    )
+    val textLayoutResult = textMeasurer.measure(text = count.toString(), style = textStyle)
+    scope.drawText(
+        textLayoutResult = textLayoutResult,
+        topLeft = Offset(x - textLayoutResult.size.width / 2, y - textLayoutResult.size.height / 2)
+    )
+}
+
+private fun groupBarnsByProximityInline(
+    barns: List<BarnUi>,
+    zoomLevel: Float
+): List<InlineBarnGroup> {
+    val groups = mutableListOf<InlineBarnGroup>()
+    val threshold = 0.01 / zoomLevel
+    barns.forEach { barn ->
+        var addedToGroup = false
+        for (group in groups) {
+            val dx = barn.lat - group.centerLat
+            val dy = barn.lng - group.centerLng
+            val distance = Math.sqrt(dx * dx + dy * dy)
+            if (distance < threshold) {
+                group.barns.add(barn)
+                addedToGroup = true
+                break
+            }
+        }
+        if (!addedToGroup) {
+            groups.add(InlineBarnGroup(barn.lat, barn.lng, mutableListOf(barn)))
+        }
+    }
+    return groups
+}
+
+private data class InlineBarnGroup(
+    val centerLat: Double,
+    val centerLng: Double,
+    val barns: MutableList<BarnUi>
+)
 
 @Composable
 fun BarnCard(barn: BarnUi, distanceKm: Double? = null, onClick: () -> Unit, onFavoriteClick: () -> Unit) {
@@ -329,8 +672,8 @@ fun BarnCard(barn: BarnUi, distanceKm: Double? = null, onClick: () -> Unit, onFa
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        Icons.Filled.Home, 
-                        contentDescription = null, 
+                        Icons.Filled.Home,
+                        contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
                     )
@@ -367,16 +710,16 @@ fun BarnCard(barn: BarnUi, distanceKm: Double? = null, onClick: () -> Unit, onFa
                         }
                     }
                 }
-                
+
                 IconButton(onClick = onFavoriteClick) {
                     Icon(
                         imageVector = if (barn.isFavorite) Icons.Filled.Star else Icons.Filled.StarBorder,
-                        contentDescription = if (barn.isFavorite) "Remove from favorites" else "Add to favorites",
+                        contentDescription = if (barn.isFavorite) stringResource(R.string.cd_favorite_remove) else stringResource(R.string.cd_favorite_add),
                         tint = if (barn.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                         modifier = Modifier.size(28.dp)
                     )
                 }
-                
+
                 Surface(
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
@@ -451,20 +794,51 @@ private fun BarnListScreenPreview() {
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+private fun BarnInlineMapContentPreview() {
+    MaterialTheme {
+        BarnInlineMapContent(
+            barns = listOf(
+                BarnWithLocation(
+                    barn = BarnUi(
+                        id = "1",
+                        name = "İstanbul Atlı Spor",
+                        description = "Şehrin kalbinde",
+                        location = "Beşiktaş, İstanbul",
+                        lat = 41.0,
+                        lng = 29.0,
+                        rating = 4.7,
+                        reviewCount = 85
+                    ),
+                    lat = 41.0,
+                    lng = 29.0,
+                    amenities = emptySet(),
+                    distanceKm = 2.0
+                )
+            ),
+            onBarnClick = {},
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(400.dp)
+        )
+    }
+}
+
 @Composable
 fun getFilterLabel(key: String): String {
     return when(key) {
-        "cafe" -> stringResource(com.horsegallop.R.string.barn_filter_cafe)
-        "indoor_arena" -> stringResource(com.horsegallop.R.string.barn_filter_indoor_arena)
-        "outdoor_arena" -> stringResource(com.horsegallop.R.string.barn_filter_outdoor_arena)
-        "parking" -> stringResource(com.horsegallop.R.string.barn_filter_parking)
-        "lessons" -> stringResource(com.horsegallop.R.string.barn_filter_lessons)
-        "boarding" -> stringResource(com.horsegallop.R.string.barn_filter_boarding)
-        "vet" -> stringResource(com.horsegallop.R.string.barn_filter_vet)
-        "farrier" -> stringResource(com.horsegallop.R.string.barn_filter_farrier)
-        "lighting" -> stringResource(com.horsegallop.R.string.barn_filter_lighting)
-        "trail" -> stringResource(com.horsegallop.R.string.barn_filter_trail)
-        "open_now" -> stringResource(com.horsegallop.R.string.barn_filter_open_now)
+        "cafe" -> stringResource(R.string.barn_filter_cafe)
+        "indoor_arena" -> stringResource(R.string.barn_filter_indoor_arena)
+        "outdoor_arena" -> stringResource(R.string.barn_filter_outdoor_arena)
+        "parking" -> stringResource(R.string.barn_filter_parking)
+        "lessons" -> stringResource(R.string.barn_filter_lessons)
+        "boarding" -> stringResource(R.string.barn_filter_boarding)
+        "vet" -> stringResource(R.string.barn_filter_vet)
+        "farrier" -> stringResource(R.string.barn_filter_farrier)
+        "lighting" -> stringResource(R.string.barn_filter_lighting)
+        "trail" -> stringResource(R.string.barn_filter_trail)
+        "open_now" -> stringResource(R.string.barn_filter_open_now)
         else -> key
     }
 }

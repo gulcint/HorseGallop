@@ -100,32 +100,12 @@ private fun XxxScreenPreview() {
     }
 }
 
-// Dark mode preview de ekle
-@Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
-@Composable
-private fun XxxScreenDarkPreview() { ... }
+// Opsiyonel: uiMode = UI_MODE_NIGHT_YES ile dark mode preview ekle
 ```
 
 ## Boş Durum (Empty State) Standardı
 
-```kotlin
-// Modern boş durum şablonu
-Surface(shape = RoundedCornerShape(20.dp), color = semantic.cardElevated) {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), modifier = Modifier.size(60.dp)) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(imageVector = relevantIcon, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))
-            }
-        }
-        Text(text = title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-        Text(text = subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-}
-```
+`semantic.cardElevated` Surface içinde: 60dp icon daire (primary 10% alpha) + title (titleMedium/SemiBold) + subtitle (bodyMedium/onSurfaceVariant). Şablon için `core/components/` içindeki mevcut empty state composable'ları kullan.
 
 ## Marka Renk Paleti (Sadece Color.kt'de tanımla)
 

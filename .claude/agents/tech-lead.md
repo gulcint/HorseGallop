@@ -38,6 +38,7 @@ Görevi al, şunu sor kendine:
 **Eğer tek katman, 1-3 dosya:** Direkt o katmanın agentını çalıştır (tech-lead pipeline'ı atla).  
 **Eğer çok katman veya belirsizse:** Aşağıdaki protokolü uygula.
 
+
 ---
 
 ## 🔍 Görev Protokolü

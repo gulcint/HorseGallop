@@ -26,7 +26,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -120,7 +123,7 @@ fun SubscriptionScreen(
                 title = { Text(stringResource(R.string.subscription_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -163,6 +166,7 @@ private fun SubscriptionContent(
         item { FeatureListSection() }
 
         if (!isPro) {
+            item { ProFeaturesList() }
             item {
                 PlanToggleSection(
                     selectedPlan = ui.selectedPlan,
@@ -269,6 +273,53 @@ private fun FeatureListSection() {
                         contentDescription = null,
                         tint = LocalSemanticColors.current.success,
                         modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ─── Pro features preview ────────────────────────────────────────────────────
+
+@Composable
+private fun ProFeaturesList() {
+    val semantic = LocalSemanticColors.current
+    val features = listOf<Pair<Int, androidx.compose.ui.graphics.vector.ImageVector>>(
+        Pair(R.string.pro_feature_gait, Icons.Filled.TrendingUp),
+        Pair(R.string.pro_feature_training, Icons.Filled.EmojiEvents),
+        Pair(R.string.pro_feature_calories, Icons.Filled.Star),
+        Pair(R.string.pro_feature_challenges, Icons.Filled.Shield)
+    )
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = semantic.cardSubtle),
+        shape = RoundedCornerShape(18.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.pro_features_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            features.forEach { (textRes, icon) ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = stringResource(textRes),
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
             }

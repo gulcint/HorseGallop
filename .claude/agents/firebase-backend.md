@@ -96,7 +96,6 @@ data class XxxDto(
 | `lessons` | `barnId` ile ilişkili |
 | `reservations` | `userId` + `lessonId` |
 | `notifications/{uid}/items` | Kullanıcı bildirimleri |
-| `safetyContacts/{uid}/contacts` | Güvenlik kişileri |
 
 ## FCM Kuralları
 

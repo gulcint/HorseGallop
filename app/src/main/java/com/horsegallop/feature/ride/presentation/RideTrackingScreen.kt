@@ -20,11 +20,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Check
@@ -42,6 +44,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -68,6 +72,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.style.TextOverflow
@@ -104,24 +110,35 @@ import com.horsegallop.domain.ride.model.RideSyncStatus
 import com.horsegallop.ui.theme.LocalSemanticColors
 import java.util.Locale
 
+// ---------------------------------------------------------------------------
+// Route entry point
+// ---------------------------------------------------------------------------
+
 @Composable
 fun RideTrackingRoute(
     viewModel: RideTrackingViewModel = hiltViewModel(),
     onHomeClick: () -> Unit = {},
-    onBarnsClick: () -> Unit = {}
+    onBarnsClick: () -> Unit = {},
+    onViewRideHistory: () -> Unit = {}
 ) {
     RideTrackingScreen(
         viewModel = viewModel,
         onHomeClick = onHomeClick,
-        onBarnsClick = onBarnsClick
+        onBarnsClick = onBarnsClick,
+        onViewRideHistory = onViewRideHistory
     )
 }
+
+// ---------------------------------------------------------------------------
+// Screen — permission wiring + dialog hosting (~90 satır)
+// ---------------------------------------------------------------------------
 
 @Composable
 fun RideTrackingScreen(
     viewModel: RideTrackingViewModel,
     onHomeClick: () -> Unit = {},
-    onBarnsClick: () -> Unit = {}
+    onBarnsClick: () -> Unit = {},
+    onViewRideHistory: () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -139,8 +156,6 @@ fun RideTrackingScreen(
 
     LaunchedEffect(Unit) {
         hasLocationPermission = context.hasLocationPermission()
-        // Ride tab'ına ilk girildiğinde izin yoksa sistem diyaloğunu otomatik aç
-        // Only request once to avoid multiple dialogs and navigation issues
         if (!hasLocationPermission && !permissionRequestedOnce) {
             permissionRequestedOnce = true
             permissionLauncher.launch(
@@ -159,49 +174,13 @@ fun RideTrackingScreen(
     }
 
     if (state.showAutoStopDialog) {
-        AlertDialog(
-            onDismissRequest = viewModel::dismissAutoStopDialog,
-            title = { Text("Binişi Tamamla?") },
-            text = { Text("5 dakikadır hareket tespit edilmedi. Binişi tamamlamak ister misin?") },
-            confirmButton = {
-                androidx.compose.material3.TextButton(onClick = viewModel::confirmAutoStop) {
-                    Text("Evet, Bitir")
-                }
-            },
-            dismissButton = {
-                androidx.compose.material3.TextButton(onClick = viewModel::dismissAutoStopDialog) {
-                    Text("Devam Et")
-                }
-            }
+        RideAutoStopDialog(
+            onConfirm = viewModel::confirmAutoStop,
+            onDismiss = viewModel::dismissAutoStopDialog
         )
     }
 
-    if (state.showSafetyAlarmDialog) {
-        AlertDialog(
-            onDismissRequest = viewModel::dismissSafetyAlarmDialog,
-            title = { Text(text = stringResource(R.string.safety_alarm_title)) },
-            text = { Text(text = stringResource(R.string.safety_alarm_body)) },
-            confirmButton = {
-                Button(
-                    onClick = viewModel::confirmSafetyAlarm,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text(text = stringResource(R.string.safety_alarm_send))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = viewModel::dismissSafetyAlarmDialog) {
-                    Text(text = stringResource(R.string.safety_alarm_dismiss))
-                }
-            }
-        )
-    }
-
-    Scaffold(
-        containerColor = semantic.screenBase
-    ) { innerPadding ->
+    Scaffold(containerColor = semantic.screenBase) { innerPadding ->
         RideTrackingContent(
             state = state,
             hasLocationPermission = hasLocationPermission,
@@ -219,6 +198,7 @@ fun RideTrackingScreen(
             onRideTypeSelected = viewModel::onRideTypeSelected,
             onDismissSavedSummary = viewModel::dismissSavedSummary,
             onRetryPendingSync = viewModel::onRetryPendingSync,
+            onViewRideHistory = onViewRideHistory,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -226,6 +206,58 @@ fun RideTrackingScreen(
         )
     }
 }
+
+// ---------------------------------------------------------------------------
+// Dialogs
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun RideAutoStopDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = stringResource(R.string.ride_auto_stop_title)) },
+        text = { Text(text = stringResource(R.string.ride_auto_stop_body)) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(text = stringResource(R.string.ride_auto_stop_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.ride_auto_stop_dismiss))
+            }
+        }
+    )
+}
+
+@Composable
+private fun RideStopConfirmDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = stringResource(id = R.string.stop_ride_confirmation_title)) },
+        text = { Text(text = stringResource(id = R.string.stop_ride_confirmation_message)) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(text = stringResource(id = R.string.finish_ride))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(id = R.string.action_cancel))
+            }
+        }
+    )
+}
+
+// ---------------------------------------------------------------------------
+// Content — LazyColumn scaffold (~70 satır)
+// ---------------------------------------------------------------------------
 
 @Composable
 fun RideTrackingContent(
@@ -238,29 +270,19 @@ fun RideTrackingContent(
     onRideTypeSelected: (RideType) -> Unit,
     onDismissSavedSummary: () -> Unit,
     onRetryPendingSync: () -> Unit,
+    onViewRideHistory: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val semantic = LocalSemanticColors.current
     var showStopDialog by remember { mutableStateOf(false) }
 
     if (showStopDialog) {
-        AlertDialog(
-            onDismissRequest = { showStopDialog = false },
-            title = { Text(text = stringResource(id = R.string.stop_ride_confirmation_title)) },
-            text = { Text(text = stringResource(id = R.string.stop_ride_confirmation_message)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showStopDialog = false
-                        onToggleRide()
-                    }
-                ) { Text(text = stringResource(id = R.string.finish_ride)) }
+        RideStopConfirmDialog(
+            onConfirm = {
+                showStopDialog = false
+                onToggleRide()
             },
-            dismissButton = {
-                TextButton(onClick = { showStopDialog = false }) {
-                    Text(text = stringResource(id = R.string.action_cancel))
-                }
-            }
+            onDismiss = { showStopDialog = false }
         )
     }
 
@@ -286,7 +308,6 @@ fun RideTrackingContent(
                     liveSubtitleActive = state.liveSubtitleActive
                 )
             }
-
             item {
                 SyncStatusCard(
                     pendingSyncCount = state.pendingSyncCount,
@@ -295,35 +316,21 @@ fun RideTrackingContent(
                     onRetryPendingSync = onRetryPendingSync
                 )
             }
-
             if (!hasLocationPermission) {
                 item {
-                    PermissionCard(
+                    RideTrackingPermissionRequest(
                         title = state.permissionTitle,
                         hint = state.permissionHint,
                         grantCta = state.grantLocationCta,
-                        onGrantPermission = onRequestLocationPermission,
-                        modifier = Modifier.testTag(RideTestTags.PermissionCard)
+                        onGrantPermission = onRequestLocationPermission
                     )
                 }
             }
-
             if (state.isRiding) {
                 item {
-                    RideMapCard(
-                        pathPoints = state.pathPoints,
-                        elapsedSec = state.durationSec,
-                        hasLocationPermission = hasLocationPermission
-                    )
-                }
-                item {
-                    MetricsGrid(state = state)
-                }
-                item {
-                    if (state.isSaving) {
-                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                    }
-                    LiveActions(
+                    RideTrackingActiveSection(
+                        state = state,
+                        hasLocationPermission = hasLocationPermission,
                         autoDetect = state.autoDetect,
                         onSetAutoDetect = onSetAutoDetect,
                         onFinishRide = { showStopDialog = true }
@@ -331,54 +338,15 @@ fun RideTrackingContent(
                 }
             } else {
                 item {
-                    RideTypeSection(
-                        selectedRideType = state.selectedRideType,
-                        onRideTypeSelected = onRideTypeSelected
+                    RideTrackingIdleSection(
+                        state = state,
+                        hasLocationPermission = hasLocationPermission,
+                        onRideTypeSelected = onRideTypeSelected,
+                        onBarnSelected = onBarnSelected,
+                        onStartRide = onToggleRide
                     )
-                }
-                item {
-                    BarnSelector(
-                        barns = state.barns,
-                        selectedBarn = state.selectedBarn,
-                        onBarnSelected = onBarnSelected
-                    )
-                }
-                item {
-                    val canStart = hasLocationPermission && state.selectedBarn != null
-                    val pulseTransition = rememberInfiniteTransition(label = "start_pulse")
-                    val pulseScale by pulseTransition.animateFloat(
-                        initialValue = 1f,
-                        targetValue = if (canStart) 1.03f else 1f,
-                        animationSpec = infiniteRepeatable(
-                            animation = tween(900, easing = FastOutSlowInEasing),
-                            repeatMode = RepeatMode.Reverse
-                        ),
-                        label = "scale"
-                    )
-                    Button(
-                        onClick = onToggleRide,
-                        enabled = canStart,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                            .scale(if (canStart) pulseScale else 1f)
-                            .testTag(RideTestTags.StartButton),
-                        shape = RoundedCornerShape(18.dp)
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.DirectionsRun,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.size(8.dp))
-                        Text(
-                            text = stringResource(id = R.string.start_ride),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
                 }
             }
-
             state.savedRideSummary?.let { summary ->
                 item {
                     SavedRideSummaryCard(
@@ -387,10 +355,261 @@ fun RideTrackingContent(
                         modifier = Modifier.testTag(RideTestTags.SavedSummaryCard)
                     )
                 }
+                item {
+                    val historyLabel = stringResource(R.string.ride_view_history)
+                    val historyContentDescription = stringResource(R.string.ride_view_history_cd)
+                    OutlinedButton(
+                        onClick = onViewRideHistory,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, end = 16.dp, top = 8.dp)
+                            .semantics { contentDescription = historyContentDescription }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.List,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = historyLabel)
+                    }
+                }
             }
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// Active ride section — map + metrics + controls
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun RideTrackingActiveSection(
+    state: RideUiState,
+    hasLocationPermission: Boolean,
+    autoDetect: Boolean,
+    onSetAutoDetect: (Boolean) -> Unit,
+    onFinishRide: () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        RideTrackingMapSection(
+            pathPoints = state.pathPoints,
+            elapsedSec = state.durationSec,
+            hasLocationPermission = hasLocationPermission
+        )
+        RideTrackingMetricsBar(state = state)
+        if (state.activeChallengeCount > 0) {
+            SuggestionChip(
+                onClick = { /* no-op */ },
+                label = {
+                    Text(
+                        text = stringResource(R.string.ride_active_challenges, state.activeChallengeCount),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Filled.EmojiEvents,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                },
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+        }
+        if (state.isSaving) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        }
+        RideTrackingControls(
+            autoDetect = autoDetect,
+            onSetAutoDetect = onSetAutoDetect,
+            onFinishRide = onFinishRide
+        )
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Idle (pre-ride) section — type selector + barn + start button
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun RideTrackingIdleSection(
+    state: RideUiState,
+    hasLocationPermission: Boolean,
+    onRideTypeSelected: (RideType) -> Unit,
+    onBarnSelected: (BarnWithLocation) -> Unit,
+    onStartRide: () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        RideTypeSection(
+            selectedRideType = state.selectedRideType,
+            onRideTypeSelected = onRideTypeSelected
+        )
+        RideTrackingBarnSelector(
+            barns = state.barns,
+            selectedBarn = state.selectedBarn,
+            onBarnSelected = onBarnSelected
+        )
+        RideTrackingStartButton(
+            canStart = hasLocationPermission && state.selectedBarn != null,
+            onStartRide = onStartRide
+        )
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Named sub-composables (public aliases for extracted sections)
+// ---------------------------------------------------------------------------
+
+/** Map card with gait polyline, legend and elapsed timer overlay. */
+@Composable
+fun RideTrackingMapSection(
+    pathPoints: List<GeoPoint>,
+    elapsedSec: Int,
+    hasLocationPermission: Boolean
+) {
+    RideMapCard(
+        pathPoints = pathPoints,
+        elapsedSec = elapsedSec,
+        hasLocationPermission = hasLocationPermission
+    )
+}
+
+/** Speed / distance / calories / altitude metrics grid. */
+@Composable
+fun RideTrackingMetricsBar(state: RideUiState) {
+    MetricsGrid(state = state)
+}
+
+/** Finish button + auto-detect toggle card. */
+@Composable
+fun RideTrackingControls(
+    autoDetect: Boolean,
+    onSetAutoDetect: (Boolean) -> Unit,
+    onFinishRide: () -> Unit
+) {
+    LiveActions(
+        autoDetect = autoDetect,
+        onSetAutoDetect = onSetAutoDetect,
+        onFinishRide = onFinishRide
+    )
+}
+
+/** Barn dropdown selector card. */
+@Composable
+fun RideTrackingBarnSelector(
+    barns: List<BarnWithLocation>,
+    selectedBarn: BarnWithLocation?,
+    onBarnSelected: (BarnWithLocation) -> Unit
+) {
+    BarnSelector(
+        barns = barns,
+        selectedBarn = selectedBarn,
+        onBarnSelected = onBarnSelected
+    )
+}
+
+/** Location permission required card. */
+@Composable
+fun RideTrackingPermissionRequest(
+    title: String?,
+    hint: String?,
+    grantCta: String?,
+    onGrantPermission: () -> Unit
+) {
+    PermissionCard(
+        title = title,
+        hint = hint,
+        grantCta = grantCta,
+        onGrantPermission = onGrantPermission,
+        modifier = Modifier.testTag(RideTestTags.PermissionCard)
+    )
+}
+
+/** Current gait badge shown during active ride. */
+@Composable
+fun RideGaitIndicator(gait: String) {
+    val semantic = LocalSemanticColors.current
+    val gaitColor = when (gait) {
+        "trot"   -> semantic.gaitTrot
+        "canter" -> semantic.gaitCanter
+        else     -> semantic.gaitWalk
+    }
+    val labelRes = when (gait) {
+        "trot"   -> R.string.gait_trot
+        "canter" -> R.string.gait_canter
+        else     -> R.string.gait_walk
+    }
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(gaitColor.copy(alpha = 0.18f))
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(gaitColor)
+            )
+            Text(
+                text = stringResource(id = labelRes),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Start button (pulse animation)
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun RideTrackingStartButton(
+    canStart: Boolean,
+    onStartRide: () -> Unit
+) {
+    val pulseTransition = rememberInfiniteTransition(label = "start_pulse")
+    val pulseScale by pulseTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = if (canStart) 1.03f else 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(900, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "scale"
+    )
+    Button(
+        onClick = onStartRide,
+        enabled = canStart,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .scale(if (canStart) pulseScale else 1f)
+            .testTag(RideTestTags.StartButton),
+        shape = RoundedCornerShape(18.dp)
+    ) {
+        Icon(
+            Icons.AutoMirrored.Filled.DirectionsRun,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.size(8.dp))
+        Text(
+            text = stringResource(id = R.string.start_ride),
+            style = MaterialTheme.typography.titleMedium
+        )
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Existing private composables (unchanged logic, kept in same file)
+// ---------------------------------------------------------------------------
 
 @Composable
 private fun RideHeader(
@@ -843,10 +1062,8 @@ private fun RideMapCard(
             )
             return@LaunchedEffect
         }
-
         // Throttle camera updates to avoid jank when GPS updates frequently.
         if (validPath.size % 5 != 0) return@LaunchedEffect
-
         val boundsBuilder = LatLngBounds.Builder()
         validPath.forEach { boundsBuilder.include(LatLng(it.latitude, it.longitude)) }
         runCatching {
@@ -917,7 +1134,6 @@ private fun RideMapCard(
                     fontWeight = FontWeight.SemiBold
                 )
             }
-            // Gait legend — top right
             Row(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -1085,10 +1301,10 @@ private fun LiveActions(
     onFinishRide: () -> Unit
 ) {
     val semantic = LocalSemanticColors.current
-    Column(
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        // Finish button — Saddle Brown (primary), full width
+    val autoDetectOnHint = stringResource(id = R.string.auto_detect_on_hint)
+    val autoDetectOffHint = stringResource(id = R.string.auto_detect_off_hint)
+
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Button(
             onClick = onFinishRide,
             modifier = Modifier
@@ -1113,7 +1329,6 @@ private fun LiveActions(
                 color = MaterialTheme.colorScheme.onPrimary
             )
         }
-        // Auto detection toggle — separate row, no cramping
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
@@ -1136,8 +1351,7 @@ private fun LiveActions(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = if (autoDetect) "On — detects ride start automatically"
-                               else "Off — start ride manually",
+                        text = if (autoDetect) autoDetectOnHint else autoDetectOffHint,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1209,7 +1423,6 @@ private fun SavedRideSummaryCard(
     }
 }
 
-
 @Composable
 private fun GaitLegendDot(color: Color, label: String) {
     Row(
@@ -1229,6 +1442,10 @@ private fun GaitLegendDot(color: Color, label: String) {
         )
     }
 }
+
+// ---------------------------------------------------------------------------
+// Pure helpers
+// ---------------------------------------------------------------------------
 
 private fun formatDuration(durationSec: Int): String {
     val hours = durationSec / 3600
@@ -1252,6 +1469,10 @@ private fun Context.hasLocationPermission(): Boolean {
     ) == PackageManager.PERMISSION_GRANTED
     return fineGranted || coarseGranted
 }
+
+// ---------------------------------------------------------------------------
+// Previews
+// ---------------------------------------------------------------------------
 
 @Preview(showBackground = true)
 @Composable
@@ -1281,4 +1502,43 @@ private fun RideTrackingContentPreview() {
         onDismissSavedSummary = {},
         onRetryPendingSync = {}
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RideTrackingActiveSectionPreview() {
+    RideTrackingActiveSection(
+        state = RideUiState(
+            isRiding = true,
+            durationSec = 1245,
+            speedKmh = 12.3f,
+            avgSpeedKmh = 10.5f,
+            maxSpeedKmh = 18.7f,
+            distanceKm = 3.21f,
+            calories = 142,
+            horseCalories = 850,
+            altitudeM = 34.0f,
+            activeChallengeCount = 3
+        ),
+        hasLocationPermission = true,
+        autoDetect = true,
+        onSetAutoDetect = {},
+        onFinishRide = {}
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RideGaitIndicatorPreview() {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(16.dp)) {
+        RideGaitIndicator(gait = "walk")
+        RideGaitIndicator(gait = "trot")
+        RideGaitIndicator(gait = "canter")
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RideAutoStopDialogPreview() {
+    RideAutoStopDialog(onConfirm = {}, onDismiss = {})
 }

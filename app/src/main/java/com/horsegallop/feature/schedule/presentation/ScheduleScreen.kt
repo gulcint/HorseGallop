@@ -39,6 +39,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -59,18 +61,27 @@ import com.horsegallop.R
 import com.horsegallop.domain.schedule.model.Lesson
 import com.horsegallop.ui.theme.LocalSemanticColors
 
+enum class ScheduleTab { BROWSE, MY_RESERVATIONS }
+
 @Composable
 fun ScheduleRoute(
     viewModel: ScheduleViewModel = hiltViewModel(),
-    onMyReservations: () -> Unit = {}
+    onMyReservations: () -> Unit = {},
+    onWriteReview: (lessonId: String, lessonTitle: String) -> Unit = { _, _ -> }
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var selectedTab by remember { mutableStateOf(ScheduleTab.BROWSE) }
+
     ScheduleScreen(
         uiState = uiState,
+        selectedTab = selectedTab,
+        onTabSelected = { selectedTab = it },
         onRetry = { viewModel.refresh() },
         onBookLesson = { lessonId -> viewModel.bookLesson(lessonId) },
         onClearBookingState = { viewModel.clearBookingState() },
-        onMyReservations = onMyReservations
+        onMyReservations = onMyReservations,
+        onWriteReview = onWriteReview,
+        onCancelReservation = { reservationId -> viewModel.cancelReservation(reservationId) }
     )
 }
 
@@ -78,10 +89,14 @@ fun ScheduleRoute(
 @Composable
 fun ScheduleScreen(
     uiState: ScheduleUiState,
+    selectedTab: ScheduleTab = ScheduleTab.BROWSE,
+    onTabSelected: (ScheduleTab) -> Unit = {},
     onRetry: () -> Unit = {},
     onBookLesson: (String) -> Unit = {},
     onClearBookingState: () -> Unit = {},
-    onMyReservations: () -> Unit = {}
+    onMyReservations: () -> Unit = {},
+    onWriteReview: (lessonId: String, lessonTitle: String) -> Unit = { _, _ -> },
+    onCancelReservation: (reservationId: String) -> Unit = {}
 ) {
     val semantic = LocalSemanticColors.current
     var selectedLesson by remember { mutableStateOf<Lesson?>(null) }
@@ -107,116 +122,46 @@ fun ScheduleScreen(
         }
     }
 
+    val tabBrowseLabel = stringResource(R.string.schedule_tab_browse)
+    val tabReservationsLabel = stringResource(R.string.schedule_tab_reservations)
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = semantic.screenBase
     ) { innerPadding ->
-        when {
-            uiState.loading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize().padding(innerPadding),
-                    contentAlignment = Alignment.Center
-                ) { CircularProgressIndicator() }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            TabRow(selectedTabIndex = selectedTab.ordinal) {
+                Tab(
+                    selected = selectedTab == ScheduleTab.BROWSE,
+                    onClick = { onTabSelected(ScheduleTab.BROWSE) },
+                    text = { Text(tabBrowseLabel) }
+                )
+                Tab(
+                    selected = selectedTab == ScheduleTab.MY_RESERVATIONS,
+                    onClick = { onTabSelected(ScheduleTab.MY_RESERVATIONS) },
+                    text = { Text(tabReservationsLabel) }
+                )
             }
 
-            uiState.error != null -> {
-                Box(
-                    modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = semantic.calloutErrorContainer),
-                        border = BorderStroke(1.dp, semantic.calloutBorderError)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Text(
-                                text = uiState.error ?: stringResource(R.string.backend_error_generic),
-                                color = semantic.calloutOnContainer
-                            )
-                            Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
-                        }
-                    }
+            when (selectedTab) {
+                ScheduleTab.BROWSE -> {
+                    BrowseTabContent(
+                        uiState = uiState,
+                        onRetry = onRetry,
+                        onLessonClick = { lesson -> selectedLesson = lesson }
+                    )
                 }
-            }
-
-            uiState.isEmpty -> {
-                Box(
-                    modifier = Modifier.fillMaxSize().padding(innerPadding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(88.dp)
-                                .background(
-                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-                                    CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.CalendarToday,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(40.dp)
-                            )
-                        }
-                        Text(
-                            text = stringResource(R.string.schedule_no_sessions_title),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.schedule_no_sessions_subtitle),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
-                        OutlinedButton(onClick = onRetry) {
-                            Text(stringResource(R.string.retry))
-                        }
-                    }
-                }
-            }
-
-            else -> {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize().padding(innerPadding),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    if (uiState.reservations.isNotEmpty()) {
-                        item {
-                            OutlinedButton(
-                                onClick = onMyReservations,
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp))
-                                Spacer(Modifier.size(8.dp))
-                                Text(
-                                    stringResource(R.string.my_reservations_count, uiState.reservations.size),
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                        }
-                    }
-                    items(uiState.lessons, key = { it.id }) { lesson ->
-                        LessonCard(lesson = lesson, onClick = { selectedLesson = lesson })
-                    }
+                ScheduleTab.MY_RESERVATIONS -> {
+                    MyReservationsContent(
+                        uiState = uiState,
+                        onWriteReview = onWriteReview,
+                        onCancelReservation = onCancelReservation,
+                        onBack = { onTabSelected(ScheduleTab.BROWSE) }
+                    )
                 }
             }
         }
@@ -308,6 +253,110 @@ fun ScheduleScreen(
                     }
                 }
                 Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun BrowseTabContent(
+    uiState: ScheduleUiState,
+    onRetry: () -> Unit,
+    onLessonClick: (Lesson) -> Unit
+) {
+    val semantic = LocalSemanticColors.current
+    when {
+        uiState.loading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) { CircularProgressIndicator() }
+        }
+
+        uiState.error != null -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = semantic.calloutErrorContainer),
+                    border = BorderStroke(1.dp, semantic.calloutBorderError)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = uiState.error ?: stringResource(R.string.backend_error_generic),
+                            color = semantic.calloutOnContainer
+                        )
+                        Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+                    }
+                }
+            }
+        }
+
+        uiState.isEmpty -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(88.dp)
+                            .background(
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                                CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.CalendarToday,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+                    Text(
+                        text = stringResource(R.string.schedule_no_sessions_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = stringResource(R.string.schedule_no_sessions_subtitle),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    OutlinedButton(onClick = onRetry) {
+                        Text(stringResource(R.string.retry))
+                    }
+                }
+            }
+        }
+
+        else -> {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(uiState.lessons, key = { it.id }) { lesson ->
+                    LessonCard(lesson = lesson, onClick = { onLessonClick(lesson) })
+                }
             }
         }
     }

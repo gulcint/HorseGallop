@@ -39,8 +39,6 @@ data class RideUiState(
     val isRiding: Boolean = false,
     val autoDetect: Boolean = false,
     val showAutoStopDialog: Boolean = false,
-    val showSafetyAlarmDialog: Boolean = false,
-    val safetyEnabled: Boolean = false,
     val pathPoints: List<GeoPoint> = emptyList(),
     val barns: List<BarnWithLocation> = emptyList(),
     val selectedBarn: BarnWithLocation? = null,
@@ -56,6 +54,7 @@ data class RideUiState(
     val permissionTitle: String? = null,
     val permissionHint: String? = null,
     val grantLocationCta: String? = null,
+    val activeChallengeCount: Int = 0,
     @StringRes val errorMessageResId: Int? = null
 )
 

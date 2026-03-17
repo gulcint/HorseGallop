@@ -46,6 +46,7 @@ import com.horsegallop.feature.onboarding.presentation.OnboardingScreen
 import com.horsegallop.feature.horse.presentation.AddHorseScreen
 import com.horsegallop.feature.horse.presentation.HorseHealthScreen
 import com.horsegallop.feature.horse.presentation.HorseListScreen
+import com.horsegallop.feature.review.presentation.MyReviewsScreen
 import com.horsegallop.feature.review.presentation.WriteReviewScreen
 import com.horsegallop.feature.notifications.presentation.NotificationsScreen
 import com.horsegallop.feature.schedule.presentation.MyReservationsScreen
@@ -58,11 +59,10 @@ import com.horsegallop.feature.ride.presentation.RideTrackingRoute
 import com.horsegallop.feature.ride.presentation.RideTrackingViewModel
 
 import com.horsegallop.feature.ride.presentation.RideDetailScreen
-import com.horsegallop.feature.safety.presentation.SafetyScreen
 import com.horsegallop.feature.equestrian.presentation.EquestrianAgendaScreen
 import com.horsegallop.feature.challenge.presentation.ChallengeScreen
 import com.horsegallop.feature.aicoach.presentation.AiCoachScreen
-import com.horsegallop.feature.tbf.presentation.TbfScreen
+import com.horsegallop.feature.equestrian.presentation.EquestrianAgendaTab
 import com.horsegallop.feature.tbf.presentation.TbfEventDetailScreen
 import com.horsegallop.feature.barnmanagement.presentation.BarnDashboardScreen
 import com.horsegallop.feature.barnmanagement.presentation.CreateLessonScreen
@@ -108,7 +108,6 @@ sealed class Dest(val route: String) {
     fun route(horseId: String, horseName: String): String =
       "horseHealth/$horseId/${android.net.Uri.encode(horseName)}"
   }
-  object Safety : Dest("safety")
   object EquestrianAgenda : Dest("equestrianAgenda")
   object HealthCalendar : Dest("health_calendar")
   object AddHealthEvent : Dest("add_health_event")
@@ -122,6 +121,7 @@ sealed class Dest(val route: String) {
   object LessonRoster : Dest("lesson_roster/{lessonId}") {
     fun route(lessonId: String) = "lesson_roster/$lessonId"
   }
+  object MyReviews : Dest("my_reviews")
   object AiCoach : Dest("ai_coach")
   object TbfEvents : Dest("tbf_events")
   object TbfEventDetail : Dest("tbf_event_detail/{venueCode}/{eventIndex}") {
@@ -364,6 +364,10 @@ fun AppNavHost(
         onChallenges = { navController.navigate(Dest.Challenges.route) },
         onAiCoach = { navController.navigate(Dest.AiCoach.route) },
         onTbfEvents = { navController.navigate(Dest.TbfEvents.route) },
+        onMyReviews = { navController.navigate(Dest.MyReviews.route) },
+        onMyBarn = { barnId ->
+          navController.navigate(Dest.BarnDashboard.route(barnId))
+        },
         onLogout = {
           navController.navigate(Dest.Onboarding.route) {
             popUpTo(Dest.Home.route) { inclusive = true }
@@ -389,26 +393,32 @@ fun AppNavHost(
           navController.navigate(Dest.Onboarding.route) {
             popUpTo(Dest.Home.route) { inclusive = true }
           }
-        },
-        onSafety = { navController.navigate(Dest.Safety.route) }
+        }
       )
-    }
-    composable(Dest.Safety.route) {
-      BackHandler { navController.popBackStack() }
-      SafetyScreen(onBack = { navController.popBackStack() })
     }
     composable(Dest.EquestrianAgenda.route) {
       BackHandler { navController.popBackStack() }
-      EquestrianAgendaScreen(onBack = { navController.popBackStack() })
+      EquestrianAgendaScreen(
+        onBack = { navController.popBackStack() },
+        onTbfEventClick = { venueCode, eventIndex ->
+          navController.navigate(Dest.TbfEventDetail.route(venueCode, eventIndex))
+        }
+      )
     }
     composable(Dest.Ride.route) {
       com.horsegallop.feature.ride.presentation.RideTrackingRoute(
         onHomeClick = { navController.navigate(Dest.Home.route) },
-        onBarnsClick = { navController.navigate(Dest.Barns.route) }
+        onBarnsClick = { navController.navigate(Dest.Barns.route) },
+        onViewRideHistory = { navController.navigate(Dest.RecentActivityDetail.route) }
       )
     }
     composable(Dest.Schedule.route) {
-      ScheduleRoute(onMyReservations = { navController.navigate(Dest.MyReservations.route) })
+      ScheduleRoute(
+        onMyReservations = { navController.navigate(Dest.MyReservations.route) },
+        onWriteReview = { lessonId, lessonTitle ->
+          navController.navigate(Dest.WriteReview.route(lessonId, "lesson", lessonTitle))
+        }
+      )
     }
     composable(Dest.MyReservations.route) {
       BackHandler { navController.popBackStack() }
@@ -510,10 +520,11 @@ fun AppNavHost(
       )
     }
     composable(Dest.BarnsMapView.route) {
-      BackHandler { navController.popBackStack() }
-      com.horsegallop.feature.barn.presentation.BarnsMapViewScreen(
-        navController = navController
-      )
+      androidx.compose.runtime.LaunchedEffect(Unit) {
+        navController.navigate(Dest.Barns.route) {
+          popUpTo(Dest.BarnsMapView.route) { inclusive = true }
+        }
+      }
     }
     composable(Dest.HealthCalendar.route) {
       BackHandler { navController.popBackStack() }
@@ -539,7 +550,25 @@ fun AppNavHost(
       NotificationsScreen(
         onBack = { navController.popBackStack() },
         onOpenTargetRoute = { route ->
-          navController.navigate(route)
+          val isValid = setOf(
+            Dest.Home.route,
+            Dest.Barns.route,
+            Dest.Ride.route,
+            Dest.Schedule.route,
+            Dest.Profile.route,
+            Dest.Notifications.route,
+            Dest.MyReservations.route,
+            Dest.RecentActivityDetail.route
+          ).contains(route) ||
+            route.startsWith("rideDetail/") ||
+            route.startsWith("barnDetail/") ||
+            route.startsWith("horseHealth/") ||
+            route.startsWith("tbf_event_detail/")
+          if (isValid) {
+            navController.navigate(route)
+          } else {
+            com.horsegallop.core.debug.AppLog.w("AppNav", "Invalid notification route ignored: $route")
+          }
         }
       )
     }
@@ -582,11 +611,16 @@ fun AppNavHost(
       BackHandler { navController.popBackStack() }
       AiCoachScreen(onBack = { navController.popBackStack() })
     }
+    composable(Dest.MyReviews.route) {
+      BackHandler { navController.popBackStack() }
+      MyReviewsScreen(onBack = { navController.popBackStack() })
+    }
     composable(Dest.TbfEvents.route) {
       BackHandler { navController.popBackStack() }
-      TbfScreen(
+      EquestrianAgendaScreen(
         onBack = { navController.popBackStack() },
-        onEventClick = { venueCode, eventIndex ->
+        initialTab = EquestrianAgendaTab.TBF,
+        onTbfEventClick = { venueCode, eventIndex ->
           navController.navigate(Dest.TbfEventDetail.route(venueCode, eventIndex))
         }
       )

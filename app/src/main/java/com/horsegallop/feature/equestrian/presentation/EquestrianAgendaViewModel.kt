@@ -21,7 +21,8 @@ import kotlinx.coroutines.launch
 
 enum class EquestrianAgendaTab {
     ANNOUNCEMENTS,
-    COMPETITIONS
+    COMPETITIONS,
+    TBF
 }
 
 enum class SyncActionMessage {

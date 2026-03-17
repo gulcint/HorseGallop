@@ -1,5 +1,7 @@
 # Realtime Notifications Implementation Plan
 
+> **Status: COMPLETED** — Merged to main. Bu doküman referans amaçlıdır.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Replace placeholder notifications with realtime Firestore notifications produced by backend reservation, horse health, and general announcement flows.

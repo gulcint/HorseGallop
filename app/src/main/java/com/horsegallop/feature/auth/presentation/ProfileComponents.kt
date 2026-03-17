@@ -336,12 +336,14 @@ fun ProfileActionsCard(
     modifier: Modifier = Modifier,
     onEditProfile: () -> Unit,
     onMyHorses: () -> Unit,
-    onSettings: () -> Unit,
     onLogout: () -> Unit,
     onHealthCalendar: () -> Unit = {},
     onChallenges: () -> Unit = {},
     onAiCoach: () -> Unit = {},
-    onTbfEvents: () -> Unit = {}
+    onTbfEvents: () -> Unit = {},
+    onMyReviews: () -> Unit = {},
+    ownedBarnId: String? = null,
+    onMyBarn: (barnId: String) -> Unit = {}
 ) {
     val semantic = LocalSemanticColors.current
     val infiniteTransition = rememberInfiniteTransition(label = "edit_cta_pulse")
@@ -420,6 +422,12 @@ fun ProfileActionsCard(
                 color = semantic.cardStroke,
                 thickness = 0.5.dp
             )
+            Text(
+                text = stringResource(R.string.profile_section_explore),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 4.dp, bottom = 4.dp, top = 12.dp)
+            )
             ProfileActionItem(
                 emoji = "🩺",
                 label = stringResource(R.string.profile_action_health_calendar),
@@ -461,15 +469,27 @@ fun ProfileActionsCard(
                 thickness = 0.5.dp
             )
             ProfileActionItem(
-                emoji = "⚙️",
-                label = stringResource(R.string.profile_action_settings),
-                onClick = onSettings
+                emoji = "⭐",
+                label = stringResource(R.string.profile_action_my_reviews),
+                onClick = onMyReviews
             )
             HorizontalDivider(
                 modifier = Modifier.padding(start = 40.dp),
                 color = semantic.cardStroke,
                 thickness = 0.5.dp
             )
+            if (ownedBarnId != null) {
+                ProfileActionItem(
+                    emoji = "🏠",
+                    label = stringResource(R.string.profile_action_my_barn),
+                    onClick = { onMyBarn(ownedBarnId) }
+                )
+                HorizontalDivider(
+                    modifier = Modifier.padding(start = 40.dp),
+                    color = semantic.cardStroke,
+                    thickness = 0.5.dp
+                )
+            }
             ProfileActionItem(
                 emoji = "🚪",
                 label = stringResource(R.string.profile_action_logout),

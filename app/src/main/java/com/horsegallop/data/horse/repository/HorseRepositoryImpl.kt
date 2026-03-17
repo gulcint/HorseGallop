@@ -7,6 +7,7 @@ import com.horsegallop.domain.horse.model.HorseGender
 import com.horsegallop.domain.horse.model.HorseTip
 import com.horsegallop.domain.horse.repository.HorseRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import java.util.Locale
 import javax.inject.Inject
@@ -16,13 +17,8 @@ class HorseRepositoryImpl @Inject constructor(
 ) : HorseRepository {
 
     override fun getMyHorses(): Flow<List<Horse>> = flow {
-        try {
-            val horses = functionsDataSource.getMyHorses().map { it.toDomain() }
-            emit(horses)
-        } catch (_: Exception) {
-            emit(emptyList())
-        }
-    }
+        emit(functionsDataSource.getMyHorses().map { it.toDomain() })
+    }.catch { emit(emptyList()) }
 
     override suspend fun addHorse(horse: Horse): Result<Horse> = runCatching {
         functionsDataSource.addHorse(

@@ -1,5 +1,7 @@
 # Ride Detail Polyline Implementation Plan
 
+> **Status: COMPLETED** — Merged to main. Bu doküman referans amaçlıdır.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Improve the route rendering quality in `RideDetailScreen` by filtering noisy points, drawing gait-colored segments, and clarifying the start/end map presentation.

@@ -515,7 +515,7 @@ private fun AddHealthEventSheet(
                 label = { Text(stringResource(R.string.horse_health_date_label)) },
                 trailingIcon = {
                     IconButton(onClick = { showDatePicker = true }) {
-                        Icon(Icons.Default.CalendarMonth, contentDescription = null)
+                        Icon(Icons.Default.CalendarMonth, contentDescription = stringResource(R.string.cd_pick_date))
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),

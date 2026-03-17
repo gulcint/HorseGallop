@@ -5,6 +5,7 @@ import com.horsegallop.domain.review.model.Review
 import com.horsegallop.domain.review.model.ReviewTargetType
 import com.horsegallop.domain.review.repository.ReviewRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
@@ -13,24 +14,19 @@ class ReviewRepositoryImpl @Inject constructor(
 ) : ReviewRepository {
 
     override fun getMyReviews(): Flow<List<Review>> = flow {
-        try {
-            val reviews = functionsDataSource.getMyReviews().map { dto ->
-                Review(
-                    id = dto.id,
-                    targetId = dto.targetId,
-                    targetType = if (dto.targetType == "instructor") ReviewTargetType.INSTRUCTOR else ReviewTargetType.LESSON,
-                    targetName = dto.targetName,
-                    rating = dto.rating,
-                    comment = dto.comment,
-                    createdAt = dto.createdAt,
-                    authorName = dto.authorName
-                )
-            }
-            emit(reviews)
-        } catch (_: Exception) {
-            emit(emptyList())
-        }
-    }
+        emit(functionsDataSource.getMyReviews().map { dto ->
+            Review(
+                id = dto.id,
+                targetId = dto.targetId,
+                targetType = if (dto.targetType == "instructor") ReviewTargetType.INSTRUCTOR else ReviewTargetType.LESSON,
+                targetName = dto.targetName,
+                rating = dto.rating,
+                comment = dto.comment,
+                createdAt = dto.createdAt,
+                authorName = dto.authorName
+            )
+        })
+    }.catch { emit(emptyList()) }
 
     override suspend fun submitReview(
         targetId: String, targetType: ReviewTargetType, targetName: String,

@@ -160,20 +160,6 @@ data class AppContentFunctionsDto(
     val settingsPrivacySubtitle: String? = null
 )
 
-// ─── Safety DTOs ──────────────────────────────────────────────────────────────
-
-data class SafetyContactFunctionsDto(
-    val id: String = "",
-    val name: String = "",
-    val phone: String = ""
-)
-
-data class SafetySettingsFunctionsDto(
-    val isEnabled: Boolean = false,
-    val contacts: List<SafetyContactFunctionsDto> = emptyList(),
-    val autoAlarmMinutes: Int = 5
-)
-
 data class HealthEventFunctionsDto(
     val id: String,
     val userId: String = "",
