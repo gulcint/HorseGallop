@@ -786,4 +786,6 @@
     <string name="ride_view_history">Sürüş Geçmişine Git</string>
     <string name="ride_view_history_cd">Sürüş geçmişine git</string>
     <string name="ride_active_challenges">%1$d aktif meydan okuma</string>
+    <string name="barn_view_map_cd">Harita görünümüne geç</string>
+    <string name="barn_view_list_cd">Liste görünümüne geç</string>
 </resources>

@@ -790,4 +790,6 @@
     <string name="ride_view_history">View Ride History</string>
     <string name="ride_view_history_cd">View ride history</string>
     <string name="ride_active_challenges">%1$d active challenge(s)</string>
+    <string name="barn_view_map_cd">Switch to map view</string>
+    <string name="barn_view_list_cd">Switch to list view</string>
 </resources>

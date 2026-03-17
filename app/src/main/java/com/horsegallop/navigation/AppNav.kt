@@ -514,10 +514,11 @@ fun AppNavHost(
       )
     }
     composable(Dest.BarnsMapView.route) {
-      BackHandler { navController.popBackStack() }
-      com.horsegallop.feature.barn.presentation.BarnsMapViewScreen(
-        navController = navController
-      )
+      androidx.compose.runtime.LaunchedEffect(Unit) {
+        navController.navigate(Dest.Barns.route) {
+          popUpTo(Dest.BarnsMapView.route) { inclusive = true }
+        }
+      }
     }
     composable(Dest.HealthCalendar.route) {
       BackHandler { navController.popBackStack() }
