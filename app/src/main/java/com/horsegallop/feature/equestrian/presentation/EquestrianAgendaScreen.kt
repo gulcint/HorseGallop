@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -72,11 +73,17 @@ import java.util.Locale
 @Composable
 fun EquestrianAgendaScreen(
     onBack: () -> Unit,
+    initialTab: EquestrianAgendaTab = EquestrianAgendaTab.ANNOUNCEMENTS,
+    onTbfEventClick: (venueCode: String, eventIndex: Int) -> Unit = { _, _ -> },
     viewModel: EquestrianAgendaViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
     val uriHandler = LocalUriHandler.current
     val semantic = LocalSemanticColors.current
+
+    androidx.compose.runtime.LaunchedEffect(initialTab) {
+        viewModel.selectTab(initialTab)
+    }
 
     state.previewItem?.let { previewItem ->
         AgendaPreviewSheet(
@@ -134,6 +141,11 @@ fun EquestrianAgendaScreen(
                     onClick = { viewModel.selectTab(EquestrianAgendaTab.COMPETITIONS) },
                     text = { Text(stringResource(R.string.equestrian_agenda_tab_competitions)) }
                 )
+                Tab(
+                    selected = state.selectedTab == EquestrianAgendaTab.TBF,
+                    onClick = { viewModel.selectTab(EquestrianAgendaTab.TBF) },
+                    text = { Text(stringResource(R.string.equestrian_tab_tbf)) }
+                )
             }
 
             when (state.selectedTab) {
@@ -175,6 +187,14 @@ fun EquestrianAgendaScreen(
                             )
                         }
                     }
+                }
+
+                EquestrianAgendaTab.TBF -> {
+                    val tbfViewModel: com.horsegallop.feature.tbf.presentation.TbfViewModel = hiltViewModel()
+                    TbfTabContent(
+                        viewModel = tbfViewModel,
+                        onEventClick = onTbfEventClick
+                    )
                 }
             }
         }
@@ -607,6 +627,210 @@ private fun PreviewSheetLayout(
             variant = ButtonVariant.Primary
         )
         Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun TbfTabContent(
+    viewModel: com.horsegallop.feature.tbf.presentation.TbfViewModel,
+    onEventClick: (venueCode: String, eventIndex: Int) -> Unit
+) {
+    val state by viewModel.ui.collectAsState()
+    val semantic = LocalSemanticColors.current
+
+    when {
+        state.isLoading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+        state.error != null -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = state.error ?: "",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        else -> {
+            Column(modifier = Modifier.fillMaxSize()) {
+                val selectedTabIndex = if (state.viewMode == com.horsegallop.feature.tbf.presentation.TbfViewMode.PROGRAM) 0 else 1
+                TabRow(selectedTabIndex = selectedTabIndex) {
+                    Tab(
+                        selected = state.viewMode == com.horsegallop.feature.tbf.presentation.TbfViewMode.PROGRAM,
+                        onClick = { viewModel.switchMode(com.horsegallop.feature.tbf.presentation.TbfViewMode.PROGRAM) },
+                        text = { Text(stringResource(R.string.tbf_program_tab)) }
+                    )
+                    Tab(
+                        selected = state.viewMode == com.horsegallop.feature.tbf.presentation.TbfViewMode.RESULTS,
+                        onClick = { viewModel.switchMode(com.horsegallop.feature.tbf.presentation.TbfViewMode.RESULTS) },
+                        text = { Text(stringResource(R.string.tbf_results_tab)) }
+                    )
+                }
+
+                if (state.venues.isNotEmpty()) {
+                    androidx.compose.foundation.lazy.LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(state.venues, key = { it.code }) { venue ->
+                            androidx.compose.material3.FilterChip(
+                                selected = venue.code == state.selectedVenue,
+                                onClick = { viewModel.selectVenue(venue.code) },
+                                label = {
+                                    Text(
+                                        stringResource(R.string.tbf_venue_event_count, venue.name, venue.eventCount),
+                                        style = MaterialTheme.typography.labelMedium
+                                    )
+                                },
+                                colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                                )
+                            )
+                        }
+                    }
+                }
+
+                if (state.isLoadingCard) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    val events = state.eventCard?.events ?: emptyList()
+                    val venueCode = state.selectedVenue ?: ""
+                    if (events.isEmpty()) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(
+                                stringResource(R.string.tbf_no_events),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
+                        LazyColumn(
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            items(events.size, key = { it }) { index ->
+                                TbfRaceCard(
+                                    competition = events[index],
+                                    isResults = state.viewMode == com.horsegallop.feature.tbf.presentation.TbfViewMode.RESULTS,
+                                    onClick = { onEventClick(venueCode, index) }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TbfRaceCard(
+    competition: com.horsegallop.domain.tbf.model.TbfCompetition,
+    isResults: Boolean,
+    onClick: () -> Unit
+) {
+    val semantic = LocalSemanticColors.current
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = semantic.cardElevated,
+        tonalElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.tbf_competition_label, competition.no),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    if (competition.time.isNotBlank()) {
+                        Text(
+                            text = competition.time,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = stringResource(R.string.tbf_event_distance, competition.distance, competition.surface),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                val prize = competition.prize
+                Text(
+                    text = when {
+                        prize >= 1_000_000 -> "₺${prize / 1_000_000}M"
+                        prize >= 1_000 -> "₺${prize / 1_000}K"
+                        else -> "₺$prize"
+                    },
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            competition.athletes.take(3).forEach { athlete ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    androidx.compose.foundation.layout.Box(modifier = Modifier.width(20.dp)) {
+                        Text(
+                            text = athlete.no,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Text(
+                        text = athlete.name,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (isResults && athlete.result.isNotBlank()) {
+                        Text(
+                            text = athlete.result,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        if (athlete.time.isNotBlank()) {
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                text = athlete.time,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = athlete.odds,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 

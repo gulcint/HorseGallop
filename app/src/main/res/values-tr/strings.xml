@@ -700,6 +700,7 @@
     <string name="tbf_venue_event_count">%1$s (%2$d)</string>
     <string name="tbf_col_degree">Derece</string>
     <string name="tbf_col_odds">Oran</string>
+    <string name="equestrian_tab_tbf">TBF Yarışları</string>
 
     <!-- Write Review Screen -->
     <string name="review_screen_title">Değerlendirme Yaz</string>
@@ -728,7 +729,7 @@
     <string name="profile_action_health_calendar">Sağlık Takvimi</string>
     <string name="profile_action_challenges">Meydan Okumalar</string>
     <string name="profile_action_ai_coach">AI Koç</string>
-    <string name="profile_action_tbf">TBF Yarışmaları</string>
+    <string name="profile_action_tbf">At Sporları Haberleri</string>
     <string name="profile_action_settings">Ayarlar</string>
     <string name="profile_action_logout">Çıkış Yap</string>
     <string name="profile_horses_section_title">Atlarım</string>

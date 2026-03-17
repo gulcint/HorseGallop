@@ -61,7 +61,7 @@ import com.horsegallop.feature.ride.presentation.RideDetailScreen
 import com.horsegallop.feature.equestrian.presentation.EquestrianAgendaScreen
 import com.horsegallop.feature.challenge.presentation.ChallengeScreen
 import com.horsegallop.feature.aicoach.presentation.AiCoachScreen
-import com.horsegallop.feature.tbf.presentation.TbfScreen
+import com.horsegallop.feature.equestrian.presentation.EquestrianAgendaTab
 import com.horsegallop.feature.tbf.presentation.TbfEventDetailScreen
 import com.horsegallop.feature.barnmanagement.presentation.BarnDashboardScreen
 import com.horsegallop.feature.barnmanagement.presentation.CreateLessonScreen
@@ -392,7 +392,12 @@ fun AppNavHost(
     }
     composable(Dest.EquestrianAgenda.route) {
       BackHandler { navController.popBackStack() }
-      EquestrianAgendaScreen(onBack = { navController.popBackStack() })
+      EquestrianAgendaScreen(
+        onBack = { navController.popBackStack() },
+        onTbfEventClick = { venueCode, eventIndex ->
+          navController.navigate(Dest.TbfEventDetail.route(venueCode, eventIndex))
+        }
+      )
     }
     composable(Dest.Ride.route) {
       com.horsegallop.feature.ride.presentation.RideTrackingRoute(
@@ -596,9 +601,10 @@ fun AppNavHost(
     }
     composable(Dest.TbfEvents.route) {
       BackHandler { navController.popBackStack() }
-      TbfScreen(
+      EquestrianAgendaScreen(
         onBack = { navController.popBackStack() },
-        onEventClick = { venueCode, eventIndex ->
+        initialTab = EquestrianAgendaTab.TBF,
+        onTbfEventClick = { venueCode, eventIndex ->
           navController.navigate(Dest.TbfEventDetail.route(venueCode, eventIndex))
         }
       )
