@@ -55,6 +55,10 @@ fun WriteReviewScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val semantic = LocalSemanticColors.current
+    val titleRes = when (targetType) {
+        ReviewTargetType.LESSON -> R.string.review_title_lesson
+        ReviewTargetType.INSTRUCTOR -> R.string.review_title_instructor
+    }
     var rating by remember { mutableIntStateOf(0) }
     var comment by remember { mutableStateOf("") }
     var ratingError by remember { mutableStateOf(false) }
@@ -70,7 +74,7 @@ fun WriteReviewScreen(
         containerColor = semantic.screenBase,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(stringResource(R.string.review_screen_title), fontWeight = FontWeight.SemiBold) },
+                title = { Text(stringResource(titleRes), fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))

@@ -703,6 +703,8 @@
 
     <!-- Write Review Screen -->
     <string name="review_screen_title">Değerlendirme Yaz</string>
+    <string name="review_title_lesson">Ders Değerlendirmesi</string>
+    <string name="review_title_instructor">Eğitmen Değerlendirmesi</string>
     <string name="review_type_instructor">Eğitmen değerlendirmesi</string>
     <string name="review_type_lesson">Ders değerlendirmesi</string>
     <string name="review_your_rating">Puanınız *</string>
@@ -755,4 +757,6 @@
     <string name="cd_see_all_rides">Tüm sürüşleri gör</string>
     <string name="cd_pick_date">Tarih seç</string>
     <string name="cd_toggle_password_visibility">Şifre görünürlüğünü değiştir</string>
+    <string name="ride_view_history">Sürüş Geçmişine Git</string>
+    <string name="ride_view_history_cd">Sürüş geçmişine git</string>
 </resources>

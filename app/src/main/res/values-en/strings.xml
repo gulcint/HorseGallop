@@ -707,6 +707,8 @@
 
     <!-- Write Review Screen -->
     <string name="review_screen_title">Write Review</string>
+    <string name="review_title_lesson">Review Lesson</string>
+    <string name="review_title_instructor">Review Instructor</string>
     <string name="review_type_instructor">Instructor review</string>
     <string name="review_type_lesson">Lesson review</string>
     <string name="review_your_rating">Your rating *</string>
@@ -759,4 +761,6 @@
     <string name="cd_see_all_rides">See all rides</string>
     <string name="cd_pick_date">Pick date</string>
     <string name="cd_toggle_password_visibility">Toggle password visibility</string>
+    <string name="ride_view_history">View Ride History</string>
+    <string name="ride_view_history_cd">View ride history</string>
 </resources>
