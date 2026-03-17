@@ -532,7 +532,25 @@ fun AppNavHost(
       NotificationsScreen(
         onBack = { navController.popBackStack() },
         onOpenTargetRoute = { route ->
-          navController.navigate(route)
+          val isValid = setOf(
+            Dest.Home.route,
+            Dest.Barns.route,
+            Dest.Ride.route,
+            Dest.Schedule.route,
+            Dest.Profile.route,
+            Dest.Notifications.route,
+            Dest.MyReservations.route,
+            Dest.RecentActivityDetail.route
+          ).contains(route) ||
+            route.startsWith("rideDetail/") ||
+            route.startsWith("barnDetail/") ||
+            route.startsWith("horseHealth/") ||
+            route.startsWith("tbf_event_detail/")
+          if (isValid) {
+            navController.navigate(route)
+          } else {
+            com.horsegallop.core.debug.AppLog.w("AppNav", "Invalid notification route ignored: $route")
+          }
         }
       )
     }
