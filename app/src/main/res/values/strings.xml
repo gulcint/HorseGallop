@@ -86,4 +86,7 @@
     <string name="barn_view_map_cd">Harita görünümüne geç</string>
     <string name="barn_view_list_cd">Liste görünümüne geç</string>
     <string name="profile_action_my_barn">Ahırım</string>
+    <string name="my_reviews_title">Değerlendirmelerim</string>
+    <string name="my_reviews_empty">Henüz değerlendirme yapmadınız.</string>
+    <string name="profile_action_my_reviews">Değerlendirmelerim</string>
 </resources>

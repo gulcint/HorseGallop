@@ -793,4 +793,7 @@
     <string name="barn_view_map_cd">Switch to map view</string>
     <string name="barn_view_list_cd">Switch to list view</string>
     <string name="profile_action_my_barn">My Barn</string>
+    <string name="my_reviews_title">My Reviews</string>
+    <string name="my_reviews_empty">You haven\'t written any reviews yet.</string>
+    <string name="profile_action_my_reviews">My Reviews</string>
 </resources>

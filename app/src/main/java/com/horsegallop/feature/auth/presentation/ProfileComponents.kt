@@ -341,6 +341,7 @@ fun ProfileActionsCard(
     onChallenges: () -> Unit = {},
     onAiCoach: () -> Unit = {},
     onTbfEvents: () -> Unit = {},
+    onMyReviews: () -> Unit = {},
     ownedBarnId: String? = null,
     onMyBarn: (barnId: String) -> Unit = {}
 ) {
@@ -461,6 +462,16 @@ fun ProfileActionsCard(
                 emoji = "🏇",
                 label = stringResource(R.string.profile_action_tbf),
                 onClick = onTbfEvents
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(start = 40.dp),
+                color = semantic.cardStroke,
+                thickness = 0.5.dp
+            )
+            ProfileActionItem(
+                emoji = "⭐",
+                label = stringResource(R.string.profile_action_my_reviews),
+                onClick = onMyReviews
             )
             HorizontalDivider(
                 modifier = Modifier.padding(start = 40.dp),

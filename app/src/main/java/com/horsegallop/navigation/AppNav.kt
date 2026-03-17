@@ -46,6 +46,7 @@ import com.horsegallop.feature.onboarding.presentation.OnboardingScreen
 import com.horsegallop.feature.horse.presentation.AddHorseScreen
 import com.horsegallop.feature.horse.presentation.HorseHealthScreen
 import com.horsegallop.feature.horse.presentation.HorseListScreen
+import com.horsegallop.feature.review.presentation.MyReviewsScreen
 import com.horsegallop.feature.review.presentation.WriteReviewScreen
 import com.horsegallop.feature.notifications.presentation.NotificationsScreen
 import com.horsegallop.feature.schedule.presentation.MyReservationsScreen
@@ -120,6 +121,7 @@ sealed class Dest(val route: String) {
   object LessonRoster : Dest("lesson_roster/{lessonId}") {
     fun route(lessonId: String) = "lesson_roster/$lessonId"
   }
+  object MyReviews : Dest("my_reviews")
   object AiCoach : Dest("ai_coach")
   object TbfEvents : Dest("tbf_events")
   object TbfEventDetail : Dest("tbf_event_detail/{venueCode}/{eventIndex}") {
@@ -362,6 +364,7 @@ fun AppNavHost(
         onChallenges = { navController.navigate(Dest.Challenges.route) },
         onAiCoach = { navController.navigate(Dest.AiCoach.route) },
         onTbfEvents = { navController.navigate(Dest.TbfEvents.route) },
+        onMyReviews = { navController.navigate(Dest.MyReviews.route) },
         onMyBarn = { barnId ->
           navController.navigate(Dest.BarnDashboard.route(barnId))
         },
@@ -607,6 +610,10 @@ fun AppNavHost(
     composable(Dest.AiCoach.route) {
       BackHandler { navController.popBackStack() }
       AiCoachScreen(onBack = { navController.popBackStack() })
+    }
+    composable(Dest.MyReviews.route) {
+      BackHandler { navController.popBackStack() }
+      MyReviewsScreen(onBack = { navController.popBackStack() })
     }
     composable(Dest.TbfEvents.route) {
       BackHandler { navController.popBackStack() }

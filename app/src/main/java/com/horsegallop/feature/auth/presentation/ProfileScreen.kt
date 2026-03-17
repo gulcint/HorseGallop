@@ -65,6 +65,7 @@ fun ProfileScreen(
     onChallenges: () -> Unit = {},
     onAiCoach: () -> Unit = {},
     onTbfEvents: () -> Unit = {},
+    onMyReviews: () -> Unit = {},
     onMyBarn: (barnId: String) -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
@@ -213,6 +214,7 @@ fun ProfileScreen(
                     onChallenges = onChallenges,
                     onAiCoach = onAiCoach,
                     onTbfEvents = onTbfEvents,
+                    onMyReviews = onMyReviews,
                     ownedBarnId = state.ownedBarnId,
                     onMyBarn = onMyBarn
                 )
