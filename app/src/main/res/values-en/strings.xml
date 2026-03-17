@@ -594,36 +594,6 @@
     <string name="horse_health_type_label">Event Type</string>
     <string name="verification_spam_hint">💡 If you don\'t see the email, check your spam or junk folder</string>
 
-    <!-- Safety Tracking -->
-    <string name="safety_title">Safety Tracking</string>
-    <string name="safety_subtitle">Stay safe while riding alone</string>
-    <string name="safety_section_tracking">Automatic Alarm</string>
-    <string name="safety_enable_label">Enable safety tracking</string>
-    <string name="safety_enable_desc">Automatically alerts your trusted contacts if you stop moving for 5 minutes during a ride</string>
-    <string name="safety_section_contacts">Trusted Contacts</string>
-    <string name="safety_contacts_desc">Up to 5 people who will be alerted in an emergency</string>
-    <string name="safety_add_contact">Add Contact</string>
-    <string name="safety_contact_name_label">Name</string>
-    <string name="safety_contact_phone_label">Phone</string>
-    <string name="safety_add_contact_title">Add Trusted Contact</string>
-    <string name="safety_no_contacts">No trusted contacts yet.\nAdd someone who can help in an emergency.</string>
-    <string name="safety_remove_contact_confirm">Remove this contact?</string>
-    <string name="safety_section_location">Live Location</string>
-    <string name="safety_share_location">Share My Location</string>
-    <string name="safety_share_location_desc">Copy a link to your current location to send via WhatsApp or SMS</string>
-    <string name="safety_location_copied">Location link copied!</string>
-    <string name="safety_location_unavailable">Location not available yet</string>
-    <string name="safety_alarm_title">Are you okay? 🛡️</string>
-    <string name="safety_alarm_body">You haven\'t moved in 5 minutes. Should we send an alert to your trusted contacts?</string>
-    <string name="safety_alarm_send">Send Alert</string>
-    <string name="safety_alarm_dismiss">I\'m Fine</string>
-    <string name="safety_pro_required">Safety tracking requires Pro membership</string>
-    <string name="safety_settings_link">Safety Tracking</string>
-    <string name="safety_max_contacts">Maximum 5 contacts allowed</string>
-    <string name="safety_contact_added">Contact added</string>
-    <string name="safety_contact_removed">Contact removed</string>
-    <string name="safety_alarm_sent">Alert sent to your contacts</string>
-
     <!-- Elevation -->
     <string name="elevation_profile_title">Elevation Profile</string>
 
@@ -784,7 +754,6 @@
     <string name="cd_add_horse">Add Horse</string>
     <string name="cd_favorite_add">Add to favorites</string>
     <string name="cd_favorite_remove">Remove from favorites</string>
-    <string name="cd_safety_tracking_toggle">Toggle safety tracking</string>
     <string name="cd_profile_photo">Profile photo</string>
     <string name="cd_edit_profile">Edit profile</string>
     <string name="cd_see_all_rides">See all rides</string>

@@ -13,8 +13,6 @@ import com.horsegallop.domain.challenge.repository.ChallengeRepository
 import com.horsegallop.domain.health.repository.HealthRepository
 import com.horsegallop.data.horse.repository.HorseHealthRepositoryImpl
 import com.horsegallop.data.horse.repository.HorseRepositoryImpl
-import com.horsegallop.data.safety.repository.SafetyRepositoryImpl
-import com.horsegallop.domain.safety.repository.SafetyRepository
 import com.horsegallop.data.notification.repository.NotificationRepositoryImpl
 import com.horsegallop.data.settings.repository.UserSettingsRepositoryImpl
 import com.horsegallop.data.review.repository.ReviewRepositoryImpl
@@ -151,12 +149,6 @@ abstract class DataModule {
     abstract fun bindHorseHealthRepository(
         horseHealthRepositoryImpl: HorseHealthRepositoryImpl
     ): HorseHealthRepository
-
-    @Binds
-    @Singleton
-    abstract fun bindSafetyRepository(
-        safetyRepositoryImpl: SafetyRepositoryImpl
-    ): SafetyRepository
 
     @Binds
     @Singleton

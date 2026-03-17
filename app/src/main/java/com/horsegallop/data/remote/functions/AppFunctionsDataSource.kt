@@ -505,58 +505,6 @@ class AppFunctionsDataSource @Inject constructor(
             .call(hashMapOf("id" to id, "horseId" to horseId)).await()
     }
 
-    // ─── Safety ──────────────────────────────────────────────────────────────
-
-    suspend fun getSafetySettings(): com.horsegallop.data.remote.dto.SafetySettingsFunctionsDto {
-        val result = functions.getHttpsCallable("getSafetySettings").call().await()
-        val map = result.data as? Map<*, *>
-            ?: return com.horsegallop.data.remote.dto.SafetySettingsFunctionsDto()
-        val rawContacts = map["contacts"] as? List<*> ?: emptyList<Any>()
-        val contacts = rawContacts.mapNotNull { item ->
-            (item as? Map<*, *>)?.let { m ->
-                com.horsegallop.data.remote.dto.SafetyContactFunctionsDto(
-                    id = (m["id"] as? String).orEmpty(),
-                    name = (m["name"] as? String).orEmpty(),
-                    phone = (m["phone"] as? String).orEmpty()
-                )
-            }
-        }
-        return com.horsegallop.data.remote.dto.SafetySettingsFunctionsDto(
-            isEnabled = (map["isEnabled"] as? Boolean) ?: false,
-            contacts = contacts,
-            autoAlarmMinutes = (map["autoAlarmMinutes"] as? Number)?.toInt() ?: 5
-        )
-    }
-
-    suspend fun updateSafetyEnabled(isEnabled: Boolean) {
-        functions.getHttpsCallable("updateSafetySettings")
-            .call(hashMapOf("isEnabled" to isEnabled)).await()
-    }
-
-    suspend fun addSafetyContact(
-        name: String,
-        phone: String
-    ): com.horsegallop.data.remote.dto.SafetyContactFunctionsDto {
-        val result = functions.getHttpsCallable("addSafetyContact")
-            .call(hashMapOf("name" to name, "phone" to phone)).await()
-        val map = result.data as? Map<*, *> ?: throw IllegalStateException("Invalid response")
-        return com.horsegallop.data.remote.dto.SafetyContactFunctionsDto(
-            id = (map["id"] as? String) ?: throw IllegalStateException("Missing id"),
-            name = (map["name"] as? String) ?: name,
-            phone = (map["phone"] as? String) ?: phone
-        )
-    }
-
-    suspend fun removeSafetyContact(contactId: String) {
-        functions.getHttpsCallable("removeSafetyContact")
-            .call(hashMapOf("contactId" to contactId)).await()
-    }
-
-    suspend fun triggerSafetyAlarm(lat: Double, lng: Double) {
-        functions.getHttpsCallable("triggerSafetyAlarm")
-            .call(hashMapOf("lat" to lat, "lng" to lng)).await()
-    }
-
     suspend fun getEquestrianAnnouncements(): List<com.horsegallop.data.remote.dto.EquestrianAnnouncementFunctionsDto> {
         val result = functions.getHttpsCallable("getEquestrianAnnouncements").call().await()
         val payload = result.data as? Map<*, *> ?: emptyMap<String, Any?>()

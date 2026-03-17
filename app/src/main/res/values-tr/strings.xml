@@ -594,35 +594,6 @@
     <string name="horse_health_type_label">Etkinlik Türü</string>
     <string name="verification_spam_hint">💡 Mail gelmemişse spam veya önemsiz klasörünü kontrol et</string>
 
-    <!-- Safety Tracking -->
-    <string name="safety_title">Güvenlik Takibi</string>
-    <string name="safety_subtitle">Yalnız binerken güvende kal</string>
-    <string name="safety_section_tracking">Otomatik Alarm</string>
-    <string name="safety_enable_label">Güvenlik takibini etkinleştir</string>
-    <string name="safety_enable_desc">Sürüş sırasında 5 dakika hareket etmezsen güvenilir kişilerini otomatik olarak uyarır</string>
-    <string name="safety_section_contacts">Güvenilir Kişiler</string>
-    <string name="safety_contacts_desc">Acil durumda uyarılacak en fazla 5 kişi</string>
-    <string name="safety_add_contact">Kişi Ekle</string>
-    <string name="safety_contact_name_label">Ad</string>
-    <string name="safety_contact_phone_label">Telefon</string>
-    <string name="safety_add_contact_title">Güvenilir Kişi Ekle</string>
-    <string name="safety_no_contacts">Henüz güvenilir kişi eklenmedi.\nAcil durumda yardım edebilecek birini ekle.</string>
-    <string name="safety_remove_contact_confirm">Bu kişiyi kaldır?</string>
-    <string name="safety_section_location">Canlı Konum</string>
-    <string name="safety_share_location">Konumumu Paylaş</string>
-    <string name="safety_share_location_desc">WhatsApp veya SMS ile gönderebileceğin anlık konum linki oluştur</string>
-    <string name="safety_location_copied">Konum linki kopyalandı!</string>
-    <string name="safety_location_unavailable">Konum henüz alınamadı</string>
-    <string name="safety_alarm_title">İyi misin? 🛡️</string>
-    <string name="safety_alarm_body">5 dakikadır hareket etmiyorsun. Güvenilir kişilerine uyarı gönderelim mi?</string>
-    <string name="safety_alarm_send">Uyarı Gönder</string>
-    <string name="safety_alarm_dismiss">İyiyim</string>
-    <string name="safety_pro_required">Güvenlik takibi Pro üyelik gerektirir</string>
-    <string name="safety_settings_link">Güvenlik Takibi</string>
-    <string name="safety_max_contacts">En fazla 5 kişi eklenebilir</string>
-    <string name="safety_contact_added">Kişi eklendi</string>
-    <string name="safety_contact_removed">Kişi kaldırıldı</string>
-    <string name="safety_alarm_sent">Kişilerine uyarı gönderildi</string>
     <string name="elevation_profile_title">Rakım Profili</string>
 
     <string name="equestrian_agenda_title">Binicilik Gündemi</string>
@@ -779,7 +750,6 @@
     <string name="cd_add_horse">At Ekle</string>
     <string name="cd_favorite_add">Favorilere ekle</string>
     <string name="cd_favorite_remove">Favorilerden çıkar</string>
-    <string name="cd_safety_tracking_toggle">Güvenlik takibini aç/kapat</string>
     <string name="cd_profile_photo">Profil fotoğrafı</string>
     <string name="cd_edit_profile">Profili düzenle</string>
     <string name="cd_see_all_rides">Tüm sürüşleri gör</string>

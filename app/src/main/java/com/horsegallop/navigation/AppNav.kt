@@ -58,7 +58,6 @@ import com.horsegallop.feature.ride.presentation.RideTrackingRoute
 import com.horsegallop.feature.ride.presentation.RideTrackingViewModel
 
 import com.horsegallop.feature.ride.presentation.RideDetailScreen
-import com.horsegallop.feature.safety.presentation.SafetyScreen
 import com.horsegallop.feature.equestrian.presentation.EquestrianAgendaScreen
 import com.horsegallop.feature.challenge.presentation.ChallengeScreen
 import com.horsegallop.feature.aicoach.presentation.AiCoachScreen
@@ -108,7 +107,6 @@ sealed class Dest(val route: String) {
     fun route(horseId: String, horseName: String): String =
       "horseHealth/$horseId/${android.net.Uri.encode(horseName)}"
   }
-  object Safety : Dest("safety")
   object EquestrianAgenda : Dest("equestrianAgenda")
   object HealthCalendar : Dest("health_calendar")
   object AddHealthEvent : Dest("add_health_event")
@@ -389,13 +387,8 @@ fun AppNavHost(
           navController.navigate(Dest.Onboarding.route) {
             popUpTo(Dest.Home.route) { inclusive = true }
           }
-        },
-        onSafety = { navController.navigate(Dest.Safety.route) }
+        }
       )
-    }
-    composable(Dest.Safety.route) {
-      BackHandler { navController.popBackStack() }
-      SafetyScreen(onBack = { navController.popBackStack() })
     }
     composable(Dest.EquestrianAgenda.route) {
       BackHandler { navController.popBackStack() }
