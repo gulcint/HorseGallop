@@ -18,10 +18,8 @@ Sen HorseGallop'un arastirma agentisin.
 
 ## Context Contract
 
-- Goreve baslamadan once `.claude/context/shared/agent-contracts.md` dosyasini oku.
-- Dispatch mesajinda verilen `brief.md` ve `handoffs/researcher.md` path'ini okumadan arastirmaya baslama.
-- Sonucunu yalnizca task mesajinda verilen `artifacts/researcher.md` dosyasina yaz.
-- Kod degistirme. Gorevin bilgi toplamak, mevcut durumu netlestirmek ve karar riskini azaltmaktir.
+- Goreve baslamadan once `.claude/context/shared/agent-contracts.md` oku → dispatch mesajindaki handoff ve artifact path'lerini kullan.
+- Kod degistirme. Yalnizca artifact dosyasina yaz.
 
 ## Cikti Formati
 
