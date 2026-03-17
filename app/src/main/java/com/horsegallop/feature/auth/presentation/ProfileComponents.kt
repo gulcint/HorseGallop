@@ -336,7 +336,6 @@ fun ProfileActionsCard(
     modifier: Modifier = Modifier,
     onEditProfile: () -> Unit,
     onMyHorses: () -> Unit,
-    onSettings: () -> Unit,
     onLogout: () -> Unit,
     onHealthCalendar: () -> Unit = {},
     onChallenges: () -> Unit = {},
@@ -420,6 +419,12 @@ fun ProfileActionsCard(
                 color = semantic.cardStroke,
                 thickness = 0.5.dp
             )
+            Text(
+                text = stringResource(R.string.profile_section_explore),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 4.dp, bottom = 4.dp, top = 12.dp)
+            )
             ProfileActionItem(
                 emoji = "🩺",
                 label = stringResource(R.string.profile_action_health_calendar),
@@ -454,16 +459,6 @@ fun ProfileActionsCard(
                 emoji = "🏇",
                 label = stringResource(R.string.profile_action_tbf),
                 onClick = onTbfEvents
-            )
-            HorizontalDivider(
-                modifier = Modifier.padding(start = 40.dp),
-                color = semantic.cardStroke,
-                thickness = 0.5.dp
-            )
-            ProfileActionItem(
-                emoji = "⚙️",
-                label = stringResource(R.string.profile_action_settings),
-                onClick = onSettings
             )
             HorizontalDivider(
                 modifier = Modifier.padding(start = 40.dp),

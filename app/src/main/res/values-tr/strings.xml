@@ -730,6 +730,7 @@
     <string name="profile_action_challenges">Meydan Okumalar</string>
     <string name="profile_action_ai_coach">AI Koç</string>
     <string name="profile_action_tbf">At Sporları Haberleri</string>
+    <string name="profile_section_explore">Keşfet</string>
     <string name="profile_action_settings">Ayarlar</string>
     <string name="profile_action_logout">Çıkış Yap</string>
     <string name="profile_horses_section_title">Atlarım</string>

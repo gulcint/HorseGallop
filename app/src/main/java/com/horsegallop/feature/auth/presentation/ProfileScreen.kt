@@ -207,7 +207,6 @@ fun ProfileScreen(
                         onEditProfile()
                     },
                     onMyHorses = onMyHorses,
-                    onSettings = onSettings,
                     onLogout = { viewModel.signOut(onLogout) },
                     onHealthCalendar = onHealthCalendar,
                     onChallenges = onChallenges,
@@ -277,7 +276,6 @@ private fun ProfileScreenPreview() {
                 ProfileActionsCard(
                     onEditProfile = {},
                     onMyHorses = {},
-                    onSettings = {},
                     onLogout = {}
                 )
             }
