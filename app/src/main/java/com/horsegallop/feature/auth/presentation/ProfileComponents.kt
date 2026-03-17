@@ -45,6 +45,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -102,11 +104,13 @@ fun ProfileHeroCard(
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 // Avatar
+                val profilePhotoCd = stringResource(R.string.cd_profile_photo)
                 Box(
                     modifier = Modifier
                         .size(80.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f))
+                        .semantics { contentDescription = profilePhotoCd }
                         .clickable(onClick = onPhotoClick),
                     contentAlignment = Alignment.Center
                 ) {
@@ -191,13 +195,13 @@ fun ProfileHeroCard(
                 HeroStatChip(
                     emoji = "📏",
                     value = String.format(Locale.US, "%.1f", totalKm),
-                    label = "km",
+                    label = stringResource(R.string.profile_stat_km),
                     modifier = Modifier.weight(1f)
                 )
                 HeroStatChip(
                     emoji = "⏱",
                     value = String.format(Locale.US, "%.1f", totalHours),
-                    label = "sa",
+                    label = stringResource(R.string.profile_stat_hours),
                     modifier = Modifier.weight(1f)
                 )
                 HeroStatChip(
@@ -364,6 +368,7 @@ fun ProfileActionsCard(
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             // Primary CTA — gradient Edit button
+            val editProfileLabel = stringResource(R.string.profile_edit_button)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -378,6 +383,7 @@ fun ProfileActionsCard(
                             )
                         )
                     )
+                    .semantics { contentDescription = editProfileLabel }
                     .clickable(onClick = onEditProfile)
                     .testTag(ProfileTestTags.EditButton),
                 contentAlignment = Alignment.Center
@@ -393,7 +399,7 @@ fun ProfileActionsCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = "Profili Düzenle",
+                        text = editProfileLabel,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimary
@@ -542,8 +548,11 @@ fun HorsesMiniCard(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
+                val seeAllRidesCd = stringResource(R.string.cd_see_all_rides)
                 Row(
-                    modifier = Modifier.clickable(onClick = onSeeAll),
+                    modifier = Modifier
+                        .semantics { contentDescription = seeAllRidesCd }
+                        .clickable(onClick = onSeeAll),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(2.dp)
                 ) {

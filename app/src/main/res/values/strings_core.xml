@@ -252,7 +252,13 @@
     <string name="ride_sync_completed">Cloud sync completed.</string>
     <string name="ride_sync_failed">Cloud sync failed. Retry required.</string>
     <string name="ride_sync_retry">Retry Sync</string>
-    
+    <string name="auto_detect_on_hint">On — detects ride start automatically</string>
+    <string name="auto_detect_off_hint">Off — start ride manually</string>
+    <string name="ride_auto_stop_title">Complete Ride?</string>
+    <string name="ride_auto_stop_body">No movement detected for 5 minutes. Do you want to complete the ride?</string>
+    <string name="ride_auto_stop_confirm">Yes, Finish</string>
+    <string name="ride_auto_stop_dismiss">Continue</string>
+
     <!-- Auth Errors -->
     <string name="auth_error_cancelled">Sign in cancelled</string>
     <string name="auth_error_firebase">Firebase authentication error</string>
@@ -734,6 +740,8 @@
 
     <!-- Profile Components -->
     <string name="profile_stat_rides">Rides</string>
+    <string name="profile_stat_km">km</string>
+    <string name="profile_stat_hours">hr</string>
     <string name="profile_stat_rating">rating</string>
     <string name="profile_action_my_horses">My Horses</string>
     <string name="profile_action_health_calendar">Health Calendar</string>
@@ -760,5 +768,17 @@
 
     <!-- Subscription terms URL -->
     <string name="subscription_terms_url" translatable="false">https://horsegallop.com/terms</string>
+
+    <!-- Accessibility content descriptions -->
+    <string name="profile_edit_button">Edit Profile</string>
+    <string name="cd_add_horse">Add Horse</string>
+    <string name="cd_favorite_add">Add to favorites</string>
+    <string name="cd_favorite_remove">Remove from favorites</string>
+    <string name="cd_safety_tracking_toggle">Toggle safety tracking</string>
+    <string name="cd_profile_photo">Profile photo</string>
+    <string name="cd_edit_profile">Edit profile</string>
+    <string name="cd_see_all_rides">See all rides</string>
+    <string name="cd_pick_date">Pick date</string>
+    <string name="cd_toggle_password_visibility">Toggle password visibility</string>
 
 </resources>
