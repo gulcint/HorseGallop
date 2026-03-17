@@ -20,11 +20,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Check
@@ -68,6 +70,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.style.TextOverflow
@@ -112,12 +116,14 @@ import java.util.Locale
 fun RideTrackingRoute(
     viewModel: RideTrackingViewModel = hiltViewModel(),
     onHomeClick: () -> Unit = {},
-    onBarnsClick: () -> Unit = {}
+    onBarnsClick: () -> Unit = {},
+    onViewRideHistory: () -> Unit = {}
 ) {
     RideTrackingScreen(
         viewModel = viewModel,
         onHomeClick = onHomeClick,
-        onBarnsClick = onBarnsClick
+        onBarnsClick = onBarnsClick,
+        onViewRideHistory = onViewRideHistory
     )
 }
 
@@ -129,7 +135,8 @@ fun RideTrackingRoute(
 fun RideTrackingScreen(
     viewModel: RideTrackingViewModel,
     onHomeClick: () -> Unit = {},
-    onBarnsClick: () -> Unit = {}
+    onBarnsClick: () -> Unit = {},
+    onViewRideHistory: () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -189,6 +196,7 @@ fun RideTrackingScreen(
             onRideTypeSelected = viewModel::onRideTypeSelected,
             onDismissSavedSummary = viewModel::dismissSavedSummary,
             onRetryPendingSync = viewModel::onRetryPendingSync,
+            onViewRideHistory = onViewRideHistory,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -260,6 +268,7 @@ fun RideTrackingContent(
     onRideTypeSelected: (RideType) -> Unit,
     onDismissSavedSummary: () -> Unit,
     onRetryPendingSync: () -> Unit,
+    onViewRideHistory: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val semantic = LocalSemanticColors.current
@@ -343,6 +352,25 @@ fun RideTrackingContent(
                         onDismiss = onDismissSavedSummary,
                         modifier = Modifier.testTag(RideTestTags.SavedSummaryCard)
                     )
+                }
+                item {
+                    val historyLabel = stringResource(R.string.ride_view_history)
+                    val historyContentDescription = stringResource(R.string.ride_view_history_cd)
+                    OutlinedButton(
+                        onClick = onViewRideHistory,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, end = 16.dp, top = 8.dp)
+                            .semantics { contentDescription = historyContentDescription }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.List,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = historyLabel)
+                    }
                 }
             }
         }

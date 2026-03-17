@@ -67,4 +67,6 @@
     <string name="error_load_lessons">Dersler yüklenemedi</string>
     <string name="error_load_reservations">Rezervasyonlar yüklenemedi</string>
     <string name="error_booking_failed">Rezervasyon başarısız</string>
+    <string name="ride_view_history">Sürüş Geçmişine Git</string>
+    <string name="ride_view_history_cd">Sürüş geçmişine git</string>
 </resources>

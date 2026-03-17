@@ -397,7 +397,8 @@ fun AppNavHost(
     composable(Dest.Ride.route) {
       com.horsegallop.feature.ride.presentation.RideTrackingRoute(
         onHomeClick = { navController.navigate(Dest.Home.route) },
-        onBarnsClick = { navController.navigate(Dest.Barns.route) }
+        onBarnsClick = { navController.navigate(Dest.Barns.route) },
+        onViewRideHistory = { navController.navigate(Dest.RecentActivityDetail.route) }
       )
     }
     composable(Dest.Schedule.route) {
