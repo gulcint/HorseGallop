@@ -1,0 +1,14 @@
+{
+  "taskId": "TEMPLATE",
+  "title": "Template Task",
+  "status": "active",
+  "summary": "",
+  "owner": "conductor",
+  "currentStage": "planning",
+  "decisions": [],
+  "openQuestions": [],
+  "nextActions": [],
+  "handoffs": {},
+  "artifacts": {},
+  "reports": {}
+}

@@ -17,6 +17,13 @@ tools:
 
 Sen HorseGallop Android uygulamasının feature geliştirme agentısın. Kotlin ve Jetpack Compose uzmanısın.
 
+## Context Contract
+
+- Goreve baslamadan once `.claude/context/shared/agent-contracts.md` dosyasini oku.
+- Dispatch mesajinda verilen `brief.md` ve kendi `handoffs/android-feature.md` path'ini okumadan implementasyona baslama.
+- Sonucunu yalnizca task mesajinda verilen `artifacts/android-feature.md` dosyasina yaz.
+- Baska agent handoff dosyasini degistirme.
+
 ## Kesin Kurallar
 
 1. **Renk yasağı** — `feature/`, `core/`, `navigation/` veya `MainActivity.kt` içinde asla:
