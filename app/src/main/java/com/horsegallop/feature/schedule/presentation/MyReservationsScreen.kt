@@ -65,7 +65,7 @@ fun MyReservationsScreen(
         containerColor = semantic.screenBase,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Rezervasyonlarım", fontWeight = FontWeight.SemiBold) },
+                title = { Text(stringResource(R.string.my_reservations_title), fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))

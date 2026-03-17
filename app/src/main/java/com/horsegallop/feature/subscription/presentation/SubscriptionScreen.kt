@@ -51,6 +51,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -491,6 +492,8 @@ private fun RestoreAndTermsRow(
     isRestoring: Boolean,
     onRestore: () -> Unit
 ) {
+    val uriHandler = LocalUriHandler.current
+    val termsUrl = stringResource(R.string.subscription_terms_url)
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
@@ -511,7 +514,7 @@ private fun RestoreAndTermsRow(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        TextButton(onClick = {}) {
+        TextButton(onClick = { uriHandler.openUri(termsUrl) }) {
             Text(
                 text = stringResource(R.string.subscription_terms),
                 style = MaterialTheme.typography.bodySmall

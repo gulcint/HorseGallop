@@ -272,6 +272,12 @@
     <string name="ride_sync_completed">Bulut senkronu tamamlandı.</string>
     <string name="ride_sync_failed">Bulut senkronu başarısız. Tekrar deneyin.</string>
     <string name="ride_sync_retry">Senkronu Tekrar Dene</string>
+    <string name="auto_detect_on_hint">Açık — biniş başlangıcını otomatik algılar</string>
+    <string name="auto_detect_off_hint">Kapalı — binişi manuel başlat</string>
+    <string name="ride_auto_stop_title">Binişi Tamamla?</string>
+    <string name="ride_auto_stop_body">5 dakikadır hareket tespit edilmedi. Binişi tamamlamak ister misin?</string>
+    <string name="ride_auto_stop_confirm">Evet, Bitir</string>
+    <string name="ride_auto_stop_dismiss">Devam Et</string>
     <string name="auth_error_cancelled">Giriş işlemi iptal edildi</string>
     <string name="auth_error_firebase">Firebase kimlik doğrulama hatası</string>
     <string name="auth_error_google">Google ile giriş başarısız</string>
@@ -739,4 +745,44 @@
     <string name="error_load_lessons">Dersler yüklenemedi</string>
     <string name="error_load_reservations">Rezervasyonlar yüklenemedi</string>
     <string name="error_booking_failed">Rezervasyon başarısız</string>
+
+    <!-- Profile Components -->
+    <string name="profile_stat_rides">Sürüş</string>
+    <string name="profile_stat_km">km</string>
+    <string name="profile_stat_hours">sa</string>
+    <string name="profile_stat_rating">puan</string>
+    <string name="profile_action_my_horses">Atlarım</string>
+    <string name="profile_action_health_calendar">Sağlık Takvimi</string>
+    <string name="profile_action_challenges">Meydan Okumalar</string>
+    <string name="profile_action_ai_coach">AI Koç</string>
+    <string name="profile_action_tbf">TBF Yarışmaları</string>
+    <string name="profile_action_settings">Ayarlar</string>
+    <string name="profile_action_logout">Çıkış Yap</string>
+    <string name="profile_horses_section_title">Atlarım</string>
+    <string name="profile_horses_see_all">Tümü</string>
+    <string name="profile_horses_empty">Henüz at eklemediniz.</string>
+    <string name="profile_notifications_cd">Bildirimler</string>
+
+    <!-- My Reservations / My Horses -->
+    <string name="my_reservations_title">Rezervasyonlarım</string>
+    <string name="my_horses_title">Atlarım</string>
+    <string name="horse_health_cd">Sağlık</string>
+
+    <!-- AddHealthEvent horse selector -->
+    <string name="health_select_horse_label">At Seçin</string>
+    <string name="health_select_horse_placeholder">Seçiniz…</string>
+    <string name="health_horse_not_found">At bulunamadı</string>
+    <string name="health_horse_field_label">At</string>
+
+    <!-- Accessibility content descriptions -->
+    <string name="profile_edit_button">Profili Düzenle</string>
+    <string name="cd_add_horse">At Ekle</string>
+    <string name="cd_favorite_add">Favorilere ekle</string>
+    <string name="cd_favorite_remove">Favorilerden çıkar</string>
+    <string name="cd_safety_tracking_toggle">Güvenlik takibini aç/kapat</string>
+    <string name="cd_profile_photo">Profil fotoğrafı</string>
+    <string name="cd_edit_profile">Profili düzenle</string>
+    <string name="cd_see_all_rides">Tüm sürüşleri gör</string>
+    <string name="cd_pick_date">Tarih seç</string>
+    <string name="cd_toggle_password_visibility">Şifre görünürlüğünü değiştir</string>
 </resources>
