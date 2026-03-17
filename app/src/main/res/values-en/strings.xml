@@ -397,6 +397,10 @@
     <string name="add_horse_weight_add">Add</string>
     <string name="add_horse_save_button">Save</string>
     <string name="add_horse_cancel">Cancel</string>
+    <string name="add_horse_quick_mode_label">Quick Add (name only)</string>
+    <string name="add_horse_discard_title">Discard changes?</string>
+    <string name="add_horse_discard_message">You have unsaved data. Are you sure you want to go back?</string>
+    <string name="add_horse_discard_confirm">Discard</string>
 
     <string name="enrollment_title">Sign Up</string>
     <string name="verify_email_title">Verify your email</string>
@@ -566,6 +570,11 @@
     <string name="subscription_already_pro_subtitle">You have full access to all features.</string>
     <string name="subscription_plan_yearly_savings">2 months free</string>
     <string name="subscription_guarantee">30-day money-back guarantee</string>
+    <string name="pro_features_title">What\'s included in Pro</string>
+    <string name="pro_feature_gait">Color-coded gait analysis</string>
+    <string name="pro_feature_training">Unlimited training plans</string>
+    <string name="pro_feature_calories">Horse calorie tracking</string>
+    <string name="pro_feature_challenges">Advanced challenges &amp; badges</string>
     <!-- ProGate -->
     <string name="pro_gate_requires_pro">This feature requires Pro membership</string>
     <string name="pro_gate_upgrade">Go Pro</string>
@@ -687,6 +696,7 @@
     <string name="ai_coach_thinking">Thinking...</string>
     <string name="ai_coach_send">Send</string>
     <string name="ai_coach_error">Unable to get response. Please try again.</string>
+    <string name="ai_coach_context_hint">Using your last ride data as context</string>
 
     <!-- TBF Events -->
     <string name="tbf_events_title">TBF Competitions</string>
@@ -747,6 +757,20 @@
     <string name="my_horses_title">My Horses</string>
     <string name="horse_health_cd">Health</string>
 
+    <!-- Schedule tabs -->
+    <string name="schedule_tab_browse">Find Lessons</string>
+    <string name="schedule_tab_reservations">My Reservations</string>
+    <!-- My Reservations empty state -->
+    <string name="my_reservations_empty_title">No reservations yet</string>
+    <string name="my_reservations_empty_subtitle">You can make a reservation from the lesson schedule.</string>
+    <string name="my_reservations_go_to_schedule">Go to Lesson Schedule</string>
+    <!-- Reservation dialog actions -->
+    <string name="reservation_cancel_title">Cancel Reservation</string>
+    <string name="reservation_cancel_confirm">Are you sure you want to cancel your reservation for \"%1$s\"?</string>
+    <string name="reservation_cancel_action">Cancel</string>
+    <string name="cancel_dismiss">Go Back</string>
+    <string name="reservation_review_action">⭐ Review</string>
+
     <!-- AddHealthEvent horse selector -->
     <string name="health_select_horse_label">Select Horse</string>
     <string name="health_select_horse_placeholder">Select…</string>
@@ -765,4 +789,5 @@
     <string name="cd_toggle_password_visibility">Toggle password visibility</string>
     <string name="ride_view_history">View Ride History</string>
     <string name="ride_view_history_cd">View ride history</string>
+    <string name="ride_active_challenges">%1$d active challenge(s)</string>
 </resources>

@@ -414,6 +414,10 @@
     <string name="add_horse_weight_add">Add</string>
     <string name="add_horse_save_button">Save</string>
     <string name="add_horse_cancel">Cancel</string>
+    <string name="add_horse_quick_mode_label">Quick Add (name only)</string>
+    <string name="add_horse_discard_title">Discard changes?</string>
+    <string name="add_horse_discard_message">You have unsaved data. Are you sure you want to go back?</string>
+    <string name="add_horse_discard_confirm">Discard</string>
 
     <!-- Enrollment -->
     <string name="enrollment_title">Sign Up</string>
@@ -584,6 +588,11 @@
     <string name="subscription_already_pro_subtitle">You have full access to all features.</string>
     <string name="subscription_plan_yearly_savings">2 months free</string>
     <string name="subscription_guarantee">30-day money-back guarantee</string>
+    <string name="pro_features_title">What\'s included in Pro</string>
+    <string name="pro_feature_gait">Color-coded gait analysis</string>
+    <string name="pro_feature_training">Unlimited training plans</string>
+    <string name="pro_feature_calories">Horse calorie tracking</string>
+    <string name="pro_feature_challenges">Advanced challenges &amp; badges</string>
     <!-- ProGate -->
     <string name="pro_gate_requires_pro">This feature requires Pro membership</string>
     <string name="pro_gate_upgrade">Go Pro</string>
@@ -752,5 +761,6 @@
     <string name="cd_see_all_rides">See all rides</string>
     <string name="cd_pick_date">Pick date</string>
     <string name="cd_toggle_password_visibility">Toggle password visibility</string>
+
 
 </resources>
