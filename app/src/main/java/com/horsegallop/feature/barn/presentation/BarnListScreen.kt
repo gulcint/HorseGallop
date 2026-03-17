@@ -84,6 +84,7 @@ import com.horsegallop.core.components.ViewAllButton
 import com.horsegallop.core.components.HorseGallopSearchBar
 import com.horsegallop.domain.barn.model.BarnUi
 import com.horsegallop.domain.barn.model.BarnWithLocation
+import com.horsegallop.R
 import com.horsegallop.ui.theme.LocalSemanticColors
 
 
@@ -371,7 +372,7 @@ fun BarnCard(barn: BarnUi, distanceKm: Double? = null, onClick: () -> Unit, onFa
                 IconButton(onClick = onFavoriteClick) {
                     Icon(
                         imageVector = if (barn.isFavorite) Icons.Filled.Star else Icons.Filled.StarBorder,
-                        contentDescription = if (barn.isFavorite) "Remove from favorites" else "Add to favorites",
+                        contentDescription = if (barn.isFavorite) stringResource(R.string.cd_favorite_remove) else stringResource(R.string.cd_favorite_add),
                         tint = if (barn.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                         modifier = Modifier.size(28.dp)
                     )

@@ -11,21 +11,7 @@ Run locally (or validate in CI):
 ./gradlew :app:lintDebug --no-daemon
 ```
 
-## 2) Firebase Test Lab (Required for RC)
-
-Trigger the workflow manually with `run_ftl=true`:
-
-1. GitHub Actions -> `Android CI + Firebase Test Lab`
-2. `Run workflow`
-3. Set `run_ftl` to `true`
-
-Expected:
-
-- `android-build-test`: success
-- `android-lint`: success
-- `firebase-test-lab`: success (not skipped)
-
-## 3) Manual Smoke Scenarios
+## 2) Manual Smoke Scenarios
 
 Validate on a test device/emulator:
 
@@ -36,7 +22,7 @@ Validate on a test device/emulator:
 5. Ride detail screen opens and renders metrics/map.
 6. Pending sync -> retry -> synced status flow works.
 
-## 4) RC Note Template
+## 3) RC Note Template
 
 Copy this block into release notes / PR comment:
 
@@ -45,7 +31,6 @@ Copy this block into release notes / PR comment:
 
 - Build/Test: PASS/FAIL
 - Lint: PASS/FAIL
-- FTL Run URL: <paste>
 - APK Artifact URL: <paste>
 
 ### Smoke

@@ -2554,3 +2554,111 @@ export const getSubscriptionStatus = onCall({ region: "us-central1" }, async (re
     expiresAt: isActive ? expiresAt : null,
   };
 });
+
+export const createManagedLesson = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Login required");
+  }
+  const uid = request.auth.uid;
+  const data = request.data as Record<string, unknown>;
+
+  const barnId = parseRequiredId(data["barnId"], "barnId");
+  const title = parseRequiredId(data["title"], "title");
+  const instructorName = parseRequiredId(data["instructorName"], "instructorName");
+
+  const startTimeMs = data["startTimeMs"];
+  if (typeof startTimeMs !== "number") {
+    throw new HttpsError("invalid-argument", "startTimeMs required");
+  }
+  const durationMin = data["durationMin"];
+  if (typeof durationMin !== "number") {
+    throw new HttpsError("invalid-argument", "durationMin required");
+  }
+  const level = parseRequiredId(data["level"], "level");
+  const price = data["price"];
+  if (typeof price !== "number") {
+    throw new HttpsError("invalid-argument", "price required");
+  }
+  const spotsTotal = data["spotsTotal"];
+  if (typeof spotsTotal !== "number") {
+    throw new HttpsError("invalid-argument", "spotsTotal required");
+  }
+
+  // Ahır sahibi kontrolü
+  const barnSnap = await db.collection("barns").doc(barnId).get();
+  if (!barnSnap.exists) {
+    throw new HttpsError("not-found", "Barn not found");
+  }
+  const barnData = barnSnap.data() ?? {};
+  if (barnData["ownerId"] !== uid) {
+    throw new HttpsError("permission-denied", "Only the barn owner can create lessons");
+  }
+
+  const lessonRef = db.collection("lessons").doc();
+  const lesson = {
+    barnId,
+    title,
+    instructorName,
+    startTimeMs,
+    durationMin,
+    level,
+    price,
+    spotsTotal,
+    bookedCount: 0,
+    status: "active",
+    createdAt: Date.now(),
+  };
+
+  await lessonRef.set(lesson);
+
+  return {
+    id: lessonRef.id,
+    barnId,
+    title,
+    instructorName,
+    startTimeMs,
+    durationMin,
+    level,
+    price,
+    spotsTotal,
+    bookedCount: 0,
+    status: "active",
+  };
+});
+
+export const cancelManagedLesson = onCall({ region: "us-central1" }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Login required");
+  }
+  const uid = request.auth.uid;
+  const data = request.data as Record<string, unknown>;
+
+  const lessonId = parseRequiredId(data["lessonId"], "lessonId");
+
+  const lessonSnap = await db.collection("lessons").doc(lessonId).get();
+  if (!lessonSnap.exists) {
+    throw new HttpsError("not-found", "Lesson not found");
+  }
+  const lessonData = lessonSnap.data() ?? {};
+  const barnId = lessonData["barnId"] as string | undefined;
+  if (!barnId) {
+    throw new HttpsError("internal", "Lesson has no barnId");
+  }
+
+  // Ahır sahibi kontrolü
+  const barnSnap = await db.collection("barns").doc(barnId).get();
+  if (!barnSnap.exists) {
+    throw new HttpsError("not-found", "Barn not found");
+  }
+  const barnData = barnSnap.data() ?? {};
+  if (barnData["ownerId"] !== uid) {
+    throw new HttpsError("permission-denied", "Only the barn owner can cancel lessons");
+  }
+
+  await db.collection("lessons").doc(lessonId).set(
+    { status: "cancelled" },
+    { merge: true }
+  );
+
+  return { success: true };
+});

@@ -96,7 +96,7 @@ fun PasswordFieldSection(
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
                     Icon(
                         imageVector = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                        contentDescription = null
+                        contentDescription = stringResource(R.string.cd_toggle_password_visibility)
                     )
                 }
             },

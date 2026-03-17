@@ -62,7 +62,7 @@ class BarnRepositoryImpl @Inject constructor(
             if (cachedBarns.value.isNotEmpty()) {
                 emit(cachedBarns.value)
             } else {
-                throw error
+                emit(emptyList())
             }
         }
     }

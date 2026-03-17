@@ -110,6 +110,7 @@ Bu komut su dosyalari olusturur:
 - `open-questions.md`
 - `artifacts/index.md`
 
+
 ### QA Gate — Atlanamaz
 
 Her implementasyon sonrası `qa-verifier` **zorunludur**:

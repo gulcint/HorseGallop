@@ -81,7 +81,7 @@ fun HorseListScreen(
                 onClick = onAddHorse,
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "At Ekle", tint = MaterialTheme.colorScheme.onPrimary)
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_add_horse), tint = MaterialTheme.colorScheme.onPrimary)
             }
         }
     ) { innerPadding ->
