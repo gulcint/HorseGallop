@@ -1,5 +1,6 @@
 package com.horsegallop.feature.horse.presentation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -35,6 +36,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -122,6 +124,14 @@ private fun AddHorseContent(
     var weightEnabled by remember { mutableStateOf(false) }
     var selectedGender by remember { mutableStateOf(HorseGender.UNKNOWN) }
     var nameError by remember { mutableStateOf(false) }
+    var quickMode by remember { mutableStateOf(true) }
+    var showDiscardDialog by remember { mutableStateOf(false) }
+
+    val hasUnsavedData = name.isNotBlank()
+
+    BackHandler(enabled = hasUnsavedData) {
+        showDiscardDialog = true
+    }
 
     // Doğum yılı alanında yıl + yaş göster ("2018 (8 yaşında)")
     val birthYearDisplay = selectedBirthYear?.let { year ->
@@ -156,7 +166,9 @@ private fun AddHorseContent(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = {
+                        if (hasUnsavedData) showDiscardDialog = true else onBack()
+                    }) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
@@ -185,7 +197,25 @@ private fun AddHorseContent(
                 currentYear = currentYear
             )
 
-            // Temel Bilgiler Kartı
+            // Hızlı / Detaylı mod toggle
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.add_horse_quick_mode_label),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Switch(
+                    checked = quickMode,
+                    onCheckedChange = { quickMode = it }
+                )
+            }
+
+            // Temel Bilgiler Kartı — isim + cinsiyet her zaman görünür; ırk sadece detaylı modda
             AddHorseSection(title = stringResource(R.string.add_horse_section_basic)) {
                 HorseGallopTextField(
                     value = name,
@@ -203,15 +233,6 @@ private fun AddHorseContent(
                     )
                 }
 
-                HorseGallopDropdown(
-                    value = selectedBreed,
-                    onValueChange = { selectedBreed = it },
-                    options = breedOptions,
-                    label = stringResource(R.string.add_horse_breed_label),
-                    placeholder = stringResource(R.string.add_horse_select_hint),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
                 ChipSelector(
                     title = stringResource(R.string.add_horse_gender_label),
                     options = HorseGender.entries,
@@ -219,33 +240,46 @@ private fun AddHorseContent(
                     onSelect = { selectedGender = it },
                     label = { it.displayName }
                 )
+
+                if (!quickMode) {
+                    HorseGallopDropdown(
+                        value = selectedBreed,
+                        onValueChange = { selectedBreed = it },
+                        options = breedOptions,
+                        label = stringResource(R.string.add_horse_breed_label),
+                        placeholder = stringResource(R.string.add_horse_select_hint),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
 
-            // Fiziksel Özellikler Kartı
-            AddHorseSection(title = stringResource(R.string.add_horse_section_physical)) {
-                ChipSelector(
-                    title = stringResource(R.string.add_horse_color_label),
-                    options = COAT_COLORS,
-                    selected = selectedColor,
-                    onSelect = { selectedColor = it },
-                    label = { it }
-                )
+            // Fiziksel Özellikler Kartı — sadece detaylı modda gösterilir
+            if (!quickMode) {
+                AddHorseSection(title = stringResource(R.string.add_horse_section_physical)) {
+                    ChipSelector(
+                        title = stringResource(R.string.add_horse_color_label),
+                        options = COAT_COLORS,
+                        selected = selectedColor,
+                        onSelect = { selectedColor = it },
+                        label = { it }
+                    )
 
-                // Doğum yılı — seçildikten sonra yaş da gösterir
-                HorseGallopDatePicker(
-                    value = birthYearDisplay,
-                    onDateSelected = { showYearPicker = true },
-                    label = stringResource(R.string.add_horse_birth_year_label),
-                    placeholder = stringResource(R.string.add_horse_select_hint),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    // Doğum yılı — seçildikten sonra yaş da gösterir
+                    HorseGallopDatePicker(
+                        value = birthYearDisplay,
+                        onDateSelected = { showYearPicker = true },
+                        label = stringResource(R.string.add_horse_birth_year_label),
+                        placeholder = stringResource(R.string.add_horse_select_hint),
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                WeightSection(
-                    weightEnabled = weightEnabled,
-                    weightSlider = weightSlider,
-                    onEnable = { weightEnabled = true },
-                    onWeightChange = { weightSlider = it }
-                )
+                    WeightSection(
+                        weightEnabled = weightEnabled,
+                        weightSlider = weightSlider,
+                        onEnable = { weightEnabled = true },
+                        onWeightChange = { weightSlider = it }
+                    )
+                }
             }
 
             // Hata kartı — daha görünür ve bilgilendirici
@@ -295,6 +329,28 @@ private fun AddHorseContent(
 
             Spacer(Modifier.height(24.dp))
         }
+    }
+
+    // Geri tuşu ile form verisini kaybetmeyi önleme dialogu
+    if (showDiscardDialog) {
+        AlertDialog(
+            onDismissRequest = { showDiscardDialog = false },
+            title = { Text(stringResource(R.string.add_horse_discard_title)) },
+            text = { Text(stringResource(R.string.add_horse_discard_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDiscardDialog = false
+                    onBack()
+                }) {
+                    Text(stringResource(R.string.add_horse_discard_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDiscardDialog = false }) {
+                    Text(stringResource(R.string.add_horse_cancel))
+                }
+            }
+        )
     }
 
     // Kaydetme sırasında tam ekran yükleme overlay'i
