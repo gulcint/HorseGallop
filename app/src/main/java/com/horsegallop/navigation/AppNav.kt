@@ -407,7 +407,12 @@ fun AppNavHost(
       )
     }
     composable(Dest.Schedule.route) {
-      ScheduleRoute(onMyReservations = { navController.navigate(Dest.MyReservations.route) })
+      ScheduleRoute(
+        onMyReservations = { navController.navigate(Dest.MyReservations.route) },
+        onWriteReview = { lessonId, lessonTitle ->
+          navController.navigate(Dest.WriteReview.route(lessonId, "lesson", lessonTitle))
+        }
+      )
     }
     composable(Dest.MyReservations.route) {
       BackHandler { navController.popBackStack() }

@@ -59,7 +59,6 @@ fun MyReservationsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val semantic = LocalSemanticColors.current
-    var cancelTarget by remember { mutableStateOf<Reservation?>(null) }
 
     Scaffold(
         containerColor = semantic.screenBase,
@@ -74,32 +73,64 @@ fun MyReservationsScreen(
             )
         }
     ) { innerPadding ->
-        if (uiState.reservations.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp),
-                contentAlignment = Alignment.Center
+        MyReservationsContent(
+            uiState = uiState,
+            onWriteReview = onWriteReview,
+            onCancelReservation = { reservationId -> viewModel.cancelReservation(reservationId) },
+            modifier = Modifier.padding(innerPadding),
+            onBack = onBack
+        )
+    }
+}
+
+@Composable
+fun MyReservationsContent(
+    uiState: ScheduleUiState,
+    onWriteReview: (lessonId: String, lessonTitle: String) -> Unit = { _, _ -> },
+    onCancelReservation: (reservationId: String) -> Unit = {},
+    onBack: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    var cancelTarget by remember { mutableStateOf<Reservation?>(null) }
+
+    if (uiState.reservations.isEmpty()) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("🐴", style = MaterialTheme.typography.displayMedium)
-                    Text("Henüz rezervasyonunuz yok", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                    Text("Ders programından rezervasyon yapabilirsiniz.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.size(8.dp))
-                    Button(onClick = onBack) { Text("Ders Programına Git") }
-                }
+                Text("\uD83D\uDC34", style = MaterialTheme.typography.displayMedium)
+                Text(
+                    stringResource(R.string.my_reservations_empty_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    stringResource(R.string.my_reservations_empty_subtitle),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.size(8.dp))
+                Button(onClick = onBack) { Text(stringResource(R.string.my_reservations_go_to_schedule)) }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                items(uiState.reservations, key = { it.id }) { reservation ->
-                    ReservationCard(
-                        reservation = reservation,
-                        onCancel = { cancelTarget = reservation },
-                        onReview = { onWriteReview(reservation.lessonId, reservation.lessonTitle) }
-                    )
-                }
+        }
+    } else {
+        LazyColumn(
+            modifier = modifier.fillMaxSize(),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            items(uiState.reservations, key = { it.id }) { reservation ->
+                ReservationCard(
+                    reservation = reservation,
+                    onCancel = { cancelTarget = reservation },
+                    onReview = { onWriteReview(reservation.lessonId, reservation.lessonTitle) }
+                )
             }
         }
     }
@@ -107,19 +138,19 @@ fun MyReservationsScreen(
     cancelTarget?.let { reservation ->
         AlertDialog(
             onDismissRequest = { cancelTarget = null },
-            title = { Text("Rezervasyonu İptal Et") },
-            text = { Text("\"${reservation.lessonTitle}\" dersine ait rezervasyonunuzu iptal etmek istediğinize emin misiniz?") },
+            title = { Text(stringResource(R.string.reservation_cancel_title)) },
+            text = { Text(stringResource(R.string.reservation_cancel_confirm, reservation.lessonTitle)) },
             confirmButton = {
                 Button(
                     onClick = {
-                        viewModel.cancelReservation(reservation.id)
+                        onCancelReservation(reservation.id)
                         cancelTarget = null
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text("İptal Et") }
+                ) { Text(stringResource(R.string.reservation_cancel_action)) }
             },
             dismissButton = {
-                TextButton(onClick = { cancelTarget = null }) { Text("Vazgeç") }
+                TextButton(onClick = { cancelTarget = null }) { Text(stringResource(R.string.cancel_dismiss)) }
             }
         )
     }
@@ -140,6 +171,36 @@ private fun MyReservationsScreenPreview() {
             ),
             onCancel = {},
             onReview = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MyReservationsContentPreview() {
+    MaterialTheme {
+        MyReservationsContent(
+            uiState = ScheduleUiState(
+                loading = false,
+                reservations = listOf(
+                    Reservation(
+                        id = "res-1",
+                        lessonId = "lesson-1",
+                        lessonTitle = "Temel Binicilik",
+                        lessonDate = "Cumartesi, 15 Mart 10:00",
+                        instructorName = "Ahmet Yılmaz",
+                        status = ReservationStatus.CONFIRMED
+                    ),
+                    Reservation(
+                        id = "res-2",
+                        lessonId = "lesson-2",
+                        lessonTitle = "İleri Atlama",
+                        lessonDate = "Pazar, 16 Mart 14:00",
+                        instructorName = "Zeynep Kaya",
+                        status = ReservationStatus.COMPLETED
+                    )
+                )
+            )
         )
     }
 }
@@ -191,7 +252,7 @@ private fun ReservationCard(reservation: Reservation, onCancel: () -> Unit, onRe
                     onClick = onReview,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("⭐ Değerlendir", style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(R.string.reservation_review_action), style = MaterialTheme.typography.labelMedium)
                 }
             }
             if (reservation.status == ReservationStatus.CONFIRMED || reservation.status == ReservationStatus.PENDING) {
@@ -201,7 +262,7 @@ private fun ReservationCard(reservation: Reservation, onCancel: () -> Unit, onRe
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f))
                 ) {
-                    Text("Rezervasyonu İptal Et", style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(R.string.reservation_cancel_action), style = MaterialTheme.typography.labelMedium)
                 }
             }
         }
