@@ -26,7 +26,7 @@
     <string name="error_email_invalid">Geçersiz e-posta</string>
     <string name="error_password_length">Şifre en az 10 karakter olmalı</string>
     <!-- Health Calendar (cross-horse) -->
-    <string name="health_calendar_title">Sağlık Takvimi</string>
+    <string name="health_calendar_title">Sağlık Takvimim</string>
     <string name="health_event_type_farrier">Nalbant</string>
     <string name="health_event_type_vaccine">Aşı</string>
     <string name="health_event_type_dental">Diş Bakımı</string>

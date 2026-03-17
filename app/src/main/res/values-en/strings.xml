@@ -26,7 +26,7 @@
     <string name="error_email_invalid">Enter a valid email</string>
     <string name="error_password_length">Password must be at least 10 characters</string>
     <!-- Health Calendar (cross-horse) -->
-    <string name="health_calendar_title">Health Calendar</string>
+    <string name="health_calendar_title">My Health Calendar</string>
     <string name="health_event_type_farrier">Farrier</string>
     <string name="health_event_type_vaccine">Vaccine</string>
     <string name="health_event_type_dental">Dental Care</string>
