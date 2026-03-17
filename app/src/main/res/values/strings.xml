@@ -32,6 +32,7 @@
     <string name="ai_coach_thinking">Düşünüyor...</string>
     <string name="ai_coach_send">Gönder</string>
     <string name="ai_coach_error">Yanıt alınamadı. Lütfen tekrar deneyin.</string>
+    <string name="ai_coach_context_hint">Son sürüş verilerin baz alınıyor</string>
 
     <!-- TBF Events -->
     <string name="tbf_events_title">TBF Yarışmaları</string>
@@ -69,4 +70,17 @@
     <string name="error_booking_failed">Rezervasyon başarısız</string>
     <string name="ride_view_history">Sürüş Geçmişine Git</string>
     <string name="ride_view_history_cd">Sürüş geçmişine git</string>
+    <string name="ride_active_challenges">%1$d aktif meydan okuma</string>
+
+    <!-- Schedule / Reservations -->
+    <string name="schedule_tab_browse">Ders Bul</string>
+    <string name="schedule_tab_reservations">Rezervasyonlarım</string>
+    <string name="my_reservations_empty_title">Henüz rezervasyonunuz yok</string>
+    <string name="my_reservations_empty_subtitle">Ders programından rezervasyon yapabilirsiniz.</string>
+    <string name="my_reservations_go_to_schedule">Ders Programına Git</string>
+    <string name="reservation_cancel_title">Rezervasyonu İptal Et</string>
+    <string name="reservation_cancel_confirm">\"%1$s\" dersine ait rezervasyonunuzu iptal etmek istediğinize emin misiniz?</string>
+    <string name="reservation_cancel_action">İptal Et</string>
+    <string name="cancel_dismiss">Vazgeç</string>
+    <string name="reservation_review_action">⭐ Değerlendir</string>
 </resources>
