@@ -797,4 +797,11 @@
     <string name="my_reviews_empty">You haven\'t written any reviews yet.</string>
     <string name="profile_action_my_reviews">My Reviews</string>
     <string name="tbf_view_calendar">TBF Activity Calendar</string>
+
+    <!-- TBF Activity Calendar (Chunk 4) -->
+    <string name="tbf_activity_calendar">Activity Calendar</string>
+    <string name="tbf_no_events_day">No events on this day</string>
+    <string name="tbf_filter_all">All</string>
+    <string name="tbf_previous_month_cd">Previous month</string>
+    <string name="tbf_next_month_cd">Next month</string>
 </resources>

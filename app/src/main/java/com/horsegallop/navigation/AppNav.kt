@@ -630,7 +630,9 @@ fun AppNavHost(
     }
     composable(Dest.TbfActivityCalendar.route) {
       BackHandler { navController.popBackStack() }
-      // TODO Chunk 4: TbfActivityScreen(onNavigateBack = { navController.popBackStack() })
+      com.horsegallop.feature.equestrian.presentation.TbfActivityScreen(
+        onNavigateBack = { navController.popBackStack() }
+      )
     }
     composable(
       route = Dest.TbfEventDetail.route,

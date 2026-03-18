@@ -793,4 +793,11 @@
     <string name="my_reviews_empty">Henüz değerlendirme yapmadınız.</string>
     <string name="profile_action_my_reviews">Değerlendirmelerim</string>
     <string name="tbf_view_calendar">TBF Etkinlik Takvimi</string>
+
+    <!-- TBF Activity Calendar (Chunk 4) -->
+    <string name="tbf_activity_calendar">Faaliyet Takvimi</string>
+    <string name="tbf_no_events_day">Bu gün etkinlik yok</string>
+    <string name="tbf_filter_all">Tümü</string>
+    <string name="tbf_previous_month_cd">Önceki ay</string>
+    <string name="tbf_next_month_cd">Sonraki ay</string>
 </resources>
