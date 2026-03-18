@@ -556,8 +556,9 @@ class SupabaseDataSource @Inject constructor(
         supabase.from("tbf_activities").select {
             filter {
                 if (yearMonth != null) {
+                    val ym = java.time.YearMonth.parse(yearMonth)
                     gte("start_date", "$yearMonth-01")
-                    lte("start_date", "$yearMonth-31")
+                    lte("start_date", ym.atEndOfMonth().toString())
                 }
                 if (discipline != null) eq("discipline", discipline)
             }
