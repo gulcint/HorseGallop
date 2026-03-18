@@ -565,6 +565,8 @@
     <string name="subscription_terms">Koşullar</string>
     <string name="subscription_purchase_failed">Satın alma başarısız. Lütfen tekrar dene.</string>
     <string name="subscription_restore_failed">Geri yükleme başarısız. Tekrar dene.</string>
+    <string name="subscription_verification_failed">Satın alma doğrulaması başarısız. Lütfen destek ekibiyle iletişime geç.</string>
+    <string name="subscription_payment_unavailable">Ödeme şu an kullanılamıyor. Lütfen tekrar dene.</string>
     <string name="subscription_already_pro">Zaten Pro üyesin!</string>
     <string name="subscription_already_pro_title">Pro Üyeliğin Aktif 🎉</string>
     <string name="subscription_already_pro_subtitle">Tüm özelliklere tam erişimin var.</string>

@@ -79,6 +79,7 @@ fun ScheduleRoute(
         onRetry = { viewModel.refresh() },
         onBookLesson = { lessonId -> viewModel.bookLesson(lessonId) },
         onClearBookingState = { viewModel.clearBookingState() },
+        onMyReservations = onMyReservations,
         onWriteReview = onWriteReview,
         onCancelReservation = { reservationId -> viewModel.cancelReservation(reservationId) }
     )
@@ -93,6 +94,7 @@ fun ScheduleScreen(
     onRetry: () -> Unit = {},
     onBookLesson: (String) -> Unit = {},
     onClearBookingState: () -> Unit = {},
+    onMyReservations: () -> Unit = {},
     onWriteReview: (lessonId: String, lessonTitle: String) -> Unit = { _, _ -> },
     onCancelReservation: (reservationId: String) -> Unit = {}
 ) {

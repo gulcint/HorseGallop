@@ -59,7 +59,7 @@ class AiCoachViewModel @Inject constructor(
     private fun buildRideContext(ride: RideSession): String {
         val durationMin = ride.durationSec / 60
         return "Son sürüş: ${ride.distanceKm} km, $durationMin dk, " +
-                "ortalama ${ride.avgSpeedKmh} km/h."
+                "ortalama ${ride.avgSpeedKmh} km/s."
     }
 
     fun onInputChange(text: String) {

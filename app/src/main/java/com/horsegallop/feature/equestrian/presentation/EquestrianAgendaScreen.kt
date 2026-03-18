@@ -648,6 +648,7 @@ private fun TbfTabContent(
     onEventClick: (venueCode: String, eventIndex: Int) -> Unit
 ) {
     val state by viewModel.ui.collectAsState()
+    val semantic = LocalSemanticColors.current
 
     when {
         state.isLoading -> {
