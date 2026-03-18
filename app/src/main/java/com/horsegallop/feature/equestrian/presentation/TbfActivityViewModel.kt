@@ -79,6 +79,10 @@ class TbfActivityViewModel @Inject constructor(
         }
     }
 
+    fun clearAllFilters() {
+        _uiState.update { it.copy(disciplineFilters = emptySet()) }
+    }
+
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }

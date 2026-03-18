@@ -27,12 +27,12 @@ data class TbfActivity(
 
 enum class TbfDiscipline(val displayNameTr: String) {
     SHOW_JUMPING("Engel Atlama"),
-    ENDURANCE("Atli Dayaniklilik"),
+    ENDURANCE("Atlı Dayanıklılık"),
     DRESSAGE("At Terbiyesi"),
     PONY("Pony"),
-    VAULTING("Atli Cimnastik"),
-    EVENTING("Uc Gunluk"),
-    OTHER("Diger");
+    VAULTING("Atlı Cimnastik"),
+    EVENTING("Üç Günlük"),
+    OTHER("Diğer");
 
     companion object {
         fun fromString(value: String): TbfDiscipline =
@@ -41,16 +41,16 @@ enum class TbfDiscipline(val displayNameTr: String) {
 }
 
 enum class TbfActivityType(val displayNameTr: String) {
-    INTERNATIONAL("Uluslararasi"),
-    CHAMPIONSHIP("Sampiyona"),
+    INTERNATIONAL("Uluslararası"),
+    CHAMPIONSHIP("Şampiyona"),
     CUP("Kupa"),
-    INCENTIVE("Tesvik"),
-    EDUCATION("Egitim"),
-    CATEGORY_EXAM("Kategori Sinavi"),
+    INCENTIVE("Teşvik"),
+    EDUCATION("Eğitim"),
+    CATEGORY_EXAM("Kategori Sınavı"),
     SEMINAR("Seminer"),
     CONFERENCE("Konferans"),
-    WORKSHOP("Calistay"),
-    OTHER("Diger");
+    WORKSHOP("Çalıştay"),
+    OTHER("Diğer");
 
     companion object {
         fun fromString(value: String): TbfActivityType =
@@ -60,15 +60,15 @@ enum class TbfActivityType(val displayNameTr: String) {
 
 fun Month.turkishName(): String = when (this) {
     Month.JANUARY -> "Ocak"
-    Month.FEBRUARY -> "Subat"
+    Month.FEBRUARY -> "Şubat"
     Month.MARCH -> "Mart"
     Month.APRIL -> "Nisan"
-    Month.MAY -> "Mayis"
+    Month.MAY -> "Mayıs"
     Month.JUNE -> "Haziran"
     Month.JULY -> "Temmuz"
-    Month.AUGUST -> "Agustos"
-    Month.SEPTEMBER -> "Eylul"
+    Month.AUGUST -> "Ağustos"
+    Month.SEPTEMBER -> "Eylül"
     Month.OCTOBER -> "Ekim"
-    Month.NOVEMBER -> "Kasim"
-    Month.DECEMBER -> "Aralik"
+    Month.NOVEMBER -> "Kasım"
+    Month.DECEMBER -> "Aralık"
 }

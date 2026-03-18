@@ -73,7 +73,8 @@ fun TbfActivityScreen(
         onPreviousMonth = viewModel::previousMonth,
         onNextMonth = viewModel::nextMonth,
         onDayClick = viewModel::selectDay,
-        onToggleFilter = viewModel::toggleDisciplineFilter
+        onToggleFilter = viewModel::toggleDisciplineFilter,
+        onClearAllFilters = viewModel::clearAllFilters
     )
 }
 
@@ -84,7 +85,8 @@ private fun TbfActivityContent(
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
     onDayClick: (LocalDate) -> Unit,
-    onToggleFilter: (TbfDiscipline) -> Unit
+    onToggleFilter: (TbfDiscipline) -> Unit,
+    onClearAllFilters: () -> Unit
 ) {
     val semantic = LocalSemanticColors.current
     val calendarTitle = stringResource(R.string.tbf_activity_calendar)
@@ -149,6 +151,7 @@ private fun TbfActivityContent(
                     DisciplineFilterRow(
                         selectedFilters = state.disciplineFilters,
                         onToggle = onToggleFilter,
+                        onClearAll = onClearAllFilters,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
@@ -198,7 +201,6 @@ private fun TbfActivityContent(
     }
 }
 
-@Composable
 private fun buildDaysMap(state: TbfActivityUiState): Map<LocalDate, List<TbfDiscipline>> {
     return state.daysWithActivities
         .associateWith { date ->
@@ -261,6 +263,7 @@ private fun MonthNavigationRow(
 private fun DisciplineFilterRow(
     selectedFilters: Set<TbfDiscipline>,
     onToggle: (TbfDiscipline) -> Unit,
+    onClearAll: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val semantic = LocalSemanticColors.current
@@ -274,7 +277,7 @@ private fun DisciplineFilterRow(
         item(key = "filter_all", contentType = "filter_chip") {
             FilterChip(
                 selected = selectedFilters.isEmpty(),
-                onClick = { /* clearing all filters */ },
+                onClick = onClearAll,
                 label = { Text(text = allLabel, style = MaterialTheme.typography.labelMedium) },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = semantic.chipSelected,
@@ -401,9 +404,43 @@ private fun disciplineAccentColor(
     TbfDiscipline.OTHER -> semantic.cardStroke
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "TbfActivity Full Screen")
 @Composable
-fun TbfActivityScreenPreview() {
+fun TbfActivityContentPreview() {
+    AppTheme {
+        val fakeActivity = TbfActivity(
+            id = "1",
+            startDate = LocalDate.of(2026, 3, 19),
+            endDate = LocalDate.of(2026, 3, 22),
+            title = "ANTALYA ATLI SPOR KULÜBÜ ENGEL ATLAMA YARIŞMALARI",
+            organization = "ABAK",
+            city = "ANTALYA",
+            discipline = TbfDiscipline.SHOW_JUMPING,
+            type = TbfActivityType.INCENTIVE
+        )
+        val fakeState = TbfActivityUiState(
+            isLoading = false,
+            currentMonth = java.time.YearMonth.of(2026, 3),
+            selectedDay = LocalDate.of(2026, 3, 19),
+            activitiesForMonth = listOf(fakeActivity),
+            activitiesForSelectedDay = listOf(fakeActivity),
+            disciplineFilters = emptySet()
+        )
+        TbfActivityContent(
+            state = fakeState,
+            onNavigateBack = {},
+            onPreviousMonth = {},
+            onNextMonth = {},
+            onDayClick = {},
+            onToggleFilter = {},
+            onClearAllFilters = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "TbfActivity Card")
+@Composable
+fun TbfActivityCardPreview() {
     AppTheme {
         val fakeActivity = TbfActivity(
             id = "1",
