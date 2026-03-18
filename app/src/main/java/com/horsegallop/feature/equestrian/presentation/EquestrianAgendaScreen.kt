@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Sync
@@ -33,6 +34,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -75,6 +77,7 @@ fun EquestrianAgendaScreen(
     onBack: () -> Unit,
     initialTab: EquestrianAgendaTab = EquestrianAgendaTab.ANNOUNCEMENTS,
     onTbfEventClick: (venueCode: String, eventIndex: Int) -> Unit = { _, _ -> },
+    onNavigateToCalendar: () -> Unit = {},
     viewModel: EquestrianAgendaViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -191,6 +194,16 @@ fun EquestrianAgendaScreen(
 
                 EquestrianAgendaTab.TBF -> {
                     val tbfViewModel: com.horsegallop.feature.tbf.presentation.TbfViewModel = hiltViewModel()
+                    OutlinedButton(
+                        onClick = onNavigateToCalendar,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Icon(Icons.Default.CalendarMonth, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.tbf_view_calendar))
+                    }
                     TbfTabContent(
                         viewModel = tbfViewModel,
                         onEventClick = onTbfEventClick

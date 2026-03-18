@@ -796,4 +796,5 @@
     <string name="my_reviews_title">My Reviews</string>
     <string name="my_reviews_empty">You haven\'t written any reviews yet.</string>
     <string name="profile_action_my_reviews">My Reviews</string>
+    <string name="tbf_view_calendar">TBF Activity Calendar</string>
 </resources>

@@ -89,4 +89,5 @@
     <string name="my_reviews_title">Değerlendirmelerim</string>
     <string name="my_reviews_empty">Henüz değerlendirme yapmadınız.</string>
     <string name="profile_action_my_reviews">Değerlendirmelerim</string>
+    <string name="tbf_view_calendar">TBF Etkinlik Takvimi</string>
 </resources>
