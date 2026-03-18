@@ -170,7 +170,8 @@ class HorseViewModelTest {
     @Test
     fun `Horse age is computed correctly for known birthYear`() {
         val h = horse("h1", "Test", birthYear = 2016)
-        assertEquals(10, h.age)
+        val expectedAge = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR) - 2016
+        assertEquals(expectedAge, h.age)
     }
 
     @Test

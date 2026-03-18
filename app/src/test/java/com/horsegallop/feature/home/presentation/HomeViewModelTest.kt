@@ -136,7 +136,9 @@ class HomeViewModelTest {
         viewModel = buildViewModel()
         advanceUntilIdle()
 
-        assertTrue(viewModel.ui.value.isEmpty)
+        val state = viewModel.ui.value
+        assertTrue(state.isEmpty)
+        assertNull(state.error)
     }
 
     // ─── stats ───────────────────────────────────────────────────────────────

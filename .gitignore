@@ -50,3 +50,10 @@ horsegallop-backend/
 /core/
 /data/
 /domain/
+
+# Claude Code runtime state and logs
+.claude/state/
+.claude/logs/
+
+# TestSprite temporary artifacts (may contain secrets)
+testsprite_tests/tmp/

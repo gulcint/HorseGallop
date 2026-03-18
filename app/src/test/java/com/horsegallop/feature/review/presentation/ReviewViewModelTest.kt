@@ -49,7 +49,7 @@ class ReviewViewModelTest {
     // ─── init / loadMyReviews ────────────────────────────────────────────────
 
     @Test
-    fun `init loads reviews from getMyReviewsUseCase`() = runTest {
+    fun `init loads reviews from getMyReviewsUseCase`() = runTest(testDispatcher) {
         val reviews = listOf(review("r1"))
         whenever(getMyReviewsUseCase()).thenReturn(flowOf(reviews))
         viewModel = ReviewViewModel(submitReviewUseCase, getMyReviewsUseCase)
@@ -60,7 +60,7 @@ class ReviewViewModelTest {
     }
 
     @Test
-    fun `init with empty reviews sets myReviews to empty`() = runTest {
+    fun `init with empty reviews sets myReviews to empty`() = runTest(testDispatcher) {
         advanceUntilIdle()
 
         assertTrue(viewModel.uiState.value.myReviews.isEmpty())
@@ -69,7 +69,7 @@ class ReviewViewModelTest {
     // ─── submitReview ────────────────────────────────────────────────────────
 
     @Test
-    fun `submitReview on success sets submitSuccess true`() = runTest {
+    fun `submitReview on success sets submitSuccess true`() = runTest(testDispatcher) {
         whenever(
             submitReviewUseCase("target1", ReviewTargetType.LESSON, "Sabah Dersi", 5, "Harika")
         ).thenReturn(Result.success(review("r1")))
@@ -85,7 +85,7 @@ class ReviewViewModelTest {
     }
 
     @Test
-    fun `submitReview on failure sets submitError`() = runTest {
+    fun `submitReview on failure sets submitError`() = runTest(testDispatcher) {
         whenever(submitReviewUseCase(any(), any(), any(), any(), any())).thenReturn(
             Result.failure(RuntimeException("Gönderme hatası"))
         )
@@ -101,7 +101,7 @@ class ReviewViewModelTest {
     }
 
     @Test
-    fun `submitReview resets submitting to false after completion`() = runTest {
+    fun `submitReview resets submitting to false after completion`() = runTest(testDispatcher) {
         whenever(submitReviewUseCase(any(), any(), any(), any(), any())).thenReturn(
             Result.success(review("r1"))
         )
@@ -117,7 +117,7 @@ class ReviewViewModelTest {
     // ─── clearSubmitState ─────────────────────────────────────────────────────
 
     @Test
-    fun `clearSubmitState resets submitSuccess and submitError`() = runTest {
+    fun `clearSubmitState resets submitSuccess and submitError`() = runTest(testDispatcher) {
         whenever(submitReviewUseCase(any(), any(), any(), any(), any())).thenReturn(
             Result.success(review("r1"))
         )

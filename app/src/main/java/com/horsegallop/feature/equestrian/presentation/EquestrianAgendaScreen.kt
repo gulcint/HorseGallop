@@ -636,7 +636,6 @@ private fun TbfTabContent(
     onEventClick: (venueCode: String, eventIndex: Int) -> Unit
 ) {
     val state by viewModel.ui.collectAsState()
-    val semantic = LocalSemanticColors.current
 
     when {
         state.isLoading -> {
@@ -778,8 +777,8 @@ private fun TbfRaceCard(
                 val prize = competition.prize
                 Text(
                     text = when {
-                        prize >= 1_000_000 -> "₺${prize / 1_000_000}M"
-                        prize >= 1_000 -> "₺${prize / 1_000}K"
+                        prize >= 1_000_000 -> "₺${"%.1f".format(prize / 1_000_000.0)}M"
+                        prize >= 1_000 -> "₺${"%.1f".format(prize / 1_000.0)}K"
                         else -> "₺$prize"
                     },
                     style = MaterialTheme.typography.labelMedium,

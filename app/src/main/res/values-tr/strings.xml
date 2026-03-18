@@ -692,7 +692,7 @@
     <string name="ai_coach_thinking">Düşünüyor...</string>
     <string name="ai_coach_send">Gönder</string>
     <string name="ai_coach_error">Yanıt alınamadı. Lütfen tekrar deneyin.</string>
-    <string name="ai_coach_context_hint">Son sürüş verilerin baz alınıyor</string>
+    <string name="ai_coach_context_hint">Son sürüş verileri baz alınıyor</string>
 
     <!-- TBF Etkinlikler -->
     <string name="tbf_events_title">TBF Yarışmaları</string>
