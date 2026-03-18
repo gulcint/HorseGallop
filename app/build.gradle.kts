@@ -59,6 +59,11 @@ android {
     lint {
         baseline = file("lint-baseline.xml")
     }
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
+    }
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
