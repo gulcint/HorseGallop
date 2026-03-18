@@ -54,13 +54,13 @@ class TbfActivityViewModel @Inject constructor(
 
     fun nextMonth() {
         val next = _uiState.value.currentMonth.plusMonths(1)
-        _uiState.update { it.copy(currentMonth = next, selectedDay = null) }
+        _uiState.update { it.copy(currentMonth = next, selectedDay = null, activitiesForSelectedDay = emptyList()) }
         loadMonth(next)
     }
 
     fun previousMonth() {
         val prev = _uiState.value.currentMonth.minusMonths(1)
-        _uiState.update { it.copy(currentMonth = prev, selectedDay = null) }
+        _uiState.update { it.copy(currentMonth = prev, selectedDay = null, activitiesForSelectedDay = emptyList()) }
         loadMonth(prev)
     }
 
@@ -89,13 +89,19 @@ class TbfActivityViewModel @Inject constructor(
 
     private fun loadMonth(month: YearMonth) {
         viewModelScope.launch {
+            val requestedMonth = month
             _uiState.update { it.copy(isLoading = true, error = null) }
             getActivities(month)
                 .onSuccess { activities ->
-                    _uiState.update { it.copy(isLoading = false, activitiesForMonth = activities) }
+                    // Guard against stale results if user navigated quickly
+                    if (_uiState.value.currentMonth == requestedMonth) {
+                        _uiState.update { it.copy(isLoading = false, activitiesForMonth = activities) }
+                    }
                 }
                 .onFailure { e ->
-                    _uiState.update { it.copy(isLoading = false, error = e.message) }
+                    if (_uiState.value.currentMonth == requestedMonth) {
+                        _uiState.update { it.copy(isLoading = false, error = e.message ?: "Bilinmeyen hata") }
+                    }
                 }
         }
     }

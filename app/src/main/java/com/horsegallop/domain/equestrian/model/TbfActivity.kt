@@ -17,11 +17,13 @@ data class TbfActivity(
     val isMultiDay: Boolean get() = startDate != endDate
 
     val dateLabel: String get() {
-        val monthTr = startDate.month.turkishName()
-        return if (isMultiDay)
-            "${startDate.dayOfMonth}-${endDate.dayOfMonth} $monthTr ${startDate.year}"
-        else
-            "${startDate.dayOfMonth} $monthTr ${startDate.year}"
+        return if (!isMultiDay) {
+            "${startDate.dayOfMonth} ${startDate.month.turkishName()} ${startDate.year}"
+        } else if (startDate.month == endDate.month && startDate.year == endDate.year) {
+            "${startDate.dayOfMonth}-${endDate.dayOfMonth} ${startDate.month.turkishName()} ${startDate.year}"
+        } else {
+            "${startDate.dayOfMonth} ${startDate.month.turkishName()} ${startDate.year} – ${endDate.dayOfMonth} ${endDate.month.turkishName()} ${endDate.year}"
+        }
     }
 }
 
