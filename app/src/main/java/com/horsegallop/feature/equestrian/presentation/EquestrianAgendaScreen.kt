@@ -50,7 +50,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -946,7 +945,7 @@ private fun FeedCard(
                             .matchParentSize()
                             .background(
                                 Brush.verticalGradient(
-                                    colors = listOf(Color.Transparent, semantic.imageOverlayStrong)
+                                    colors = listOf(semantic.imageOverlayStrong.copy(alpha = 0f), semantic.imageOverlayStrong)
                                 )
                             )
                     )
