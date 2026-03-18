@@ -94,11 +94,15 @@ fun SubscriptionScreen(
     val msgPurchaseFailed = stringResource(R.string.subscription_purchase_failed)
     val msgRestoreFailed = stringResource(R.string.subscription_restore_failed)
     val msgAlreadyPro = stringResource(R.string.subscription_already_pro)
+    val msgVerificationFailed = stringResource(R.string.subscription_verification_failed)
+    val msgPaymentUnavailable = stringResource(R.string.subscription_payment_unavailable)
 
     LaunchedEffect(ui.error) {
         when (ui.error) {
             "purchase_failed" -> snackbarHostState.showSnackbar(msgPurchaseFailed)
             "restore_failed" -> snackbarHostState.showSnackbar(msgRestoreFailed)
+            "purchase_verification_failed" -> snackbarHostState.showSnackbar(msgVerificationFailed)
+            "payment_unavailable" -> snackbarHostState.showSnackbar(msgPaymentUnavailable)
             null -> {}
             else -> snackbarHostState.showSnackbar(ui.error!!)
         }
@@ -136,7 +140,11 @@ fun SubscriptionScreen(
             ui = ui,
             modifier = Modifier.padding(innerPadding),
             onSelectPlan = viewModel::selectPlan,
-            onPurchase = { activity?.let { viewModel.purchase(it) } },
+            onPurchase = {
+                val act = activity
+                if (act != null) viewModel.purchase(act)
+                else viewModel.setError("payment_unavailable")
+            },
             onRestore = viewModel::restorePurchases
         )
     }

@@ -301,6 +301,15 @@ data class SupabaseSubscriptionDto(
     @SerialName("subscription_expires_at") val subscriptionExpiresAt: String? = null
 )
 
+// ─── VERIFY PURCHASE ─────────────────────────────────────────
+
+@Serializable
+data class VerifyPurchaseResponseDto(
+    val verified: Boolean = false,
+    val tier: String = "FREE",
+    @SerialName("expires_at") val expiresAt: String? = null
+)
+
 // ─── BARN MANAGEMENT ─────────────────────────────────────────
 
 @Serializable

@@ -60,8 +60,11 @@ class SubscriptionViewModel @Inject constructor(
             .onEach { state ->
                 when (state) {
                     is PurchaseState.Purchased -> {
-                        startSubscriptionPurchaseUseCase(state.productId)
-                        _ui.update { it.copy(isPurchasing = false, purchaseSuccess = true) }
+                        viewModelScope.launch {
+                            startSubscriptionPurchaseUseCase(state.productId, state.purchaseToken)
+                                .onSuccess { _ui.update { it.copy(isPurchasing = false, purchaseSuccess = true) } }
+                                .onFailure { _ui.update { it.copy(isPurchasing = false, error = "purchase_verification_failed") } }
+                        }
                     }
                     is PurchaseState.Error -> {
                         _ui.update { it.copy(isPurchasing = false, error = "purchase_failed") }
@@ -103,5 +106,9 @@ class SubscriptionViewModel @Inject constructor(
 
     fun clearError() {
         _ui.update { it.copy(error = null) }
+    }
+
+    fun setError(errorKey: String) {
+        _ui.update { it.copy(error = errorKey) }
     }
 }

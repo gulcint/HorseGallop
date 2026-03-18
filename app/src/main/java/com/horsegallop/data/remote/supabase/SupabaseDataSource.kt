@@ -380,6 +380,22 @@ class SupabaseDataSource @Inject constructor(
 
     // ─── SUBSCRIPTION ────────────────────────────────────────
 
+    suspend fun verifyPurchase(purchaseToken: String, productId: String): Result<VerifyPurchaseResponseDto> {
+        return try {
+            val userId = currentUserId() ?: return Result.failure(Exception("Not authenticated"))
+            val body = buildJsonObject {
+                put("purchaseToken", purchaseToken)
+                put("productId", productId)
+                put("userId", userId)
+            }
+            val response = supabase.functions.invoke(function = "verify-purchase", body = body)
+            val dto = Json.decodeFromString<VerifyPurchaseResponseDto>(response.bodyAsText())
+            Result.success(dto)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun getSubscriptionStatus(): SupabaseSubscriptionDto? {
         val uid = currentUserId() ?: return null
         return supabase.from("user_profiles")
