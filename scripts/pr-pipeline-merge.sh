@@ -42,3 +42,11 @@ fi
 
 gh pr merge "$PR_NUMBER" --auto --squash --delete-branch
 echo "PR #$PR_NUMBER hazir. GitHub Actions basarili oldugunda otomatik merge edilecek."
+
+echo ""
+echo "Emülatöre deploy ediliyor..."
+bash scripts/deploy-emulator.sh || echo "Deploy basarisiz — PR zaten acildi, devam et."
+
+echo ""
+echo "Smoke test calistiriliyor..."
+bash scripts/smoke-test.sh || echo "Smoke test basarisiz — manuel kontrol et."

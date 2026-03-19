@@ -1,7 +1,7 @@
 package com.horsegallop.data.horse.repository
 
-import com.horsegallop.data.remote.dto.HorseFunctionsDto
-import com.horsegallop.data.remote.functions.AppFunctionsDataSource
+import com.horsegallop.data.remote.supabase.SupabaseDataSource
+import com.horsegallop.data.remote.supabase.SupabaseHorseDto
 import com.horsegallop.domain.horse.model.Horse
 import com.horsegallop.domain.horse.model.HorseGender
 import com.horsegallop.domain.horse.model.HorseTip
@@ -9,34 +9,35 @@ import com.horsegallop.domain.horse.repository.HorseRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
-import java.util.Locale
 import javax.inject.Inject
 
 class HorseRepositoryImpl @Inject constructor(
-    private val functionsDataSource: AppFunctionsDataSource
+    private val supabaseDataSource: SupabaseDataSource
 ) : HorseRepository {
 
     override fun getMyHorses(): Flow<List<Horse>> = flow {
-        emit(functionsDataSource.getMyHorses().map { it.toDomain() })
+        emit(supabaseDataSource.getMyHorses().map { it.toDomain() })
     }.catch { emit(emptyList()) }
 
     override suspend fun addHorse(horse: Horse): Result<Horse> = runCatching {
-        functionsDataSource.addHorse(
+        val dto = SupabaseHorseDto(
             name = horse.name,
             breed = horse.breed,
             birthYear = horse.birthYear,
             color = horse.color,
             gender = horse.gender.name.lowercase(),
-            weightKg = horse.weightKg
-        ).toDomain()
+            weightKg = horse.weightKg,
+            imageUrl = horse.imageUrl ?: ""
+        )
+        supabaseDataSource.addHorse(dto).toDomain()
     }
 
     override suspend fun deleteHorse(horseId: String): Result<Unit> = runCatching {
-        functionsDataSource.deleteHorse(horseId)
+        supabaseDataSource.deleteHorse(horseId)
     }
 
     override suspend fun getBreeds(locale: String): Result<List<String>> = runCatching {
-        val dtos = functionsDataSource.getBreeds(locale)
+        val dtos = supabaseDataSource.getBreeds()
         val isTurkish = locale.startsWith("tr", ignoreCase = true)
         dtos.map { breed ->
             if (isTurkish && breed.nameTr.isNotBlank()) breed.nameTr else breed.nameEn
@@ -44,16 +45,16 @@ class HorseRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getHorseTips(locale: String): Result<List<HorseTip>> = runCatching {
-        functionsDataSource.getHorseTips(locale).map { dto ->
+        supabaseDataSource.getHorseTips(locale).map { dto ->
             HorseTip(id = dto.id, title = dto.title, body = dto.body, category = dto.category)
         }
     }
 
-    private fun HorseFunctionsDto.toDomain() = Horse(
+    private fun SupabaseHorseDto.toDomain() = Horse(
         id = id,
         name = name,
         breed = breed,
-        birthYear = birthYear,
+        birthYear = birthYear ?: 0,
         color = color,
         gender = when (gender.lowercase()) {
             "stallion" -> HorseGender.STALLION
@@ -61,7 +62,7 @@ class HorseRepositoryImpl @Inject constructor(
             "gelding" -> HorseGender.GELDING
             else -> HorseGender.UNKNOWN
         },
-        weightKg = weightKg,
+        weightKg = weightKg ?: 0,
         imageUrl = imageUrl
     )
 }

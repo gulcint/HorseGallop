@@ -58,6 +58,7 @@
     <string name="agreement_label_connector"> and </string>
     <string name="agreement_privacy_link">Privacy Policy</string>
     <string name="agreement_label_suffix">.</string>
+    <string name="agreement_required">Please accept the Terms of Use and Privacy Policy to continue.</string>
     <string name="continue_with_google">Continue with Google</string>
     <string name="auto_detect_ride">Auto detect ride</string>
     <string name="prompt_create_account">Create Account</string>
@@ -338,6 +339,11 @@
     <string name="unit_kcal">kcal</string>
     <string name="unit_km">km</string>
     <string name="unit_kmh">km/h</string>
+    <string name="unit_lbs">lbs</string>
+    <string name="unit_mi">mi</string>
+    <string name="setting_units_title">Units</string>
+    <string name="setting_weight_unit_title">Weight Unit</string>
+    <string name="setting_distance_unit_title">Distance Unit</string>
     
     <!-- View All -->
     <string name="view_all">View All</string>
@@ -674,6 +680,9 @@
     <string name="health_calendar_empty_subtitle">Track farrier, vaccine and vet appointments here.</string>
     <string name="health_add_event">Add Event</string>
     <string name="health_mark_complete">Mark Complete</string>
+    <string name="health_filter_all">All</string>
+    <string name="health_reminder_channel_name">Health Reminders</string>
+    <string name="health_reminder_upcoming_title">Upcoming Horse Health Appointment</string>
 
     <!-- Challenge & Badge System -->
     <string name="challenge_screen_title">Challenges</string>

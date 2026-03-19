@@ -38,6 +38,9 @@
     <string name="health_calendar_empty_subtitle">Track farrier, vaccine and vet appointments here.</string>
     <string name="health_add_event">Add Event</string>
     <string name="health_mark_complete">Mark Complete</string>
+    <string name="health_filter_all">All</string>
+    <string name="health_reminder_channel_name">Health Reminders</string>
+    <string name="health_reminder_upcoming_title">Upcoming Horse Health Appointment</string>
 
     <string name="app_name">horsegallop</string>
     <string name="signin_google">Sign in with Google</string>
@@ -95,6 +98,7 @@
     <string name="agreement_label_connector"> and </string>
     <string name="agreement_privacy_link">Privacy Policy</string>
     <string name="agreement_label_suffix">.</string>
+    <string name="agreement_required">Please accept the Terms of Use and Privacy Policy to continue.</string>
     <string name="continue_with_google">Continue with Google</string>
     <string name="auto_detect_ride">Auto detect ride</string>
     <string name="prompt_create_account">Create Account</string>
@@ -117,6 +121,11 @@
     <string name="privacy_export_action">Export</string>
     <string name="privacy_export_ready">Your data export is ready and copied to the clipboard.</string>
     <string name="privacy_delete_subtitle">Permanently delete your account and all data.</string>
+    <string name="unit_lbs">lbs</string>
+    <string name="unit_mi">mi</string>
+    <string name="setting_units_title">Units</string>
+    <string name="setting_weight_unit_title">Weight Unit</string>
+    <string name="setting_distance_unit_title">Distance Unit</string>
     <string name="quick_actions_title">Quick Actions</string>
     <string name="qa_start_ride_title">Start Ride</string>
     <string name="qa_start_ride_subtitle">Begin your horse riding session</string>

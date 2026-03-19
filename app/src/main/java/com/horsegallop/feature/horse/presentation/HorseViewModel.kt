@@ -2,7 +2,6 @@ package com.horsegallop.feature.horse.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.functions.FirebaseFunctionsException
 import com.horsegallop.domain.horse.model.Horse
 import com.horsegallop.domain.horse.model.HorseGender
 import com.horsegallop.domain.horse.usecase.AddHorseUseCase
@@ -74,20 +73,7 @@ class HorseViewModel @Inject constructor(
                     loadHorses()
                 }
                 .onFailure { e ->
-                    val msg = when {
-                        e is FirebaseFunctionsException -> when (e.code) {
-                            FirebaseFunctionsException.Code.NOT_FOUND ->
-                                "Sunucu fonksiyonu bulunamadı. Lütfen ağ bağlantınızı kontrol edin."
-                            FirebaseFunctionsException.Code.UNAUTHENTICATED ->
-                                "Oturum süresi dolmuş. Lütfen tekrar giriş yapın."
-                            FirebaseFunctionsException.Code.INVALID_ARGUMENT ->
-                                "Geçersiz bilgi girildi. Lütfen alanları kontrol edin."
-                            FirebaseFunctionsException.Code.INTERNAL ->
-                                "Sunucu hatası oluştu. Lütfen tekrar deneyin."
-                            else -> "Bağlantı hatası oluştu. Lütfen tekrar deneyin."
-                        }
-                        else -> e.localizedMessage ?: "At eklenemedi. Lütfen tekrar deneyin."
-                    }
+                    val msg = e.localizedMessage ?: "At eklenemedi. Lütfen tekrar deneyin."
                     _uiState.value = _uiState.value.copy(saving = false, saveError = msg)
                 }
         }

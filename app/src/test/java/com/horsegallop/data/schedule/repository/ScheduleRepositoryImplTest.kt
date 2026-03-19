@@ -1,8 +1,8 @@
 package com.horsegallop.data.schedule.repository
 
-import com.horsegallop.data.remote.dto.LessonFunctionsDto
-import com.horsegallop.data.remote.dto.ReservationFunctionsDto
-import com.horsegallop.data.remote.functions.AppFunctionsDataSource
+import com.horsegallop.data.remote.supabase.SupabaseDataSource
+import com.horsegallop.data.remote.supabase.SupabaseLessonDto
+import com.horsegallop.data.remote.supabase.SupabaseReservationDto
 import com.horsegallop.domain.schedule.model.ReservationStatus
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -10,12 +10,13 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
 class ScheduleRepositoryImplTest {
 
-    private val dataSource: AppFunctionsDataSource = mock()
+    private val dataSource: SupabaseDataSource = mock()
     private lateinit var repository: ScheduleRepositoryImpl
 
     @Before
@@ -27,17 +28,15 @@ class ScheduleRepositoryImplTest {
 
     @Test
     fun `getLessons emits mapped domain objects when data source succeeds`() = runTest {
-        val dto = LessonFunctionsDto(
+        val dto = lessonDto(
             id = "lesson1",
-            date = "2026-04-01",
             title = "Sabah Dersi",
             instructorName = "Ahmet Hoca",
             durationMin = 60,
             level = "beginner",
             price = 150.0,
             spotsTotal = 5,
-            spotsAvailable = 3,
-            isBookedByMe = false
+            spotsAvailable = 3
         )
         whenever(dataSource.getLessons()).thenReturn(listOf(dto))
 
@@ -65,11 +64,7 @@ class ScheduleRepositoryImplTest {
 
     @Test
     fun `getLessons marks lesson as full when spotsAvailable is 0`() = runTest {
-        val dto = LessonFunctionsDto(
-            id = "full1", date = "2026-04-01", title = "Full", instructorName = "Hoca",
-            durationMin = 45, level = "advanced", price = 200.0,
-            spotsTotal = 3, spotsAvailable = 0, isBookedByMe = false
-        )
+        val dto = lessonDto(id = "full1", spotsTotal = 3, spotsAvailable = 0)
         whenever(dataSource.getLessons()).thenReturn(listOf(dto))
 
         val lesson = repository.getLessons().first().first()
@@ -81,33 +76,43 @@ class ScheduleRepositoryImplTest {
 
     @Test
     fun `bookLesson returns success with reservation when data source succeeds`() = runTest {
-        val dto = ReservationFunctionsDto(
+        val lesson = lessonDto(id = "lesson1")
+        val reservation = SupabaseReservationDto(
             id = "res1",
             lessonId = "lesson1",
             lessonTitle = "Sabah Dersi",
             lessonDate = "2026-04-01",
             instructorName = "Ahmet Hoca",
             status = "confirmed",
-            createdAt = "2026-03-18T10:00:00Z"
+            createdAt = "2026-03-18T10:00:00"
         )
-        whenever(dataSource.bookLesson("lesson1")).thenReturn(dto)
+        whenever(dataSource.getLessons()).thenReturn(listOf(lesson))
+        whenever(dataSource.bookLesson(lesson)).thenReturn(reservation)
 
         val result = repository.bookLesson("lesson1")
 
         assertTrue(result.isSuccess)
-        val reservation = result.getOrThrow()
-        assertEquals("res1", reservation.id)
-        assertEquals(ReservationStatus.CONFIRMED, reservation.status)
+        val r = result.getOrThrow()
+        assertEquals("res1", r.id)
+        assertEquals(ReservationStatus.CONFIRMED, r.status)
     }
 
     @Test
-    fun `bookLesson returns failure when data source throws`() = runTest {
-        whenever(dataSource.bookLesson("lesson1")).thenThrow(RuntimeException("Spots full"))
+    fun `bookLesson returns failure when lesson not found`() = runTest {
+        whenever(dataSource.getLessons()).thenReturn(emptyList())
 
         val result = repository.bookLesson("lesson1")
 
         assertTrue(result.isFailure)
-        assertEquals("Spots full", result.exceptionOrNull()?.message)
+    }
+
+    @Test
+    fun `bookLesson returns failure when data source throws`() = runTest {
+        whenever(dataSource.getLessons()).thenThrow(RuntimeException("Spots full"))
+
+        val result = repository.bookLesson("lesson1")
+
+        assertTrue(result.isFailure)
     }
 
     // ─── cancelReservation ───────────────────────────────────────────────────
@@ -134,7 +139,7 @@ class ScheduleRepositoryImplTest {
 
     @Test
     fun `getMyReservations emits mapped reservations`() = runTest {
-        val dto = ReservationFunctionsDto(
+        val dto = SupabaseReservationDto(
             id = "res2", lessonId = "l2", lessonTitle = "Akşam Dersi",
             lessonDate = "2026-04-02", instructorName = "Fatma Hoca",
             status = "pending", createdAt = ""
@@ -160,39 +165,58 @@ class ScheduleRepositoryImplTest {
 
     @Test
     fun `toDomain maps confirmed status correctly`() = runTest {
-        val dto = reservationDto(status = "confirmed")
-        whenever(dataSource.bookLesson("x")).thenReturn(dto)
+        val lesson = lessonDto(id = "x")
+        whenever(dataSource.getLessons()).thenReturn(listOf(lesson))
+        whenever(dataSource.bookLesson(lesson)).thenReturn(reservationDto(status = "confirmed"))
         val res = repository.bookLesson("x").getOrThrow()
         assertEquals(ReservationStatus.CONFIRMED, res.status)
     }
 
     @Test
     fun `toDomain maps cancelled status correctly`() = runTest {
-        val dto = reservationDto(status = "cancelled")
-        whenever(dataSource.bookLesson("x")).thenReturn(dto)
+        val lesson = lessonDto(id = "x")
+        whenever(dataSource.getLessons()).thenReturn(listOf(lesson))
+        whenever(dataSource.bookLesson(lesson)).thenReturn(reservationDto(status = "cancelled"))
         val res = repository.bookLesson("x").getOrThrow()
         assertEquals(ReservationStatus.CANCELLED, res.status)
     }
 
     @Test
     fun `toDomain maps completed status correctly`() = runTest {
-        val dto = reservationDto(status = "completed")
-        whenever(dataSource.bookLesson("x")).thenReturn(dto)
+        val lesson = lessonDto(id = "x")
+        whenever(dataSource.getLessons()).thenReturn(listOf(lesson))
+        whenever(dataSource.bookLesson(lesson)).thenReturn(reservationDto(status = "completed"))
         val res = repository.bookLesson("x").getOrThrow()
         assertEquals(ReservationStatus.COMPLETED, res.status)
     }
 
     @Test
     fun `toDomain maps unknown status to PENDING`() = runTest {
-        val dto = reservationDto(status = "unknown_status")
-        whenever(dataSource.bookLesson("x")).thenReturn(dto)
+        val lesson = lessonDto(id = "x")
+        whenever(dataSource.getLessons()).thenReturn(listOf(lesson))
+        whenever(dataSource.bookLesson(lesson)).thenReturn(reservationDto(status = "unknown_status"))
         val res = repository.bookLesson("x").getOrThrow()
         assertEquals(ReservationStatus.PENDING, res.status)
     }
 
     // ─── helpers ─────────────────────────────────────────────────────────────
 
-    private fun reservationDto(status: String) = ReservationFunctionsDto(
+    private fun lessonDto(
+        id: String,
+        title: String = "Test Dersi",
+        instructorName: String = "Hoca",
+        durationMin: Int = 60,
+        level: String = "beginner",
+        price: Double = 100.0,
+        spotsTotal: Int = 10,
+        spotsAvailable: Int = 5
+    ) = SupabaseLessonDto(
+        id = id, title = title, instructorName = instructorName,
+        durationMin = durationMin, level = level, price = price,
+        spotsTotal = spotsTotal, spotsAvailable = spotsAvailable
+    )
+
+    private fun reservationDto(status: String) = SupabaseReservationDto(
         id = "r1", lessonId = "l1", lessonTitle = "Test",
         lessonDate = "2026-04-01", instructorName = "Hoca",
         status = status, createdAt = ""

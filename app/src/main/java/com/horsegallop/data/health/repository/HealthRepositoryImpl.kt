@@ -1,106 +1,94 @@
 package com.horsegallop.data.health.repository
 
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.horsegallop.core.debug.AppLog
+import com.horsegallop.data.remote.supabase.SupabaseDataSource
+import com.horsegallop.data.remote.supabase.SupabaseHealthEventDto
 import com.horsegallop.domain.health.model.HealthEvent
 import com.horsegallop.domain.health.model.HealthEventType
 import com.horsegallop.domain.health.repository.HealthRepository
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.tasks.await
-import java.util.UUID
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class HealthRepositoryImpl @Inject constructor(
-    private val firestore: FirebaseFirestore,
-    private val auth: FirebaseAuth
+    private val supabaseDataSource: SupabaseDataSource
 ) : HealthRepository {
 
-    private fun collection() = firestore.collection("healthEvents")
-
     override fun getHealthEvents(horseId: String?): Flow<List<HealthEvent>> {
-        val userId = auth.currentUser?.uid ?: return flowOf(emptyList())
+        val userId = supabaseDataSource.currentUserId() ?: return flowOf(emptyList())
 
-        return callbackFlow<List<HealthEvent>> {
-            val query = if (horseId != null) {
-                collection()
-                    .whereEqualTo("userId", userId)
-                    .whereEqualTo("horseId", horseId)
-                    .orderBy("scheduledDate", Query.Direction.ASCENDING)
-            } else {
-                collection()
-                    .whereEqualTo("userId", userId)
-                    .orderBy("scheduledDate", Query.Direction.ASCENDING)
+        return flow {
+            val dtos = supabaseDataSource.getHealthEvents(horseId)
+            val events = dtos.mapNotNull { dto ->
+                runCatching { dto.toDomain() }
+                    .onFailure { AppLog.e("HealthRepo", "Mapping error: ${it.message}") }
+                    .getOrNull()
             }
-
-            val listener = query.addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    AppLog.e("HealthRepo", "Firestore error: ${error.message}")
-                    trySend(emptyList())
-                    return@addSnapshotListener
-                }
-                val events = snapshot?.documents?.mapNotNull { doc ->
-                    runCatching {
-                        val typeStr = doc.getString("type") ?: "VET"
-                        val type = try {
-                            HealthEventType.valueOf(typeStr)
-                        } catch (_: Exception) {
-                            HealthEventType.VET
-                        }
-                        HealthEvent(
-                            id = doc.id,
-                            userId = doc.getString("userId") ?: userId,
-                            horseId = doc.getString("horseId").orEmpty(),
-                            horseName = doc.getString("horseName").orEmpty(),
-                            type = type,
-                            scheduledDate = doc.getLong("scheduledDate") ?: 0L,
-                            completedDate = doc.getLong("completedDate"),
-                            notes = doc.getString("notes").orEmpty(),
-                            isCompleted = doc.getBoolean("isCompleted") ?: false
-                        )
-                    }.getOrNull()
-                } ?: emptyList()
-                trySend(events)
-            }
-
-            awaitClose { listener.remove() }
-        }.catch { emit(emptyList()) }
+            emit(events)
+        }.catch {
+            AppLog.e("HealthRepo", "getHealthEvents error: ${it.message}")
+            emit(emptyList())
+        }
     }
 
     override suspend fun saveHealthEvent(event: HealthEvent): Result<HealthEvent> = runCatching {
-        val userId = auth.currentUser?.uid ?: throw IllegalStateException("Not authenticated")
-        val id = event.id.ifBlank { UUID.randomUUID().toString() }
-        val data = mapOf(
-            "userId" to userId,
-            "horseId" to event.horseId,
-            "horseName" to event.horseName,
-            "type" to event.type.name,
-            "scheduledDate" to event.scheduledDate,
-            "completedDate" to event.completedDate,
-            "notes" to event.notes,
-            "isCompleted" to event.isCompleted
+        val userId = supabaseDataSource.currentUserId()
+            ?: throw IllegalStateException("Not authenticated")
+
+        val dto = SupabaseHealthEventDto(
+            id = event.id,
+            userId = userId,
+            horseId = event.horseId.ifBlank { null },
+            horseName = event.horseName,
+            type = event.type.name,
+            scheduledDate = isoFromEpoch(event.scheduledDate),
+            completedDate = event.completedDate?.let { isoFromEpoch(it) },
+            notes = event.notes,
+            isCompleted = event.isCompleted
         )
-        collection().document(id).set(data).await()
-        event.copy(id = id, userId = userId)
+        val saved = supabaseDataSource.saveHealthEvent(dto)
+        saved.toDomain()
     }
 
     override suspend fun deleteHealthEvent(eventId: String): Result<Unit> = runCatching {
-        collection().document(eventId).delete().await()
+        supabaseDataSource.deleteHealthEvent(eventId)
     }
 
-    override suspend fun markCompleted(eventId: String, completedDate: Long): Result<Unit> = runCatching {
-        collection().document(eventId).update(
-            mapOf(
-                "isCompleted" to true,
-                "completedDate" to completedDate
-            )
-        ).await()
+    override suspend fun markCompleted(eventId: String, completedDate: Long): Result<Unit> =
+        runCatching {
+            supabaseDataSource.markHealthEventCompleted(eventId, isoFromEpoch(completedDate))
+        }
+
+    // ─── helpers ─────────────────────────────────────────────
+
+    private fun isoFromEpoch(epochMs: Long): String =
+        Instant.ofEpochMilli(epochMs).toString()
+
+    private fun epochFromIso(iso: String): Long =
+        runCatching { Instant.parse(iso).toEpochMilli() }.getOrDefault(0L)
+
+    private fun SupabaseHealthEventDto.toDomain(): HealthEvent {
+        val type = try {
+            HealthEventType.valueOf(this.type)
+        } catch (_: Exception) {
+            HealthEventType.VET
+        }
+        return HealthEvent(
+            id = this.id,
+            userId = this.userId,
+            horseId = this.horseId.orEmpty(),
+            horseName = this.horseName,
+            type = type,
+            scheduledDate = epochFromIso(this.scheduledDate),
+            completedDate = this.completedDate?.let { epochFromIso(it) },
+            notes = this.notes,
+            isCompleted = this.isCompleted
+        )
     }
 }

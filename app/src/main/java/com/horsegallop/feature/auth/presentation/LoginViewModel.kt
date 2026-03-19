@@ -59,6 +59,10 @@ class LoginViewModel @Inject constructor(
 
     fun login() {
         val s = _uiState.value
+        if (!s.agreementAccepted) {
+            viewModelScope.launch { _effect.send(LoginEffect.ShowSnackbarError("agreement_required")) }
+            return
+        }
         if (!s.isFormValid) return
 
         _uiState.value = s.copy(isLoading = true, errorMessage = null, showResendVerification = false)
@@ -127,6 +131,11 @@ class LoginViewModel @Inject constructor(
     }
 
     fun loginWithGoogle(token: String) {
+        if (!_uiState.value.agreementAccepted) {
+            _uiState.value = _uiState.value.copy(isLoading = false)
+            viewModelScope.launch { _effect.send(LoginEffect.ShowSnackbarError("agreement_required")) }
+            return
+        }
         if (token.isEmpty()) {
             _uiState.value = _uiState.value.copy(isLoading = false)
             viewModelScope.launch {

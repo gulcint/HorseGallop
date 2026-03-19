@@ -1,6 +1,7 @@
 package com.horsegallop.data.horse.repository
 
-import com.horsegallop.data.remote.functions.AppFunctionsDataSource
+import com.horsegallop.data.remote.supabase.SupabaseDataSource
+import com.horsegallop.data.remote.supabase.SupabaseHorseHealthEventDto
 import com.horsegallop.domain.horse.model.HorseHealthEvent
 import com.horsegallop.domain.horse.model.HorseHealthEventType
 import com.horsegallop.domain.horse.repository.HorseHealthRepository
@@ -9,17 +10,17 @@ import javax.inject.Singleton
 
 @Singleton
 class HorseHealthRepositoryImpl @Inject constructor(
-    private val functionsDataSource: AppFunctionsDataSource
+    private val supabaseDataSource: SupabaseDataSource
 ) : HorseHealthRepository {
 
     override suspend fun getHealthEvents(horseId: String): Result<List<HorseHealthEvent>> =
         runCatching {
-            functionsDataSource.getHorseHealthEvents(horseId).map { dto ->
+            supabaseDataSource.getHorseHealthEvents(horseId).map { dto ->
                 HorseHealthEvent(
                     id = dto.id,
                     horseId = dto.horseId,
                     type = HorseHealthEventType.fromString(dto.type),
-                    date = dto.date,
+                    date = dto.eventDate,
                     notes = dto.notes,
                     createdAt = dto.createdAt
                 )
@@ -32,14 +33,20 @@ class HorseHealthRepositoryImpl @Inject constructor(
         date: String,
         notes: String
     ): Result<HorseHealthEvent> = runCatching {
-        val dto = functionsDataSource.addHorseHealthEvent(horseId, type.name, date, notes)
+        val dto = SupabaseHorseHealthEventDto(
+            horseId = horseId,
+            type = type.name,
+            eventDate = date,
+            notes = notes
+        )
+        val saved = supabaseDataSource.addHorseHealthEvent(dto)
         HorseHealthEvent(
-            id = dto.id,
-            horseId = dto.horseId,
-            type = HorseHealthEventType.fromString(dto.type),
-            date = dto.date,
-            notes = dto.notes,
-            createdAt = dto.createdAt
+            id = saved.id,
+            horseId = saved.horseId,
+            type = HorseHealthEventType.fromString(saved.type),
+            date = saved.eventDate,
+            notes = saved.notes,
+            createdAt = saved.createdAt
         )
     }
 
@@ -50,9 +57,14 @@ class HorseHealthRepositoryImpl @Inject constructor(
         date: String?,
         notes: String?
     ): Result<Unit> = runCatching {
-        functionsDataSource.updateHorseHealthEvent(id, horseId, type?.name, date, notes)
+        val updates = buildMap<String, Any?> {
+            if (type != null) put("type", type.name)
+            if (date != null) put("event_date", date)
+            if (notes != null) put("notes", notes)
+        }
+        supabaseDataSource.updateHorseHealthEvent(id, updates)
     }
 
     override suspend fun deleteHealthEvent(id: String, horseId: String): Result<Unit> =
-        runCatching { functionsDataSource.deleteHorseHealthEvent(id, horseId) }
+        runCatching { supabaseDataSource.deleteHorseHealthEvent(id) }
 }

@@ -8,6 +8,7 @@ plugins {
     kotlin("kapt")
     alias(libs.plugins.hilt.android)
     id("com.google.gms.google-services")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -33,6 +34,13 @@ android {
             ?: System.getenv("GOOGLE_MAPS_API_KEY")
         manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = googleMapsApiKey
         buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"$googleMapsApiKey\"")
+
+        val supabaseUrl = properties.getProperty("SUPABASE_URL")
+            ?: System.getenv("SUPABASE_URL") ?: ""
+        val supabaseAnonKey = properties.getProperty("SUPABASE_ANON_KEY")
+            ?: System.getenv("SUPABASE_ANON_KEY") ?: ""
+        buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
 	}
 	buildFeatures {
 		compose = true
@@ -190,6 +198,15 @@ dependencies {
     implementation(libs.moshi.kotlin)
     implementation("javax.inject:javax.inject:1")
     implementation("com.android.billingclient:billing-ktx:7.1.1")
+    // Supabase
+    implementation(platform(libs.supabase.bom))
+    implementation(libs.supabase.postgrest)
+    implementation(libs.supabase.auth)
+    implementation(libs.supabase.storage)
+    implementation(libs.supabase.realtime)
+    implementation(libs.supabase.functions)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.kotlinx.serialization.json)
 	debugImplementation(libs.compose.tooling)
 	testImplementation("junit:junit:4.13.2")
 	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")

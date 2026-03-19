@@ -1,6 +1,7 @@
 package com.horsegallop.data.barnmanagement.repository
 
-import com.horsegallop.data.remote.functions.AppFunctionsDataSource
+import com.horsegallop.data.remote.supabase.SupabaseDataSource
+import com.horsegallop.data.remote.supabase.SupabaseManagedLessonDto
 import com.horsegallop.domain.barnmanagement.model.BarnStats
 import com.horsegallop.domain.barnmanagement.model.ManagedLesson
 import com.horsegallop.domain.barnmanagement.model.StudentRosterEntry
@@ -9,39 +10,28 @@ import com.horsegallop.domain.barnmanagement.repository.CreateLessonRequest
 import javax.inject.Inject
 
 class BarnManagementRepositoryImpl @Inject constructor(
-    private val functionsDataSource: AppFunctionsDataSource
+    private val supabaseDataSource: SupabaseDataSource
 ) : BarnManagementRepository {
 
     override suspend fun getBarnStats(barnId: String): Result<BarnStats> = runCatching {
-        val dto = functionsDataSource.getBarnStats(barnId)
+        val statsMap = supabaseDataSource.getBarnStats(barnId)
         BarnStats(
-            totalLessons = dto.totalLessons,
-            totalReservations = dto.totalReservations,
-            uniqueStudents = dto.uniqueStudents,
-            upcomingLessonsCount = dto.upcomingLessonsCount
+            totalLessons = (statsMap["totalLessons"] as? Int) ?: 0,
+            totalReservations = (statsMap["totalReservations"] as? Int) ?: 0,
+            uniqueStudents = (statsMap["uniqueStudents"] as? Int) ?: 0,
+            upcomingLessonsCount = (statsMap["upcomingLessonsCount"] as? Int) ?: 0
         )
     }
 
     override suspend fun getManagedLessons(barnId: String): Result<List<ManagedLesson>> = runCatching {
-        functionsDataSource.getManagedLessons(barnId).map { dto ->
-            ManagedLesson(
-                id = dto.id,
-                title = dto.title,
-                instructorName = dto.instructorName,
-                startTimeMs = dto.startTimeMs,
-                durationMin = dto.durationMin,
-                level = dto.level,
-                price = dto.price,
-                spotsTotal = dto.spotsTotal,
-                spotsBooked = dto.spotsBooked,
-                barnId = dto.barnId,
-                isCancelled = dto.isCancelled
-            )
+        supabaseDataSource.getManagedLessons(barnId).map { dto ->
+            dto.toDomain()
         }
     }
 
     override suspend fun createLesson(lesson: CreateLessonRequest): Result<ManagedLesson> = runCatching {
-        val dto = functionsDataSource.createLesson(
+        val dto = SupabaseManagedLessonDto(
+            id = "",
             barnId = lesson.barnId,
             title = lesson.title,
             instructorName = lesson.instructorName,
@@ -51,27 +41,15 @@ class BarnManagementRepositoryImpl @Inject constructor(
             price = lesson.price,
             spotsTotal = lesson.spotsTotal
         )
-        ManagedLesson(
-            id = dto.id,
-            title = dto.title,
-            instructorName = dto.instructorName,
-            startTimeMs = dto.startTimeMs,
-            durationMin = dto.durationMin,
-            level = dto.level,
-            price = dto.price,
-            spotsTotal = dto.spotsTotal,
-            spotsBooked = dto.spotsBooked,
-            barnId = dto.barnId,
-            isCancelled = dto.isCancelled
-        )
+        supabaseDataSource.createLesson(dto).toDomain()
     }
 
     override suspend fun cancelLesson(lessonId: String): Result<Unit> = runCatching {
-        functionsDataSource.cancelLesson(lessonId)
+        supabaseDataSource.cancelLesson(lessonId)
     }
 
     override suspend fun getLessonRoster(lessonId: String): Result<List<StudentRosterEntry>> = runCatching {
-        functionsDataSource.getLessonRoster(lessonId).map { dto ->
+        supabaseDataSource.getLessonRoster(lessonId).map { dto ->
             StudentRosterEntry(
                 userId = dto.userId,
                 displayName = dto.displayName,
@@ -81,4 +59,18 @@ class BarnManagementRepositoryImpl @Inject constructor(
             )
         }
     }
+
+    private fun SupabaseManagedLessonDto.toDomain() = ManagedLesson(
+        id = id,
+        title = title,
+        instructorName = instructorName,
+        startTimeMs = startTimeMs,
+        durationMin = durationMin,
+        level = level,
+        price = price,
+        spotsTotal = spotsTotal,
+        spotsBooked = spotsBooked,
+        barnId = barnId,
+        isCancelled = isCancelled
+    )
 }

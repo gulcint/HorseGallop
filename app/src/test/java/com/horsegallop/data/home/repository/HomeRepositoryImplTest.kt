@@ -1,9 +1,7 @@
 package com.horsegallop.data.home.repository
 
-import com.horsegallop.data.remote.dto.HomeDashboardFunctionsDto
-import com.horsegallop.data.remote.dto.HomeRecentActivityFunctionsDto
-import com.horsegallop.data.remote.dto.HomeStatsFunctionsDto
-import com.horsegallop.data.remote.functions.AppFunctionsDataSource
+import com.horsegallop.data.remote.supabase.SupabaseDataSource
+import com.horsegallop.data.remote.supabase.SupabaseRideDto
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -17,7 +15,7 @@ import org.mockito.kotlin.whenever
 
 class HomeRepositoryImplTest {
 
-    private val dataSource: AppFunctionsDataSource = mock()
+    private val dataSource: SupabaseDataSource = mock()
     private lateinit var repository: HomeRepositoryImpl
 
     @Before
@@ -29,11 +27,9 @@ class HomeRepositoryImplTest {
 
     @Test
     fun `getRecentActivities emits success with mapped RideSessions`() = runTest {
-        whenever(dataSource.getHomeDashboard(5)).thenReturn(
-            dashboardDto(
-                activities = listOf(
-                    activityDto("r1", "Sabah Turu", "2026-04-01", "08:30", 45, 6.2)
-                )
+        whenever(dataSource.getRecentRides(5)).thenReturn(
+            listOf(
+                rideDto("r1", barnName = "Sabah Turu", startedAt = "2026-04-01T08:30:00", durationSec = 2700, distanceKm = 6.2)
             )
         )
 
@@ -43,17 +39,14 @@ class HomeRepositoryImplTest {
         val sessions = result.getOrNull()!!
         assertEquals(1, sessions.size)
         assertEquals("r1", sessions[0].id)
-        assertEquals("Sabah Turu", sessions[0].title)
         assertEquals(45, sessions[0].durationMin)
         assertEquals(6.2, sessions[0].distanceKm, 0.01)
     }
 
     @Test
-    fun `getRecentActivities parses valid dateLabel and timeLabel into timestamp`() = runTest {
-        whenever(dataSource.getHomeDashboard(5)).thenReturn(
-            dashboardDto(
-                activities = listOf(activityDto("r1", "Test", "2026-04-01", "09:00", 30, 5.0))
-            )
+    fun `getRecentActivities parses valid ISO timestamp`() = runTest {
+        whenever(dataSource.getRecentRides(5)).thenReturn(
+            listOf(rideDto("r1", startedAt = "2026-04-01T09:00:00", durationSec = 1800, distanceKm = 5.0))
         )
 
         val session = repository.getRecentActivities("uid1", 5).toList().first().getOrNull()!!.first()
@@ -63,10 +56,8 @@ class HomeRepositoryImplTest {
 
     @Test
     fun `getRecentActivities returns null timestamp for invalid date string`() = runTest {
-        whenever(dataSource.getHomeDashboard(5)).thenReturn(
-            dashboardDto(
-                activities = listOf(activityDto("r1", "Test", "invalid-date", "", 30, 5.0))
-            )
+        whenever(dataSource.getRecentRides(5)).thenReturn(
+            listOf(rideDto("r1", startedAt = "invalid-date", durationSec = 1800, distanceKm = 5.0))
         )
 
         val session = repository.getRecentActivities("uid1", 5).toList().first().getOrNull()!!.first()
@@ -76,7 +67,7 @@ class HomeRepositoryImplTest {
 
     @Test
     fun `getRecentActivities emits failure when dataSource throws`() = runTest {
-        whenever(dataSource.getHomeDashboard(5)).thenThrow(RuntimeException("Network error"))
+        whenever(dataSource.getRecentRides(5)).thenThrow(RuntimeException("Network error"))
 
         val result = repository.getRecentActivities("uid1", 5).toList().first()
 
@@ -84,8 +75,8 @@ class HomeRepositoryImplTest {
     }
 
     @Test
-    fun `getRecentActivities emits empty list when dashboard has no activities`() = runTest {
-        whenever(dataSource.getHomeDashboard(5)).thenReturn(dashboardDto(activities = emptyList()))
+    fun `getRecentActivities emits empty list when no rides`() = runTest {
+        whenever(dataSource.getRecentRides(5)).thenReturn(emptyList())
 
         val result = repository.getRecentActivities("uid1", 5).toList().first()
 
@@ -96,10 +87,11 @@ class HomeRepositoryImplTest {
     // ─── getUserStats ────────────────────────────────────────────────────────
 
     @Test
-    fun `getUserStats emits success with mapped UserStats`() = runTest {
-        whenever(dataSource.getHomeDashboard(20)).thenReturn(
-            dashboardDto(
-                stats = statsDto(totalRides = 10, totalDistanceKm = 85.5, totalDurationMin = 600, totalCalories = 3200.0, favoriteBarn = "Yıldız Ahırı")
+    fun `getUserStats emits success with aggregated stats`() = runTest {
+        whenever(dataSource.getMyRides()).thenReturn(
+            listOf(
+                rideDto("r1", durationSec = 3600, distanceKm = 10.0, calories = 500.0, barnName = "Yıldız Ahırı", startedAt = "2026-04-01T08:00:00"),
+                rideDto("r2", durationSec = 1800, distanceKm = 5.0, calories = 250.0, barnName = "Yıldız Ahırı", startedAt = "2026-04-02T09:00:00")
             )
         )
 
@@ -107,19 +99,17 @@ class HomeRepositoryImplTest {
 
         assertTrue(result.isSuccess)
         val stats = result.getOrNull()!!
-        assertEquals(10, stats.totalRides)
-        assertEquals(85.5, stats.totalDistance, 0.01)
-        assertEquals(600, stats.totalDurationMin)
-        assertEquals(3200.0, stats.totalCalories, 0.01)
+        assertEquals(2, stats.totalRides)
+        assertEquals(15.0, stats.totalDistance, 0.01)
+        assertEquals(90, stats.totalDurationMin)
+        assertEquals(750.0, stats.totalCalories, 0.01)
         assertEquals("Yıldız Ahırı", stats.favoriteBarn)
     }
 
     @Test
-    fun `getUserStats sets lastRideAt from first activity`() = runTest {
-        whenever(dataSource.getHomeDashboard(20)).thenReturn(
-            dashboardDto(
-                activities = listOf(activityDto("r1", "Ride", "2026-04-01", "08:00", 30, 5.0))
-            )
+    fun `getUserStats sets lastRideAt from most recent ride`() = runTest {
+        whenever(dataSource.getMyRides()).thenReturn(
+            listOf(rideDto("r1", startedAt = "2026-04-01T08:00:00"))
         )
 
         val result = repository.getUserStats("uid1").toList().first()
@@ -128,10 +118,8 @@ class HomeRepositoryImplTest {
     }
 
     @Test
-    fun `getUserStats sets lastRideAt null when no activities`() = runTest {
-        whenever(dataSource.getHomeDashboard(20)).thenReturn(
-            dashboardDto(activities = emptyList())
-        )
+    fun `getUserStats sets lastRideAt null when no rides`() = runTest {
+        whenever(dataSource.getMyRides()).thenReturn(emptyList())
 
         val result = repository.getUserStats("uid1").toList().first()
 
@@ -140,7 +128,7 @@ class HomeRepositoryImplTest {
 
     @Test
     fun `getUserStats emits failure when dataSource throws`() = runTest {
-        whenever(dataSource.getHomeDashboard(20)).thenThrow(RuntimeException("error"))
+        whenever(dataSource.getMyRides()).thenThrow(RuntimeException("error"))
 
         val result = repository.getUserStats("uid1").toList().first()
 
@@ -149,22 +137,22 @@ class HomeRepositoryImplTest {
 
     // ─── helpers ─────────────────────────────────────────────────────────────
 
-    private fun statsDto(
-        totalRides: Int = 0,
-        totalDistanceKm: Double = 0.0,
-        totalDurationMin: Int = 0,
-        totalCalories: Double = 0.0,
-        favoriteBarn: String? = null
-    ) = HomeStatsFunctionsDto(totalRides, totalDistanceKm, totalDurationMin, totalCalories, favoriteBarn)
-
-    private fun activityDto(
-        id: String, title: String,
-        dateLabel: String, timeLabel: String,
-        durationMin: Int, distanceKm: Double
-    ) = HomeRecentActivityFunctionsDto(id, title, dateLabel, timeLabel, durationMin, distanceKm)
-
-    private fun dashboardDto(
-        stats: HomeStatsFunctionsDto = statsDto(),
-        activities: List<HomeRecentActivityFunctionsDto> = emptyList()
-    ) = HomeDashboardFunctionsDto(stats = stats, recentActivities = activities)
+    private fun rideDto(
+        id: String,
+        barnName: String? = null,
+        startedAt: String = "2026-04-01T08:00:00",
+        durationSec: Int = 1800,
+        distanceKm: Double = 5.0,
+        calories: Double = 200.0
+    ) = SupabaseRideDto(
+        id = id,
+        userId = "uid1",
+        durationSec = durationSec,
+        distanceKm = distanceKm,
+        calories = calories,
+        avgSpeedKmh = 10.0,
+        barnName = barnName,
+        startedAt = startedAt,
+        savedAt = startedAt
+    )
 }

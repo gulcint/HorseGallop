@@ -15,6 +15,9 @@ bash scripts/setup-hooks.sh        # one-time git hook setup
 ./gradlew lintDebug
 ./gradlew androidQualityConventions
 bash scripts/pr-pipeline-merge.sh  # run local gate + open/update PR
+bash scripts/deploy-emulator.sh    # build + install to running emulator
+bash scripts/smoke-test.sh         # post-install smoke test (adb monkey)
+bash scripts/retrospective.sh      # create retrospective note after PR
 ```
 
 Git hooks: `pre-commit` → conflict/syntax check | `pre-push` → lint + tests
@@ -28,7 +31,28 @@ Claude hooks: `PreToolUse` blocks dangerous commands | `PostToolUse` auto-runs G
 - Direct answer: question / debug / 1-2 file change
 - Agents (tech-lead): new feature (3+ layers), cross-cutting refactor, ambiguous scope
 
+**Pipeline (sıra zorunlu):**
+```
+tech-lead → researcher / android-feature / supabase-backend / ui-craft
+         → qa-verifier (PASS zorunlu — build + test + lint + SemanticColors)
+         → coderabbit:review VEYA code-review:code-review (automated kod kalitesi)
+         → issues varsa android-feature düzeltir → review tekrar
+         → commit-push-pr (PR açılır)
+         → bash scripts/deploy-emulator.sh
+         → bash scripts/smoke-test.sh
+         → bash scripts/retrospective.sh <pr-number>
+```
+
 **QA Gate (mandatory after every implementation):** `qa-verifier` PASS required before saying "done" / "ready" / "commit". FAIL → fix → re-run QA → then commit.
+
+**Design/Spec onayı:** Human'a "Bu doğru görünüyor mu?" sorulmaz.
+Spec/tasarım otomatik olarak `spec-document-reviewer` veya `coderabbit:review` ajanına gönderilir.
+İnsan yalnızca şu durumlarda dahil edilir:
+- Kütüphane/teknoloji seçimi (X mi Y mi?)
+- Ürün kararları (feature scope, UX yönü)
+- Production deploy onayı
+
+**Retrospektif (mandatory after every PR):** `bash scripts/retrospective.sh <pr-no>` → `docs/retrospectives/` altına kaydet → bir sonraki iterasyonun girdisi olur.
 
 **New multi-step task:**
 ```bash
@@ -44,16 +68,16 @@ domain/{feature}/model/         → Pure Kotlin data classes
 domain/{feature}/repository/    → Interfaces
 domain/{feature}/usecase/       → Single-responsibility business logic
 data/{feature}/repository/      → Implements domain interfaces
-data/remote/functions/          → AppFunctionsDataSource (all Firebase calls)
-data/remote/dto/                → FunctionsDtos.kt
-data/di/                        → DataModule, FirebaseModule, NetworkModule
+data/remote/supabase/           → SupabaseDataSource + SupabaseAuthDataSource + SupabaseDtos
+data/di/                        → DataModule, SupabaseModule, FirebaseModule (FCM only)
 feature/{feature}/presentation/ → Screen + ViewModel pairs
 core/components/                → Shared Composables
 navigation/AppNav.kt            → All routes + NavHost
 ui/theme/                       → SemanticColors, Type, Theme
 ```
 
-All remote calls: `AppFunctionsDataSource` → Firebase Cloud Functions.
+All remote calls: `SupabaseDataSource` → Supabase PostgREST / Edge Functions.
+Firebase: only FCM (push notifications) — `FirebaseModule` provides `FirebaseMessaging` only.
 
 DI: `@Binds @Singleton` in `DataModule`. ViewModels: `@HiltViewModel` + `@Inject constructor`.
 
@@ -71,12 +95,21 @@ val semantic = LocalSemanticColors.current
 
 ViewModel state: one `UiState` data class, `StateFlow`, collect with `collectAsStateWithLifecycle()`.
 
-## Firebase
+## Supabase
 
-- Functions region: `us-central1`
-- App Check: `DebugAppCheckProviderFactory` (debug) / `PlayIntegrityAppCheckProviderFactory` (release)
-- FCM channels: `general`, `reservation`, `lesson`
-- Auth: Email/password + Google. Password reset deep link: `horsegallop.page.link/reset-password`
+- **Project ref:** `mnhcyeofrsgoulhpvlfr` | **URL:** `https://mnhcyeofrsgoulhpvlfr.supabase.co`
+- **CLI:** `~/bin/supabase` | **Region:** West EU (Ireland)
+- Auth: Email/password + Google OAuth (Supabase native)
+- Realtime: `postgresChangeFlow` for live notifications
+- Storage: `profile-photos` bucket for avatar uploads
+- Edge Functions: `supabase/functions/` — deploy via `~/bin/supabase functions deploy <name>`
+- Migrations: `supabase/migrations/` — apply via `~/bin/supabase db push`
+
+## FCM (Push Notifications — Firebase only remaining)
+
+- Channels: `general`, `reservation`, `lesson`
+- Token stored in `fcm_tokens` Supabase table
+- `FirebaseApp.initializeApp` required for FCM only
 
 ## Google Play Billing
 

@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -47,6 +48,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -217,22 +219,35 @@ internal fun LoginScreenContent(
         ) {
             Spacer(modifier = Modifier.weight(0.45f))
 
-            // ic_launcher_round XML adaptive icon → Compose'da çöküyor.
-            // ic_launcher_foreground: sadece foreground layer (PNG/Vector), her zaman çalışır.
-            Box(
+            // Splash ekranı SplashBadge pattern: Surface(CircleShape) + radialGradient + foreground PNG
+            val semantic = LocalSemanticColors.current
+            Surface(
                 modifier = Modifier
-                    .size(88.dp)
-                    .background(
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-                        CircleShape
-                    ),
-                contentAlignment = Alignment.Center
+                    .size(108.dp)
+                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), CircleShape),
+                shape = CircleShape,
+                color = semantic.cardElevated
             ) {
-                Image(
-                    painter = painterResource(id = R.mipmap.ic_launcher_foreground),
-                    contentDescription = stringResource(R.string.app_name),
-                    modifier = Modifier.size(72.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.radialGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
+                                    MaterialTheme.colorScheme.secondary.copy(alpha = 0.12f),
+                                    MaterialTheme.colorScheme.surface
+                                )
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                        contentDescription = stringResource(R.string.app_name),
+                        modifier = Modifier.size(80.dp)
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(20.dp))
             Text(
@@ -274,8 +289,8 @@ internal fun LoginScreenContent(
                     AuthOptionButton(
                         title = stringResource(R.string.signin_google),
                         subtitle = stringResource(R.string.login_google_helper),
-                        enabled = !uiState.isLoading && uiState.agreementAccepted,
-                        modifier = Modifier.alpha(if (uiState.agreementAccepted) 1f else 0.5f),
+                        enabled = !uiState.isLoading,
+                        modifier = Modifier,
                         onClick = onGoogleClick,
                         icon = {
                             Image(
@@ -310,9 +325,8 @@ internal fun LoginScreenContent(
                         title = stringResource(R.string.signin_email),
                         subtitle = stringResource(R.string.login_email_helper),
                         onClick = onEmailClick,
-                        enabled = !uiState.isLoading && uiState.agreementAccepted,
+                        enabled = !uiState.isLoading,
                         modifier = Modifier
-                            .alpha(if (uiState.agreementAccepted) 1f else 0.5f)
                             .semantics { testTag = "email_login_button" },
                         accentTint = MaterialTheme.colorScheme.primary,
                         icon = {
@@ -347,11 +361,15 @@ internal fun LoginScreenContent(
                         val termsText = stringResource(R.string.agreement_terms_link)
                         val privacyText = stringResource(R.string.agreement_privacy_link)
                         val fullLabel = buildAnnotatedString {
-                            append(stringResource(R.string.agreement_label_prefix))
+                            // Android XML trims trailing/leading spaces — explicit boşluklar ekleniyor
+                            append(stringResource(R.string.agreement_label_prefix).trimEnd())
+                            append(" ")
                             withStyle(SpanStyle(color = primaryColor, fontWeight = FontWeight.SemiBold)) {
                                 append(termsText)
                             }
-                            append(stringResource(R.string.agreement_label_connector))
+                            append(" ")
+                            append(stringResource(R.string.agreement_label_connector).trim())
+                            append(" ")
                             withStyle(SpanStyle(color = primaryColor, fontWeight = FontWeight.SemiBold)) {
                                 append(privacyText)
                             }

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,6 +36,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,7 +50,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,15 +59,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.horsegallop.R
 import com.horsegallop.domain.health.model.HealthEvent
 import com.horsegallop.domain.health.model.HealthEventType
+import com.horsegallop.domain.horse.model.Horse
 import com.horsegallop.ui.theme.LocalSemanticColors
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -79,10 +84,14 @@ fun HealthScreen(
     onBack: () -> Unit,
     onAddEvent: () -> Unit
 ) {
-    val uiState by viewModel.ui.collectAsState()
+    val uiState by viewModel.ui.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val semantic = LocalSemanticColors.current
+    val context = LocalContext.current
+
+    // Pre-compute notification title outside LaunchedEffect (stringResource constraint)
+    val reminderContentTitle = stringResource(R.string.health_reminder_upcoming_title)
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { msg ->
@@ -128,26 +137,48 @@ fun HealthScreen(
             }
         }
     ) { innerPadding ->
-        when {
-            uiState.loading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize().padding(innerPadding),
-                    contentAlignment = Alignment.Center
-                ) { CircularProgressIndicator() }
-            }
-            uiState.events.isEmpty() -> {
-                HealthEmptyState(
-                    modifier = Modifier.fillMaxSize().padding(innerPadding),
-                    onAddClick = onAddEvent
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            // At filtre chip row — always visible when horses are available
+            if (uiState.horses.isNotEmpty()) {
+                HorseFilterChipRow(
+                    horses = uiState.horses,
+                    selectedHorseId = uiState.selectedHorseId,
+                    onSelectAll = { viewModel.filterByHorse(null) },
+                    onSelectHorse = { viewModel.filterByHorse(it) }
                 )
             }
-            else -> {
-                HealthContent(
-                    events = uiState.events,
-                    modifier = Modifier.fillMaxSize().padding(innerPadding),
-                    onMarkComplete = { viewModel.markCompleted(it) },
-                    onDelete = { deleteTarget = it }
-                )
+
+            when {
+                uiState.loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) { CircularProgressIndicator() }
+                }
+                uiState.events.isEmpty() -> {
+                    HealthEmptyState(
+                        modifier = Modifier.fillMaxSize(),
+                        onAddClick = onAddEvent
+                    )
+                }
+                else -> {
+                    HealthContent(
+                        events = uiState.events,
+                        modifier = Modifier.fillMaxSize(),
+                        onMarkComplete = { event ->
+                            viewModel.markCompleted(event)
+                        },
+                        onDelete = { deleteTarget = it },
+                        onScheduleReminder = { event ->
+                            val title = "${event.type.name} — ${event.horseName}"
+                            viewModel.scheduleReminder(context, event, title)
+                        }
+                    )
+                }
             }
         }
     }
@@ -161,6 +192,7 @@ fun HealthScreen(
                 Button(
                     onClick = {
                         viewModel.delete(event.id)
+                        viewModel.cancelReminder(context, event.id)
                         deleteTarget = null
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -178,13 +210,58 @@ fun HealthScreen(
 }
 
 @Composable
+private fun HorseFilterChipRow(
+    horses: List<Horse>,
+    selectedHorseId: String?,
+    onSelectAll: () -> Unit,
+    onSelectHorse: (String) -> Unit
+) {
+    val semantic = LocalSemanticColors.current
+    val allLabel = stringResource(R.string.health_filter_all)
+
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // "Tümü" chip
+        item(key = "chip_all", contentType = "filter_chip") {
+            FilterChip(
+                selected = selectedHorseId == null,
+                onClick = onSelectAll,
+                label = { Text(allLabel) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = semantic.chipSelected,
+                    containerColor = semantic.chipUnselected
+                )
+            )
+        }
+
+        items(
+            items = horses,
+            key = { "chip_${it.id}" },
+            contentType = { "filter_chip" }
+        ) { horse ->
+            FilterChip(
+                selected = selectedHorseId == horse.id,
+                onClick = { onSelectHorse(horse.id) },
+                label = { Text(horse.name) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = semantic.chipSelected,
+                    containerColor = semantic.chipUnselected
+                )
+            )
+        }
+    }
+}
+
+@Composable
 private fun HealthContent(
     events: List<HealthEvent>,
     modifier: Modifier = Modifier,
     onMarkComplete: (HealthEvent) -> Unit,
-    onDelete: (HealthEvent) -> Unit
+    onDelete: (HealthEvent) -> Unit,
+    onScheduleReminder: (HealthEvent) -> Unit = {}
 ) {
-    val now = System.currentTimeMillis()
     val overdueEvents = events.filter { it.isOverdue }
     val dueSoonEvents = events.filter { it.isDueSoon }
     val completedEvents = events.filter { it.isCompleted }
@@ -218,7 +295,8 @@ private fun HealthContent(
                 HealthEventCard(
                     event = event,
                     onMarkComplete = { onMarkComplete(event) },
-                    onDelete = { onDelete(event) }
+                    onDelete = { onDelete(event) },
+                    onScheduleReminder = { onScheduleReminder(event) }
                 )
             }
             item { Spacer(Modifier.height(4.dp)) }
@@ -234,7 +312,8 @@ private fun HealthContent(
                 HealthEventCard(
                     event = event,
                     onMarkComplete = { onMarkComplete(event) },
-                    onDelete = { onDelete(event) }
+                    onDelete = { onDelete(event) },
+                    onScheduleReminder = { onScheduleReminder(event) }
                 )
             }
             item { Spacer(Modifier.height(4.dp)) }
@@ -250,7 +329,8 @@ private fun HealthContent(
                 HealthEventCard(
                     event = event,
                     onMarkComplete = { onMarkComplete(event) },
-                    onDelete = { onDelete(event) }
+                    onDelete = { onDelete(event) },
+                    onScheduleReminder = { onScheduleReminder(event) }
                 )
             }
             item { Spacer(Modifier.height(4.dp)) }
@@ -266,7 +346,8 @@ private fun HealthContent(
                 HealthEventCard(
                     event = event,
                     onMarkComplete = { onMarkComplete(event) },
-                    onDelete = { onDelete(event) }
+                    onDelete = { onDelete(event) },
+                    onScheduleReminder = { onScheduleReminder(event) }
                 )
             }
         }
@@ -372,7 +453,8 @@ private fun SectionHeader(title: String, count: Int?) {
 private fun HealthEventCard(
     event: HealthEvent,
     onMarkComplete: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onScheduleReminder: () -> Unit = {}
 ) {
     val semantic = LocalSemanticColors.current
     val typeColor = event.type.semanticColor(semantic)
@@ -477,6 +559,20 @@ private fun HealthEventCard(
                             tint = semantic.success,
                             modifier = Modifier.size(18.dp)
                         )
+                    }
+                    // Reminder bell — only for future events
+                    if (!event.isOverdue) {
+                        IconButton(
+                            onClick = onScheduleReminder,
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = stringResource(R.string.health_reminder_upcoming_title),
+                                tint = semantic.info,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
                 IconButton(
@@ -596,6 +692,24 @@ private fun HealthScreenPreview() {
             events = fakeEvents,
             onMarkComplete = {},
             onDelete = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HorseFilterChipRowPreview() {
+    val fakeHorses = listOf(
+        Horse(id = "h1", name = "Rüzgar"),
+        Horse(id = "h2", name = "Fırtına"),
+        Horse(id = "h3", name = "Yıldırım")
+    )
+    MaterialTheme {
+        HorseFilterChipRow(
+            horses = fakeHorses,
+            selectedHorseId = "h1",
+            onSelectAll = {},
+            onSelectHorse = {}
         )
     }
 }

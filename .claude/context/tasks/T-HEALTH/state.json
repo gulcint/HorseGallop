@@ -1,0 +1,33 @@
+{
+  "taskId": "T-HEALTH",
+  "title": "Horse Health Polish: filter, upcoming, local notifications",
+  "status": "active",
+  "summary": "HealthScreen CRUD calisiyor, section bazli liste var. filterByHorse ViewModel'de var, UI'da chip yok. Local notification altyapisi eksik. At listesi icin GetHorsesUseCase inject edilmeli.",
+  "owner": "conductor",
+  "currentStage": "planning",
+  "decisions": [
+    {
+      "date": "2026-03-19",
+      "decision": "Local AlarmManager ile bildirim — FCM server-side degil",
+      "reason": "Server-side health reminder tetiklemesi B2B sprint'e kaliyor; local yeterli MVP icin",
+      "impact": "AlarmManager + BroadcastReceiver yeni dosyalar gerektirir"
+    },
+    {
+      "date": "2026-03-19",
+      "decision": "Takvim gorunumu kapsam disi",
+      "reason": "Liste + section ayrimi yeterli, takvim widget kompleks",
+      "impact": "Sprint daha kisa kalir"
+    }
+  ],
+  "openQuestions": [
+    "GetHorsesUseCase mevcut mu? HorseRepository'de hangi metot kullanilacak?",
+    "POST_NOTIFICATIONS permission AndroidManifest'te var mi?"
+  ],
+  "nextActions": [
+    "researcher: GetHorsesUseCase + HorseRepository + AndroidManifest permission + mevcut notification kanal tanimlari",
+    "android-feature: HealthViewModel at listesi + HealthScreen chip + AlarmManager bildirim"
+  ],
+  "handoffs": {},
+  "artifacts": {},
+  "reports": {}
+}

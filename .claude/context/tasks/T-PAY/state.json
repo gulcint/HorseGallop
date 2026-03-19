@@ -1,0 +1,34 @@
+{
+  "taskId": "T-PAY",
+  "title": "Payments: Google Play Billing + Supabase verification",
+  "status": "active",
+  "summary": "Google Play Billing skeleton mevcut. BillingManager ve SubscriptionViewModel calisiyor. startSubscriptionPurchase noop — Supabase Edge Function verify-purchase yazilmali, sonra RepositoryImpl guncellenmeli.",
+  "owner": "conductor",
+  "currentStage": "planning",
+  "decisions": [
+    {
+      "date": "2026-03-19",
+      "decision": "iyzico/Stripe kapsam disi — sadece Google Play Billing MVP",
+      "reason": "Play Billing skeleton hazir, iyzico entegrasyonu ayri sprint gerektirir",
+      "impact": "SubscriptionRepositoryImpl sadece Google Play donusu isle"
+    },
+    {
+      "date": "2026-03-19",
+      "decision": "Server-side dogrulama zorunlu — client trust yok",
+      "reason": "Guvenlik: purchaseToken dogrulamadan is_pro setlenmemeli",
+      "impact": "Supabase Edge Function verify-purchase gerekli; GOOGLE_PLAY_SERVICE_ACCOUNT_KEY secret gerekli"
+    }
+  ],
+  "openQuestions": [
+    "SubscriptionScreen Activity ref nasil aliyor? LocalContext.current as? Activity?",
+    "Google Play Developer API service account key nerede saklanacak?"
+  ],
+  "nextActions": [
+    "researcher: SubscriptionScreen Activity ref + SupabaseDataSource method signatures kontrol",
+    "operator: supabase/functions/verify-purchase/index.ts yaz",
+    "android-feature: SupabaseDataSource.verifyPurchase + SubscriptionRepositoryImpl guncelle"
+  ],
+  "handoffs": {},
+  "artifacts": {},
+  "reports": {}
+}

@@ -64,6 +64,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.airbnb.lottie.LottieComposition
 import com.horsegallop.R
 import com.horsegallop.ui.theme.LocalSemanticColors
 import com.horsegallop.ui.theme.SemanticColors
@@ -136,6 +137,8 @@ fun OnboardingScreen(
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val scope = rememberCoroutineScope()
     val activity = LocalContext.current as? Activity
+    // Lottie composition bir kere yükle — tüm sayfalar paylaşır, geç yükleme olmaz
+    val lottieComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.horse))
 
     Box(
         modifier = Modifier
@@ -154,7 +157,8 @@ fun OnboardingScreen(
             OnboardingPageContentAnimated(
                 page = pages[page],
                 pageOffset = pageOffset,
-                semantic = semantic
+                semantic = semantic,
+                lottieComposition = lottieComposition
             )
         }
 
@@ -263,19 +267,28 @@ fun OnboardingScreen(
 private fun StaticOnboardingBackground(gradient: List<Color>) {
     val fallbackPrimary = MaterialTheme.colorScheme.primaryContainer
     val fallbackSecondary = MaterialTheme.colorScheme.secondaryContainer
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        gradient.firstOrNull() ?: fallbackPrimary,
-                        gradient.getOrNull(1) ?: fallbackSecondary,
-                        fallbackPrimary.copy(alpha = 0.88f)
+    val semantic = LocalSemanticColors.current
+    Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            gradient.firstOrNull() ?: fallbackPrimary,
+                            gradient.getOrNull(1) ?: fallbackSecondary,
+                            fallbackPrimary.copy(alpha = 0.88f)
+                        )
                     )
                 )
-            )
-    )
+        )
+        // Metin okunabilirliği için dark scrim — açık gradient tonlarında beyaz metni korur
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(semantic.imageOverlayStrong)
+        )
+    }
 }
 
 // ── Per-page content ──────────────────────────────────────────────────────────
@@ -283,7 +296,8 @@ private fun StaticOnboardingBackground(gradient: List<Color>) {
 private fun OnboardingPageContentAnimated(
     page: OnboardingPage,
     pageOffset: Float,
-    semantic: SemanticColors
+    semantic: SemanticColors,
+    lottieComposition: LottieComposition?
 ) {
     val clamped = pageOffset.coerceIn(-1f, 1f)
     val alpha = 1f - kotlin.math.abs(clamped) * 0.20f
@@ -297,7 +311,8 @@ private fun OnboardingPageContentAnimated(
                 this.alpha = alpha
                 translationX = parallax
             }
-            .padding(horizontal = 24.dp, vertical = 24.dp),
+            // Alt bottom controls (dots + butonlar + nav bar ~180dp) ile çakışmayı önle
+            .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 180.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -317,6 +332,7 @@ private fun OnboardingPageContentAnimated(
             contentAlignment = Alignment.Center
         ) {
             HorseLottieAnimation(
+                composition = lottieComposition,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(20.dp)
@@ -356,17 +372,31 @@ private fun OnboardingPageContentAnimated(
 }
 
 @Composable
-private fun HorseLottieAnimation(modifier: Modifier = Modifier) {
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.horse))
+private fun HorseLottieAnimation(
+    composition: LottieComposition?,
+    modifier: Modifier = Modifier
+) {
     val progress by animateLottieCompositionAsState(
         composition = composition,
         iterations = LottieConstants.IterateForever
     )
-    LottieAnimation(
-        composition = composition,
-        progress = { progress },
-        modifier = modifier
-    )
+    if (composition == null) {
+        // Lottie yüklenene kadar at ikonu göster
+        Box(modifier = modifier, contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = Icons.Filled.Star,
+                contentDescription = null,
+                modifier = Modifier.size(72.dp),
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
+            )
+        }
+    } else {
+        LottieAnimation(
+            composition = composition,
+            progress = { progress },
+            modifier = modifier
+        )
+    }
 }
 
 private data class FeatureRes(
@@ -456,7 +486,7 @@ private fun FeatureBullet(
         }
         Text(
             text,
-            color = semantic.onImageOverlay,
+            color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.bodyMedium
         )
     }

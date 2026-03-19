@@ -3,6 +3,7 @@ package com.horsegallop.feature.barn.presentation
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.horsegallop.domain.auth.usecase.GetCurrentUserIdUseCase
 import com.horsegallop.domain.barn.model.BarnWithLocation
 import com.horsegallop.domain.barn.usecase.GetBarnDetailUseCase
 import com.horsegallop.domain.schedule.model.Lesson
@@ -19,12 +20,13 @@ import javax.inject.Inject
 class BarnDetailViewModel @Inject constructor(
     private val getBarnDetailUseCase: GetBarnDetailUseCase,
     private val scheduleRepository: ScheduleRepository,
+    private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val barnId: String = checkNotNull(savedStateHandle["id"])
 
-    private val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+    private val currentUserId = getCurrentUserIdUseCase()
 
     private val _uiState = MutableStateFlow<BarnDetailUiState>(BarnDetailUiState.Loading)
     val uiState: StateFlow<BarnDetailUiState> = _uiState.asStateFlow()

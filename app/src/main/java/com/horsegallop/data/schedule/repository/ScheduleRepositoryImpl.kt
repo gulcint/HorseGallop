@@ -1,6 +1,7 @@
 package com.horsegallop.data.schedule.repository
 
-import com.horsegallop.data.remote.functions.AppFunctionsDataSource
+import com.horsegallop.data.remote.supabase.SupabaseDataSource
+import com.horsegallop.data.remote.supabase.SupabaseReservationDto
 import com.horsegallop.domain.schedule.model.Lesson
 import com.horsegallop.domain.schedule.model.Reservation
 import com.horsegallop.domain.schedule.model.ReservationStatus
@@ -11,14 +12,14 @@ import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class ScheduleRepositoryImpl @Inject constructor(
-    private val functionsDataSource: AppFunctionsDataSource
+    private val supabaseDataSource: SupabaseDataSource
 ) : ScheduleRepository {
 
     override fun getLessons(): Flow<List<Lesson>> = flow {
-        emit(functionsDataSource.getLessons().map { dto ->
+        emit(supabaseDataSource.getLessons().map { dto ->
             Lesson(
                 id = dto.id,
-                date = dto.date,
+                date = dto.lessonDate ?: "",
                 title = dto.title,
                 instructorName = dto.instructorName,
                 durationMin = dto.durationMin,
@@ -26,25 +27,29 @@ class ScheduleRepositoryImpl @Inject constructor(
                 price = dto.price,
                 spotsTotal = dto.spotsTotal,
                 spotsAvailable = dto.spotsAvailable,
-                isBookedByMe = dto.isBookedByMe
+                isBookedByMe = false
             )
         })
     }.catch { emit(emptyList()) }
 
     override suspend fun bookLesson(lessonId: String): Result<Reservation> = runCatching {
-        val dto = functionsDataSource.bookLesson(lessonId)
-        dto.toDomain()
+        // Find the lesson first, then book it
+        val lessons = supabaseDataSource.getLessons()
+        val lesson = lessons.find { it.id == lessonId }
+            ?: error("Lesson $lessonId not found")
+        val reservation = supabaseDataSource.bookLesson(lesson)
+        reservation.toDomain()
     }
 
     override suspend fun cancelReservation(reservationId: String): Result<Unit> = runCatching {
-        functionsDataSource.cancelReservation(reservationId)
+        supabaseDataSource.cancelReservation(reservationId)
     }
 
     override fun getMyReservations(): Flow<List<Reservation>> = flow {
-        emit(functionsDataSource.getMyReservations().map { it.toDomain() })
+        emit(supabaseDataSource.getMyReservations().map { it.toDomain() })
     }.catch { emit(emptyList()) }
 
-    private fun com.horsegallop.data.remote.dto.ReservationFunctionsDto.toDomain() = Reservation(
+    private fun SupabaseReservationDto.toDomain() = Reservation(
         id = id,
         lessonId = lessonId,
         lessonTitle = lessonTitle,

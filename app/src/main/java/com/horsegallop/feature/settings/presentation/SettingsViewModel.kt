@@ -43,6 +43,11 @@ data class SettingsSyncUiState(
     val saveErrorMessageResId: Int? = null
 )
 
+data class SettingsUnitsUiState(
+    val weightUnit: String = "kg",
+    val distanceUnit: String = "km"
+)
+
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
@@ -61,6 +66,8 @@ class SettingsViewModel @Inject constructor(
     val contentState: StateFlow<SettingsContentUiState> = _contentState.asStateFlow()
     private val _syncState = MutableStateFlow(SettingsSyncUiState())
     val syncState: StateFlow<SettingsSyncUiState> = _syncState.asStateFlow()
+    private val _unitsState = MutableStateFlow(SettingsUnitsUiState())
+    val unitsState: StateFlow<SettingsUnitsUiState> = _unitsState.asStateFlow()
     private var saveJob: Job? = null
 
     init {
@@ -84,6 +91,16 @@ class SettingsViewModel @Inject constructor(
         syncSettingToBackend()
     }
 
+    fun onWeightUnitSelected(unit: String) {
+        _unitsState.value = _unitsState.value.copy(weightUnit = unit)
+        syncSettingToBackend()
+    }
+
+    fun onDistanceUnitSelected(unit: String) {
+        _unitsState.value = _unitsState.value.copy(distanceUnit = unit)
+        syncSettingToBackend()
+    }
+
     private fun syncSettingsFromBackend() {
         viewModelScope.launch {
             _syncState.value = _syncState.value.copy(
@@ -99,6 +116,10 @@ class SettingsViewModel @Inject constructor(
                         themeMode = remoteThemeMode,
                         language = remoteLanguage,
                         notificationsEnabled = remote.notificationsEnabled
+                    )
+                    _unitsState.value = SettingsUnitsUiState(
+                        weightUnit = remote.weightUnit.lowercase().ifBlank { "kg" },
+                        distanceUnit = remote.distanceUnit.lowercase().ifBlank { "km" }
                     )
                     loadContent(remoteLanguage)
                     _syncState.value = _syncState.value.copy(isInitialSyncRunning = false)
@@ -117,6 +138,7 @@ class SettingsViewModel @Inject constructor(
         saveJob?.cancel()
         saveJob = viewModelScope.launch {
             val state = settingsRepository.state.value
+            val units = _unitsState.value
             _syncState.value = _syncState.value.copy(
                 isSaving = true,
                 saveErrorMessageResId = null
@@ -126,7 +148,9 @@ class SettingsViewModel @Inject constructor(
                     UserSettings(
                         themeMode = state.themeMode.id.uppercase(),
                         language = state.language.id.uppercase(),
-                        notificationsEnabled = state.notificationsEnabled
+                        notificationsEnabled = state.notificationsEnabled,
+                        weightUnit = units.weightUnit,
+                        distanceUnit = units.distanceUnit
                     )
                 )
                 .onSuccess {

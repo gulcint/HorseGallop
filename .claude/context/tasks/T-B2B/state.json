@@ -1,0 +1,41 @@
+{
+  "taskId": "T-B2B",
+  "title": "B2B Barn Management: role model, owner dashboard, scheduling",
+  "status": "active",
+  "summary": "BarnDashboard/CreateLesson/LessonRoster ekranlari mevcut. UserRole domain modeli var. Rol-aware navigasyon ve self-onboard akisi eksik. Supabase user_profiles.role kolonu varligini researcher dogrulamali.",
+  "owner": "conductor",
+  "currentStage": "planning",
+  "decisions": [
+    {
+      "date": "2026-03-19",
+      "decision": "Self-onboard: kullanici kendi BARN_OWNER rolunu secebilir",
+      "reason": "Admin atama akisi karmasik, MVP icin self-serve yeterli",
+      "impact": "BarnOnboardingScreen yeni dosya, user_profiles.role = BARN_OWNER yazilir"
+    },
+    {
+      "date": "2026-03-19",
+      "decision": "Bottom nav: BARN_OWNER icin Barns tab'i Ahirim olarak rename",
+      "reason": "B2C Barns (kesif) ile B2B (yonetim) ayrilmali",
+      "impact": "AppNav.kt conditional label degisimi"
+    },
+    {
+      "date": "2026-03-19",
+      "decision": "Multi-barn ve Trainer rol kapsam disi",
+      "reason": "MVP tek ahir, tek owner; TRAINER ileride",
+      "impact": "Sprint daha dar kalir"
+    }
+  ],
+  "openQuestions": [
+    "user_profiles tablosunda role kolonu var mi? Tipi STRING mi ENUM mi?",
+    "AppNav.kt'de mevcut bottom nav nasil tanimli (icon + label)?",
+    "Rol bilgisi nereden okunacak: ProfileRepository.getCurrentUser()?"
+  ],
+  "nextActions": [
+    "researcher: UserRole model + AppNav bottom nav + user_profiles schema + BarnManagementRepository metotlari",
+    "operator: Supabase user_profiles.role migration (yoksa)",
+    "android-feature: BarnOnboardingScreen + role-aware AppNav bottom nav"
+  ],
+  "handoffs": {},
+  "artifacts": {},
+  "reports": {}
+}
