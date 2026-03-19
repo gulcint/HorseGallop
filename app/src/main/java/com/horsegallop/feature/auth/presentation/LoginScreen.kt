@@ -274,8 +274,8 @@ internal fun LoginScreenContent(
                     AuthOptionButton(
                         title = stringResource(R.string.signin_google),
                         subtitle = stringResource(R.string.login_google_helper),
-                        enabled = !uiState.isLoading && uiState.agreementAccepted,
-                        modifier = Modifier.alpha(if (uiState.agreementAccepted) 1f else 0.5f),
+                        enabled = !uiState.isLoading,
+                        modifier = Modifier,
                         onClick = onGoogleClick,
                         icon = {
                             Image(
@@ -310,9 +310,8 @@ internal fun LoginScreenContent(
                         title = stringResource(R.string.signin_email),
                         subtitle = stringResource(R.string.login_email_helper),
                         onClick = onEmailClick,
-                        enabled = !uiState.isLoading && uiState.agreementAccepted,
+                        enabled = !uiState.isLoading,
                         modifier = Modifier
-                            .alpha(if (uiState.agreementAccepted) 1f else 0.5f)
                             .semantics { testTag = "email_login_button" },
                         accentTint = MaterialTheme.colorScheme.primary,
                         icon = {
@@ -347,11 +346,15 @@ internal fun LoginScreenContent(
                         val termsText = stringResource(R.string.agreement_terms_link)
                         val privacyText = stringResource(R.string.agreement_privacy_link)
                         val fullLabel = buildAnnotatedString {
-                            append(stringResource(R.string.agreement_label_prefix))
+                            // Android XML trims trailing/leading spaces — explicit boşluklar ekleniyor
+                            append(stringResource(R.string.agreement_label_prefix).trimEnd())
+                            append(" ")
                             withStyle(SpanStyle(color = primaryColor, fontWeight = FontWeight.SemiBold)) {
                                 append(termsText)
                             }
-                            append(stringResource(R.string.agreement_label_connector))
+                            append(" ")
+                            append(stringResource(R.string.agreement_label_connector).trim())
+                            append(" ")
                             withStyle(SpanStyle(color = primaryColor, fontWeight = FontWeight.SemiBold)) {
                                 append(privacyText)
                             }
