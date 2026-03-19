@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -218,14 +219,36 @@ internal fun LoginScreenContent(
         ) {
             Spacer(modifier = Modifier.weight(0.45f))
 
-            // ic_launcher_round: tam daire, brown arka plan + horse — beyaz kare yok
-            Image(
-                painter = painterResource(id = R.mipmap.ic_launcher_round),
-                contentDescription = stringResource(R.string.app_name),
+            // Splash ekranı SplashBadge pattern: Surface(CircleShape) + radialGradient + foreground PNG
+            val semantic = LocalSemanticColors.current
+            Surface(
                 modifier = Modifier
-                    .size(88.dp)
-                    .clip(CircleShape)
-            )
+                    .size(108.dp)
+                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), CircleShape),
+                shape = CircleShape,
+                color = semantic.cardElevated
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.radialGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
+                                    MaterialTheme.colorScheme.secondary.copy(alpha = 0.12f),
+                                    MaterialTheme.colorScheme.surface
+                                )
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                        contentDescription = stringResource(R.string.app_name),
+                        modifier = Modifier.size(80.dp)
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = stringResource(R.string.app_name),
