@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -71,6 +72,7 @@ fun SettingsScreen(
     val privacyState by viewModel.privacyState.collectAsState()
     val contentState by viewModel.contentState.collectAsState()
     val syncState by viewModel.syncState.collectAsState()
+    val unitsState by viewModel.unitsState.collectAsState()
     val feedback = LocalAppFeedbackController.current
     val clipboard = LocalClipboardManager.current
     var showDeleteConfirm by remember { mutableStateOf(false) }
@@ -219,6 +221,49 @@ fun SettingsScreen(
                     checked = state.notificationsEnabled,
                     enabled = settingsControlsEnabled,
                     onCheckedChange = viewModel::onNotificationsChanged
+                )
+            }
+
+            SettingsSectionCard(
+                title = stringResource(id = R.string.setting_units_title),
+                icon = Icons.Filled.Straighten
+            ) {
+                Text(
+                    text = stringResource(id = R.string.setting_weight_unit_title),
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                SettingsRadioRow(
+                    label = stringResource(id = R.string.unit_kg),
+                    selected = unitsState.weightUnit == "kg",
+                    enabled = settingsControlsEnabled,
+                    onClick = { viewModel.onWeightUnitSelected("kg") }
+                )
+                SettingsRadioRow(
+                    label = stringResource(id = R.string.unit_lbs),
+                    selected = unitsState.weightUnit == "lbs",
+                    enabled = settingsControlsEnabled,
+                    onClick = { viewModel.onWeightUnitSelected("lbs") }
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(id = R.string.setting_distance_unit_title),
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                SettingsRadioRow(
+                    label = stringResource(id = R.string.unit_km),
+                    selected = unitsState.distanceUnit == "km",
+                    enabled = settingsControlsEnabled,
+                    onClick = { viewModel.onDistanceUnitSelected("km") }
+                )
+                SettingsRadioRow(
+                    label = stringResource(id = R.string.unit_mi),
+                    selected = unitsState.distanceUnit == "mi",
+                    enabled = settingsControlsEnabled,
+                    onClick = { viewModel.onDistanceUnitSelected("mi") }
                 )
             }
 
@@ -384,10 +429,27 @@ private fun SettingsSwitchRow(
 @Composable
 private fun SettingsScreenPreview() {
     MaterialTheme {
-        SettingsSectionCard(
-            title = "Theme",
-            icon = Icons.Filled.Palette
-        ) {}
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            SettingsSectionCard(
+                title = "Theme",
+                icon = Icons.Filled.Palette
+            ) {
+                SettingsRadioRow(label = "System", selected = true, enabled = true, onClick = {})
+                SettingsRadioRow(label = "Light", selected = false, enabled = true, onClick = {})
+            }
+            SettingsSectionCard(
+                title = "Units",
+                icon = Icons.Filled.Straighten
+            ) {
+                SettingsRadioRow(label = "kg", selected = true, enabled = true, onClick = {})
+                SettingsRadioRow(label = "lbs", selected = false, enabled = true, onClick = {})
+                SettingsRadioRow(label = "km", selected = true, enabled = true, onClick = {})
+                SettingsRadioRow(label = "mi", selected = false, enabled = true, onClick = {})
+            }
+        }
     }
 }
 

@@ -338,6 +338,11 @@
     <string name="unit_kcal">kcal</string>
     <string name="unit_km">km</string>
     <string name="unit_kmh">km/h</string>
+    <string name="unit_lbs">lbs</string>
+    <string name="unit_mi">mi</string>
+    <string name="setting_units_title">Units</string>
+    <string name="setting_weight_unit_title">Weight Unit</string>
+    <string name="setting_distance_unit_title">Distance Unit</string>
     
     <!-- View All -->
     <string name="view_all">View All</string>

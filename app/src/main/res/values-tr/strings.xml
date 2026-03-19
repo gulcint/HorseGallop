@@ -117,6 +117,11 @@
     <string name="privacy_export_action">Dışa aktar</string>
     <string name="privacy_export_ready">Veri dışa aktarma hazır, panoya kopyalandı.</string>
     <string name="privacy_delete_subtitle">Hesabınızı ve tüm verilerinizi kalıcı olarak silin.</string>
+    <string name="unit_lbs">lbs</string>
+    <string name="unit_mi">mi</string>
+    <string name="setting_units_title">Ölçüm Birimleri</string>
+    <string name="setting_weight_unit_title">Ağırlık Birimi</string>
+    <string name="setting_distance_unit_title">Mesafe Birimi</string>
     <string name="quick_actions_title">Hızlı İşlemler</string>
     <string name="qa_start_ride_title">Sürüşe Başla</string>
     <string name="qa_start_ride_subtitle">Yeni bir binicilik deneyimi</string>
