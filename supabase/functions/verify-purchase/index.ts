@@ -135,8 +135,9 @@ async function fetchPlaySubscription(
 function productIdToTier(productId: string): string {
   switch (productId) {
     case "horsegallop_pro_monthly":
+      return "PRO_MONTHLY"
     case "horsegallop_pro_yearly":
-      return "PRO"
+      return "PRO_YEARLY"
     default:
       return "FREE"
   }
