@@ -91,7 +91,7 @@ fun EnrollmentScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = semantic.screenTopBar
+                    containerColor = semantic.screenBase  // arka planla bütünleşik, ayrık toolbar görünmez
                 )
             )
         }
@@ -214,6 +214,16 @@ internal fun EnrollmentFormContent(
                         .fillMaxWidth()
                         .semantics { testTag = "signup_button" }
                 )
+
+                Text(
+                    text = stringResource(CoreR.string.terms_consent),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp)
+                )
             }
         }
 
@@ -275,18 +285,6 @@ private fun AuthHeader(
                 style = MaterialTheme.typography.bodyMedium,
                 color = semantic.onImageOverlay.copy(alpha = 0.9f)
             )
-            Spacer(modifier = Modifier.height(12.dp))
-            Surface(
-                color = semantic.onImageOverlay.copy(alpha = 0.15f),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(
-                    text = stringResource(CoreR.string.terms_consent),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = semantic.onImageOverlay,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                )
-            }
         }
     }
 }
