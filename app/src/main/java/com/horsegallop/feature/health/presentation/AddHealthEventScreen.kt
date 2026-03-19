@@ -50,7 +50,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.firebase.auth.FirebaseAuth
 import com.horsegallop.R
 import com.horsegallop.domain.health.model.HealthEvent
 import com.horsegallop.domain.health.model.HealthEventType
@@ -211,7 +210,7 @@ fun AddHealthEventScreen(
             Button(
                 onClick = {
                     val horse = selectedHorse ?: return@Button
-                    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@Button
+                    val userId = healthViewModel.getCurrentUserId() ?: return@Button
                     val event = HealthEvent(
                         id = UUID.randomUUID().toString(),
                         userId = userId,
@@ -292,12 +291,12 @@ private fun AddHealthEventScreenPreview() {
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    "Etkinlik Ekle",
+                    stringResource(R.string.health_add_event),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    "Etkinlik Türü",
+                    stringResource(R.string.horse_health_type_label),
                     style = MaterialTheme.typography.labelLarge
                 )
                 FlowRow(
@@ -313,23 +312,23 @@ private fun AddHealthEventScreenPreview() {
                     }
                 }
                 OutlinedTextField(
-                    value = "Rüzgar",
+                    value = stringResource(R.string.health_select_horse_placeholder),
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("At") },
+                    label = { Text(stringResource(R.string.health_horse_field_label)) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
                 OutlinedTextField(
-                    value = "15 Mar 2026",
+                    value = System.currentTimeMillis().formatEpochDate(),
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Tarih") },
+                    label = { Text(stringResource(R.string.horse_health_date_label)) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
                 Button(onClick = {}, modifier = Modifier.fillMaxWidth()) {
-                    Text("Kaydet")
+                    Text(stringResource(R.string.horse_health_save))
                 }
             }
         }

@@ -28,3 +28,20 @@ Sen HorseGallop'un operator agentisin.
 - Retry/debounce/timeout politikalari
 - Loglama, artifact, report ve runbook yapisi
 - Deploy veya pre-PR otomasyonlari
+
+## Deploy Komutu
+
+Emülatöre deploy etmek için her zaman şu scripti kullan:
+
+```bash
+cd /Users/gulcintas/HorseGallopProject/horsegallop
+bash scripts/deploy-emulator.sh
+```
+
+Script otomatik olarak:
+- Emülatör kapalıysa `Pixel_9` AVD'yi başlatır ve boot bekler
+- APK build eder (`assembleDebug`)
+- `adb install -r` ile kurar
+- `adb shell am start` ile uygulamayı açar
+
+`--skip-build` flag'i ile sadece install+launch yapabilirsin.

@@ -1,9 +1,9 @@
 package com.horsegallop.data.horse.repository
 
-import com.horsegallop.data.remote.dto.BreedFunctionsDto
-import com.horsegallop.data.remote.dto.HorseFunctionsDto
-import com.horsegallop.data.remote.dto.HorseTipFunctionsDto
-import com.horsegallop.data.remote.functions.AppFunctionsDataSource
+import com.horsegallop.data.remote.supabase.SupabaseDataSource
+import com.horsegallop.data.remote.supabase.SupabaseHorseBreedDto
+import com.horsegallop.data.remote.supabase.SupabaseHorseDto
+import com.horsegallop.data.remote.supabase.SupabaseHorseTipDto
 import com.horsegallop.domain.horse.model.Horse
 import com.horsegallop.domain.horse.model.HorseGender
 import kotlinx.coroutines.flow.first
@@ -13,13 +13,12 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
 class HorseRepositoryImplTest {
 
-    private val dataSource: AppFunctionsDataSource = mock()
+    private val dataSource: SupabaseDataSource = mock()
     private lateinit var repository: HorseRepositoryImpl
 
     @Before
@@ -55,12 +54,7 @@ class HorseRepositoryImplTest {
 
     @Test
     fun `addHorse returns success with mapped domain horse`() = runTest {
-        whenever(
-            dataSource.addHorse(
-                name = "Rüzgar", breed = "Arap Atı", birthYear = 2018,
-                color = "doru", gender = "stallion", weightKg = 500
-            )
-        ).thenReturn(horseDto("h2", "Rüzgar", "stallion"))
+        whenever(dataSource.addHorse(any())).thenReturn(horseDto("h2", "Rüzgar", "stallion"))
 
         val result = repository.addHorse(
             Horse(id = "", name = "Rüzgar", breed = "Arap Atı", birthYear = 2018,
@@ -73,8 +67,7 @@ class HorseRepositoryImplTest {
 
     @Test
     fun `addHorse returns failure when dataSource throws`() = runTest {
-        whenever(dataSource.addHorse(any(), any(), any(), any(), any(), any()))
-            .thenThrow(RuntimeException("Add failed"))
+        whenever(dataSource.addHorse(any())).thenThrow(RuntimeException("Add failed"))
 
         val result = repository.addHorse(
             Horse(id = "", name = "At", breed = "", birthYear = 0,
@@ -108,8 +101,8 @@ class HorseRepositoryImplTest {
 
     @Test
     fun `getBreeds returns nameTr when locale is Turkish`() = runTest {
-        whenever(dataSource.getBreeds("tr")).thenReturn(
-            listOf(BreedFunctionsDto("b1", nameEn = "Arabian", nameTr = "Arap Atı"))
+        whenever(dataSource.getBreeds()).thenReturn(
+            listOf(SupabaseHorseBreedDto("b1", nameEn = "Arabian", nameTr = "Arap Atı"))
         )
 
         val result = repository.getBreeds("tr")
@@ -120,8 +113,8 @@ class HorseRepositoryImplTest {
 
     @Test
     fun `getBreeds returns nameEn when locale is English`() = runTest {
-        whenever(dataSource.getBreeds("en")).thenReturn(
-            listOf(BreedFunctionsDto("b1", nameEn = "Arabian", nameTr = "Arap Atı"))
+        whenever(dataSource.getBreeds()).thenReturn(
+            listOf(SupabaseHorseBreedDto("b1", nameEn = "Arabian", nameTr = "Arap Atı"))
         )
 
         val result = repository.getBreeds("en")
@@ -132,8 +125,8 @@ class HorseRepositoryImplTest {
 
     @Test
     fun `getBreeds falls back to nameEn when nameTr is blank for Turkish locale`() = runTest {
-        whenever(dataSource.getBreeds("tr")).thenReturn(
-            listOf(BreedFunctionsDto("b1", nameEn = "Arabian", nameTr = ""))
+        whenever(dataSource.getBreeds()).thenReturn(
+            listOf(SupabaseHorseBreedDto("b1", nameEn = "Arabian", nameTr = ""))
         )
 
         val result = repository.getBreeds("tr")
@@ -143,7 +136,7 @@ class HorseRepositoryImplTest {
 
     @Test
     fun `getBreeds returns failure when dataSource throws`() = runTest {
-        whenever(dataSource.getBreeds(any())).thenThrow(RuntimeException("error"))
+        whenever(dataSource.getBreeds()).thenThrow(RuntimeException("error"))
 
         val result = repository.getBreeds("en")
 
@@ -154,8 +147,8 @@ class HorseRepositoryImplTest {
 
     @Test
     fun `getHorseTips returns mapped tips`() = runTest {
-        whenever(dataSource.getHorseTips(eq("en"))).thenReturn(
-            listOf(HorseTipFunctionsDto(id = "t1", title = "Tip", body = "Body", category = "nutrition"))
+        whenever(dataSource.getHorseTips("en")).thenReturn(
+            listOf(SupabaseHorseTipDto(id = "t1", title = "Tip", body = "Body", category = "nutrition"))
         )
 
         val result = repository.getHorseTips("en")
@@ -206,7 +199,7 @@ class HorseRepositoryImplTest {
 
     // ─── helpers ─────────────────────────────────────────────────────────────
 
-    private fun horseDto(id: String, name: String, gender: String) = HorseFunctionsDto(
+    private fun horseDto(id: String, name: String, gender: String) = SupabaseHorseDto(
         id = id, name = name, breed = "Arap Atı", birthYear = 2018,
         color = "doru", gender = gender, weightKg = 500
     )

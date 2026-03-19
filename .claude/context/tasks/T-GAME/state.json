@@ -1,0 +1,41 @@
+{
+  "taskId": "T-GAME",
+  "title": "Social Gamification MVP: Monthly Distance League + Leaderboard",
+  "status": "active",
+  "summary": "Challenge sistemi mevcut (MONTHLY_DISTANCE tipi var). Leaderboard yok. Supabase'de monthly aggregate view gerekli. Yeni screen + AppNav route gerekli.",
+  "owner": "conductor",
+  "currentStage": "planning",
+  "decisions": [
+    {
+      "date": "2026-03-19",
+      "decision": "Sadece MONTHLY_DISTANCE challenge tipi MVP icin",
+      "reason": "Diger tipler (WEEKLY_RIDES, SPEED_GOAL, EXPLORE_BARNS) sprint 2'ye kaliyor",
+      "impact": "ChallengeType enum var, sadece UI filtreleme yeterli"
+    },
+    {
+      "date": "2026-03-19",
+      "decision": "Leaderboard global (ilk 50 kullanici), anti-cheat: sadece ride_sessions",
+      "reason": "Country-bazli filtreleme ek profil verisi gerektirir, MVP karsimastirmak istemiyoruz",
+      "impact": "Supabase view WHERE is_manual = false AND duration_min >= 5"
+    },
+    {
+      "date": "2026-03-19",
+      "decision": "leaderboard_visible opt-out user_profiles'a boolean kolonu olarak",
+      "reason": "GDPR uyumu, kullanici gizlilik tercihi",
+      "impact": "Supabase migration gerekli"
+    }
+  ],
+  "openQuestions": [
+    "ride_sessions tablosunda is_manual veya duration_min kolonu var mi?",
+    "user_profiles'ta leaderboard_visible kolonu var mi?",
+    "ChallengeScreen'deki mevcut route AppNav.kt'de nasil tanimli?"
+  ],
+  "nextActions": [
+    "researcher: ChallengeScreen route + ViewModel + ride_sessions schema + user_profiles schema",
+    "operator: Supabase monthly_league view + leaderboard_visible migration",
+    "android-feature: LeaderboardScreen + LeaderboardViewModel + AppNav route + ChallengeScreen widget"
+  ],
+  "handoffs": {},
+  "artifacts": {},
+  "reports": {}
+}

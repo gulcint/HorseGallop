@@ -1,6 +1,7 @@
 package com.horsegallop.data.review.repository
 
-import com.horsegallop.data.remote.functions.AppFunctionsDataSource
+import com.horsegallop.data.remote.supabase.SupabaseDataSource
+import com.horsegallop.data.remote.supabase.SupabaseReviewDto
 import com.horsegallop.domain.review.model.Review
 import com.horsegallop.domain.review.model.ReviewTargetType
 import com.horsegallop.domain.review.repository.ReviewRepository
@@ -10,11 +11,11 @@ import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class ReviewRepositoryImpl @Inject constructor(
-    private val functionsDataSource: AppFunctionsDataSource
+    private val supabaseDataSource: SupabaseDataSource
 ) : ReviewRepository {
 
     override fun getMyReviews(): Flow<List<Review>> = flow {
-        emit(functionsDataSource.getMyReviews().map { dto ->
+        emit(supabaseDataSource.getMyReviews().map { dto ->
             Review(
                 id = dto.id,
                 targetId = dto.targetId,
@@ -32,22 +33,23 @@ class ReviewRepositoryImpl @Inject constructor(
         targetId: String, targetType: ReviewTargetType, targetName: String,
         rating: Int, comment: String
     ): Result<Review> = runCatching {
-        val dto = functionsDataSource.submitReview(
+        val dto = SupabaseReviewDto(
             targetId = targetId,
             targetType = if (targetType == ReviewTargetType.INSTRUCTOR) "instructor" else "lesson",
             targetName = targetName,
             rating = rating,
             comment = comment
         )
+        val saved = supabaseDataSource.submitReview(dto)
         Review(
-            id = dto.id,
-            targetId = dto.targetId,
+            id = saved.id,
+            targetId = saved.targetId,
             targetType = targetType,
-            targetName = dto.targetName,
-            rating = dto.rating,
-            comment = dto.comment,
-            createdAt = dto.createdAt,
-            authorName = dto.authorName
+            targetName = saved.targetName,
+            rating = saved.rating,
+            comment = saved.comment,
+            createdAt = saved.createdAt,
+            authorName = saved.authorName
         )
     }
 }

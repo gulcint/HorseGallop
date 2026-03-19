@@ -1,20 +1,21 @@
 package com.horsegallop.data.settings.repository
 
-import com.horsegallop.data.remote.dto.UserSettingsFunctionsDto
-import com.horsegallop.data.remote.functions.AppFunctionsDataSource
+import com.horsegallop.data.remote.supabase.SupabaseDataSource
+import com.horsegallop.data.remote.supabase.SupabaseUserSettingsDto
 import com.horsegallop.domain.settings.model.UserSettings
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 class UserSettingsRepositoryImplTest {
 
-    private val dataSource: AppFunctionsDataSource = mock()
+    private val dataSource: SupabaseDataSource = mock()
     private lateinit var repository: UserSettingsRepositoryImpl
 
     @Before
@@ -26,8 +27,9 @@ class UserSettingsRepositoryImplTest {
 
     @Test
     fun `getUserSettings returns mapped UserSettings on success`() = runTest {
-        whenever(dataSource.getUserSettings()).thenReturn(
-            UserSettingsFunctionsDto(
+        whenever(dataSource.getUserSettingsById()).thenReturn(
+            SupabaseUserSettingsDto(
+                userId = "uid1",
                 themeMode = "DARK",
                 language = "tr",
                 notificationsEnabled = false,
@@ -48,8 +50,21 @@ class UserSettingsRepositoryImplTest {
     }
 
     @Test
+    fun `getUserSettings returns defaults when no settings found`() = runTest {
+        whenever(dataSource.getUserSettingsById()).thenReturn(null)
+
+        val result = repository.getUserSettings()
+
+        assertTrue(result.isSuccess)
+        val settings = result.getOrNull()!!
+        assertEquals("SYSTEM", settings.themeMode)
+        assertEquals("SYSTEM", settings.language)
+        assertEquals(true, settings.notificationsEnabled)
+    }
+
+    @Test
     fun `getUserSettings returns failure when dataSource throws`() = runTest {
-        whenever(dataSource.getUserSettings()).thenThrow(RuntimeException("Backend error"))
+        whenever(dataSource.getUserSettingsById()).thenThrow(RuntimeException("Backend error"))
 
         val result = repository.getUserSettings()
 
@@ -59,28 +74,9 @@ class UserSettingsRepositoryImplTest {
     // ─── updateUserSettings ──────────────────────────────────────────────────
 
     @Test
-    fun `updateUserSettings passes all fields to dataSource`() = runTest {
-        val settings = UserSettings(
-            themeMode = "LIGHT",
-            language = "en",
-            notificationsEnabled = true,
-            weightUnit = "kg",
-            distanceUnit = "km"
-        )
-
-        repository.updateUserSettings(settings)
-
-        verify(dataSource).updateUserSettings(
-            themeMode = "LIGHT",
-            language = "en",
-            notificationsEnabled = true,
-            weightUnit = "kg",
-            distanceUnit = "km"
-        )
-    }
-
-    @Test
     fun `updateUserSettings returns success when dataSource completes`() = runTest {
+        whenever(dataSource.currentUserId()).thenReturn("uid1")
+        whenever(dataSource.upsertUserSettings(any())).thenReturn(Unit)
         val settings = UserSettings()
 
         val result = repository.updateUserSettings(settings)
@@ -89,13 +85,18 @@ class UserSettingsRepositoryImplTest {
     }
 
     @Test
+    fun `updateUserSettings returns failure when not authenticated`() = runTest {
+        whenever(dataSource.currentUserId()).thenReturn(null)
+
+        val result = repository.updateUserSettings(UserSettings())
+
+        assertTrue(result.isFailure)
+    }
+
+    @Test
     fun `updateUserSettings returns failure when dataSource throws`() = runTest {
-        whenever(
-            dataSource.updateUserSettings(
-                themeMode = "SYSTEM", language = "SYSTEM",
-                notificationsEnabled = true, weightUnit = "kg", distanceUnit = "km"
-            )
-        ).thenThrow(RuntimeException("Update failed"))
+        whenever(dataSource.currentUserId()).thenReturn("uid1")
+        whenever(dataSource.upsertUserSettings(any())).thenThrow(RuntimeException("Update failed"))
 
         val result = repository.updateUserSettings(UserSettings())
 

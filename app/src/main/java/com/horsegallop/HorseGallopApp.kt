@@ -4,9 +4,6 @@ import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import com.google.firebase.FirebaseApp
-import com.google.firebase.appcheck.FirebaseAppCheck
-import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
-import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.messaging.FirebaseMessaging
 import com.horsegallop.core.debug.AppLog
 import dagger.hilt.android.HiltAndroidApp
@@ -15,16 +12,10 @@ import dagger.hilt.android.HiltAndroidApp
 class HorseGallopApp : Application() {
     override fun onCreate() {
         super.onCreate()
-        
+
+        // FirebaseApp init is kept for FCM (push notifications) only.
+        // Firebase Auth, Firestore, and Functions removed — Sprint 6 Supabase migration.
         FirebaseApp.initializeApp(this)
-        val firebaseAppCheck = FirebaseAppCheck.getInstance()
-        firebaseAppCheck.installAppCheckProviderFactory(
-            if (BuildConfig.DEBUG) {
-                DebugAppCheckProviderFactory.getInstance()
-            } else {
-                PlayIntegrityAppCheckProviderFactory.getInstance()
-            }
-        )
 
         // Follow device language by default; later we can persist a user choice.
         val appLocales: LocaleListCompat = LocaleListCompat.getEmptyLocaleList()
@@ -38,5 +29,3 @@ class HorseGallopApp : Application() {
         }
     }
 }
-
-

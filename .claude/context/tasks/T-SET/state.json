@@ -1,0 +1,27 @@
+{
+  "taskId": "T-SET",
+  "title": "Settings Backend: weightUnit/distanceUnit UI + sync polish",
+  "status": "active",
+  "summary": "SettingsViewModel theme/language/notifications sync yapiyor ama weightUnit/distanceUnit eksik. UserSettings modelinde alan var, UI yok. Tek sprint, android-feature yeterli.",
+  "owner": "conductor",
+  "currentStage": "planning",
+  "decisions": [
+    {
+      "date": "2026-03-19",
+      "decision": "weightUnit/distanceUnit sadece Supabase'e yazilir, proto datastore'a eklenmez",
+      "reason": "Proto datastore theme/language icin kullaniyor; birim tercihi server-authoritative",
+      "impact": "ViewModel state'de tutulur, init'te syncSettingsFromBackend ile yuklenil"
+    }
+  ],
+  "openQuestions": [
+    "UserSettings modelinde weightUnit/distanceUnit nullable mi? Default deger ne?",
+    "SettingsRepository proto datastore semasindan WeightUnit okumak gerekiyor mu?"
+  ],
+  "nextActions": [
+    "researcher: UserSettings domain model + SettingsRepository proto + mevcut SettingsScreen UI tam oku",
+    "android-feature: ViewModel + Screen guncelle"
+  ],
+  "handoffs": {},
+  "artifacts": {},
+  "reports": {}
+}

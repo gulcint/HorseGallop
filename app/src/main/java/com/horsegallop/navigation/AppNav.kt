@@ -482,8 +482,8 @@ fun AppNavHost(
       )
     }
     composable(Dest.Barns.route) {
-      // Barns ekranında geri tuşu Home'a döner
-      BackHandler { navController.popBackStack() }
+      val activity = LocalContext.current as? Activity
+      BackHandler { if (!navController.popBackStack()) activity?.finish() }
       com.horsegallop.feature.barn.presentation.BarnListScreen(
         onBarnClick = { barn -> navController.navigate(Dest.BarnDetail.routeWithId(barn.id)) },
         onHomeClick = { navController.navigate(Dest.Home.route) },

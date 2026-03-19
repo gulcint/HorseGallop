@@ -5,6 +5,9 @@ import com.horsegallop.domain.health.model.HealthEventType
 import com.horsegallop.domain.health.usecase.DeleteHealthEventUseCase
 import com.horsegallop.domain.health.usecase.GetHealthEventsUseCase
 import com.horsegallop.domain.health.usecase.SaveHealthEventUseCase
+import com.horsegallop.domain.auth.usecase.GetCurrentUserIdUseCase
+import com.horsegallop.domain.horse.model.Horse
+import com.horsegallop.domain.horse.usecase.GetMyHorsesUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -33,6 +36,8 @@ class HealthViewModelTest {
     private val getHealthEventsUseCase: GetHealthEventsUseCase = mock()
     private val saveHealthEventUseCase: SaveHealthEventUseCase = mock()
     private val deleteHealthEventUseCase: DeleteHealthEventUseCase = mock()
+    private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase = mock()
+    private val getMyHorsesUseCase: GetMyHorsesUseCase = mock()
 
     private lateinit var viewModel: HealthViewModel
 
@@ -40,7 +45,8 @@ class HealthViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         whenever(getHealthEventsUseCase(null)).thenReturn(flowOf(emptyList()))
-        viewModel = HealthViewModel(getHealthEventsUseCase, saveHealthEventUseCase, deleteHealthEventUseCase)
+        whenever(getMyHorsesUseCase()).thenReturn(flowOf(emptyList()))
+        viewModel = HealthViewModel(getHealthEventsUseCase, saveHealthEventUseCase, deleteHealthEventUseCase, getCurrentUserIdUseCase, getMyHorsesUseCase)
     }
 
     @After
@@ -54,7 +60,8 @@ class HealthViewModelTest {
     fun `load sets loading false and populates events on success`() = runTest {
         val events = listOf(healthEvent("e1"))
         whenever(getHealthEventsUseCase(null)).thenReturn(flowOf(events))
-        viewModel = HealthViewModel(getHealthEventsUseCase, saveHealthEventUseCase, deleteHealthEventUseCase)
+        whenever(getMyHorsesUseCase()).thenReturn(flowOf(emptyList()))
+        viewModel = HealthViewModel(getHealthEventsUseCase, saveHealthEventUseCase, deleteHealthEventUseCase, getCurrentUserIdUseCase, getMyHorsesUseCase)
 
         advanceUntilIdle()
 
@@ -67,7 +74,8 @@ class HealthViewModelTest {
     @Test
     fun `load sets events to empty list when flow emits empty`() = runTest {
         whenever(getHealthEventsUseCase(null)).thenReturn(flowOf(emptyList()))
-        viewModel = HealthViewModel(getHealthEventsUseCase, saveHealthEventUseCase, deleteHealthEventUseCase)
+        whenever(getMyHorsesUseCase()).thenReturn(flowOf(emptyList()))
+        viewModel = HealthViewModel(getHealthEventsUseCase, saveHealthEventUseCase, deleteHealthEventUseCase, getCurrentUserIdUseCase, getMyHorsesUseCase)
 
         advanceUntilIdle()
 

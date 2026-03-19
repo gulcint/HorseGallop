@@ -46,7 +46,7 @@ async function seedLessons() {
   const lessons = [
     {
       id: "lesson_1",
-      date: "2026-03-03 10:00",
+      date: "2026-04-05 10:00",
       title: "Beginner Ride",
       instructorName: "Alice",
       durationMin: 60,
@@ -55,12 +55,60 @@ async function seedLessons() {
     },
     {
       id: "lesson_2",
-      date: "2026-03-04 14:00",
+      date: "2026-04-06 14:00",
       title: "Trail Basics",
       instructorName: "Bob",
       durationMin: 75,
       level: "Intermediate",
       price: 1450,
+    },
+    {
+      id: "lesson_3",
+      date: "2026-04-08 09:00",
+      title: "Dressaj Temelleri",
+      instructorName: "Ayşe Kaya",
+      durationMin: 60,
+      level: "Beginner",
+      price: 1300,
+      barnId: "barn_adin_country",
+      spotsTotal: 8,
+      spotsAvailable: 5,
+    },
+    {
+      id: "lesson_4",
+      date: "2026-04-10 15:00",
+      title: "Atlama Teknikleri",
+      instructorName: "Mehmet Yıldız",
+      durationMin: 90,
+      level: "Advanced",
+      price: 1800,
+      barnId: "barn_sable_ranch",
+      spotsTotal: 6,
+      spotsAvailable: 2,
+    },
+    {
+      id: "lesson_5",
+      date: "2026-04-12 11:00",
+      title: "Western Riding",
+      instructorName: "Alice",
+      durationMin: 60,
+      level: "Intermediate",
+      price: 1500,
+      barnId: "barn_adin_country",
+      spotsTotal: 10,
+      spotsAvailable: 7,
+    },
+    {
+      id: "lesson_6",
+      date: "2026-04-15 14:00",
+      title: "Endurance Training",
+      instructorName: "Bob",
+      durationMin: 120,
+      level: "Advanced",
+      price: 2200,
+      barnId: "barn_sable_ranch",
+      spotsTotal: 4,
+      spotsAvailable: 4,
     },
   ];
 
@@ -309,13 +357,79 @@ async function seedBreeds() {
   console.log(`Seeded ${breeds.length} horse breeds.`);
 }
 
+async function seedChallenges() {
+  const now = Date.now();
+  const oneMonth = 30 * 24 * 60 * 60 * 1000;
+  const challenges = [
+    {
+      id: "challenge_first_ride",
+      title: "İlk Sürüş",
+      titleEn: "First Ride",
+      description: "İlk sürüşünü tamamla",
+      descriptionEn: "Complete your first ride",
+      targetValue: 1,
+      unit: "rides",
+      icon: "🏇",
+      startDate: now,
+      endDate: now + oneMonth * 3,
+    },
+    {
+      id: "challenge_10km",
+      title: "10 km Yol",
+      titleEn: "10 km Journey",
+      description: "Toplam 10 km sürüş tamamla",
+      descriptionEn: "Complete 10 km total distance",
+      targetValue: 10,
+      unit: "km",
+      icon: "🗺️",
+      startDate: now,
+      endDate: now + oneMonth * 2,
+    },
+    {
+      id: "challenge_weekly_5",
+      title: "Haftalık 5 Sürüş",
+      titleEn: "Weekly 5 Rides",
+      description: "Bu hafta 5 sürüş tamamla",
+      descriptionEn: "Complete 5 rides this week",
+      targetValue: 5,
+      unit: "rides",
+      icon: "🎯",
+      startDate: now,
+      endDate: now + 7 * 24 * 60 * 60 * 1000,
+    },
+    {
+      id: "challenge_speed_20",
+      title: "Hız Ustası",
+      titleEn: "Speed Master",
+      description: "Ortalama 20 km/h hıza ulaş",
+      descriptionEn: "Reach average speed of 20 km/h",
+      targetValue: 20,
+      unit: "km/h",
+      icon: "⚡",
+      startDate: now,
+      endDate: now + oneMonth,
+    },
+  ];
+
+  await Promise.all(
+    challenges.map((c) =>
+      db.collection("challenges").doc(c.id).set({
+        ...c,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true })
+    )
+  );
+  console.log(`Seeded ${challenges.length} challenges.`);
+}
+
 async function main() {
   await seedBarns();
   await seedLessons();
   await seedAppContent();
   await seedHorseTips();
   await seedBreeds();
-  console.log("Seed completed: barns, lessons, app_content, horse_tips, horse_breeds");
+  await seedChallenges();
+  console.log("Seed completed: barns, lessons, app_content, horse_tips, horse_breeds, challenges");
 }
 
 main()

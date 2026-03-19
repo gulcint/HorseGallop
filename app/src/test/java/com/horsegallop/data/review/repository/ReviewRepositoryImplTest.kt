@@ -1,7 +1,7 @@
 package com.horsegallop.data.review.repository
 
-import com.horsegallop.data.remote.dto.ReviewFunctionsDto
-import com.horsegallop.data.remote.functions.AppFunctionsDataSource
+import com.horsegallop.data.remote.supabase.SupabaseDataSource
+import com.horsegallop.data.remote.supabase.SupabaseReviewDto
 import com.horsegallop.domain.review.model.ReviewTargetType
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -15,7 +15,7 @@ import org.mockito.kotlin.whenever
 
 class ReviewRepositoryImplTest {
 
-    private val dataSource: AppFunctionsDataSource = mock()
+    private val dataSource: SupabaseDataSource = mock()
     private lateinit var repository: ReviewRepositoryImpl
 
     @Before
@@ -72,13 +72,8 @@ class ReviewRepositoryImplTest {
     // ─── submitReview ─────────────────────────────────────────────────────────
 
     @Test
-    fun `submitReview with INSTRUCTOR type passes instructor string to dataSource`() = runTest {
-        whenever(
-            dataSource.submitReview(
-                targetId = "inst1", targetType = "instructor",
-                targetName = "Ali Hoca", rating = 5, comment = "Harika"
-            )
-        ).thenReturn(reviewDto("r1", "instructor"))
+    fun `submitReview with INSTRUCTOR type returns success`() = runTest {
+        whenever(dataSource.submitReview(any())).thenReturn(reviewDto("r1", "instructor"))
 
         val result = repository.submitReview(
             targetId = "inst1",
@@ -94,13 +89,8 @@ class ReviewRepositoryImplTest {
     }
 
     @Test
-    fun `submitReview with LESSON type passes lesson string to dataSource`() = runTest {
-        whenever(
-            dataSource.submitReview(
-                targetId = "les1", targetType = "lesson",
-                targetName = "Sabah Dersi", rating = 4, comment = "İyi"
-            )
-        ).thenReturn(reviewDto("r2", "lesson"))
+    fun `submitReview with LESSON type returns success`() = runTest {
+        whenever(dataSource.submitReview(any())).thenReturn(reviewDto("r2", "lesson"))
 
         val result = repository.submitReview(
             targetId = "les1",
@@ -116,8 +106,7 @@ class ReviewRepositoryImplTest {
 
     @Test
     fun `submitReview returns failure when dataSource throws`() = runTest {
-        whenever(dataSource.submitReview(any(), any(), any(), any(), any()))
-            .thenThrow(RuntimeException("Submit failed"))
+        whenever(dataSource.submitReview(any())).thenThrow(RuntimeException("Submit failed"))
 
         val result = repository.submitReview(
             targetId = "t1", targetType = ReviewTargetType.LESSON,
@@ -129,7 +118,7 @@ class ReviewRepositoryImplTest {
 
     // ─── helpers ─────────────────────────────────────────────────────────────
 
-    private fun reviewDto(id: String, targetType: String) = ReviewFunctionsDto(
+    private fun reviewDto(id: String, targetType: String) = SupabaseReviewDto(
         id = id, targetId = "target1", targetType = targetType,
         targetName = "Test Target", rating = 5, comment = "Güzel",
         createdAt = "2026-04-01", authorName = "Test User"

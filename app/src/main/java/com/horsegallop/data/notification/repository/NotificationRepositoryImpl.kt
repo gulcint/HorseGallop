@@ -1,97 +1,72 @@
 package com.horsegallop.data.notification.repository
 
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.horsegallop.core.debug.AppLog
+import com.horsegallop.data.remote.supabase.SupabaseDataSource
+import com.horsegallop.data.remote.supabase.SupabaseNotificationDto
 import com.horsegallop.domain.notification.model.AppNotification
 import com.horsegallop.domain.notification.model.NotificationType
 import com.horsegallop.domain.notification.repository.NotificationRepository
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.flow.map
+import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class NotificationRepositoryImpl @Inject constructor(
-    private val firestore: FirebaseFirestore,
-    private val auth: FirebaseAuth
+    private val supabaseDataSource: SupabaseDataSource
 ) : NotificationRepository {
 
     override fun getNotifications(): Flow<List<AppNotification>> {
-        val userId = auth.currentUser?.uid ?: return flowOf(emptyList())
+        val userId = supabaseDataSource.currentUserId() ?: return flowOf(emptyList())
 
-        return callbackFlow {
-            val listener = firestore
-                .collection("users").document(userId)
-                .collection("notifications")
-                .orderBy("timestamp", Query.Direction.DESCENDING)
-                .limit(50)
-                .addSnapshotListener { snapshot, error ->
-                    if (error != null) {
-                        AppLog.e("NotificationRepo", "Firestore error: ${error.message}")
-                        trySend(emptyList())
-                        return@addSnapshotListener
-                    }
-                    val items = snapshot?.documents?.mapNotNull { doc ->
-                        runCatching {
-                            AppNotification(
-                                id = doc.id,
-                                type = when (doc.getString("type")) {
-                                    "reservation" -> NotificationType.RESERVATION
-                                    "lesson" -> NotificationType.LESSON
-                                    "horse_health" -> NotificationType.HORSE_HEALTH
-                                    else -> NotificationType.GENERAL
-                                },
-                                title = doc.getString("title").orEmpty(),
-                                body = doc.getString("body").orEmpty(),
-                                timestamp = doc.getLong("timestamp") ?: 0L,
-                                isRead = doc.getBoolean("isRead") ?: false,
-                                targetId = doc.getString("targetId"),
-                                targetRoute = doc.getString("targetRoute")
-                            )
-                        }.getOrNull()
-                    } ?: emptyList()
-                    trySend(items)
-                }
-            awaitClose { listener.remove() }
-        }.buffer(Channel.CONFLATED)
+        return supabaseDataSource.getNotificationsFlow(userId)
+            .map { dtos -> dtos.map { it.toDomain() } }
+            .catch { e ->
+                AppLog.e("NotificationRepo", "Realtime error: ${e.message}")
+                emit(emptyList())
+            }
+            .buffer(Channel.CONFLATED)
     }
 
     override suspend fun markAsRead(id: String) {
-        val userId = auth.currentUser?.uid ?: return
-        runCatching {
-            firestore
-                .collection("users").document(userId)
-                .collection("notifications").document(id)
-                .update("isRead", true)
-                .await()
-        }.onFailure {
-            AppLog.e("NotificationRepo", "markAsRead failed: ${it.message}")
-        }
+        supabaseDataSource.markNotificationRead(id)
+            .onFailure { AppLog.e("NotificationRepo", "markAsRead failed: ${it.message}") }
     }
 
     override suspend fun markAllAsRead() {
-        val userId = auth.currentUser?.uid ?: return
-        runCatching {
-            val docs = firestore
-                .collection("users").document(userId)
-                .collection("notifications")
-                .whereEqualTo("isRead", false)
-                .get()
-                .await()
-            val batch = firestore.batch()
-            docs.documents.forEach { doc ->
-                batch.update(doc.reference, "isRead", true)
-            }
-            batch.commit().await()
-        }.onFailure {
-            AppLog.e("NotificationRepo", "markAllAsRead failed: ${it.message}")
+        val userId = supabaseDataSource.currentUserId() ?: return
+        supabaseDataSource.markAllNotificationsRead(userId)
+            .onFailure { AppLog.e("NotificationRepo", "markAllAsRead failed: ${it.message}") }
+    }
+
+    // ─── helpers ─────────────────────────────────────────────
+
+    private fun SupabaseNotificationDto.toDomain(): AppNotification {
+        val timestampMs = runCatching {
+            Instant.parse(this.createdAt).toEpochMilli()
+        }.getOrDefault(0L)
+
+        val type = when (this.type) {
+            "reservation" -> NotificationType.RESERVATION
+            "lesson" -> NotificationType.LESSON
+            "horse_health" -> NotificationType.HORSE_HEALTH
+            else -> NotificationType.GENERAL
         }
+
+        return AppNotification(
+            id = this.id,
+            type = type,
+            title = this.title,
+            body = this.body,
+            timestamp = timestampMs,
+            isRead = this.isRead,
+            targetId = null,
+            targetRoute = null
+        )
     }
 }

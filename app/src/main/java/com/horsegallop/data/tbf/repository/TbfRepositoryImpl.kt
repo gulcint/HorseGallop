@@ -1,65 +1,75 @@
 package com.horsegallop.data.tbf.repository
 
-import com.horsegallop.data.remote.dto.TbfVenueDto
-import com.horsegallop.data.remote.dto.TbfAthleteDto
-import com.horsegallop.data.remote.dto.TbfEventCardDto
-import com.horsegallop.data.remote.dto.TbfEventDayDto
-import com.horsegallop.data.remote.dto.TbfCompetitionDto
-import com.horsegallop.data.remote.functions.AppFunctionsDataSource
-import com.horsegallop.domain.tbf.model.TbfVenue
+import com.horsegallop.data.remote.supabase.SupabaseDataSource
+import com.horsegallop.data.remote.supabase.SupabaseTbfAthleteDto
+import com.horsegallop.data.remote.supabase.SupabaseTbfCompetitionDto
+import com.horsegallop.data.remote.supabase.SupabaseTbfEventDto
 import com.horsegallop.domain.tbf.model.TbfAthlete
 import com.horsegallop.domain.tbf.model.TbfCompetition
 import com.horsegallop.domain.tbf.model.TbfEventCard
 import com.horsegallop.domain.tbf.model.TbfEventDay
+import com.horsegallop.domain.tbf.model.TbfVenue
 import com.horsegallop.domain.tbf.repository.TbfRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class TbfRepositoryImpl @Inject constructor(
-    private val functionsDataSource: AppFunctionsDataSource
+    private val supabaseDataSource: SupabaseDataSource
 ) : TbfRepository {
 
     override suspend fun getEventDay(date: String?, type: String): Result<TbfEventDay> =
         runCatching {
-            functionsDataSource.getTbfEventDay(date, type).toDomain()
+            val events = supabaseDataSource.getTbfEventDays(date, type)
+            events.groupByDate().firstOrNull()
+                ?: TbfEventDay(date = date ?: "", type = type, venues = emptyList())
         }
 
     override suspend fun getEventCard(date: String?, venue: String, type: String): Result<TbfEventCard> =
         runCatching {
-            functionsDataSource.getTbfEventCard(date, venue, type).toDomain()
+            val events = supabaseDataSource.getTbfEventDays(date, type)
+            val venueEvent = events.firstOrNull { it.venueCode == venue || it.venueName == venue }
+            val competitions = if (venueEvent != null) {
+                supabaseDataSource.getTbfCompetitions(venueEvent.id).map { it.toDomain() }
+            } else {
+                emptyList()
+            }
+            TbfEventCard(
+                venue = venue,
+                date = date ?: venueEvent?.date ?: "",
+                type = type,
+                events = competitions,
+                weather = "",
+                trackCondition = ""
+            )
         }
 
     override suspend fun getUpcomingEvents(): Result<List<TbfEventDay>> =
         runCatching {
-            functionsDataSource.getTbfUpcomingEvents().days.map { it.toDomain() }
+            val events = supabaseDataSource.getTbfEventDays()
+            events.groupByDate()
         }
 
     // ─── Mapping helpers ─────────────────────────────────────────────────────
 
-    private fun TbfEventDayDto.toDomain() = TbfEventDay(
-        date = date,
-        type = type,
-        venues = venues.map { it.toDomain() }
-    )
+    private fun List<SupabaseTbfEventDto>.groupByDate(): List<TbfEventDay> {
+        return groupBy { it.date to it.type }.map { (key, rows) ->
+            TbfEventDay(
+                date = key.first,
+                type = key.second,
+                venues = rows.map { row ->
+                    TbfVenue(
+                        code = row.venueCode,
+                        name = row.venueName,
+                        eventCount = row.eventCount,
+                        time = row.time
+                    )
+                }
+            )
+        }
+    }
 
-    private fun TbfVenueDto.toDomain() = TbfVenue(
-        code = code,
-        name = name,
-        eventCount = eventCount,
-        time = time
-    )
-
-    private fun TbfEventCardDto.toDomain() = TbfEventCard(
-        venue = venue,
-        date = date,
-        type = type,
-        events = events.map { it.toDomain() },
-        weather = weather,
-        trackCondition = trackCondition
-    )
-
-    private fun TbfCompetitionDto.toDomain() = TbfCompetition(
+    private fun SupabaseTbfCompetitionDto.toDomain() = TbfCompetition(
         no = no,
         name = name,
         distance = distance,
@@ -69,7 +79,7 @@ class TbfRepositoryImpl @Inject constructor(
         athletes = athletes.map { it.toDomain() }
     )
 
-    private fun TbfAthleteDto.toDomain() = TbfAthlete(
+    private fun SupabaseTbfAthleteDto.toDomain() = TbfAthlete(
         no = no,
         name = name,
         jockey = jockey,

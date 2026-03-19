@@ -2,7 +2,7 @@ package com.horsegallop.feature.challenge.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
+import com.horsegallop.domain.auth.usecase.GetCurrentUserIdUseCase
 import com.horsegallop.domain.challenge.model.Badge
 import com.horsegallop.domain.challenge.model.Challenge
 import com.horsegallop.domain.challenge.usecase.GetActiveChallengesUseCase
@@ -28,14 +28,14 @@ data class ChallengeUiState(
 class ChallengeViewModel @Inject constructor(
     private val getActiveChallengesUseCase: GetActiveChallengesUseCase,
     private val getEarnedBadgesUseCase: GetEarnedBadgesUseCase,
-    private val auth: FirebaseAuth
+    private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase
 ) : ViewModel() {
 
     private val _ui = MutableStateFlow(ChallengeUiState())
     val ui: StateFlow<ChallengeUiState> = _ui.asStateFlow()
 
     init {
-        val userId = auth.currentUser?.uid.orEmpty()
+        val userId = getCurrentUserIdUseCase().orEmpty()
         loadChallenges(userId)
         loadBadges(userId)
     }

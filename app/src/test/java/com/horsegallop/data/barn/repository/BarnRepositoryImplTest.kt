@@ -1,12 +1,11 @@
 package com.horsegallop.data.barn.repository
 
-import com.horsegallop.data.remote.dto.BarnFunctionsDto
-import com.horsegallop.data.remote.functions.AppFunctionsDataSource
+import com.horsegallop.data.remote.supabase.SupabaseBarnDto
+import com.horsegallop.data.remote.supabase.SupabaseDataSource
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -15,7 +14,7 @@ import org.mockito.kotlin.whenever
 
 class BarnRepositoryImplTest {
 
-    private val dataSource: AppFunctionsDataSource = mock()
+    private val dataSource: SupabaseDataSource = mock()
     private lateinit var repository: BarnRepositoryImpl
 
     @Before
@@ -27,7 +26,7 @@ class BarnRepositoryImplTest {
 
     @Test
     fun `getBarns emits mapped barns without coords`() = runTest {
-        whenever(dataSource.getBarns(null, null)).thenReturn(
+        whenever(dataSource.getBarns()).thenReturn(
             listOf(barnDto("b1", "Ahır 1", lat = 0.0, lng = 0.0))
         )
 
@@ -41,7 +40,7 @@ class BarnRepositoryImplTest {
     @Test
     fun `getBarns sorts by distance when lat and lng are provided`() = runTest {
         // b2 is closer to (39.0, 32.0) than b1
-        whenever(dataSource.getBarns(39.0, 32.0)).thenReturn(
+        whenever(dataSource.getBarns()).thenReturn(
             listOf(
                 barnDto("b1", "Uzak Ahır", lat = 41.0, lng = 29.0),  // ~380 km away
                 barnDto("b2", "Yakın Ahır", lat = 39.1, lng = 32.1)   // ~13 km away
@@ -56,7 +55,7 @@ class BarnRepositoryImplTest {
 
     @Test
     fun `getBarns emits empty list when dataSource throws and cache is empty`() = runTest {
-        whenever(dataSource.getBarns(null, null)).thenThrow(RuntimeException("network error"))
+        whenever(dataSource.getBarns()).thenThrow(RuntimeException("network error"))
 
         val result = repository.getBarns(null, null).toList().first()
 
@@ -66,13 +65,13 @@ class BarnRepositoryImplTest {
     @Test
     fun `getBarns falls back to cached barns when dataSource throws`() = runTest {
         // First call succeeds — populates cache
-        whenever(dataSource.getBarns(null, null)).thenReturn(
+        whenever(dataSource.getBarns()).thenReturn(
             listOf(barnDto("b1", "Ahır 1", 0.0, 0.0))
         )
         repository.getBarns(null, null).toList()
 
         // Second call fails — should return cache
-        whenever(dataSource.getBarns(null, null)).thenThrow(RuntimeException("network error"))
+        whenever(dataSource.getBarns()).thenThrow(RuntimeException("network error"))
 
         val result = repository.getBarns(null, null).toList().first()
 
@@ -82,7 +81,7 @@ class BarnRepositoryImplTest {
 
     @Test
     fun `getBarns sets distanceKm to MAX when lat or lng is null`() = runTest {
-        whenever(dataSource.getBarns(null, null)).thenReturn(
+        whenever(dataSource.getBarns()).thenReturn(
             listOf(barnDto("b1", "Ahır", lat = 39.0, lng = 32.0))
         )
 
@@ -93,7 +92,7 @@ class BarnRepositoryImplTest {
 
     @Test
     fun `getBarns sets distanceKm to MAX when barn lat or lng is zero`() = runTest {
-        whenever(dataSource.getBarns(39.0, 32.0)).thenReturn(
+        whenever(dataSource.getBarns()).thenReturn(
             listOf(barnDto("b1", "Ahır", lat = 0.0, lng = 0.0))
         )
 
@@ -107,6 +106,8 @@ class BarnRepositoryImplTest {
     @Test
     fun `getBarnById emits null when cache is empty and dataSource throws`() = runTest {
         whenever(dataSource.getBarnDetail("b1")).thenThrow(RuntimeException("not found"))
+        whenever(dataSource.getBarnInstructors("b1")).thenReturn(emptyList())
+        whenever(dataSource.getBarnReviews("b1")).thenReturn(emptyList())
 
         val result = repository.getBarnById("b1").toList()
 
@@ -118,6 +119,8 @@ class BarnRepositoryImplTest {
         whenever(dataSource.getBarnDetail("b1")).thenReturn(
             barnDto("b1", "Detay Ahır", lat = 39.0, lng = 32.0)
         )
+        whenever(dataSource.getBarnInstructors("b1")).thenReturn(emptyList())
+        whenever(dataSource.getBarnReviews("b1")).thenReturn(emptyList())
 
         val emissions = repository.getBarnById("b1").toList()
 
@@ -130,7 +133,7 @@ class BarnRepositoryImplTest {
 
     @Test
     fun `toggleFavorite sets isFavorite to true when previously false`() = runTest {
-        whenever(dataSource.getBarns(null, null)).thenReturn(
+        whenever(dataSource.getBarns()).thenReturn(
             listOf(barnDto("b1", "Ahır", 0.0, 0.0))
         )
         // Populate cache
@@ -138,14 +141,14 @@ class BarnRepositoryImplTest {
 
         repository.toggleFavorite("b1")
 
-        whenever(dataSource.getBarns(null, null)).thenThrow(RuntimeException("fail"))
+        whenever(dataSource.getBarns()).thenThrow(RuntimeException("fail"))
         val result = repository.getBarns(null, null).toList().first()
         assertTrue(result[0].barn.isFavorite)
     }
 
     @Test
     fun `toggleFavorite does not affect other barns in cache`() = runTest {
-        whenever(dataSource.getBarns(null, null)).thenReturn(
+        whenever(dataSource.getBarns()).thenReturn(
             listOf(
                 barnDto("b1", "Ahır 1", 0.0, 0.0),
                 barnDto("b2", "Ahır 2", 0.0, 0.0)
@@ -155,7 +158,7 @@ class BarnRepositoryImplTest {
 
         repository.toggleFavorite("b1")
 
-        whenever(dataSource.getBarns(null, null)).thenThrow(RuntimeException("fail"))
+        whenever(dataSource.getBarns()).thenThrow(RuntimeException("fail"))
         val result = repository.getBarns(null, null).toList().first()
         assertTrue(result.find { it.barn.id == "b1" }!!.barn.isFavorite)
         assertFalse(result.find { it.barn.id == "b2" }!!.barn.isFavorite)
@@ -163,7 +166,7 @@ class BarnRepositoryImplTest {
 
     // ─── helpers ─────────────────────────────────────────────────────────────
 
-    private fun barnDto(id: String, name: String, lat: Double, lng: Double) = BarnFunctionsDto(
+    private fun barnDto(id: String, name: String, lat: Double, lng: Double) = SupabaseBarnDto(
         id = id, name = name, description = "Açıklama", location = "Ankara",
         lat = lat, lng = lng, tags = emptyList(), amenities = emptyList(),
         rating = 4.5, reviewCount = 10

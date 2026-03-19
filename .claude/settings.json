@@ -30,6 +30,16 @@
             "command": "python3 scripts/claude_hooks/pre_tool_use.py"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/claude_hooks/pre_adb_boot_check.py",
+            "statusMessage": "Emülatör boot durumu kontrol ediliyor..."
+          }
+        ]
       }
     ],
     "PostToolUse": [

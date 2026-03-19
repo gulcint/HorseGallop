@@ -7,18 +7,28 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.horsegallop.core.debug.AppLog
+import dagger.hilt.android.AndroidEntryPoint
+import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class PushService : FirebaseMessagingService() {
+
+    @Inject
+    lateinit var supabaseClient: SupabaseClient
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         AppLog.i("PushService", "New FCM token: ${token.take(20)}...")
-        saveTokenToFirestore(token)
+        saveTokenToSupabase(token)
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
@@ -32,13 +42,24 @@ class PushService : FirebaseMessagingService() {
         showNotification(title, body, type)
     }
 
-    private fun saveTokenToFirestore(token: String) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(userId)
-            .update("fcmToken", token)
-            .addOnFailureListener { AppLog.e("PushService", "Token save failed: $it") }
+    private fun saveTokenToSupabase(token: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val userId = supabaseClient.auth.currentUserOrNull()?.id ?: return@launch
+                supabaseClient.postgrest["fcm_tokens"].upsert(
+                    mapOf(
+                        "user_id" to userId,
+                        "token" to token,
+                        "platform" to "android"
+                    )
+                ) {
+                    onConflict = "token"
+                }
+                AppLog.i("PushService", "FCM token saved to Supabase")
+            } catch (e: Exception) {
+                AppLog.e("PushService", "FCM token save to Supabase failed: $e")
+            }
+        }
     }
 
     private fun showNotification(title: String, body: String, type: String) {

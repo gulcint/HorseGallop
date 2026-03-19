@@ -1,11 +1,19 @@
 package com.horsegallop.feature.health.presentation
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.horsegallop.domain.auth.usecase.GetCurrentUserIdUseCase
 import com.horsegallop.domain.health.model.HealthEvent
 import com.horsegallop.domain.health.usecase.DeleteHealthEventUseCase
 import com.horsegallop.domain.health.usecase.GetHealthEventsUseCase
 import com.horsegallop.domain.health.usecase.SaveHealthEventUseCase
+import com.horsegallop.domain.horse.model.Horse
+import com.horsegallop.domain.horse.usecase.GetMyHorsesUseCase
+import com.horsegallop.feature.health.notification.HealthReminderReceiver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +26,7 @@ import javax.inject.Inject
 data class HealthUiState(
     val loading: Boolean = true,
     val events: List<HealthEvent> = emptyList(),
+    val horses: List<Horse> = emptyList(),
     val error: String? = null,
     val selectedHorseId: String? = null,
     val isSaving: Boolean = false
@@ -27,7 +36,9 @@ data class HealthUiState(
 class HealthViewModel @Inject constructor(
     private val getHealthEventsUseCase: GetHealthEventsUseCase,
     private val saveHealthEventUseCase: SaveHealthEventUseCase,
-    private val deleteHealthEventUseCase: DeleteHealthEventUseCase
+    private val deleteHealthEventUseCase: DeleteHealthEventUseCase,
+    private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase,
+    private val getMyHorsesUseCase: GetMyHorsesUseCase
 ) : ViewModel() {
 
     private val _ui = MutableStateFlow(HealthUiState())
@@ -37,7 +48,18 @@ class HealthViewModel @Inject constructor(
 
     init {
         load()
+        loadHorses()
     }
+
+    private fun loadHorses() {
+        viewModelScope.launch {
+            getMyHorsesUseCase().collect { horseList ->
+                _ui.update { it.copy(horses = horseList) }
+            }
+        }
+    }
+
+    fun getCurrentUserId(): String? = getCurrentUserIdUseCase()
 
     fun load() {
         _ui.update { it.copy(loading = true, error = null) }
@@ -83,4 +105,48 @@ class HealthViewModel @Inject constructor(
     }
 
     fun clearError() = _ui.update { it.copy(error = null) }
+
+    /**
+     * Schedules a local notification alarm for [event] at [event.scheduledDate] - 24 hours.
+     * [notificationTitle] should be pre-built by the Screen layer (using stringResource) since
+     * ViewModel cannot access Context string resources safely.
+     * Uses inexact AlarmManager.setWindow() — does not require SCHEDULE_EXACT_ALARM permission.
+     * Note: alarms do NOT survive device reboot (RECEIVE_BOOT_COMPLETED is out of MVP scope).
+     */
+    fun scheduleReminder(context: Context, event: HealthEvent, notificationTitle: String) {
+        val triggerAt = event.scheduledDate - 24L * 60 * 60 * 1000
+        if (triggerAt <= System.currentTimeMillis()) return
+        val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
+        val intent = Intent(context, HealthReminderReceiver::class.java).apply {
+            putExtra(HealthReminderReceiver.EXTRA_TITLE, notificationTitle)
+        }
+        val pi = PendingIntent.getBroadcast(
+            context,
+            event.id.hashCode(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        // 15-minute window → inexact, no special permission needed
+        alarmManager.setWindow(
+            AlarmManager.RTC_WAKEUP,
+            triggerAt,
+            15L * 60 * 1000,
+            pi
+        )
+    }
+
+    /**
+     * Cancels a previously scheduled reminder for [eventId].
+     */
+    fun cancelReminder(context: Context, eventId: String) {
+        val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
+        val intent = Intent(context, HealthReminderReceiver::class.java)
+        val pi = PendingIntent.getBroadcast(
+            context,
+            eventId.hashCode(),
+            intent,
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        )
+        pi?.let { alarmManager.cancel(it) }
+    }
 }

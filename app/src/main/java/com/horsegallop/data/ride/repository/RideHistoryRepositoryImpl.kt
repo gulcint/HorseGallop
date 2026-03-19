@@ -2,9 +2,9 @@ package com.horsegallop.data.ride.repository
 
 import android.content.Context
 import com.horsegallop.core.debug.AppLog
-import com.horsegallop.data.remote.dto.PathPointDto
-import com.horsegallop.data.remote.dto.SaveRideDto
-import com.horsegallop.data.remote.functions.AppFunctionsDataSource
+import com.horsegallop.data.remote.supabase.SupabaseDataSource
+import com.horsegallop.data.remote.supabase.SupabaseRideDto
+import com.horsegallop.data.remote.supabase.SupabaseRidePathPointDto
 import com.horsegallop.domain.ride.model.GeoPoint
 import com.horsegallop.domain.ride.model.RideSession
 import com.horsegallop.domain.ride.repository.RideHistoryRepository
@@ -20,20 +20,23 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class RideHistoryRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val functionsDataSource: AppFunctionsDataSource
+    private val supabaseDataSource: SupabaseDataSource
 ) : RideHistoryRepository {
-    
+
     private val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
     private val listType = Types.newParameterizedType(List::class.java, RideSession::class.java)
     private val adapter = moshi.adapter<List<RideSession>>(listType)
     private val file by lazy { File(context.filesDir, "ride_history.json") }
-    
+
     private val _history = MutableStateFlow<List<RideSession>>(emptyList())
 
     init {
@@ -49,27 +52,18 @@ class RideHistoryRepositoryImpl @Inject constructor(
             }
 
             try {
-                val remote = functionsDataSource.getMyRides().map { dto ->
-                    val seconds = (dto.startedAt?.get("_seconds") as? Number)?.toLong() ?: 0L
-                    val distanceKm = (dto.distanceKm ?: 0.0).toFloat()
-                    val durationSec = ((dto.durationMin ?: 0.0) * 60).toInt()
-                    val avgSpeedFallback = if (durationSec > 0) {
-                        (distanceKm / (durationSec / 3600f)).coerceAtLeast(0f)
-                    } else {
-                        0f
-                    }
+                val remote = supabaseDataSource.getMyRides().map { dto ->
+                    val dateMillis = parseIsoToMillis(dto.startedAt)
                     RideSession(
                         id = dto.id,
-                        dateMillis = seconds * 1000L,
-                        durationSec = durationSec,
-                        distanceKm = distanceKm,
-                        calories = (dto.calories ?: 0.0).toInt(),
-                        pathPoints = dto.pathPoints?.map { pt ->
-                            GeoPoint(latitude = pt.lat, longitude = pt.lng)
-                        } ?: emptyList(),
+                        dateMillis = dateMillis,
+                        durationSec = dto.durationSec,
+                        distanceKm = dto.distanceKm.toFloat(),
+                        calories = dto.calories.toInt(),
+                        pathPoints = emptyList(),
                         barnName = dto.barnName,
-                        avgSpeedKmh = (dto.avgSpeedKmh?.toFloat() ?: avgSpeedFallback),
-                        maxSpeedKmh = (dto.maxSpeedKmh?.toFloat() ?: avgSpeedFallback),
+                        avgSpeedKmh = dto.avgSpeedKmh.toFloat(),
+                        maxSpeedKmh = dto.maxSpeedKmh.toFloat(),
                         rideType = dto.rideType
                     )
                 }
@@ -88,7 +82,7 @@ class RideHistoryRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveRide(ride: RideSession) {
-        // Önce local cache'e yaz (offline-first)
+        // Write to local cache first (offline-first)
         val updatedList = listOf(ride) + _history.value
         _history.value = updatedList
         withContext(Dispatchers.IO) {
@@ -99,34 +93,44 @@ class RideHistoryRepositoryImpl @Inject constructor(
                 e.printStackTrace()
             }
 
-            // Backend'e async gönder (hata olursa local zaten kaydedildi)
+            // Sync to Supabase asynchronously
             try {
-                val dto = ride.toSaveRideDto()
-                functionsDataSource.saveRide(dto)
+                val uid = supabaseDataSource.currentUserId() ?: return@withContext
+                val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
+                val rideDto = SupabaseRideDto(
+                    id = ride.id,
+                    userId = uid,
+                    durationSec = ride.durationSec,
+                    distanceKm = ride.distanceKm.toDouble(),
+                    calories = ride.calories.toDouble(),
+                    avgSpeedKmh = ride.avgSpeedKmh.toDouble(),
+                    maxSpeedKmh = ride.maxSpeedKmh.toDouble(),
+                    rideType = ride.rideType ?: "FREE",
+                    barnName = ride.barnName,
+                    startedAt = isoFormat.format(java.util.Date(ride.dateMillis)),
+                    savedAt = isoFormat.format(java.util.Date())
+                )
+                val pathDtos = ride.pathPoints.mapIndexed { idx, geoPoint ->
+                    SupabaseRidePathPointDto(
+                        rideId = ride.id,
+                        userId = uid,
+                        lat = geoPoint.latitude,
+                        lng = geoPoint.longitude,
+                        altM = geoPoint.altitudeM.toDouble(),
+                        speedKmh = geoPoint.speedKmh.toDouble(),
+                        sortOrder = idx
+                    )
+                }
+                supabaseDataSource.saveRide(rideDto, pathDtos)
             } catch (e: Exception) {
-                AppLog.e("RideHistoryRepo", "Backend sync failed: ${e.message}")
+                AppLog.e("RideHistoryRepo", "Supabase sync failed: ${e.message}")
             }
         }
     }
 
-    private fun RideSession.toSaveRideDto(): SaveRideDto {
-        return SaveRideDto(
-            rideId = id,
-            durationSec = durationSec,
-            distanceKm = distanceKm.toDouble(),
-            calories = calories.toDouble(),
-            avgSpeedKmh = avgSpeedKmh.toDouble(),
-            maxSpeedKmh = maxSpeedKmh.toDouble(),
-            rideType = rideType ?: "FREE",
-            barnName = barnName,
-            startedAt = dateMillis,
-            pathPoints = pathPoints.map { geoPoint ->
-                PathPointDto(
-                    lat = geoPoint.latitude,
-                    lng = geoPoint.longitude,
-                    altM = geoPoint.altitudeM.toDouble()
-                )
-            }
-        )
-    }
+    private fun parseIsoToMillis(iso: String): Long = runCatching {
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).parse(iso)?.time
+            ?: SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).parse(iso)?.time
+            ?: 0L
+    }.getOrDefault(0L)
 }

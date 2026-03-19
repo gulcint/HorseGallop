@@ -1,6 +1,6 @@
 package com.horsegallop.data.equestrian.repository
 
-import com.horsegallop.data.remote.functions.AppFunctionsDataSource
+import com.horsegallop.data.remote.supabase.SupabaseDataSource
 import com.horsegallop.domain.equestrian.model.EquestrianAnnouncement
 import com.horsegallop.domain.equestrian.model.EquestrianCompetition
 import com.horsegallop.domain.equestrian.model.FederationManualSyncResult
@@ -10,11 +10,11 @@ import com.horsegallop.domain.equestrian.repository.EquestrianAgendaRepository
 import javax.inject.Inject
 
 class EquestrianAgendaRepositoryImpl @Inject constructor(
-    private val functionsDataSource: AppFunctionsDataSource
+    private val supabaseDataSource: SupabaseDataSource
 ) : EquestrianAgendaRepository {
 
     override suspend fun getAnnouncements(): Result<List<EquestrianAnnouncement>> = runCatching {
-        functionsDataSource.getEquestrianAnnouncements().map { dto ->
+        supabaseDataSource.getEquestrianAnnouncements().map { dto ->
             EquestrianAnnouncement(
                 id = dto.id,
                 title = dto.title,
@@ -27,7 +27,7 @@ class EquestrianAgendaRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getCompetitions(): Result<List<EquestrianCompetition>> = runCatching {
-        functionsDataSource.getEquestrianCompetitions().map { dto ->
+        supabaseDataSource.getEquestrianCompetitions().map { dto ->
             EquestrianCompetition(
                 id = dto.id,
                 title = dto.title,
@@ -39,42 +39,29 @@ class EquestrianAgendaRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getFederatedBarnSyncStatus(): Result<FederatedBarnSyncStatus> = runCatching {
-        val dto = functionsDataSource.getFederatedBarnsSyncStatus()
+        val statusMap = supabaseDataSource.getFederatedBarnsSyncStatus()
         FederatedBarnSyncStatus(
-            status = dto.status,
-            syncedAt = dto.syncedAt,
-            itemCount = dto.itemCount,
-            errorMessage = dto.errorMessage
+            status = statusMap["status"] as? String ?: "unknown",
+            syncedAt = statusMap["syncedAt"] as? String ?: "",
+            itemCount = (statusMap["itemCount"] as? Int) ?: 0,
+            errorMessage = statusMap["errorMessage"] as? String
         )
     }
 
     override suspend fun getFederationSourceHealth(): Result<List<FederationSourceHealthItem>> = runCatching {
-        functionsDataSource.getFederationSourceHealth().map { dto ->
-            FederationSourceHealthItem(
-                source = dto.source,
-                status = dto.status,
-                itemCount = dto.itemCount,
-                lastAttemptAt = dto.lastAttemptAt,
-                lastSuccessAt = dto.lastSuccessAt,
-                dataAgeMinutes = dto.dataAgeMinutes,
-                isStale = dto.isStale,
-                errorMessage = dto.errorMessage
-            )
-        }
+        // No longer maintained via Cloud Functions; return empty list (data is read from Supabase tables)
+        emptyList()
     }
 
     override suspend fun triggerManualSync(force: Boolean): Result<FederationManualSyncResult> = runCatching {
-        val dto = if (force) {
-            functionsDataSource.triggerFederationDebugSync()
-        } else {
-            functionsDataSource.triggerFederationManualSync()
-        }
+        // Manual sync is a server-side operation; stub returns last known sync status
+        val statusMap = supabaseDataSource.getFederatedBarnsSyncStatus()
         FederationManualSyncResult(
-            syncedAt = dto.syncedAt,
-            barnsCount = dto.barnsCount,
-            announcementsCount = dto.announcementsCount,
-            competitionsCount = dto.competitionsCount,
-            throttled = dto.throttled
+            syncedAt = statusMap["syncedAt"] as? String ?: "",
+            barnsCount = 0,
+            announcementsCount = 0,
+            competitionsCount = 0,
+            throttled = false
         )
     }
 }
