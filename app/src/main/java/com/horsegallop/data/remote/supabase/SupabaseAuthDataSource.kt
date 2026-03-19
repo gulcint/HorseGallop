@@ -1,6 +1,7 @@
 package com.horsegallop.data.remote.supabase
 
 import io.github.jan.supabase.auth.Auth
+import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.providers.builtin.IDToken
@@ -66,8 +67,20 @@ class SupabaseAuthDataSource @Inject constructor(
     }
 
     /**
+     * Verifies the recovery OTP token sent to [email] and establishes a recovery session.
+     * Must be called before [updatePassword] in the password-reset flow.
+     */
+    suspend fun verifyOtp(email: String, token: String): Result<Unit> = runCatching {
+        auth.verifyEmailOtp(
+            type = OtpType.Email.RECOVERY,
+            email = email,
+            token = token
+        )
+    }
+
+    /**
      * Updates the password of the currently authenticated user.
-     * Called after the user follows the password-reset deep link and a session is established.
+     * Only call after a verified recovery session has been established via [verifyOtp].
      */
     suspend fun updatePassword(newPassword: String): Result<Unit> = runCatching {
         auth.updateUser {

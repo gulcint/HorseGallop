@@ -11,7 +11,6 @@ const corsHeaders = {
 
 interface AiCoachRequest {
   message: string
-  userId: string
   conversationHistory?: Array<{ role: string; content: string }>
 }
 
@@ -21,7 +20,35 @@ serve(async (req) => {
   }
 
   try {
-    const { message, userId, conversationHistory = [] }: AiCoachRequest = await req.json()
+    // 1. JWT doğrulama — Authorization header'dan kullanıcıyı belirle
+    const authHeader = req.headers.get("Authorization")
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization header", success: false }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      )
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    )
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(
+      authHeader.replace("Bearer ", "")
+    )
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized", success: false }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      )
+    }
+
+    // 2. userId artık JWT'den geliyor — body'den alınmıyor
+    const userId = user.id
+
+    const { message, conversationHistory = [] }: AiCoachRequest = await req.json()
 
     const systemPrompt =
       "Sen HorseGallop'un Türkçe at binme koçusun. Binicilik, at bakımı, antrenman planları ve yarış takibi konularında uzman ve samimi bir danışmansın. Kullanıcıya kısa, pratik ve motive edici cevaplar ver. Türkçe konuş."
@@ -58,11 +85,6 @@ serve(async (req) => {
     const reply =
       groqData.choices?.[0]?.message?.content ??
       "Şu anda cevap veremiyorum, lütfen tekrar dene."
-
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    )
 
     await supabase.from("ai_coach_messages").insert([
       { user_id: userId, role: "user", content: message },

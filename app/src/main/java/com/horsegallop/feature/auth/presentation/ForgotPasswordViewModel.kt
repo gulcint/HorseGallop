@@ -88,7 +88,7 @@ class ForgotPasswordViewModel @Inject constructor(
 
         _uiState.value = s.copy(loading = true, errorMessage = null)
         viewModelScope.launch {
-            confirmPasswordResetUseCase.execute(s.resetCode, s.newPassword).collect { result ->
+            confirmPasswordResetUseCase.execute(s.email, s.resetCode, s.newPassword).collect { result ->
                  result.onSuccess {
                      _uiState.value = _uiState.value.copy(loading = false, resetSuccess = true)
                  }.onFailure { e ->

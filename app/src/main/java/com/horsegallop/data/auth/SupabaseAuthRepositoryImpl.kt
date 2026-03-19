@@ -91,7 +91,12 @@ class SupabaseAuthRepositoryImpl @Inject constructor(
         emit(authDataSource.resetPassword(email))
     }
 
-    override fun confirmPasswordReset(code: String, newPassword: String): Flow<Result<Unit>> = flow {
+    override fun confirmPasswordReset(email: String, code: String, newPassword: String): Flow<Result<Unit>> = flow {
+        val verifyResult = authDataSource.verifyOtp(email, code)
+        if (verifyResult.isFailure) {
+            emit(Result.failure(verifyResult.exceptionOrNull() ?: Exception("Invalid or expired recovery code")))
+            return@flow
+        }
         emit(authDataSource.updatePassword(newPassword))
     }
 
