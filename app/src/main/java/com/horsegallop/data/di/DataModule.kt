@@ -4,7 +4,7 @@ import com.horsegallop.data.aicoach.repository.AiCoachRepositoryImpl
 import com.horsegallop.domain.aicoach.repository.AiCoachRepository
 import com.horsegallop.data.tbf.repository.TbfRepositoryImpl
 import com.horsegallop.domain.tbf.repository.TbfRepository
-import com.horsegallop.data.auth.FirebaseAuthRepository
+import com.horsegallop.data.auth.SupabaseAuthRepositoryImpl
 import com.horsegallop.data.barnmanagement.repository.BarnManagementRepositoryImpl
 import com.horsegallop.domain.barnmanagement.repository.BarnManagementRepository
 import com.horsegallop.data.challenge.repository.ChallengeRepositoryImpl
@@ -24,6 +24,8 @@ import com.horsegallop.domain.review.repository.ReviewRepository
 import com.horsegallop.data.auth.repository.ProfileRepositoryImpl
 import com.horsegallop.data.barn.repository.BarnRepositoryImpl
 import com.horsegallop.data.equestrian.repository.EquestrianAgendaRepositoryImpl
+import com.horsegallop.data.equestrian.repository.TbfActivityRepositoryImpl
+import com.horsegallop.domain.equestrian.repository.TbfActivityRepository
 import com.horsegallop.data.ride.repository.RideRepositoryImpl
 import com.horsegallop.data.ride.repository.RideHistoryRepositoryImpl
 import com.horsegallop.data.schedule.repository.ScheduleRepositoryImpl
@@ -57,7 +59,7 @@ abstract class DataModule {
     @Binds
     @Singleton
     abstract fun bindAuthRepository(
-        firebaseAuthRepository: FirebaseAuthRepository
+        supabaseAuthRepositoryImpl: SupabaseAuthRepositoryImpl
     ): AuthRepository
 
     @Binds
@@ -185,4 +187,10 @@ abstract class DataModule {
     abstract fun bindTbfRepository(
         tbfRepositoryImpl: TbfRepositoryImpl
     ): TbfRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTbfActivityRepository(
+        impl: TbfActivityRepositoryImpl
+    ): TbfActivityRepository
 }

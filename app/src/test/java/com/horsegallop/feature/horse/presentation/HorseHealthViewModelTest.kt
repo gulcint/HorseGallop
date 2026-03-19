@@ -115,6 +115,7 @@ class HorseHealthViewModelTest {
         advanceUntilIdle()
 
         assertFalse(viewModel.ui.value.isLoading)
+        assertNotNull(viewModel.ui.value.error)
     }
 
     // ─── addEvent ────────────────────────────────────────────────────────────

@@ -47,7 +47,7 @@ class HorseHealthViewModel @Inject constructor(
         viewModelScope.launch {
             getHorseHealthEventsUseCase(horseId)
                 .onSuccess { events -> updateEvents(events) }
-                .onFailure { _ui.update { it.copy(isLoading = false, error = it.error) } }
+                .onFailure { e -> _ui.update { it.copy(isLoading = false, error = e.localizedMessage) } }
         }
     }
 

@@ -6,5 +6,6 @@ import javax.inject.Inject
 class StartSubscriptionPurchaseUseCase @Inject constructor(
     private val repository: SubscriptionRepository
 ) {
-    suspend operator fun invoke(productId: String): Result<Unit> = repository.startSubscriptionPurchase(productId)
+    suspend operator fun invoke(productId: String, purchaseToken: String): Result<Unit> =
+        repository.startSubscriptionPurchase(productId, purchaseToken)
 }

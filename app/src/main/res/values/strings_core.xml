@@ -583,6 +583,8 @@
     <string name="subscription_terms">Terms</string>
     <string name="subscription_purchase_failed">Purchase failed. Please try again.</string>
     <string name="subscription_restore_failed">Restore failed. Please try again.</string>
+    <string name="subscription_verification_failed">Purchase verification failed. Please contact support.</string>
+    <string name="subscription_payment_unavailable">Payment is currently unavailable. Please try again.</string>
     <string name="subscription_already_pro">You\'re already Pro!</string>
     <string name="subscription_already_pro_title">Pro Membership Active 🎉</string>
     <string name="subscription_already_pro_subtitle">You have full access to all features.</string>

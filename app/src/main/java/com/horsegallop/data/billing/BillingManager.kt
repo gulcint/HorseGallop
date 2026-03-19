@@ -29,7 +29,7 @@ sealed class PurchaseState {
     object Idle : PurchaseState()
     object Purchasing : PurchaseState()
     object Cancelled : PurchaseState()
-    data class Purchased(val productId: String) : PurchaseState()
+    data class Purchased(val productId: String, val purchaseToken: String) : PurchaseState()
     data class Error(val message: String) : PurchaseState()
 }
 
@@ -161,13 +161,13 @@ class BillingManager @Inject constructor(
             billingClient.acknowledgePurchase(ackParams) { result ->
                 if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                     AppLog.i("BillingManager", "Purchase acknowledged: $productId")
-                    _purchaseState.value = PurchaseState.Purchased(productId)
+                    _purchaseState.value = PurchaseState.Purchased(productId, purchase.purchaseToken)
                 } else {
                     _purchaseState.value = PurchaseState.Error("Acknowledge failed: ${result.debugMessage}")
                 }
             }
         } else {
-            _purchaseState.value = PurchaseState.Purchased(productId)
+            _purchaseState.value = PurchaseState.Purchased(productId, purchase.purchaseToken)
         }
     }
 }

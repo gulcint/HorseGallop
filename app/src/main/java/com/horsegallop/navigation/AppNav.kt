@@ -127,6 +127,7 @@ sealed class Dest(val route: String) {
   object TbfEventDetail : Dest("tbf_event_detail/{venueCode}/{eventIndex}") {
     fun route(code: String, index: Int) = "tbf_event_detail/$code/$index"
   }
+  object TbfActivityCalendar : Dest("tbf_activity_calendar")
 }
 
 @Composable
@@ -402,7 +403,8 @@ fun AppNavHost(
         onBack = { navController.popBackStack() },
         onTbfEventClick = { venueCode, eventIndex ->
           navController.navigate(Dest.TbfEventDetail.route(venueCode, eventIndex))
-        }
+        },
+        onNavigateToCalendar = { navController.navigate(Dest.TbfActivityCalendar.route) }
       )
     }
     composable(Dest.Ride.route) {
@@ -622,7 +624,14 @@ fun AppNavHost(
         initialTab = EquestrianAgendaTab.TBF,
         onTbfEventClick = { venueCode, eventIndex ->
           navController.navigate(Dest.TbfEventDetail.route(venueCode, eventIndex))
-        }
+        },
+        onNavigateToCalendar = { navController.navigate(Dest.TbfActivityCalendar.route) }
+      )
+    }
+    composable(Dest.TbfActivityCalendar.route) {
+      BackHandler { navController.popBackStack() }
+      com.horsegallop.feature.equestrian.presentation.TbfActivityScreen(
+        onNavigateBack = { navController.popBackStack() }
       )
     }
     composable(

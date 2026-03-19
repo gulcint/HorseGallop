@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Sync
@@ -33,6 +34,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -48,7 +50,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -75,6 +76,7 @@ fun EquestrianAgendaScreen(
     onBack: () -> Unit,
     initialTab: EquestrianAgendaTab = EquestrianAgendaTab.ANNOUNCEMENTS,
     onTbfEventClick: (venueCode: String, eventIndex: Int) -> Unit = { _, _ -> },
+    onNavigateToCalendar: () -> Unit = {},
     viewModel: EquestrianAgendaViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -191,6 +193,16 @@ fun EquestrianAgendaScreen(
 
                 EquestrianAgendaTab.TBF -> {
                     val tbfViewModel: com.horsegallop.feature.tbf.presentation.TbfViewModel = hiltViewModel()
+                    OutlinedButton(
+                        onClick = onNavigateToCalendar,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Icon(Icons.Default.CalendarMonth, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.tbf_view_calendar))
+                    }
                     TbfTabContent(
                         viewModel = tbfViewModel,
                         onEventClick = onTbfEventClick
@@ -778,8 +790,8 @@ private fun TbfRaceCard(
                 val prize = competition.prize
                 Text(
                     text = when {
-                        prize >= 1_000_000 -> "₺${prize / 1_000_000}M"
-                        prize >= 1_000 -> "₺${prize / 1_000}K"
+                        prize >= 1_000_000 -> "₺${"%.1f".format(prize / 1_000_000.0)}M"
+                        prize >= 1_000 -> "₺${"%.1f".format(prize / 1_000.0)}K"
                         else -> "₺$prize"
                     },
                     style = MaterialTheme.typography.labelMedium,
@@ -934,7 +946,7 @@ private fun FeedCard(
                             .matchParentSize()
                             .background(
                                 Brush.verticalGradient(
-                                    colors = listOf(Color.Transparent, semantic.imageOverlayStrong)
+                                    colors = listOf(semantic.imageOverlayStrong.copy(alpha = 0f), semantic.imageOverlayStrong)
                                 )
                             )
                     )

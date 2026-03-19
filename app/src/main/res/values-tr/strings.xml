@@ -565,6 +565,8 @@
     <string name="subscription_terms">Koşullar</string>
     <string name="subscription_purchase_failed">Satın alma başarısız. Lütfen tekrar dene.</string>
     <string name="subscription_restore_failed">Geri yükleme başarısız. Tekrar dene.</string>
+    <string name="subscription_verification_failed">Satın alma doğrulaması başarısız. Lütfen destek ekibiyle iletişime geç.</string>
+    <string name="subscription_payment_unavailable">Ödeme şu an kullanılamıyor. Lütfen tekrar dene.</string>
     <string name="subscription_already_pro">Zaten Pro üyesin!</string>
     <string name="subscription_already_pro_title">Pro Üyeliğin Aktif 🎉</string>
     <string name="subscription_already_pro_subtitle">Tüm özelliklere tam erişimin var.</string>
@@ -692,7 +694,7 @@
     <string name="ai_coach_thinking">Düşünüyor...</string>
     <string name="ai_coach_send">Gönder</string>
     <string name="ai_coach_error">Yanıt alınamadı. Lütfen tekrar deneyin.</string>
-    <string name="ai_coach_context_hint">Son sürüş verilerin baz alınıyor</string>
+    <string name="ai_coach_context_hint">Son sürüş verileri baz alınıyor</string>
 
     <!-- TBF Etkinlikler -->
     <string name="tbf_events_title">TBF Yarışmaları</string>
@@ -792,4 +794,12 @@
     <string name="my_reviews_title">Değerlendirmelerim</string>
     <string name="my_reviews_empty">Henüz değerlendirme yapmadınız.</string>
     <string name="profile_action_my_reviews">Değerlendirmelerim</string>
+    <string name="tbf_view_calendar">TBF Etkinlik Takvimi</string>
+
+    <!-- TBF Activity Calendar (Chunk 4) -->
+    <string name="tbf_activity_calendar">Faaliyet Takvimi</string>
+    <string name="tbf_no_events_day">Bu gün etkinlik yok</string>
+    <string name="tbf_filter_all">Tümü</string>
+    <string name="tbf_previous_month_cd">Önceki ay</string>
+    <string name="tbf_next_month_cd">Sonraki ay</string>
 </resources>
