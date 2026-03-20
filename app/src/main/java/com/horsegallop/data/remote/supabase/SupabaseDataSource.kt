@@ -7,6 +7,7 @@ import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.functions.functions
 import io.ktor.client.statement.bodyAsText
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.postgrest.query.filter.FilterOperator
@@ -172,24 +173,15 @@ class SupabaseDataSource @Inject constructor(
 
     suspend fun bookLesson(lesson: SupabaseLessonDto): SupabaseReservationDto {
         val uid = currentUserId() ?: error("Not authenticated")
-        val reservation = SupabaseReservationDto(
-            lessonId = lesson.id,
-            lessonTitle = lesson.title,
-            lessonDate = lesson.lessonDate ?: "",
-            instructorName = lesson.instructorName,
-            barnId = lesson.barnId
-        )
-        val result = supabase.from("reservations")
-            .insert(reservation) { select() }
-            .decodeSingle<SupabaseReservationDto>()
-
-        // Decrement spots_available
-        supabase.from("lessons")
-            .update(mapOf("spots_available" to lesson.spotsAvailable - 1)) {
-                filter { eq("id", lesson.id) }
+        // Atomic RPC: kontenjan kontrolü + rezervasyon insert + decrement tek transaction içinde.
+        // Client-side değerlere güvenilmiyor — race condition ve çift kayıt RPC'de önleniyor.
+        return supabase.postgrest.rpc(
+            "book_lesson",
+            buildJsonObject {
+                put("p_lesson_id", lesson.id)
+                put("p_user_id", uid)
             }
-
-        return result
+        ).decodeSingle()
     }
 
     suspend fun cancelReservation(reservationId: String) {
@@ -382,11 +374,10 @@ class SupabaseDataSource @Inject constructor(
 
     suspend fun verifyPurchase(purchaseToken: String, productId: String): Result<VerifyPurchaseResponseDto> {
         return try {
-            val userId = currentUserId() ?: return Result.failure(Exception("Not authenticated"))
+            // userId artık body'de gönderilmiyor — Edge Function JWT'den çıkarıyor (güvenlik düzeltmesi)
             val body = buildJsonObject {
                 put("purchaseToken", purchaseToken)
                 put("productId", productId)
-                put("userId", userId)
             }
             val response = supabase.functions.invoke(function = "verify-purchase", body = body)
             val dto = Json.decodeFromString<VerifyPurchaseResponseDto>(response.bodyAsText())

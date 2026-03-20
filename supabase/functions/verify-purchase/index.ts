@@ -11,7 +11,6 @@ const corsHeaders = {
 interface VerifyPurchaseRequest {
   purchaseToken: string
   productId: string
-  userId: string
 }
 
 interface ServiceAccountKey {
@@ -40,7 +39,6 @@ function base64urlEncodeString(str: string): string {
 
 // Convert PEM private key string to CryptoKey for RS256 signing
 async function importRsaPrivateKey(pem: string): Promise<CryptoKey> {
-  // Remove PEM header/footer and whitespace
   const pemContents = pem
     .replace(/-----BEGIN PRIVATE KEY-----/g, "")
     .replace(/-----END PRIVATE KEY-----/g, "")
@@ -144,38 +142,65 @@ function productIdToTier(productId: string): string {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders })
   }
 
   try {
-    // 1. Parse and validate request body
-    const body: VerifyPurchaseRequest = await req.json()
-    const { purchaseToken, productId, userId } = body
-
-    if (!purchaseToken || !productId || !userId) {
+    // 1. JWT doğrulama — Authorization header'dan kullanıcıyı belirle
+    const authHeader = req.headers.get("Authorization")
+    if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: "purchaseToken, productId and userId are required", verified: false }),
+        JSON.stringify({ error: "Missing authorization header", verified: false }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      )
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    )
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(
+      authHeader.replace("Bearer ", "")
+    )
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized", verified: false }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      )
+    }
+
+    // 2. userId JWT'den geliyor — body'de artık userId yok
+    const userId = user.id
+
+    // 3. Parse request body (userId artık body'de yok)
+    const body: VerifyPurchaseRequest = await req.json()
+    const { purchaseToken, productId } = body
+
+    if (!purchaseToken || !productId) {
+      return new Response(
+        JSON.stringify({ error: "purchaseToken and productId are required", verified: false }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       )
     }
 
-    // 2. Load and parse service account key
+    // 4. Load and parse service account key
     const serviceAccountKeyRaw = Deno.env.get("GOOGLE_PLAY_SERVICE_ACCOUNT_KEY")
     if (!serviceAccountKeyRaw) {
       throw new Error("GOOGLE_PLAY_SERVICE_ACCOUNT_KEY environment variable is not set")
     }
     const serviceAccount: ServiceAccountKey = JSON.parse(serviceAccountKeyRaw)
 
-    // 3. Authenticate with Google via manual JWT (googleapis package not available in Deno)
+    // 5. Authenticate with Google via manual JWT
     const jwt = await buildServiceAccountJwt(serviceAccount)
     const accessToken = await fetchAccessToken(jwt)
 
-    // 4. Query Google Play Developer API
+    // 6. Query Google Play Developer API
     const subscription = await fetchPlaySubscription(accessToken, productId, purchaseToken)
 
-    // 5. Validate purchase
+    // 7. Validate purchase
     const paymentState = subscription.paymentState
     const expiryTimeMillis = subscription.expiryTimeMillis
       ? parseInt(subscription.expiryTimeMillis, 10)
@@ -192,14 +217,9 @@ serve(async (req) => {
       )
     }
 
-    // 6. Update user_profiles in Supabase
+    // 8. Update user_profiles — JWT'den gelen userId kullanılıyor
     const expiryDate = new Date(expiryTimeMillis)
     const tier = productIdToTier(productId)
-
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    )
 
     const { error: updateError } = await supabase
       .from("user_profiles")
@@ -214,7 +234,6 @@ serve(async (req) => {
       throw new Error(`Failed to update user_profiles: ${updateError.message}`)
     }
 
-    // 7. Return success response
     return new Response(
       JSON.stringify({ verified: true, tier, expiresAt: expiryDate.toISOString() }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
