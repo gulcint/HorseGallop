@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -18,11 +19,9 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -32,19 +31,22 @@ class SubscriptionRepositoryImplTest {
 
     private val testDispatcher = StandardTestDispatcher()
 
-    private val supabaseDataSource: SupabaseDataSource = mock()
-    private val billingManager: BillingManager = mock()
-
-    private val purchaseStateFlow = MutableStateFlow<PurchaseState>(PurchaseState.Idle)
+    // Fresh mocks per-test to prevent IO-thread leakage between tests
+    private lateinit var supabaseDataSource: SupabaseDataSource
+    private lateinit var billingManager: BillingManager
+    private lateinit var purchaseStateFlow: MutableStateFlow<PurchaseState>
 
     private lateinit var repository: SubscriptionRepositoryImpl
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
-        Mockito.reset(supabaseDataSource, billingManager)
+        supabaseDataSource = mock()
+        billingManager = mock()
+        purchaseStateFlow = MutableStateFlow(PurchaseState.Idle)
         whenever(billingManager.purchaseState).thenReturn(purchaseStateFlow)
-        // Default: getSubscriptionStatus returns null (no backend response)
+        // Pre-stub getSubscriptionStatus for background refreshFromBackend() on Dispatchers.IO
+        runBlocking { whenever(supabaseDataSource.getSubscriptionStatus()).thenReturn(null) }
     }
 
     @After
