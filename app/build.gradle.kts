@@ -70,6 +70,16 @@ android {
     testOptions {
         unitTests {
             isReturnDefaultValues = true
+            // AGP 8.5 + KAPT + Hilt: Kotlin compiled classes land in compile_app_classes_jar
+            // but are missing from runtime_app_classes_jar used by unit tests.
+            // Explicitly add the compile jar so mocked/tested classes are resolvable.
+            all { test ->
+                test.classpath += files(
+                    layout.buildDirectory.dir(
+                        "intermediates/compile_app_classes_jar/debug/bundleDebugClassesToCompileJar/classes.jar"
+                    )
+                )
+            }
         }
     }
 }
