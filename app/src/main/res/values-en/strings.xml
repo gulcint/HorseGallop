@@ -82,6 +82,7 @@
     <string name="logout">Logout</string>
     <string name="nav_home">Home</string>
     <string name="nav_barns">Barns</string>
+    <string name="nav_horses">Horses</string>
     <string name="nav_ride">Ride</string>
     <string name="nav_schedule">Schedule</string>
     <string name="nav_profile">Profile</string>
@@ -744,6 +745,7 @@
     <string name="profile_stat_rating">rating</string>
     <string name="profile_action_my_horses">My Horses</string>
     <string name="profile_action_health_calendar">Health Calendar</string>
+    <string name="profile_action_schedule">Schedule</string>
     <string name="profile_action_challenges">Challenges</string>
     <string name="profile_action_tbf">Equestrian News</string>
     <string name="profile_section_explore">Explore</string>

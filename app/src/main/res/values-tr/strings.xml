@@ -82,6 +82,7 @@
     <string name="logout">Çıkış yap</string>
     <string name="nav_home">Ana Sayfa</string>
     <string name="nav_barns">Ahırlar</string>
+    <string name="nav_horses">Atlarım</string>
     <string name="nav_ride">Sürüş</string>
     <string name="nav_schedule">Program</string>
     <string name="nav_profile">Profil</string>
@@ -740,6 +741,7 @@
     <string name="profile_stat_rating">puan</string>
     <string name="profile_action_my_horses">Atlarım</string>
     <string name="profile_action_health_calendar">Sağlık Takvimi</string>
+    <string name="profile_action_schedule">Program</string>
     <string name="profile_action_challenges">Meydan Okumalar</string>
     <string name="profile_action_tbf">At Sporları Haberleri</string>
     <string name="profile_section_explore">Keşfet</string>

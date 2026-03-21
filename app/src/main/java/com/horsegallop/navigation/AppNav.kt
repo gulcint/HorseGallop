@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -87,6 +86,7 @@ sealed class Dest(val route: String) {
   object ProfileEdit : Dest("profile/edit")
   object Settings : Dest("settings")
   object MyReservations : Dest("myReservations")
+  object Horses : Dest("horses")
   object MyHorses : Dest("myHorses")
   object AddHorse : Dest("addHorse")
   object WriteReview : Dest("writeReview/{targetId}/{targetType}/{targetName}") {
@@ -139,8 +139,8 @@ fun AppNavHost(
   val showBottomBar = currentRoute in listOf(
     Dest.Home.route,
     Dest.Barns.route,
+    Dest.Horses.route,
     Dest.Ride.route,
-    Dest.Schedule.route,
     Dest.Profile.route
   )
   val ctx = androidx.compose.ui.platform.LocalContext.current
@@ -198,6 +198,19 @@ fun AppNavHost(
               alwaysShowLabel = true
             )
             NavigationBarItem(
+              selected = currentRoute == Dest.Horses.route,
+              onClick = {
+                navController.navigate(Dest.Horses.route) {
+                  popUpTo(navController.graph.findStartDestination().id)
+                  launchSingleTop = true
+                }
+              },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.Pets, null) },
+              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_horses)) },
+              colors = itemColors,
+              alwaysShowLabel = true
+            )
+            NavigationBarItem(
               selected = currentRoute == Dest.Ride.route,
               onClick = {
                 navController.navigate(Dest.Ride.route) {
@@ -205,21 +218,8 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(Icons.Filled.Pets, null) },
-              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_ride)) },
-              colors = itemColors,
-              alwaysShowLabel = true
-            )
-            NavigationBarItem(
-              selected = currentRoute == Dest.Schedule.route,
-              onClick = {
-                navController.navigate(Dest.Schedule.route) {
-                  popUpTo(navController.graph.findStartDestination().id)
-                  launchSingleTop = true
-                }
-              },
               icon = { androidx.compose.material3.Icon(Icons.AutoMirrored.Filled.List, null) },
-              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_schedule)) },
+              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_ride)) },
               colors = itemColors,
               alwaysShowLabel = true
             )
@@ -357,9 +357,8 @@ fun AppNavHost(
         onBack = { navController.popBackStack() },
         onSettings = { navController.navigate(Dest.Settings.route) },
         onEditProfile = { navController.navigate(Dest.ProfileEdit.route) },
-        onMyHorses = { navController.navigate(Dest.MyHorses.route) },
         onNotifications = { navController.navigate(Dest.Notifications.route) },
-        onHealthCalendar = { navController.navigate(Dest.HealthCalendar.route) },
+        onSchedule = { navController.navigate(Dest.Schedule.route) },
         onChallenges = { navController.navigate(Dest.Challenges.route) },
         onTbfEvents = { navController.navigate(Dest.TbfEvents.route) },
         onMyReviews = { navController.navigate(Dest.MyReviews.route) },
@@ -428,6 +427,18 @@ fun AppNavHost(
         }
       )
     }
+    composable(Dest.Horses.route) {
+      val activity = LocalContext.current as? Activity
+      BackHandler { if (!navController.popBackStack()) activity?.finish() }
+      HorseListScreen(
+        onAddHorse = { navController.navigate(Dest.AddHorse.route) },
+        onBack = { navController.popBackStack() },
+        onHorseHealthClick = { horseId, horseName ->
+          navController.navigate(Dest.HorseHealth.route(horseId, horseName))
+        },
+        onHealthCalendar = { navController.navigate(Dest.HealthCalendar.route) }
+      )
+    }
     composable(Dest.MyHorses.route) {
       BackHandler { navController.popBackStack() }
       HorseListScreen(
@@ -435,7 +446,8 @@ fun AppNavHost(
         onBack = { navController.popBackStack() },
         onHorseHealthClick = { horseId, horseName ->
           navController.navigate(Dest.HorseHealth.route(horseId, horseName))
-        }
+        },
+        onHealthCalendar = { navController.navigate(Dest.HealthCalendar.route) }
       )
     }
     composable(Dest.AddHorse.route) {

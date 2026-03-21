@@ -335,9 +335,8 @@ fun ProfileInfoRow(
 fun ProfileActionsCard(
     modifier: Modifier = Modifier,
     onEditProfile: () -> Unit,
-    onMyHorses: () -> Unit,
     onLogout: () -> Unit,
-    onHealthCalendar: () -> Unit = {},
+    onSchedule: () -> Unit = {},
     onChallenges: () -> Unit = {},
     onTbfEvents: () -> Unit = {},
     onMyReviews: () -> Unit = {},
@@ -412,9 +411,9 @@ fun ProfileActionsCard(
 
             // Secondary actions — list items with dividers
             ProfileActionItem(
-                emoji = "🐴",
-                label = stringResource(R.string.profile_action_my_horses),
-                onClick = onMyHorses
+                emoji = "📅",
+                label = stringResource(R.string.profile_action_schedule),
+                onClick = onSchedule
             )
             HorizontalDivider(
                 modifier = Modifier.padding(start = 40.dp),
@@ -426,16 +425,6 @@ fun ProfileActionsCard(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 4.dp, bottom = 4.dp, top = 12.dp)
-            )
-            ProfileActionItem(
-                emoji = "🩺",
-                label = stringResource(R.string.profile_action_health_calendar),
-                onClick = onHealthCalendar
-            )
-            HorizontalDivider(
-                modifier = Modifier.padding(start = 40.dp),
-                color = semantic.cardStroke,
-                thickness = 0.5.dp
             )
             ProfileActionItem(
                 emoji = "🏆",

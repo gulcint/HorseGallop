@@ -19,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MedicalServices
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -31,6 +32,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -58,7 +60,8 @@ fun HorseListScreen(
     viewModel: HorseViewModel = hiltViewModel(),
     onAddHorse: () -> Unit,
     onBack: () -> Unit,
-    onHorseHealthClick: (horseId: String, horseName: String) -> Unit = { _, _ -> }
+    onHorseHealthClick: (horseId: String, horseName: String) -> Unit = { _, _ -> },
+    onHealthCalendar: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val semantic = LocalSemanticColors.current
@@ -106,6 +109,15 @@ fun HorseListScreen(
                         )
                         Spacer(Modifier.size(4.dp))
                         Button(onClick = onAddHorse) { Text("İlk Atı Ekle") }
+                        OutlinedButton(onClick = onHealthCalendar) {
+                            Icon(
+                                imageVector = Icons.Default.CalendarToday,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.size(6.dp))
+                            Text(stringResource(R.string.health_calendar_title))
+                        }
                     }
                 }
             }
@@ -115,6 +127,20 @@ fun HorseListScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
+                    item(key = "health_calendar_shortcut", contentType = "action_button") {
+                        OutlinedButton(
+                            onClick = onHealthCalendar,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CalendarToday,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.size(8.dp))
+                            Text(stringResource(R.string.health_calendar_title))
+                        }
+                    }
                     items(uiState.horses, key = { it.id }) { horse ->
                         HorseCard(
                             horse = horse,
