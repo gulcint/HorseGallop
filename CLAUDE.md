@@ -102,8 +102,8 @@ ViewModel state: one `UiState` data class, `StateFlow`, collect with `collectAsS
 - Auth: Email/password + Google OAuth (Supabase native)
 - Realtime: `postgresChangeFlow` for live notifications
 - Storage: `profile-photos` bucket for avatar uploads
-- Edge Functions: `supabase/functions/` — deploy via `~/bin/supabase functions deploy <name>`
-- Migrations: `supabase/migrations/` — apply via `~/bin/supabase db push`
+- Edge Functions: `../backend/supabase/functions/` — deploy via `cd ../backend && ~/bin/supabase functions deploy <name>`
+- Migrations: `../backend/supabase/migrations/` — apply via `cd ../backend && ~/bin/supabase db push`
 
 ## FCM (Push Notifications — Firebase only remaining)
 
