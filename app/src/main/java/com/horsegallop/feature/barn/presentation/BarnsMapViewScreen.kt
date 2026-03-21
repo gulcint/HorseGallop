@@ -144,7 +144,7 @@ fun BarnsMapViewScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(horizontal = 4.dp)
             ) {
-                items(filters) { (label, key) ->
+                items(filters, key = { it.second }) { (label, key) ->
                     val isSelected = uiState.selectedFilters.contains(key)
                     FilterChip(
                         selected = isSelected,

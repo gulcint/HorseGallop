@@ -446,7 +446,7 @@ fun BarnDetailContent(
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(barn.barn.tags) { tag ->
+                            items(barn.barn.tags, key = { it }) { tag ->
                                 Surface(
                                     shape = RoundedCornerShape(10.dp),
                                     color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.85f),
@@ -779,7 +779,7 @@ fun BarnInstructorsSection(instructors: List<Instructor>) {
             )
             Spacer(modifier = Modifier.height(12.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                items(instructors) { instructor ->
+                items(instructors, key = { it.id }) { instructor ->
                     InstructorCard(instructor = instructor)
                 }
             }

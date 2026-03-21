@@ -116,7 +116,7 @@ fun RecentActivityDetailScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                items(uiState.activities) { activity ->
+                items(uiState.activities, key = { it.id }) { activity ->
                     ActivityItem(
                         title = activity.title ?: stringResource(id = com.horsegallop.R.string.ride_default_title),
                         subtitle = "${activity.dateLabel} • ${activity.timeLabel}",

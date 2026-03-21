@@ -86,8 +86,8 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun signOut() {
-        // Fire-and-forget; caller should use coroutine scope if needed
+    override suspend fun signOut() {
+        supabaseDataSource.signOut()
     }
 
     // ─── helpers ─────────────────────────────────────────────

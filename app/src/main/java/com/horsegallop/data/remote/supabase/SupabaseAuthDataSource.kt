@@ -60,6 +60,15 @@ class SupabaseAuthDataSource @Inject constructor(
         auth.signOut()
     }
 
+    // ─── EMAIL VERIFICATION ──────────────────────────────────────────────────
+
+    /**
+     * Resends the email verification (signup confirmation) OTP to [email].
+     */
+    suspend fun resendVerificationEmail(email: String): Result<Unit> = runCatching {
+        auth.resendEmail(type = OtpType.Email.SIGNUP, email = email)
+    }
+
     // ─── PASSWORD RESET ───────────────────────────────────────────────────────
 
     suspend fun resetPassword(email: String): Result<Unit> = runCatching {

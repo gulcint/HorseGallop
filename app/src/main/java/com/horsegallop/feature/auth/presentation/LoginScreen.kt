@@ -128,7 +128,7 @@ fun LoginScreen(
         }
     }
 
-    LaunchedEffect(vm.effect) {
+    LaunchedEffect(Unit) {
         vm.effect.collect { effect ->
             when (effect) {
                 is LoginEffect.NavigateToHome -> onGoogleClick()

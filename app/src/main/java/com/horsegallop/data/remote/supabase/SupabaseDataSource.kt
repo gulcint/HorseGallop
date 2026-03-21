@@ -182,9 +182,13 @@ class SupabaseDataSource @Inject constructor(
     }
 
     suspend fun cancelReservation(reservationId: String) {
+        val uid = currentUserId() ?: error("Not authenticated")
         supabase.from("reservations")
             .update(mapOf("status" to "cancelled")) {
-                filter { eq("id", reservationId) }
+                filter {
+                    eq("id", reservationId)
+                    eq("user_id", uid) // defense-in-depth: RLS'ye ek olarak client tarafı kontrol
+                }
             }
     }
 
@@ -520,9 +524,13 @@ class SupabaseDataSource @Inject constructor(
         }
         channel.subscribe()
 
-        emitAll(changeFlow.map {
-            getNotifications(userId).getOrDefault(emptyList())
-        })
+        try {
+            emitAll(changeFlow.map {
+                getNotifications(userId).getOrDefault(emptyList())
+            })
+        } finally {
+            channel.unsubscribe()
+        }
     }
 
     // ─── TBF ACTIVITY CALENDAR ───────────────────────────────

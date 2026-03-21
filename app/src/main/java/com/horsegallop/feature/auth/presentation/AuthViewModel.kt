@@ -36,5 +36,7 @@ class AuthViewModel @Inject constructor(
     }
 
     fun isSignedIn(): Boolean = repo.isSignedIn()
-    fun signOut() = repo.signOut()
+    fun signOut() {
+        viewModelScope.launch { repo.signOut() }
+    }
 }
