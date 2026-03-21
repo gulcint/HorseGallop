@@ -26,14 +26,6 @@
     <string name="error_email_invalid">Geçerli e-posta girin</string>
     <string name="error_password_length">Şifre en az 10 karakter olmalı</string>
 
-    <!-- AI Coach -->
-    <string name="ai_coach_title">AI Koç</string>
-    <string name="ai_coach_input_placeholder">Atınız hakkında sorun...</string>
-    <string name="ai_coach_thinking">Düşünüyor...</string>
-    <string name="ai_coach_send">Gönder</string>
-    <string name="ai_coach_error">Yanıt alınamadı. Lütfen tekrar deneyin.</string>
-    <string name="ai_coach_context_hint">Son sürüş verileri baz alınıyor</string>
-
     <!-- TBF Events -->
     <string name="tbf_events_title">TBF Yarışmaları</string>
     <string name="tbf_program_tab">Program</string>

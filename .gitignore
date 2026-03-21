@@ -57,3 +57,7 @@ horsegallop-backend/
 
 # TestSprite temporary artifacts (may contain secrets)
 testsprite_tests/tmp/
+
+# Personal brief inbox (local only)
+inbox.md
+docs/inbox-archive/

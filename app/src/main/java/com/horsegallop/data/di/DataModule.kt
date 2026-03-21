@@ -1,7 +1,5 @@
 package com.horsegallop.data.di
 
-import com.horsegallop.data.aicoach.repository.AiCoachRepositoryImpl
-import com.horsegallop.domain.aicoach.repository.AiCoachRepository
 import com.horsegallop.data.tbf.repository.TbfRepositoryImpl
 import com.horsegallop.domain.tbf.repository.TbfRepository
 import com.horsegallop.data.auth.SupabaseAuthRepositoryImpl
@@ -175,12 +173,6 @@ abstract class DataModule {
     abstract fun bindBarnManagementRepository(
         barnManagementRepositoryImpl: BarnManagementRepositoryImpl
     ): BarnManagementRepository
-
-    @Binds
-    @Singleton
-    abstract fun bindAiCoachRepository(
-        aiCoachRepositoryImpl: AiCoachRepositoryImpl
-    ): AiCoachRepository
 
     @Binds
     @Singleton
