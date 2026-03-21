@@ -87,13 +87,27 @@ class HealthViewModel @Inject constructor(
     }
 
     fun markCompleted(event: HealthEvent) {
-        viewModelScope.launch {
-            val updated = event.copy(
-                isCompleted = true,
-                completedDate = System.currentTimeMillis()
+        val completed = event.copy(
+            isCompleted = true,
+            completedDate = System.currentTimeMillis()
+        )
+        // Optimistic update — anında "Tamamlandı" bölümüne taşı
+        _ui.update { state ->
+            state.copy(
+                events = state.events.map { e -> if (e.id == event.id) completed else e }
             )
-            saveHealthEventUseCase(updated)
-                .onFailure { e -> _ui.update { it.copy(error = e.localizedMessage) } }
+        }
+        viewModelScope.launch {
+            saveHealthEventUseCase(completed)
+                .onFailure { e ->
+                    // Supabase yazma başarısız → geri al ve hata göster
+                    _ui.update { state ->
+                        state.copy(
+                            events = state.events.map { e -> if (e.id == event.id) event else e },
+                            error = e.localizedMessage
+                        )
+                    }
+                }
         }
     }
 
