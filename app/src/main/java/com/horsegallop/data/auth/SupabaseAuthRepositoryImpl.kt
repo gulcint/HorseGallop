@@ -13,7 +13,6 @@ import javax.inject.Inject
 
 /**
  * Supabase-backed implementation of [AuthRepository].
- * Supabase-backed implementation of [AuthRepository].
  * Handles email/password auth, Google OAuth (native token exchange), and user profile management.
  *
  * Methods that were Firebase-specific (lottie config, splash texts, confirmPasswordReset)

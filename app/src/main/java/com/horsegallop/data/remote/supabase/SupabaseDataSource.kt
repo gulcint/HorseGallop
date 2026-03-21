@@ -522,9 +522,8 @@ class SupabaseDataSource @Inject constructor(
             table = "notifications"
             filter("user_id", FilterOperator.EQ, userId)
         }
-        channel.subscribe()
-
         try {
+            channel.subscribe()
             emitAll(changeFlow.map {
                 getNotifications(userId).getOrDefault(emptyList())
             })

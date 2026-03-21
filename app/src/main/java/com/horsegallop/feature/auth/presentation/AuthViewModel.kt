@@ -37,6 +37,12 @@ class AuthViewModel @Inject constructor(
 
     fun isSignedIn(): Boolean = repo.isSignedIn()
     fun signOut() {
-        viewModelScope.launch { repo.signOut() }
+        viewModelScope.launch {
+            try {
+                repo.signOut()
+            } catch (e: Exception) {
+                _uiState.value = AuthUiState.Error(e.message ?: "Sign out failed")
+            }
+        }
     }
 }
