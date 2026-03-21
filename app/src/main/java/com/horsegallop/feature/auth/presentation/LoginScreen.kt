@@ -163,11 +163,13 @@ fun LoginScreen(
             uiState = uiState,
             onGoogleClick = {
                 if (!uiState.isLoading && uiState.agreementAccepted) {
+                    vm.onGoogleSignInStarted() // isLoading = true hemen — çoklu tap engeli
                     scope.launch(Dispatchers.IO) {
                         val available = GoogleApiAvailability.getInstance()
                             .isGooglePlayServicesAvailable(context)
                         withContext(Dispatchers.Main) {
                             if (available != ConnectionResult.SUCCESS) {
+                                vm.onGoogleSignInError("auth_error_play_services")
                                 feedback.showError(R.string.auth_error_play_services)
                             } else {
                                 googleClient.signOut().addOnCompleteListener {

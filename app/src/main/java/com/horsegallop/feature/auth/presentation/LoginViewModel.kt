@@ -123,6 +123,10 @@ class LoginViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(agreementAccepted = !_uiState.value.agreementAccepted)
     }
 
+    fun onGoogleSignInStarted() {
+        _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+    }
+
     fun onSignInCancelled() {
         _uiState.value = _uiState.value.copy(isLoading = false)
         viewModelScope.launch {
