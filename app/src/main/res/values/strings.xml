@@ -47,6 +47,10 @@
     <string name="review_screen_title">Değerlendirme Yaz</string>
     <string name="review_title_lesson">Ders Değerlendirmesi</string>
     <string name="review_title_instructor">Eğitmen Değerlendirmesi</string>
+    <string name="review_title_barn">Review Barn</string>
+    <string name="barn_detail_write_review">Write a Review</string>
+    <string name="barn_detail_no_reviews">No reviews yet. Be the first to review!</string>
+    <string name="barn_detail_reviews_all">All Reviews</string>
     <string name="review_type_instructor">Eğitmen değerlendirmesi</string>
     <string name="review_type_lesson">Ders değerlendirmesi</string>
     <string name="review_your_rating">Puanınız *</string>

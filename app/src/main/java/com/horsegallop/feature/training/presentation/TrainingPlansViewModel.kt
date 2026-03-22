@@ -42,7 +42,7 @@ class TrainingPlansViewModel @Inject constructor(
                     _ui.update { it.copy(isLoading = false, plans = plans, error = null) }
                 }
                 .onFailure { error ->
-                    _ui.update { it.copy(isLoading = false, error = error.message ?: "unknown_error") }
+                    _ui.update { it.copy(isLoading = false, error = "Veriler yüklenemedi. Lütfen tekrar deneyin.") }
                 }
         }
     }
@@ -56,7 +56,7 @@ class TrainingPlansViewModel @Inject constructor(
                     refresh()
                 }
                 .onFailure { error ->
-                    _ui.update { it.copy(isCompleting = false, error = error.message ?: "unknown_error") }
+                    _ui.update { it.copy(isCompleting = false, error = "Veriler yüklenemedi. Lütfen tekrar deneyin.") }
                 }
         }
     }

@@ -58,6 +58,7 @@ import java.util.Locale
 fun BarnDetailScreen(
     onBack: () -> Unit,
     onManageBarn: (barnId: String) -> Unit = {},
+    onWriteReview: (barnId: String, barnName: String) -> Unit = { _, _ -> },
     viewModel: BarnDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -474,10 +475,13 @@ fun BarnDetailContent(
                 }
             }
 
-            if (barn.barn.recentReviews.isNotEmpty()) {
-                item {
-                    BarnReviewsSection(reviews = barn.barn.recentReviews)
-                }
+            item {
+                BarnReviewsSection(
+                    reviews = barn.barn.recentReviews,
+                    barnId = barn.barn.id,
+                    barnName = barn.barn.name,
+                    onWriteReview = onWriteReview
+                )
             }
 
             item { Spacer(modifier = Modifier.height(32.dp)) }
@@ -871,7 +875,12 @@ fun InstructorCard(instructor: Instructor) {
 }
 
 @Composable
-fun BarnReviewsSection(reviews: List<BarnReview>) {
+fun BarnReviewsSection(
+    reviews: List<BarnReview>,
+    barnId: String = "",
+    barnName: String = "",
+    onWriteReview: (barnId: String, barnName: String) -> Unit = { _, _ -> }
+) {
     val semantic = LocalSemanticColors.current
     Surface(
         modifier = Modifier
@@ -886,20 +895,44 @@ fun BarnReviewsSection(reviews: List<BarnReview>) {
         )
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
-            Text(
-                text = stringResource(id = R.string.barn_detail_reviews),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                reviews.take(3).forEachIndexed { index, review ->
-                    BarnReviewItem(review = review)
-                    if (index < reviews.take(3).lastIndex) {
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-                            thickness = 1.dp
-                        )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(id = R.string.barn_detail_reviews),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                TextButton(
+                    onClick = { if (barnId.isNotBlank()) onWriteReview(barnId, barnName) }
+                ) {
+                    Text(
+                        text = stringResource(R.string.barn_detail_write_review),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            if (reviews.isEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.barn_detail_no_reviews),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Spacer(modifier = Modifier.height(12.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    reviews.take(3).forEachIndexed { index, review ->
+                        BarnReviewItem(review = review)
+                        if (index < reviews.take(3).lastIndex) {
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                                thickness = 1.dp
+                            )
+                        }
                     }
                 }
             }

@@ -724,6 +724,10 @@
     <string name="review_screen_title">Write Review</string>
     <string name="review_title_lesson">Review Lesson</string>
     <string name="review_title_instructor">Review Instructor</string>
+    <string name="review_title_barn">Review Barn</string>
+    <string name="barn_detail_write_review">Write a Review</string>
+    <string name="barn_detail_no_reviews">No reviews yet. Be the first to review!</string>
+    <string name="barn_detail_reviews_all">All Reviews</string>
     <string name="review_type_instructor">Instructor review</string>
     <string name="review_type_lesson">Lesson review</string>
     <string name="review_your_rating">Your rating *</string>

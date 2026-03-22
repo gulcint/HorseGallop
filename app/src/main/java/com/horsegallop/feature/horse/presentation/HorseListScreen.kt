@@ -109,15 +109,6 @@ fun HorseListScreen(
                         )
                         Spacer(Modifier.size(4.dp))
                         Button(onClick = onAddHorse) { Text("İlk Atı Ekle") }
-                        OutlinedButton(onClick = onHealthCalendar) {
-                            Icon(
-                                imageVector = Icons.Default.CalendarToday,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(Modifier.size(6.dp))
-                            Text(stringResource(R.string.health_calendar_title))
-                        }
                     }
                 }
             }

@@ -82,7 +82,7 @@ class HealthViewModel @Inject constructor(
         viewModelScope.launch {
             saveHealthEventUseCase(event)
                 .onSuccess { _ui.update { it.copy(isSaving = false) } }
-                .onFailure { e -> _ui.update { it.copy(isSaving = false, error = e.localizedMessage) } }
+                .onFailure { e -> _ui.update { it.copy(isSaving = false, error = "İşlem gerçekleştirilemedi. Lütfen tekrar deneyin.") } }
         }
     }
 
@@ -104,7 +104,7 @@ class HealthViewModel @Inject constructor(
                     _ui.update { state ->
                         state.copy(
                             events = state.events.map { e -> if (e.id == event.id) event else e },
-                            error = e.localizedMessage
+                            error = "İşlem gerçekleştirilemedi. Lütfen tekrar deneyin."
                         )
                     }
                 }
@@ -114,7 +114,7 @@ class HealthViewModel @Inject constructor(
     fun delete(eventId: String) {
         viewModelScope.launch {
             deleteHealthEventUseCase(eventId)
-                .onFailure { e -> _ui.update { it.copy(error = e.localizedMessage) } }
+                .onFailure { e -> _ui.update { it.copy(error = "İşlem gerçekleştirilemedi. Lütfen tekrar deneyin.") } }
         }
     }
 

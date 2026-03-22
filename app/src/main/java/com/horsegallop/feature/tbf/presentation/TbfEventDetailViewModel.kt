@@ -43,7 +43,7 @@ class TbfEventDetailViewModel @Inject constructor(
                     _ui.update { it.copy(isLoading = false, eventCard = card) }
                 }
                 .onFailure { e ->
-                    _ui.update { it.copy(isLoading = false, error = e.message) }
+                    _ui.update { it.copy(isLoading = false, error = "Veriler yüklenemedi. Lütfen tekrar deneyin.") }
                 }
         }
     }

@@ -720,6 +720,10 @@
     <string name="review_screen_title">Değerlendirme Yaz</string>
     <string name="review_title_lesson">Ders Değerlendirmesi</string>
     <string name="review_title_instructor">Eğitmen Değerlendirmesi</string>
+    <string name="review_title_barn">Çiftlik Değerlendirmesi</string>
+    <string name="barn_detail_write_review">Değerlendirme Yaz</string>
+    <string name="barn_detail_no_reviews">Henüz değerlendirme yapılmamış. İlk siz olun!</string>
+    <string name="barn_detail_reviews_all">Tüm Değerlendirmeler</string>
     <string name="review_type_instructor">Eğitmen değerlendirmesi</string>
     <string name="review_type_lesson">Ders değerlendirmesi</string>
     <string name="review_your_rating">Puanınız *</string>

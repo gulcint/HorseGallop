@@ -11,4 +11,4 @@ data class Review(
     val authorName: String = ""
 )
 
-enum class ReviewTargetType { LESSON, INSTRUCTOR }
+enum class ReviewTargetType { LESSON, INSTRUCTOR, BARN }

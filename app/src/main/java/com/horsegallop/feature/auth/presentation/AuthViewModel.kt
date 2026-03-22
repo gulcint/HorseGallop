@@ -30,7 +30,7 @@ class AuthViewModel @Inject constructor(
                 repo.signInWithGoogleIdToken(idToken)
                 _uiState.value = AuthUiState.Success
             } catch (e: Exception) {
-                _uiState.value = AuthUiState.Error(e.message ?: "Google sign-in failed")
+                _uiState.value = AuthUiState.Error("Google ile giriş başarısız. Lütfen tekrar deneyin.")
             }
         }
     }
@@ -41,7 +41,7 @@ class AuthViewModel @Inject constructor(
             try {
                 repo.signOut()
             } catch (e: Exception) {
-                _uiState.value = AuthUiState.Error(e.message ?: "Sign out failed")
+                _uiState.value = AuthUiState.Error("Çıkış yapılamadı. Lütfen tekrar deneyin.")
             }
         }
     }

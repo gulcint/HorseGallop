@@ -162,7 +162,9 @@ fun LoginScreen(
         LoginScreenContent(
             uiState = uiState,
             onGoogleClick = {
-                if (!uiState.isLoading && uiState.agreementAccepted) {
+                if (!uiState.agreementAccepted) {
+                    scope.launch { feedback.showError(R.string.agreement_required) }
+                } else if (!uiState.isLoading) {
                     vm.onGoogleSignInStarted() // isLoading = true hemen — çoklu tap engeli
                     scope.launch(Dispatchers.IO) {
                         val available = GoogleApiAvailability.getInstance()

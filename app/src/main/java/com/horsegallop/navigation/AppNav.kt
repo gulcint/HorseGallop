@@ -5,13 +5,9 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.House
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -179,7 +175,7 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(Icons.Filled.Home, null) },
+              icon = { androidx.compose.material3.Icon(painterResource(com.horsegallop.R.drawable.ic_horseshoe), null) },
               label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_home)) },
               colors = itemColors,
               alwaysShowLabel = true
@@ -192,7 +188,7 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(Icons.Filled.House, null) },
+              icon = { androidx.compose.material3.Icon(painterResource(com.horsegallop.R.drawable.ic_barn), null) },
               label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_barns)) },
               colors = itemColors,
               alwaysShowLabel = true
@@ -205,7 +201,7 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(Icons.Filled.Pets, null) },
+              icon = { androidx.compose.material3.Icon(painterResource(com.horsegallop.R.drawable.ic_horse), null) },
               label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_horses)) },
               colors = itemColors,
               alwaysShowLabel = true
@@ -218,7 +214,7 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(Icons.AutoMirrored.Filled.List, null) },
+              icon = { androidx.compose.material3.Icon(painterResource(com.horsegallop.R.drawable.ic_riding), null) },
               label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_ride)) },
               colors = itemColors,
               alwaysShowLabel = true
@@ -480,8 +476,11 @@ fun AppNavHost(
     ) { backStackEntry ->
       BackHandler { navController.popBackStack() }
       val targetId = backStackEntry.arguments?.getString("targetId") ?: ""
-      val targetType = if (backStackEntry.arguments?.getString("targetType") == "instructor")
-        ReviewTargetType.INSTRUCTOR else ReviewTargetType.LESSON
+      val targetType = when (backStackEntry.arguments?.getString("targetType")) {
+        "instructor" -> ReviewTargetType.INSTRUCTOR
+        "barn" -> ReviewTargetType.BARN
+        else -> ReviewTargetType.LESSON
+      }
       val targetName = android.net.Uri.decode(backStackEntry.arguments?.getString("targetName") ?: "")
       WriteReviewScreen(
         targetId = targetId,
@@ -509,6 +508,9 @@ fun AppNavHost(
         onBack = { navController.popBackStack() },
         onManageBarn = { barnId ->
           navController.navigate(Dest.BarnDashboard.route(barnId))
+        },
+        onWriteReview = { barnId, barnName ->
+          navController.navigate(Dest.WriteReview.route(barnId, "barn", barnName))
         }
       )
     }

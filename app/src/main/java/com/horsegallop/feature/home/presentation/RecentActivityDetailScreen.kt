@@ -13,7 +13,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -122,7 +122,7 @@ fun RecentActivityDetailScreen(
                         subtitle = "${activity.dateLabel} • ${activity.timeLabel}",
                         duration = "${activity.durationMin} min",
                         distance = "${activity.distanceKm} km",
-                        icon = Icons.AutoMirrored.Filled.DirectionsRun,
+                        icon = painterResource(com.horsegallop.R.drawable.ic_riding),
                         onClick = {
                             if (activity.id.isNotBlank()) {
                                 onOpenRideDetail(activity.id)

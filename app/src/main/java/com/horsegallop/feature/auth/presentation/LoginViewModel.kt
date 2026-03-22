@@ -78,8 +78,9 @@ class LoginViewModel @Inject constructor(
                             _uiState.value = s.copy(isLoading = false, showResendVerification = true)
                             _effect.send(LoginEffect.ShowSnackbarError("login_verify_email_sent"))
                         }
-                    }.onFailure { e ->
-                        _uiState.value = s.copy(isLoading = false, errorMessage = e.localizedMessage)
+                    }.onFailure {
+                        _uiState.value = s.copy(isLoading = false, errorMessage = null)
+                        viewModelScope.launch { _effect.send(LoginEffect.ShowSnackbarError("auth_error_generic")) }
                     }
                 }
         }
@@ -88,7 +89,7 @@ class LoginViewModel @Inject constructor(
     fun resendVerification() {
         val s = _uiState.value
         if (s.email.isBlank() || s.password.isBlank()) return
-        
+
         _uiState.value = s.copy(isLoading = true, errorMessage = null)
         viewModelScope.launch {
             resendVerificationEmail.execute(s.email, s.password)
@@ -97,8 +98,9 @@ class LoginViewModel @Inject constructor(
                         _uiState.value = s.copy(isLoading = false)
                         _effect.send(LoginEffect.ShowVerificationEmailSent)
                         _effect.send(LoginEffect.ShowSnackbarError("verification_email_sent"))
-                    }.onFailure { e ->
-                        _uiState.value = s.copy(isLoading = false, errorMessage = e.localizedMessage)
+                    }.onFailure {
+                        _uiState.value = s.copy(isLoading = false, errorMessage = null)
+                        _effect.send(LoginEffect.ShowSnackbarError("auth_error_generic"))
                     }
                 }
         }
@@ -155,7 +157,7 @@ class LoginViewModel @Inject constructor(
                 _effect.send(LoginEffect.NavigateToHome)
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(isLoading = false)
-                _effect.send(LoginEffect.ShowSnackbarError("auth_error_firebase: ${e.message}"))
+                _effect.send(LoginEffect.ShowSnackbarError("auth_error_google_failed"))
             }
         }
     }

@@ -81,7 +81,7 @@ class BarnDetailViewModel @Inject constructor(
                     // Flow zaten backend güncellemesini dinliyor, ek loadLessons() çağrısı gereksiz
                 }
                 .onFailure { e ->
-                    _bookingState.update { it.copy(isBooking = false, bookingError = e.message) }
+                    _bookingState.update { it.copy(isBooking = false, bookingError = "Rezervasyon yapılamadı. Lütfen tekrar deneyin.") }
                 }
         }
     }

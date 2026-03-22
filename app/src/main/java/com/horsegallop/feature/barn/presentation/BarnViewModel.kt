@@ -81,7 +81,7 @@ class BarnViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         loading = false,
-                        error = e.message ?: "Ahırlar yüklenemedi",
+                        error = "Ahırlar yüklenemedi. Lütfen tekrar deneyin.",
                         allBarns = emptyList(),
                         filteredBarns = emptyList()
                     )
