@@ -116,7 +116,8 @@ fun BarnDetailScreen(
                     isOwner = isOwner,
                     onBookLesson = viewModel::bookLesson,
                     onClearBookingResult = viewModel::clearBookingResult,
-                    onManageBarn = { onManageBarn(state.barn.barn.id) }
+                    onManageBarn = { onManageBarn(state.barn.barn.id) },
+                    onWriteReview = onWriteReview
                 )
                 is BarnDetailUiState.Error -> Box(
                     modifier = Modifier.fillMaxSize(),
@@ -148,7 +149,8 @@ fun BarnDetailContent(
     isOwner: Boolean = false,
     onBookLesson: (String) -> Unit = {},
     onClearBookingResult: () -> Unit = {},
-    onManageBarn: () -> Unit = {}
+    onManageBarn: () -> Unit = {},
+    onWriteReview: (barnId: String, barnName: String) -> Unit = { _, _ -> }
 ) {
     val feedback = LocalAppFeedbackController.current
     val semantic = LocalSemanticColors.current
