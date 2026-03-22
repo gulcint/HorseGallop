@@ -6,6 +6,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Storefront
+import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Directions
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.MaterialTheme
@@ -175,7 +179,7 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(painterResource(com.horsegallop.R.drawable.ic_horseshoe), null) },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.Home, null) },
               label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_home)) },
               colors = itemColors,
               alwaysShowLabel = true
@@ -188,7 +192,7 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(painterResource(com.horsegallop.R.drawable.ic_barn), null) },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.Storefront, null) },
               label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_barns)) },
               colors = itemColors,
               alwaysShowLabel = true
@@ -201,7 +205,7 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(painterResource(com.horsegallop.R.drawable.ic_horse), null) },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.Pets, null) },
               label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_horses)) },
               colors = itemColors,
               alwaysShowLabel = true
@@ -214,7 +218,7 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(painterResource(com.horsegallop.R.drawable.ic_riding), null) },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.Directions, null) },
               label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_ride)) },
               colors = itemColors,
               alwaysShowLabel = true
