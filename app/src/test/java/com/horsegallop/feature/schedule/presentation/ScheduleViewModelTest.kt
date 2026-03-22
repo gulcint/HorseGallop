@@ -134,7 +134,7 @@ class ScheduleViewModelTest {
         val state = viewModel.uiState.value
         assertFalse(state.bookingInProgress)
         assertFalse(state.bookingSuccess)
-        assertEquals("Spot dolu", state.bookingError)
+        assertEquals("Rezervasyon başarısız", state.bookingError)
     }
 
     @Test
