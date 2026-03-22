@@ -80,6 +80,8 @@ class EquestrianAgendaViewModel @Inject constructor(
         loadSourceHealth()
         loadAnnouncements()
         loadCompetitions()
+        // Automatically sync federation announcements from binicilik.org.tr (background, non-blocking)
+        triggerSync(force = false)
     }
 
     fun showAnnouncementPreview(item: EquestrianAnnouncement) {
