@@ -58,6 +58,7 @@ import java.util.Locale
 fun BarnDetailScreen(
     onBack: () -> Unit,
     onManageBarn: (barnId: String) -> Unit = {},
+    onWriteReview: (barnId: String, barnName: String) -> Unit = { _, _ -> },
     viewModel: BarnDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -115,7 +116,8 @@ fun BarnDetailScreen(
                     isOwner = isOwner,
                     onBookLesson = viewModel::bookLesson,
                     onClearBookingResult = viewModel::clearBookingResult,
-                    onManageBarn = { onManageBarn(state.barn.barn.id) }
+                    onManageBarn = { onManageBarn(state.barn.barn.id) },
+                    onWriteReview = onWriteReview
                 )
                 is BarnDetailUiState.Error -> Box(
                     modifier = Modifier.fillMaxSize(),
@@ -147,7 +149,8 @@ fun BarnDetailContent(
     isOwner: Boolean = false,
     onBookLesson: (String) -> Unit = {},
     onClearBookingResult: () -> Unit = {},
-    onManageBarn: () -> Unit = {}
+    onManageBarn: () -> Unit = {},
+    onWriteReview: (barnId: String, barnName: String) -> Unit = { _, _ -> }
 ) {
     val feedback = LocalAppFeedbackController.current
     val semantic = LocalSemanticColors.current
@@ -446,7 +449,7 @@ fun BarnDetailContent(
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(barn.barn.tags) { tag ->
+                            items(barn.barn.tags, key = { it }) { tag ->
                                 Surface(
                                     shape = RoundedCornerShape(10.dp),
                                     color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.85f),
@@ -474,10 +477,13 @@ fun BarnDetailContent(
                 }
             }
 
-            if (barn.barn.recentReviews.isNotEmpty()) {
-                item {
-                    BarnReviewsSection(reviews = barn.barn.recentReviews)
-                }
+            item {
+                BarnReviewsSection(
+                    reviews = barn.barn.recentReviews,
+                    barnId = barn.barn.id,
+                    barnName = barn.barn.name,
+                    onWriteReview = onWriteReview
+                )
             }
 
             item { Spacer(modifier = Modifier.height(32.dp)) }
@@ -779,7 +785,7 @@ fun BarnInstructorsSection(instructors: List<Instructor>) {
             )
             Spacer(modifier = Modifier.height(12.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                items(instructors) { instructor ->
+                items(instructors, key = { it.id }) { instructor ->
                     InstructorCard(instructor = instructor)
                 }
             }
@@ -871,7 +877,12 @@ fun InstructorCard(instructor: Instructor) {
 }
 
 @Composable
-fun BarnReviewsSection(reviews: List<BarnReview>) {
+fun BarnReviewsSection(
+    reviews: List<BarnReview>,
+    barnId: String = "",
+    barnName: String = "",
+    onWriteReview: (barnId: String, barnName: String) -> Unit = { _, _ -> }
+) {
     val semantic = LocalSemanticColors.current
     Surface(
         modifier = Modifier
@@ -886,20 +897,44 @@ fun BarnReviewsSection(reviews: List<BarnReview>) {
         )
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
-            Text(
-                text = stringResource(id = R.string.barn_detail_reviews),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                reviews.take(3).forEachIndexed { index, review ->
-                    BarnReviewItem(review = review)
-                    if (index < reviews.take(3).lastIndex) {
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-                            thickness = 1.dp
-                        )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(id = R.string.barn_detail_reviews),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                TextButton(
+                    onClick = { if (barnId.isNotBlank()) onWriteReview(barnId, barnName) }
+                ) {
+                    Text(
+                        text = stringResource(R.string.barn_detail_write_review),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            if (reviews.isEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.barn_detail_no_reviews),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Spacer(modifier = Modifier.height(12.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    reviews.take(3).forEachIndexed { index, review ->
+                        BarnReviewItem(review = review)
+                        if (index < reviews.take(3).lastIndex) {
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                                thickness = 1.dp
+                            )
+                        }
                     }
                 }
             }

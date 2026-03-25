@@ -59,11 +59,9 @@ fun ProfileScreen(
     onSettings: () -> Unit,
     onLogout: () -> Unit,
     onEditProfile: () -> Unit,
-    onMyHorses: () -> Unit = {},
     onNotifications: () -> Unit = {},
-    onHealthCalendar: () -> Unit = {},
+    onSchedule: () -> Unit = {},
     onChallenges: () -> Unit = {},
-    onAiCoach: () -> Unit = {},
     onTbfEvents: () -> Unit = {},
     onMyReviews: () -> Unit = {},
     onMyBarn: (barnId: String) -> Unit = {},
@@ -176,7 +174,7 @@ fun ProfileScreen(
             item {
                 HorsesMiniCard(
                     horses = state.myHorses,
-                    onSeeAll = onMyHorses
+                    onSeeAll = {}
                 )
             }
 
@@ -208,11 +206,9 @@ fun ProfileScreen(
                         viewModel.startEditSession(force = true)
                         onEditProfile()
                     },
-                    onMyHorses = onMyHorses,
                     onLogout = { viewModel.signOut(onLogout) },
-                    onHealthCalendar = onHealthCalendar,
+                    onSchedule = onSchedule,
                     onChallenges = onChallenges,
-                    onAiCoach = onAiCoach,
                     onTbfEvents = onTbfEvents,
                     onMyReviews = onMyReviews,
                     ownedBarnId = state.ownedBarnId,
@@ -280,7 +276,6 @@ private fun ProfileScreenPreview() {
             item {
                 ProfileActionsCard(
                     onEditProfile = {},
-                    onMyHorses = {},
                     onLogout = {}
                 )
             }

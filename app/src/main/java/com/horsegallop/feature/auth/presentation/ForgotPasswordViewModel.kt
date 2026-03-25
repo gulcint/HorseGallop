@@ -64,7 +64,7 @@ class ForgotPasswordViewModel @Inject constructor(
                 result.onSuccess {
                     _uiState.value = _uiState.value.copy(loading = false, success = true)
                 }.onFailure { e ->
-                    _uiState.value = _uiState.value.copy(loading = false, errorMessage = e.localizedMessage)
+                    _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_generic")
                 }
             }
         }
@@ -92,7 +92,7 @@ class ForgotPasswordViewModel @Inject constructor(
                  result.onSuccess {
                      _uiState.value = _uiState.value.copy(loading = false, resetSuccess = true)
                  }.onFailure { e ->
-                     _uiState.value = _uiState.value.copy(loading = false, errorMessage = e.localizedMessage)
+                     _uiState.value = _uiState.value.copy(loading = false, errorMessage = "auth_error_generic")
                  }
             }
         }

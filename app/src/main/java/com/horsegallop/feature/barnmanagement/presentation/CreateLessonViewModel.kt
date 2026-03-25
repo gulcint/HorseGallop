@@ -57,7 +57,7 @@ class CreateLessonViewModel @Inject constructor(
                     _ui.update { it.copy(isSubmitting = false, success = true) }
                 }
                 .onFailure { e ->
-                    _ui.update { it.copy(isSubmitting = false, error = e.message) }
+                    _ui.update { it.copy(isSubmitting = false, error = "Ders oluşturulamadı. Lütfen tekrar deneyin.") }
                 }
         }
     }

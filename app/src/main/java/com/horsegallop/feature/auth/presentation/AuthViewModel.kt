@@ -30,11 +30,19 @@ class AuthViewModel @Inject constructor(
                 repo.signInWithGoogleIdToken(idToken)
                 _uiState.value = AuthUiState.Success
             } catch (e: Exception) {
-                _uiState.value = AuthUiState.Error(e.message ?: "Google sign-in failed")
+                _uiState.value = AuthUiState.Error("Google ile giriş başarısız. Lütfen tekrar deneyin.")
             }
         }
     }
 
     fun isSignedIn(): Boolean = repo.isSignedIn()
-    fun signOut() = repo.signOut()
+    fun signOut() {
+        viewModelScope.launch {
+            try {
+                repo.signOut()
+            } catch (e: Exception) {
+                _uiState.value = AuthUiState.Error("Çıkış yapılamadı. Lütfen tekrar deneyin.")
+            }
+        }
+    }
 }

@@ -100,7 +100,7 @@ class TbfActivityViewModel @Inject constructor(
                 }
                 .onFailure { e ->
                     if (_uiState.value.currentMonth == requestedMonth) {
-                        _uiState.update { it.copy(isLoading = false, error = e.message ?: "Bilinmeyen hata") }
+                        _uiState.update { it.copy(isLoading = false, error = "Veriler yüklenemedi. Lütfen tekrar deneyin.") }
                     }
                 }
         }

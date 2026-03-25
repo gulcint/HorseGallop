@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(commit-commands:commit-push-pr)",
+      "Skill(commit-commands:commit-push-pr:*)",
+      "Bash(git rm:*)",
+      "Bash(ANON=\"sb_publishable_z86vAxxJCk-IZhNLWlkUuA_JifaT4sI\" BASE=\"https://mnhcyeofrsgoulhpvlfr.supabase.co\" __NEW_LINE_11c77977ef92fdfc__ echo \"=== Task 1: Public horse_breeds ===\" curl -s \"$BASE/rest/v1/horse_breeds?select=id,name_tr&limit=3\" -H \"apikey: $ANON\")",
+      "Bash(ANON=\"sb_publishable_z86vAxxJCk-IZhNLWlkUuA_JifaT4sI\" BASE=\"https://mnhcyeofrsgoulhpvlfr.supabase.co\" __NEW_LINE_0acb89ba3f232db6__ echo \"=== horse_breeds \\(düzeltilmiş\\) ===\" curl -s \"$BASE/rest/v1/horse_breeds?select=id,name_tr&limit=3\" -H \"apikey: $ANON\" -H \"Accept: application/json\")",
+      "Bash(ANON=\"sb_publishable_z86vAxxJCk-IZhNLWlkUuA_JifaT4sI\" BASE=\"https://mnhcyeofrsgoulhpvlfr.supabase.co\" __NEW_LINE_5d4902ac3cc0c84c__ echo \"=== challenges \\(doğru kolon\\) ===\" curl -s \"$BASE/rest/v1/challenges?select=id,title_en&limit=3\" -H \"apikey: $ANON\" -H \"Accept: application/json\")",
+      "Bash(~/bin/supabase --version)",
+      "Bash(~/bin/supabase projects:*)",
+      "Bash(~/bin/supabase db:*)",
+      "Bash(/dev/null ls:*)",
+      "Bash(~/bin/supabase config:*)"
+    ]
+  }
+}

@@ -7,14 +7,11 @@ import com.horsegallop.domain.auth.AuthRepository
 import com.horsegallop.domain.auth.model.UserProfile
 import com.horsegallop.domain.model.User
 import com.horsegallop.domain.model.UserRole
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * Supabase-backed implementation of [AuthRepository].
  * Supabase-backed implementation of [AuthRepository].
  * Handles email/password auth, Google OAuth (native token exchange), and user profile management.
  *
@@ -36,11 +33,8 @@ class SupabaseAuthRepositoryImpl @Inject constructor(
 
     override fun isSignedIn(): Boolean = authDataSource.isSignedIn()
 
-    @Suppress("OPT_IN_USAGE")
-    override fun signOut() {
-        GlobalScope.launch {
-            authDataSource.signOut()
-        }
+    override suspend fun signOut() {
+        authDataSource.signOut()
     }
 
     override fun getCurrentUserId(): String? = authDataSource.getCurrentUserId()
@@ -101,9 +95,11 @@ class SupabaseAuthRepositoryImpl @Inject constructor(
     }
 
     override fun resendVerificationEmail(email: String?, password: String?): Flow<Result<Unit>> = flow {
-        // Supabase handles email confirmation automatically on signUp.
-        // Resend is triggered via auth.resendEmail() — implement in Sprint 3 if needed.
-        emit(Result.success(Unit))
+        if (email.isNullOrBlank()) {
+            emit(Result.failure(IllegalArgumentException("Email is required to resend verification")))
+            return@flow
+        }
+        emit(authDataSource.resendVerificationEmail(email))
     }
 
     override fun checkEmailVerified(): Flow<Result<Boolean>> = flow {

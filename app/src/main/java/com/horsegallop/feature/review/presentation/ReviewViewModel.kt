@@ -49,7 +49,7 @@ class ReviewViewModel @Inject constructor(
                     loadMyReviews()
                 }
                 .onFailure { e ->
-                    _uiState.value = _uiState.value.copy(submitting = false, submitError = e.localizedMessage ?: "Değerlendirme gönderilemedi")
+                    _uiState.value = _uiState.value.copy(submitting = false, submitError = "Değerlendirme gönderilemedi. Lütfen tekrar deneyin.")
                 }
         }
     }

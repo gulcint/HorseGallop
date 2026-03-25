@@ -21,10 +21,7 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -185,9 +182,13 @@ class SupabaseDataSource @Inject constructor(
     }
 
     suspend fun cancelReservation(reservationId: String) {
+        val uid = currentUserId() ?: error("Not authenticated")
         supabase.from("reservations")
             .update(mapOf("status" to "cancelled")) {
-                filter { eq("id", reservationId) }
+                filter {
+                    eq("id", reservationId)
+                    eq("user_id", uid) // defense-in-depth: RLS'ye ek olarak client tarafı kontrol
+                }
             }
     }
 
@@ -447,32 +448,6 @@ class SupabaseDataSource @Inject constructor(
             .decodeList()
     }
 
-    // ─── AI COACH ────────────────────────────────────────────
-
-    suspend fun askAiCoach(
-        question: String,
-        history: List<SupabaseAiCoachMessageDto>
-    ): SupabaseAiCoachResponseDto {
-        val userId = currentUserId() ?: return SupabaseAiCoachResponseDto(answer = "")
-        val body = buildJsonObject {
-            put("message", question)
-            put("userId", userId)
-            put("conversationHistory", buildJsonArray {
-                history.forEach { msg ->
-                    add(buildJsonObject {
-                        put("role", msg.role)
-                        put("content", msg.text)
-                    })
-                }
-            })
-        }
-        val response = supabase.functions.invoke(function = "ai-coach", body = body)
-        val json = Json.decodeFromString<JsonObject>(response.bodyAsText())
-        val reply = json["reply"]?.jsonPrimitive?.content
-            ?: throw Exception("No reply from AI coach")
-        return SupabaseAiCoachResponseDto(answer = reply)
-    }
-
     // ─── TBF (Turkey Equestrian Federation) ──────────────────
 
     suspend fun getTbfEventDays(date: String? = null, type: String = "classic"): List<SupabaseTbfEventDto> {
@@ -547,11 +522,14 @@ class SupabaseDataSource @Inject constructor(
             table = "notifications"
             filter("user_id", FilterOperator.EQ, userId)
         }
-        channel.subscribe()
-
-        emitAll(changeFlow.map {
-            getNotifications(userId).getOrDefault(emptyList())
-        })
+        try {
+            channel.subscribe()
+            emitAll(changeFlow.map {
+                getNotifications(userId).getOrDefault(emptyList())
+            })
+        } finally {
+            channel.unsubscribe()
+        }
     }
 
     // ─── TBF ACTIVITY CALENDAR ───────────────────────────────

@@ -73,7 +73,7 @@ class TbfViewModel @Inject constructor(
                     }
                 }
                 .onFailure { e ->
-                    _ui.update { it.copy(isLoading = false, error = e.message) }
+                    _ui.update { it.copy(isLoading = false, error = "Veriler yüklenemedi. Lütfen tekrar deneyin.") }
                 }
         }
     }
@@ -97,7 +97,7 @@ class TbfViewModel @Inject constructor(
                     _ui.update { it.copy(isLoadingCard = false, eventCard = card) }
                 }
                 .onFailure { e ->
-                    _ui.update { it.copy(isLoadingCard = false, error = e.message) }
+                    _ui.update { it.copy(isLoadingCard = false, error = "Veriler yüklenemedi. Lütfen tekrar deneyin.") }
                 }
         }
     }

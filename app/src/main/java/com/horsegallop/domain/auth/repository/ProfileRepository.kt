@@ -9,5 +9,5 @@ interface ProfileRepository {
     fun updateUserProfile(uid: String, profile: UserProfile): Flow<Result<Unit>>
     fun updateProfileImage(uid: String, uri: Uri): Flow<Result<String>>
     fun deleteAccount(): Flow<Result<Unit>>
-    fun signOut()
+    suspend fun signOut()
 }

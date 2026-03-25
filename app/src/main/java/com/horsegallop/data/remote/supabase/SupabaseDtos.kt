@@ -336,19 +336,6 @@ data class SupabaseStudentRosterEntryDto(
     @SerialName("booked_at_ms") val bookedAtMs: Long = 0L
 )
 
-// ─── AI COACH ────────────────────────────────────────────────
-
-@Serializable
-data class SupabaseAiCoachMessageDto(
-    val role: String,
-    val text: String
-)
-
-@Serializable
-data class SupabaseAiCoachResponseDto(
-    val answer: String = ""
-)
-
 // ─── TBF ─────────────────────────────────────────────────────
 
 @Serializable

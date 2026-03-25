@@ -40,7 +40,7 @@ class HorseViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(loading = false, horses = horses)
                 }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(loading = false, error = e.localizedMessage)
+                _uiState.value = _uiState.value.copy(loading = false, error = "Atlar yüklenemedi. Lütfen tekrar deneyin.")
             }
         }
     }
@@ -72,9 +72,8 @@ class HorseViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(saving = false, savedSuccess = true)
                     loadHorses()
                 }
-                .onFailure { e ->
-                    val msg = e.localizedMessage ?: "At eklenemedi. Lütfen tekrar deneyin."
-                    _uiState.value = _uiState.value.copy(saving = false, saveError = msg)
+                .onFailure {
+                    _uiState.value = _uiState.value.copy(saving = false, saveError = "At eklenemedi. Lütfen tekrar deneyin.")
                 }
         }
     }

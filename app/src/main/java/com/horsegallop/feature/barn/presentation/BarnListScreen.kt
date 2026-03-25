@@ -125,7 +125,7 @@ fun BarnListScreen(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.fillMaxWidth()
           ) {
-            items(uiState.availableFilters) { filterKey ->
+            items(uiState.availableFilters, key = { it }) { filterKey ->
               val selected: Boolean = uiState.selectedFilters.contains(filterKey)
               val label = getFilterLabel(filterKey)
               Surface(
@@ -305,7 +305,7 @@ fun BarnListScreen(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp, top = 8.dp)
             ) {
-                items(uiState.filteredBarns) { barnWithLocation ->
+                items(uiState.filteredBarns, key = { it.barn.id }) { barnWithLocation ->
                     BarnCard(
                         barn = barnWithLocation.barn,
                         distanceKm = barnWithLocation.distanceKm.takeIf { it < Double.MAX_VALUE },
@@ -738,7 +738,7 @@ fun BarnCard(barn: BarnUi, distanceKm: Double? = null, onClick: () -> Unit, onFa
             if (barn.tags.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    items(barn.tags) { tag ->
+                    items(barn.tags, key = { it }) { tag ->
                         Surface(
                             shape = RoundedCornerShape(12.dp),
                             color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.82f),

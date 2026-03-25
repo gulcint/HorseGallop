@@ -144,7 +144,7 @@ fun BarnsMapViewScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(horizontal = 4.dp)
             ) {
-                items(filters) { (label, key) ->
+                items(filters, key = { it.second }) { (label, key) ->
                     val isSelected = uiState.selectedFilters.contains(key)
                     FilterChip(
                         selected = isSelected,
@@ -242,7 +242,7 @@ fun BarnsMapViewScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(barns.take(10)) { barnWithLocation ->
+                    items(barns.take(10), key = { it.barn.id }) { barnWithLocation ->
                         BarnListItemHorizontal(
                             barn = barnWithLocation.barn,
                             onClick = { navController.navigate("barnDetail/${barnWithLocation.barn.id}") }
@@ -286,7 +286,7 @@ fun BarnsMapViewScreen(
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(coordinateLessBarns.take(8)) { barnWithLocation ->
+                        items(coordinateLessBarns.take(8), key = { it.barn.id }) { barnWithLocation ->
                             BarnListItemHorizontal(
                                 barn = barnWithLocation.barn,
                                 onClick = { navController.navigate("barnDetail/${barnWithLocation.barn.id}") }

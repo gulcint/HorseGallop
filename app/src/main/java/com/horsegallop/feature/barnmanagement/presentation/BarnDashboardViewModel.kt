@@ -53,8 +53,8 @@ class BarnDashboardViewModel @Inject constructor(
                     loading = false,
                     stats = statsResult.getOrNull(),
                     lessons = lessonsResult.getOrElse { emptyList() },
-                    error = statsResult.exceptionOrNull()?.message
-                        ?: lessonsResult.exceptionOrNull()?.message
+                    error = if (statsResult.isFailure || lessonsResult.isFailure)
+                        "Veriler yüklenemedi. Lütfen tekrar deneyin." else null
                 )
             }
         }
@@ -75,7 +75,7 @@ class BarnDashboardViewModel @Inject constructor(
                     }
                 }
                 .onFailure { e ->
-                    _ui.update { it.copy(cancellingLessonId = null, error = e.message) }
+                    _ui.update { it.copy(cancellingLessonId = null, error = "Ders iptal edilemedi. Lütfen tekrar deneyin.") }
                 }
         }
     }

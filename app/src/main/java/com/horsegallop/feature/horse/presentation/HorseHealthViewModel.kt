@@ -47,7 +47,7 @@ class HorseHealthViewModel @Inject constructor(
         viewModelScope.launch {
             getHorseHealthEventsUseCase(horseId)
                 .onSuccess { events -> updateEvents(events) }
-                .onFailure { e -> _ui.update { it.copy(isLoading = false, error = e.localizedMessage) } }
+                .onFailure { e -> _ui.update { it.copy(isLoading = false, error = "İşlem gerçekleştirilemedi. Lütfen tekrar deneyin.") } }
         }
     }
 
@@ -62,7 +62,7 @@ class HorseHealthViewModel @Inject constructor(
                     _ui.update { it.copy(isSaving = false) }
                 }
                 .onFailure { e ->
-                    _ui.update { it.copy(isSaving = false, error = e.localizedMessage) }
+                    _ui.update { it.copy(isSaving = false, error = "İşlem gerçekleştirilemedi. Lütfen tekrar deneyin.") }
                 }
         }
     }
@@ -75,7 +75,7 @@ class HorseHealthViewModel @Inject constructor(
                     updateEvents(updated)
                 }
                 .onFailure { e ->
-                    _ui.update { it.copy(error = e.localizedMessage) }
+                    _ui.update { it.copy(error = "İşlem gerçekleştirilemedi. Lütfen tekrar deneyin.") }
                 }
         }
     }

@@ -42,7 +42,7 @@ class LessonRosterViewModel @Inject constructor(
                     _ui.update { it.copy(loading = false, roster = roster) }
                 }
                 .onFailure { e ->
-                    _ui.update { it.copy(loading = false, error = e.message) }
+                    _ui.update { it.copy(loading = false, error = "Katılımcılar yüklenemedi. Lütfen tekrar deneyin.") }
                 }
         }
     }

@@ -58,6 +58,7 @@ fun WriteReviewScreen(
     val titleRes = when (targetType) {
         ReviewTargetType.LESSON -> R.string.review_title_lesson
         ReviewTargetType.INSTRUCTOR -> R.string.review_title_instructor
+        ReviewTargetType.BARN -> R.string.review_title_barn
     }
     var rating by remember { mutableIntStateOf(0) }
     var comment by remember { mutableStateOf("") }

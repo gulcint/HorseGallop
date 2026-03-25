@@ -65,6 +65,7 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.airbnb.lottie.LottieComposition
+import androidx.compose.ui.layout.ContentScale
 import com.horsegallop.R
 import com.horsegallop.ui.theme.LocalSemanticColors
 import com.horsegallop.ui.theme.SemanticColors
@@ -320,15 +321,7 @@ private fun OnboardingPageContentAnimated(
             modifier = Modifier
                 .size(200.dp)
                 .clip(RoundedCornerShape(34.dp))
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
-                            MaterialTheme.colorScheme.secondary.copy(alpha = 0.10f),
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
-                        )
-                    )
-                ),
+                .background(Color.Transparent),
             contentAlignment = Alignment.Center
         ) {
             HorseLottieAnimation(
@@ -394,7 +387,8 @@ private fun HorseLottieAnimation(
         LottieAnimation(
             composition = composition,
             progress = { progress },
-            modifier = modifier
+            modifier = modifier,
+            contentScale = ContentScale.Fit
         )
     }
 }

@@ -80,6 +80,8 @@ class EquestrianAgendaViewModel @Inject constructor(
         loadSourceHealth()
         loadAnnouncements()
         loadCompetitions()
+        // Automatically sync federation announcements from binicilik.org.tr (background, non-blocking)
+        triggerSync(force = false)
     }
 
     fun showAnnouncementPreview(item: EquestrianAnnouncement) {
@@ -127,7 +129,7 @@ class EquestrianAgendaViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isTriggeringSync = false,
-                            syncStatusError = error.localizedMessage,
+                            syncStatusError = "Veriler yüklenemedi. Lütfen tekrar deneyin.",
                             syncActionMessage = null
                         )
                     }
@@ -151,7 +153,7 @@ class EquestrianAgendaViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoadingSyncStatus = false,
-                            syncStatusError = error.localizedMessage
+                            syncStatusError = "Veriler yüklenemedi. Lütfen tekrar deneyin."
                         )
                     }
                 }
@@ -174,7 +176,7 @@ class EquestrianAgendaViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoadingSourceHealth = false,
-                            sourceHealthError = error.localizedMessage
+                            sourceHealthError = "Veriler yüklenemedi. Lütfen tekrar deneyin."
                         )
                     }
                 }
@@ -189,7 +191,7 @@ class EquestrianAgendaViewModel @Inject constructor(
                     _uiState.update { it.copy(isLoadingAnnouncements = false, announcements = items) }
                 }
                 .onFailure { error ->
-                    _uiState.update { it.copy(isLoadingAnnouncements = false, announcementsError = error.localizedMessage) }
+                    _uiState.update { it.copy(isLoadingAnnouncements = false, announcementsError = "Veriler yüklenemedi. Lütfen tekrar deneyin.") }
                 }
         }
     }
@@ -202,7 +204,7 @@ class EquestrianAgendaViewModel @Inject constructor(
                     _uiState.update { it.copy(isLoadingCompetitions = false, competitions = items) }
                 }
                 .onFailure { error ->
-                    _uiState.update { it.copy(isLoadingCompetitions = false, competitionsError = error.localizedMessage) }
+                    _uiState.update { it.copy(isLoadingCompetitions = false, competitionsError = "Veriler yüklenemedi. Lütfen tekrar deneyin.") }
                 }
         }
     }

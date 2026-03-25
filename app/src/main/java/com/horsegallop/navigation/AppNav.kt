@@ -5,14 +5,13 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Navigation
+import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Directions
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.House
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -61,7 +60,6 @@ import com.horsegallop.feature.ride.presentation.RideTrackingViewModel
 import com.horsegallop.feature.ride.presentation.RideDetailScreen
 import com.horsegallop.feature.equestrian.presentation.EquestrianAgendaScreen
 import com.horsegallop.feature.challenge.presentation.ChallengeScreen
-import com.horsegallop.feature.aicoach.presentation.AiCoachScreen
 import com.horsegallop.feature.equestrian.presentation.EquestrianAgendaTab
 import com.horsegallop.feature.tbf.presentation.TbfEventDetailScreen
 import com.horsegallop.feature.barnmanagement.presentation.BarnDashboardScreen
@@ -88,6 +86,7 @@ sealed class Dest(val route: String) {
   object ProfileEdit : Dest("profile/edit")
   object Settings : Dest("settings")
   object MyReservations : Dest("myReservations")
+  object Horses : Dest("horses")
   object MyHorses : Dest("myHorses")
   object AddHorse : Dest("addHorse")
   object WriteReview : Dest("writeReview/{targetId}/{targetType}/{targetName}") {
@@ -122,7 +121,6 @@ sealed class Dest(val route: String) {
     fun route(lessonId: String) = "lesson_roster/$lessonId"
   }
   object MyReviews : Dest("my_reviews")
-  object AiCoach : Dest("ai_coach")
   object TbfEvents : Dest("tbf_events")
   object TbfEventDetail : Dest("tbf_event_detail/{venueCode}/{eventIndex}") {
     fun route(code: String, index: Int) = "tbf_event_detail/$code/$index"
@@ -141,8 +139,8 @@ fun AppNavHost(
   val showBottomBar = currentRoute in listOf(
     Dest.Home.route,
     Dest.Barns.route,
+    Dest.Horses.route,
     Dest.Ride.route,
-    Dest.Schedule.route,
     Dest.Profile.route
   )
   val ctx = androidx.compose.ui.platform.LocalContext.current
@@ -194,8 +192,21 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(Icons.Filled.House, null) },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.Storefront, null) },
               label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_barns)) },
+              colors = itemColors,
+              alwaysShowLabel = true
+            )
+            NavigationBarItem(
+              selected = currentRoute == Dest.Horses.route,
+              onClick = {
+                navController.navigate(Dest.Horses.route) {
+                  popUpTo(navController.graph.findStartDestination().id)
+                  launchSingleTop = true
+                }
+              },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.Pets, null) },
+              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_horses)) },
               colors = itemColors,
               alwaysShowLabel = true
             )
@@ -207,21 +218,8 @@ fun AppNavHost(
                   launchSingleTop = true
                 }
               },
-              icon = { androidx.compose.material3.Icon(Icons.Filled.Pets, null) },
+              icon = { androidx.compose.material3.Icon(Icons.Filled.Directions, null) },
               label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_ride)) },
-              colors = itemColors,
-              alwaysShowLabel = true
-            )
-            NavigationBarItem(
-              selected = currentRoute == Dest.Schedule.route,
-              onClick = {
-                navController.navigate(Dest.Schedule.route) {
-                  popUpTo(navController.graph.findStartDestination().id)
-                  launchSingleTop = true
-                }
-              },
-              icon = { androidx.compose.material3.Icon(Icons.AutoMirrored.Filled.List, null) },
-              label = { androidx.compose.material3.Text(text = stringResource(com.horsegallop.R.string.nav_schedule)) },
               colors = itemColors,
               alwaysShowLabel = true
             )
@@ -359,11 +357,9 @@ fun AppNavHost(
         onBack = { navController.popBackStack() },
         onSettings = { navController.navigate(Dest.Settings.route) },
         onEditProfile = { navController.navigate(Dest.ProfileEdit.route) },
-        onMyHorses = { navController.navigate(Dest.MyHorses.route) },
         onNotifications = { navController.navigate(Dest.Notifications.route) },
-        onHealthCalendar = { navController.navigate(Dest.HealthCalendar.route) },
+        onSchedule = { navController.navigate(Dest.Schedule.route) },
         onChallenges = { navController.navigate(Dest.Challenges.route) },
-        onAiCoach = { navController.navigate(Dest.AiCoach.route) },
         onTbfEvents = { navController.navigate(Dest.TbfEvents.route) },
         onMyReviews = { navController.navigate(Dest.MyReviews.route) },
         onMyBarn = { barnId ->
@@ -431,6 +427,18 @@ fun AppNavHost(
         }
       )
     }
+    composable(Dest.Horses.route) {
+      val activity = LocalContext.current as? Activity
+      BackHandler { if (!navController.popBackStack()) activity?.finish() }
+      HorseListScreen(
+        onAddHorse = { navController.navigate(Dest.AddHorse.route) },
+        onBack = { navController.popBackStack() },
+        onHorseHealthClick = { horseId, horseName ->
+          navController.navigate(Dest.HorseHealth.route(horseId, horseName))
+        },
+        onHealthCalendar = { navController.navigate(Dest.HealthCalendar.route) }
+      )
+    }
     composable(Dest.MyHorses.route) {
       BackHandler { navController.popBackStack() }
       HorseListScreen(
@@ -438,7 +446,8 @@ fun AppNavHost(
         onBack = { navController.popBackStack() },
         onHorseHealthClick = { horseId, horseName ->
           navController.navigate(Dest.HorseHealth.route(horseId, horseName))
-        }
+        },
+        onHealthCalendar = { navController.navigate(Dest.HealthCalendar.route) }
       )
     }
     composable(Dest.AddHorse.route) {
@@ -471,8 +480,11 @@ fun AppNavHost(
     ) { backStackEntry ->
       BackHandler { navController.popBackStack() }
       val targetId = backStackEntry.arguments?.getString("targetId") ?: ""
-      val targetType = if (backStackEntry.arguments?.getString("targetType") == "instructor")
-        ReviewTargetType.INSTRUCTOR else ReviewTargetType.LESSON
+      val targetType = when (backStackEntry.arguments?.getString("targetType")) {
+        "instructor" -> ReviewTargetType.INSTRUCTOR
+        "barn" -> ReviewTargetType.BARN
+        else -> ReviewTargetType.LESSON
+      }
       val targetName = android.net.Uri.decode(backStackEntry.arguments?.getString("targetName") ?: "")
       WriteReviewScreen(
         targetId = targetId,
@@ -500,6 +512,9 @@ fun AppNavHost(
         onBack = { navController.popBackStack() },
         onManageBarn = { barnId ->
           navController.navigate(Dest.BarnDashboard.route(barnId))
+        },
+        onWriteReview = { barnId, barnName ->
+          navController.navigate(Dest.WriteReview.route(barnId, "barn", barnName))
         }
       )
     }
@@ -608,10 +623,6 @@ fun AppNavHost(
       LessonRosterScreen(
         onBack = { navController.popBackStack() }
       )
-    }
-    composable(Dest.AiCoach.route) {
-      BackHandler { navController.popBackStack() }
-      AiCoachScreen(onBack = { navController.popBackStack() })
     }
     composable(Dest.MyReviews.route) {
       BackHandler { navController.popBackStack() }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -386,7 +387,7 @@ private fun RecentActivitySection(
               subtitle = stringResource(id = R.string.activity_subtitle_format, activity.dateLabel, activity.timeLabel),
               duration = stringResource(id = R.string.activity_duration_minutes, activity.durationMin),
               distance = stringResource(id = R.string.activity_distance_km, activity.distanceKm),
-              icon = Icons.AutoMirrored.Filled.DirectionsRun,
+              icon = painterResource(R.drawable.ic_riding),
               onClick = {
                 if (activity.id.isNotBlank()) {
                   onOpenRideDetail(activity.id)

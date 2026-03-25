@@ -43,7 +43,7 @@ class ChallengeViewModel @Inject constructor(
     private fun loadChallenges(userId: String) {
         viewModelScope.launch {
             getActiveChallengesUseCase(userId)
-                .catch { e -> _ui.update { it.copy(loadingChallenges = false, error = e.message ?: "Hata oluştu") } }
+                .catch { e -> _ui.update { it.copy(loadingChallenges = false, error = "Veriler yüklenemedi. Lütfen tekrar deneyin.") } }
                 .collect { challenges ->
                     _ui.update { it.copy(loadingChallenges = false, challenges = challenges) }
                 }
@@ -53,7 +53,7 @@ class ChallengeViewModel @Inject constructor(
     private fun loadBadges(userId: String) {
         viewModelScope.launch {
             getEarnedBadgesUseCase(userId)
-                .catch { e -> _ui.update { it.copy(loadingBadges = false, error = e.message ?: "Hata oluştu") } }
+                .catch { e -> _ui.update { it.copy(loadingBadges = false, error = "Veriler yüklenemedi. Lütfen tekrar deneyin.") } }
                 .collect { badges ->
                     _ui.update { it.copy(loadingBadges = false, badges = badges) }
                 }

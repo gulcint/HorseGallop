@@ -47,7 +47,7 @@ class ScheduleViewModel @Inject constructor(
                     loading = false,
                     lessons = emptyList(),
                     isEmpty = true,
-                    error = e.localizedMessage ?: ERROR_LOAD_LESSONS
+                    error = ERROR_LOAD_LESSONS
                 )
             }
         }
@@ -62,7 +62,7 @@ class ScheduleViewModel @Inject constructor(
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     reservations = emptyList(),
-                    error = e.localizedMessage ?: ERROR_LOAD_RESERVATIONS
+                    error = ERROR_LOAD_RESERVATIONS
                 )
             }
         }
@@ -83,7 +83,7 @@ class ScheduleViewModel @Inject constructor(
                 .onFailure { e ->
                     _uiState.value = _uiState.value.copy(
                         bookingInProgress = false,
-                        bookingError = e.localizedMessage ?: ERROR_BOOKING_FAILED
+                        bookingError = ERROR_BOOKING_FAILED
                     )
                 }
         }

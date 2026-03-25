@@ -3,6 +3,7 @@ package com.horsegallop.feature.ride.presentation
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +24,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Straighten
@@ -42,7 +45,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -107,12 +112,14 @@ fun RideDetailScreen(
     ) { padding ->
         when {
             ride != null -> {
+                var isAdvancedMetricsExpanded by remember { mutableStateOf(false) }
+
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
                         .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {
                         RideDetailHeroCard(ride = ride)
@@ -120,8 +127,19 @@ fun RideDetailScreen(
                     item {
                         RideDetailMapCard(ride = ride)
                     }
+                    // Gait breakdown (if speed data exists)
+                    if (ride.pathPoints.isNotEmpty() && ride.pathPoints.any { it.speedKmh > 0f }) {
+                        item {
+                            GaitBreakdownCard(ride = ride)
+                        }
+                    }
+                    // Advanced metrics (collapsible)
                     item {
-                        RideStatsCard(ride = ride)
+                        AdvancedMetricsCard(
+                            ride = ride,
+                            isExpanded = isAdvancedMetricsExpanded,
+                            onToggleExpand = { isAdvancedMetricsExpanded = it }
+                        )
                     }
                     if (ride.pathPoints.any { it.altitudeM != 0f }) {
                         item {
@@ -200,9 +218,10 @@ private fun RideDetailHeroCard(ride: RideSession) {
                         )
                     )
                 )
-                .padding(16.dp)
+                .padding(horizontal = 24.dp, vertical = 24.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                // Date header
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         Icons.Default.CalendarToday,
@@ -217,18 +236,82 @@ private fun RideDetailHeroCard(ride: RideSession) {
                         fontWeight = FontWeight.SemiBold
                     )
                 }
+
+                // Title
                 Text(
                     text = stringResource(R.string.ride_details_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
-                Text(
-                    text = "${String.format(Locale.getDefault(), "%.2f", ride.distanceKm)} ${stringResource(R.string.unit_km)} • ${formatDuration(ride.durationSec)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+
+                // Three primary metrics
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    PrimaryMetricItem(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Straighten,
+                        value = String.format(Locale.getDefault(), "%.2f", ride.distanceKm),
+                        unit = stringResource(R.string.unit_km),
+                        label = stringResource(R.string.stat_distance)
+                    )
+                    PrimaryMetricItem(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.AccessTime,
+                        value = formatDuration(ride.durationSec),
+                        unit = "",
+                        label = stringResource(R.string.stat_duration)
+                    )
+                    PrimaryMetricItem(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Speed,
+                        value = String.format(Locale.getDefault(), "%.1f", ride.avgSpeedKmh),
+                        unit = stringResource(R.string.unit_kmh),
+                        label = stringResource(R.string.ride_avg_speed)
+                    )
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun PrimaryMetricItem(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    value: String,
+    unit: String,
+    label: String
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+        if (unit.isNotBlank()) {
+            Text(
+                text = unit,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
@@ -247,6 +330,104 @@ private fun RideDetailMapCard(ride: RideSession) {
                 .clip(RoundedCornerShape(22.dp))
         ) {
             RideDetailMap(ride.pathPoints)
+        }
+    }
+}
+
+@Composable
+private fun GaitBreakdownCard(ride: RideSession) {
+    val semantic = LocalSemanticColors.current
+    val total = ride.pathPoints.size.toFloat()
+    val walkPct = (ride.pathPoints.count { gaitOf(it.speedKmh) == "walk" } / total * 100).toInt()
+    val trotPct = (ride.pathPoints.count { gaitOf(it.speedKmh) == "trot" } / total * 100).toInt()
+    val canterPct = (ride.pathPoints.count { gaitOf(it.speedKmh) == "canter" } / total * 100).toInt()
+
+    Card(
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+        border = BorderStroke(1.dp, semantic.cardStroke)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.gait_distribution),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                GaitBar(modifier = Modifier.weight(1f), color = semantic.gaitWalk, label = stringResource(R.string.gait_walk), pct = walkPct)
+                GaitBar(modifier = Modifier.weight(1f), color = semantic.gaitTrot, label = stringResource(R.string.gait_trot), pct = trotPct)
+                GaitBar(modifier = Modifier.weight(1f), color = semantic.gaitCanter, label = stringResource(R.string.gait_canter), pct = canterPct)
+            }
+        }
+    }
+}
+
+@Composable
+private fun AdvancedMetricsCard(
+    ride: RideSession,
+    isExpanded: Boolean,
+    onToggleExpand: (Boolean) -> Unit
+) {
+    val semantic = LocalSemanticColors.current
+
+    Card(
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = semantic.cardElevated),
+        border = BorderStroke(1.dp, semantic.cardStroke),
+        modifier = Modifier.clickable { onToggleExpand(!isExpanded) }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.ride_stats_subtitle),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Icon(
+                    if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            if (isExpanded) {
+                HorizontalDivider(color = semantic.cardStroke)
+
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    RideStatItem(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.AutoMirrored.Filled.TrendingUp,
+                        value = String.format(Locale.getDefault(), "%.1f", ride.maxSpeedKmh),
+                        unit = stringResource(R.string.unit_kmh),
+                        label = stringResource(R.string.ride_max_speed)
+                    )
+                    RideStatItem(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.LocalFireDepartment,
+                        value = ride.calories.toString(),
+                        unit = stringResource(R.string.unit_kcal),
+                        label = stringResource(R.string.label_energy)
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
         }
     }
 }

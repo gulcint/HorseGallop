@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -137,7 +138,7 @@ fun ActivityItem(
     subtitle: String,
     duration: String,
     distance: String,
-    icon: ImageVector,
+    icon: Painter,
     color: Color = MaterialTheme.colorScheme.primary,
     onClick: (() -> Unit)? = null
 ) {

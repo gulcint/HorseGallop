@@ -82,6 +82,7 @@
     <string name="logout">Çıkış yap</string>
     <string name="nav_home">Ana Sayfa</string>
     <string name="nav_barns">Ahırlar</string>
+    <string name="nav_horses">Atlarım</string>
     <string name="nav_ride">Sürüş</string>
     <string name="nav_schedule">Program</string>
     <string name="nav_profile">Profil</string>
@@ -697,14 +698,6 @@
     <string name="barn_level_intermediate">Orta</string>
     <string name="barn_level_advanced">İleri</string>
 
-    <!-- AI Coach -->
-    <string name="ai_coach_title">AI Koç</string>
-    <string name="ai_coach_input_placeholder">Atınız hakkında sorun...</string>
-    <string name="ai_coach_thinking">Düşünüyor...</string>
-    <string name="ai_coach_send">Gönder</string>
-    <string name="ai_coach_error">Yanıt alınamadı. Lütfen tekrar deneyin.</string>
-    <string name="ai_coach_context_hint">Son sürüş verileri baz alınıyor</string>
-
     <!-- TBF Etkinlikler -->
     <string name="tbf_events_title">TBF Yarışmaları</string>
     <string name="tbf_program_tab">Program</string>
@@ -727,6 +720,10 @@
     <string name="review_screen_title">Değerlendirme Yaz</string>
     <string name="review_title_lesson">Ders Değerlendirmesi</string>
     <string name="review_title_instructor">Eğitmen Değerlendirmesi</string>
+    <string name="review_title_barn">Çiftlik Değerlendirmesi</string>
+    <string name="barn_detail_write_review">Değerlendirme Yaz</string>
+    <string name="barn_detail_no_reviews">Henüz değerlendirme yapılmamış. İlk siz olun!</string>
+    <string name="barn_detail_reviews_all">Tüm Değerlendirmeler</string>
     <string name="review_type_instructor">Eğitmen değerlendirmesi</string>
     <string name="review_type_lesson">Ders değerlendirmesi</string>
     <string name="review_your_rating">Puanınız *</string>
@@ -748,8 +745,8 @@
     <string name="profile_stat_rating">puan</string>
     <string name="profile_action_my_horses">Atlarım</string>
     <string name="profile_action_health_calendar">Sağlık Takvimi</string>
+    <string name="profile_action_schedule">Program</string>
     <string name="profile_action_challenges">Meydan Okumalar</string>
-    <string name="profile_action_ai_coach">AI Koç</string>
     <string name="profile_action_tbf">At Sporları Haberleri</string>
     <string name="profile_section_explore">Keşfet</string>
     <string name="profile_action_settings">Ayarlar</string>

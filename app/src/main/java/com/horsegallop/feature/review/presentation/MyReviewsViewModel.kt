@@ -34,7 +34,7 @@ class MyReviewsViewModel @Inject constructor(
                 _uiState.update { it.copy(isLoading = false, reviews = reviews) }
             }
             .catch { e ->
-                _uiState.update { it.copy(isLoading = false, error = e.message) }
+                _uiState.update { it.copy(isLoading = false, error = "Değerlendirmeler yüklenemedi. Lütfen tekrar deneyin.") }
             }
             .launchIn(viewModelScope)
     }

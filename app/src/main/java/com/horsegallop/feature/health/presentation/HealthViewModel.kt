@@ -82,25 +82,39 @@ class HealthViewModel @Inject constructor(
         viewModelScope.launch {
             saveHealthEventUseCase(event)
                 .onSuccess { _ui.update { it.copy(isSaving = false) } }
-                .onFailure { e -> _ui.update { it.copy(isSaving = false, error = e.localizedMessage) } }
+                .onFailure { e -> _ui.update { it.copy(isSaving = false, error = "İşlem gerçekleştirilemedi. Lütfen tekrar deneyin.") } }
         }
     }
 
     fun markCompleted(event: HealthEvent) {
-        viewModelScope.launch {
-            val updated = event.copy(
-                isCompleted = true,
-                completedDate = System.currentTimeMillis()
+        val completed = event.copy(
+            isCompleted = true,
+            completedDate = System.currentTimeMillis()
+        )
+        // Optimistic update — anında "Tamamlandı" bölümüne taşı
+        _ui.update { state ->
+            state.copy(
+                events = state.events.map { e -> if (e.id == event.id) completed else e }
             )
-            saveHealthEventUseCase(updated)
-                .onFailure { e -> _ui.update { it.copy(error = e.localizedMessage) } }
+        }
+        viewModelScope.launch {
+            saveHealthEventUseCase(completed)
+                .onFailure { e ->
+                    // Supabase yazma başarısız → geri al ve hata göster
+                    _ui.update { state ->
+                        state.copy(
+                            events = state.events.map { e -> if (e.id == event.id) event else e },
+                            error = "İşlem gerçekleştirilemedi. Lütfen tekrar deneyin."
+                        )
+                    }
+                }
         }
     }
 
     fun delete(eventId: String) {
         viewModelScope.launch {
             deleteHealthEventUseCase(eventId)
-                .onFailure { e -> _ui.update { it.copy(error = e.localizedMessage) } }
+                .onFailure { e -> _ui.update { it.copy(error = "İşlem gerçekleştirilemedi. Lütfen tekrar deneyin.") } }
         }
     }
 

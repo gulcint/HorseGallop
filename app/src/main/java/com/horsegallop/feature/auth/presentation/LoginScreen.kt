@@ -128,7 +128,7 @@ fun LoginScreen(
         }
     }
 
-    LaunchedEffect(vm.effect) {
+    LaunchedEffect(Unit) {
         vm.effect.collect { effect ->
             when (effect) {
                 is LoginEffect.NavigateToHome -> onGoogleClick()
@@ -162,12 +162,16 @@ fun LoginScreen(
         LoginScreenContent(
             uiState = uiState,
             onGoogleClick = {
-                if (!uiState.isLoading && uiState.agreementAccepted) {
+                if (!uiState.agreementAccepted) {
+                    scope.launch { feedback.showError(R.string.agreement_required) }
+                } else if (!uiState.isLoading) {
+                    vm.onGoogleSignInStarted() // isLoading = true hemen — çoklu tap engeli
                     scope.launch(Dispatchers.IO) {
                         val available = GoogleApiAvailability.getInstance()
                             .isGooglePlayServicesAvailable(context)
                         withContext(Dispatchers.Main) {
                             if (available != ConnectionResult.SUCCESS) {
+                                vm.onGoogleSignInError("auth_error_play_services")
                                 feedback.showError(R.string.auth_error_play_services)
                             } else {
                                 googleClient.signOut().addOnCompleteListener {

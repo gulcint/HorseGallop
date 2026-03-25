@@ -226,7 +226,6 @@ Asagidaki plan urun backlog'u gibi ele alinmali. Her bolumde isler bitince durum
 **Durum:** Bekliyor
 
 **Icerik:**
-- Turkce Gemini coach
 - iyzico/Stripe entegrasyonu
 
 **Sonraki Adimlar:**

@@ -82,6 +82,7 @@
     <string name="logout">Logout</string>
     <string name="nav_home">Home</string>
     <string name="nav_barns">Barns</string>
+    <string name="nav_horses">Horses</string>
     <string name="nav_ride">Ride</string>
     <string name="nav_schedule">Schedule</string>
     <string name="nav_profile">Profile</string>
@@ -701,14 +702,6 @@
     <string name="barn_level_intermediate">Intermediate</string>
     <string name="barn_level_advanced">Advanced</string>
 
-    <!-- AI Coach -->
-    <string name="ai_coach_title">AI Coach</string>
-    <string name="ai_coach_input_placeholder">Ask about your horse...</string>
-    <string name="ai_coach_thinking">Thinking...</string>
-    <string name="ai_coach_send">Send</string>
-    <string name="ai_coach_error">Unable to get response. Please try again.</string>
-    <string name="ai_coach_context_hint">Using your last ride data as context</string>
-
     <!-- TBF Events -->
     <string name="tbf_events_title">TBF Competitions</string>
     <string name="tbf_program_tab">Program</string>
@@ -731,6 +724,10 @@
     <string name="review_screen_title">Write Review</string>
     <string name="review_title_lesson">Review Lesson</string>
     <string name="review_title_instructor">Review Instructor</string>
+    <string name="review_title_barn">Review Barn</string>
+    <string name="barn_detail_write_review">Write a Review</string>
+    <string name="barn_detail_no_reviews">No reviews yet. Be the first to review!</string>
+    <string name="barn_detail_reviews_all">All Reviews</string>
     <string name="review_type_instructor">Instructor review</string>
     <string name="review_type_lesson">Lesson review</string>
     <string name="review_your_rating">Your rating *</string>
@@ -752,8 +749,8 @@
     <string name="profile_stat_rating">rating</string>
     <string name="profile_action_my_horses">My Horses</string>
     <string name="profile_action_health_calendar">Health Calendar</string>
+    <string name="profile_action_schedule">Schedule</string>
     <string name="profile_action_challenges">Challenges</string>
-    <string name="profile_action_ai_coach">AI Coach</string>
     <string name="profile_action_tbf">Equestrian News</string>
     <string name="profile_section_explore">Explore</string>
     <string name="profile_action_settings">Settings</string>

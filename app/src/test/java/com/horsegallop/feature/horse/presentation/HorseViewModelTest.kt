@@ -116,7 +116,7 @@ class HorseViewModelTest {
 
         val saveError = viewModel.uiState.value.saveError
         assertNotNull(saveError)
-        assertEquals("Unknown error", saveError)
+        assertEquals("At eklenemedi. Lütfen tekrar deneyin.", saveError)
     }
 
     @Test
