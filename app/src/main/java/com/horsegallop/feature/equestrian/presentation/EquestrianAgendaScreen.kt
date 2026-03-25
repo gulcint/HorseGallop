@@ -846,14 +846,14 @@ private fun TbfRaceCard(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Announcements Tab")
 @Composable
 private fun EquestrianAgendaScreenPreview() {
     val mockAnnouncements = listOf(
         EquestrianAnnouncement(
             id = "1",
             title = "Ulusal Şampiyonluk Başvuruları Açıldı",
-            summary = "2026 Ulusal Atlı Sporları Şampiyonluğu başvuruları 1 Nisan'da başlayacak.",
+            summary = "2026 Ulusal Atlı Sporları Şampiyonluğu başvuruları 1 Nisan'da başlayacak. Tüm kategoriler açıktır.",
             publishedAtLabel = "23 Mar",
             detailUrl = "https://binicilik.org.tr",
             imageUrl = null
@@ -861,40 +861,183 @@ private fun EquestrianAgendaScreenPreview() {
         EquestrianAnnouncement(
             id = "2",
             title = "Antrenör Sertifikasyon Programı",
-            summary = "Yeni antrenör eğitim programı başlıyor. Başvurular sınırlı.",
+            summary = "Yeni antrenör eğitim programı başlıyor. Başvurular sınırlı ve son tarih 31 Mart.",
             publishedAtLabel = "20 Mar",
+            detailUrl = "https://binicilik.org.tr",
+            imageUrl = null
+        ),
+        EquestrianAnnouncement(
+            id = "3",
+            title = "Gençlik Şampiyonası Tarihleri",
+            summary = "U-16 ve U-21 kategorileri 15-20 Mayıs'ta gerçekleştirilecektir.",
+            publishedAtLabel = "18 Mar",
             detailUrl = "https://binicilik.org.tr",
             imageUrl = null
         )
     )
 
+    val mockCompetitions = listOf(
+        EquestrianCompetition(
+            id = "c1",
+            title = "Ankara Spring Cup 2026",
+            location = "Ankara Spor Kompleksi",
+            dateLabel = "5-7 Nisan",
+            detailUrl = "https://binicilik.org.tr"
+        ),
+        EquestrianCompetition(
+            id = "c2",
+            title = "İzmir Open Championship",
+            location = "İzmir Atlı Spor Merkezi",
+            dateLabel = "12-14 Nisan",
+            detailUrl = "https://binicilik.org.tr"
+        )
+    )
+
     MaterialTheme {
-        Column(modifier = Modifier.fillMaxSize()) {
-            SyncStatusCard(
-                syncStatus = FederatedBarnSyncStatus("synced", "25 Mar 15:30", 42),
-                sourceHealth = emptyList(),
-                isLoading = false,
-                isLoadingHealth = false,
-                error = null,
-                sourceHealthError = null,
-                isTriggering = false,
-                actionMessage = SyncActionMessage.REFRESHED,
-                onTriggerSync = {},
-                onTriggerDebugSync = {}
+        EquestrianAgendaScreenContent(
+            state = EquestrianAgendaUiState(
+                selectedTab = EquestrianAgendaTab.ANNOUNCEMENTS,
+                announcements = mockAnnouncements,
+                competitions = mockCompetitions,
+                isLoadingAnnouncements = false,
+                isLoadingCompetitions = false
+            ),
+            onBack = {},
+            onAnnouncementClick = {},
+            onCompetitionClick = {},
+            onTabSelected = {},
+            onRefresh = {},
+            onOpenSource = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Empty State")
+@Composable
+private fun EquestrianAgendaEmptyStatePreview() {
+    MaterialTheme {
+        EquestrianAgendaScreenContent(
+            state = EquestrianAgendaUiState(
+                announcements = emptyList(),
+                competitions = emptyList(),
+                isLoadingAnnouncements = false,
+                isLoadingCompetitions = false
+            ),
+            onBack = {},
+            onAnnouncementClick = {},
+            onCompetitionClick = {},
+            onTabSelected = {},
+            onRefresh = {},
+            onOpenSource = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Loading State")
+@Composable
+private fun EquestrianAgendaLoadingStatePreview() {
+    MaterialTheme {
+        EquestrianAgendaScreenContent(
+            state = EquestrianAgendaUiState(
+                isLoadingAnnouncements = true,
+                isLoadingCompetitions = false
+            ),
+            onBack = {},
+            onAnnouncementClick = {},
+            onCompetitionClick = {},
+            onTabSelected = {},
+            onRefresh = {},
+            onOpenSource = {}
+        )
+    }
+}
+
+@Composable
+private fun EquestrianAgendaScreenContent(
+    state: EquestrianAgendaUiState,
+    onBack: () -> Unit,
+    onAnnouncementClick: (EquestrianAnnouncement) -> Unit,
+    onCompetitionClick: (EquestrianCompetition) -> Unit,
+    onTabSelected: (EquestrianAgendaTab) -> Unit,
+    onRefresh: () -> Unit,
+    onOpenSource: (String) -> Unit
+) {
+    val semantic = LocalSemanticColors.current
+
+    Scaffold(
+        containerColor = semantic.screenBase,
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text(text = "Atlı Sporlar Ajandası", fontWeight = FontWeight.SemiBold) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = semantic.screenTopBar
+                )
             )
-            TabRow(selectedTabIndex = 0) {
-                Tab(selected = true, onClick = {}, text = { Text("Duyurular") })
-                Tab(selected = false, onClick = {}, text = { Text("Yarışmalar") })
-                Tab(selected = false, onClick = {}, text = { Text("TBF") })
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            TabRow(selectedTabIndex = state.selectedTab.ordinal) {
+                Tab(
+                    selected = state.selectedTab == EquestrianAgendaTab.ANNOUNCEMENTS,
+                    onClick = { onTabSelected(EquestrianAgendaTab.ANNOUNCEMENTS) },
+                    text = { Text("Duyurular") }
+                )
+                Tab(
+                    selected = state.selectedTab == EquestrianAgendaTab.COMPETITIONS,
+                    onClick = { onTabSelected(EquestrianAgendaTab.COMPETITIONS) },
+                    text = { Text("Yarışmalar") }
+                )
             }
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(mockAnnouncements, key = { it.id }) { item ->
-                    AnnouncementCard(item = item, onOpen = {})
+
+            when (state.selectedTab) {
+                EquestrianAgendaTab.ANNOUNCEMENTS -> FeedState(
+                    loading = state.isLoadingAnnouncements,
+                    error = state.announcementsError,
+                    isEmpty = state.announcements.isEmpty(),
+                    emptyMessage = stringResource(R.string.equestrian_agenda_empty_announcements)
+                ) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(state.announcements, key = { it.id }) { item ->
+                            AnnouncementCard(
+                                item = item,
+                                onOpen = { onAnnouncementClick(item) }
+                            )
+                        }
+                    }
                 }
+                EquestrianAgendaTab.COMPETITIONS -> FeedState(
+                    loading = state.isLoadingCompetitions,
+                    error = state.competitionsError,
+                    isEmpty = state.competitions.isEmpty(),
+                    emptyMessage = stringResource(R.string.equestrian_agenda_empty_competitions)
+                ) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(state.competitions, key = { it.id }) { item ->
+                            CompetitionCard(
+                                item = item,
+                                onOpen = { onCompetitionClick(item) }
+                            )
+                        }
+                    }
+                }
+                else -> {}
             }
         }
     }
