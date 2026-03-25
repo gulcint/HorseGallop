@@ -849,19 +849,54 @@ private fun TbfRaceCard(
 @Preview(showBackground = true)
 @Composable
 private fun EquestrianAgendaScreenPreview() {
-    MaterialTheme {
-        SyncStatusCard(
-            syncStatus = null,
-            sourceHealth = emptyList(),
-            isLoading = false,
-            isLoadingHealth = false,
-            error = null,
-            sourceHealthError = null,
-            isTriggering = false,
-            actionMessage = null,
-            onTriggerSync = {},
-            onTriggerDebugSync = {}
+    val mockAnnouncements = listOf(
+        EquestrianAnnouncement(
+            id = "1",
+            title = "Ulusal Şampiyonluk Başvuruları Açıldı",
+            summary = "2026 Ulusal Atlı Sporları Şampiyonluğu başvuruları 1 Nisan'da başlayacak.",
+            publishedAtLabel = "23 Mar",
+            detailUrl = "https://binicilik.org.tr",
+            imageUrl = null
+        ),
+        EquestrianAnnouncement(
+            id = "2",
+            title = "Antrenör Sertifikasyon Programı",
+            summary = "Yeni antrenör eğitim programı başlıyor. Başvurular sınırlı.",
+            publishedAtLabel = "20 Mar",
+            detailUrl = "https://binicilik.org.tr",
+            imageUrl = null
         )
+    )
+
+    MaterialTheme {
+        Column(modifier = Modifier.fillMaxSize()) {
+            SyncStatusCard(
+                syncStatus = FederatedBarnSyncStatus("synced", "25 Mar 15:30", 42),
+                sourceHealth = emptyList(),
+                isLoading = false,
+                isLoadingHealth = false,
+                error = null,
+                sourceHealthError = null,
+                isTriggering = false,
+                actionMessage = SyncActionMessage.REFRESHED,
+                onTriggerSync = {},
+                onTriggerDebugSync = {}
+            )
+            TabRow(selectedTabIndex = 0) {
+                Tab(selected = true, onClick = {}, text = { Text("Duyurular") })
+                Tab(selected = false, onClick = {}, text = { Text("Yarışmalar") })
+                Tab(selected = false, onClick = {}, text = { Text("TBF") })
+            }
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(mockAnnouncements, key = { it.id }) { item ->
+                    AnnouncementCard(item = item, onOpen = {})
+                }
+            }
+        }
     }
 }
 
