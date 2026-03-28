@@ -4,12 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.horsegallop.domain.equestrian.model.EquestrianAnnouncement
 import com.horsegallop.domain.equestrian.model.EquestrianCompetition
-import com.horsegallop.domain.equestrian.model.FederationSourceHealthItem
-import com.horsegallop.domain.equestrian.model.FederatedBarnSyncStatus
 import com.horsegallop.domain.equestrian.usecase.GetEquestrianAnnouncementsUseCase
 import com.horsegallop.domain.equestrian.usecase.GetEquestrianCompetitionsUseCase
-import com.horsegallop.domain.equestrian.usecase.GetFederationSourceHealthUseCase
-import com.horsegallop.domain.equestrian.usecase.GetFederatedBarnSyncStatusUseCase
 import com.horsegallop.domain.equestrian.usecase.TriggerFederationManualSyncUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -25,12 +21,6 @@ enum class EquestrianAgendaTab {
     TBF
 }
 
-enum class SyncActionMessage {
-    REFRESHED,
-    THROTTLED,
-    DEBUG_REFRESHED
-}
-
 sealed interface AgendaPreviewItem {
     data class Announcement(val item: EquestrianAnnouncement) : AgendaPreviewItem
     data class Competition(val item: EquestrianCompetition) : AgendaPreviewItem
@@ -40,18 +30,10 @@ data class EquestrianAgendaUiState(
     val selectedTab: EquestrianAgendaTab = EquestrianAgendaTab.ANNOUNCEMENTS,
     val announcements: List<EquestrianAnnouncement> = emptyList(),
     val competitions: List<EquestrianCompetition> = emptyList(),
-    val syncStatus: FederatedBarnSyncStatus? = null,
-    val sourceHealth: List<FederationSourceHealthItem> = emptyList(),
-    val isLoadingSyncStatus: Boolean = true,
-    val isLoadingSourceHealth: Boolean = true,
-    val isTriggeringSync: Boolean = false,
     val isLoadingAnnouncements: Boolean = true,
     val isLoadingCompetitions: Boolean = true,
     val announcementsError: String? = null,
     val competitionsError: String? = null,
-    val syncStatusError: String? = null,
-    val sourceHealthError: String? = null,
-    val syncActionMessage: SyncActionMessage? = null,
     val previewItem: AgendaPreviewItem? = null
 )
 
@@ -59,8 +41,6 @@ data class EquestrianAgendaUiState(
 class EquestrianAgendaViewModel @Inject constructor(
     private val getEquestrianAnnouncementsUseCase: GetEquestrianAnnouncementsUseCase,
     private val getEquestrianCompetitionsUseCase: GetEquestrianCompetitionsUseCase,
-    private val getFederationSourceHealthUseCase: GetFederationSourceHealthUseCase,
-    private val getFederatedBarnSyncStatusUseCase: GetFederatedBarnSyncStatusUseCase,
     private val triggerFederationManualSyncUseCase: TriggerFederationManualSyncUseCase
 ) : ViewModel() {
 
@@ -76,11 +56,8 @@ class EquestrianAgendaViewModel @Inject constructor(
     }
 
     fun refresh() {
-        loadSyncStatus()
-        loadSourceHealth()
         loadAnnouncements()
         loadCompetitions()
-        // Automatically sync federation announcements from binicilik.org.tr (background, non-blocking)
         triggerSync(force = false)
     }
 
@@ -96,90 +73,11 @@ class EquestrianAgendaViewModel @Inject constructor(
         _uiState.update { it.copy(previewItem = null) }
     }
 
-    fun triggerManualSync() {
-        triggerSync(force = false)
-    }
-
-    fun triggerDebugSync() {
-        triggerSync(force = true)
-    }
-
     private fun triggerSync(force: Boolean) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isTriggeringSync = true, syncActionMessage = null, syncStatusError = null) }
             triggerFederationManualSyncUseCase(force = force)
-                .onSuccess { result ->
-                    _uiState.update {
-                        it.copy(
-                            isTriggeringSync = false,
-                            syncActionMessage = if (force) {
-                                SyncActionMessage.DEBUG_REFRESHED
-                            } else {
-                                if (result.throttled) {
-                                    SyncActionMessage.THROTTLED
-                                } else {
-                                    SyncActionMessage.REFRESHED
-                                }
-                            }
-                        )
-                    }
-                    refresh()
-                }
-                .onFailure { error ->
-                    _uiState.update {
-                        it.copy(
-                            isTriggeringSync = false,
-                            syncStatusError = "Veriler yüklenemedi. Lütfen tekrar deneyin.",
-                            syncActionMessage = null
-                        )
-                    }
-                }
-        }
-    }
-
-    private fun loadSyncStatus() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoadingSyncStatus = true, syncStatusError = null) }
-            getFederatedBarnSyncStatusUseCase()
-                .onSuccess { status ->
-                    _uiState.update {
-                        it.copy(
-                            isLoadingSyncStatus = false,
-                            syncStatus = status
-                        )
-                    }
-                }
-                .onFailure { error ->
-                    _uiState.update {
-                        it.copy(
-                            isLoadingSyncStatus = false,
-                            syncStatusError = "Veriler yüklenemedi. Lütfen tekrar deneyin."
-                        )
-                    }
-                }
-        }
-    }
-
-    private fun loadSourceHealth() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoadingSourceHealth = true, sourceHealthError = null) }
-            getFederationSourceHealthUseCase()
-                .onSuccess { items ->
-                    _uiState.update {
-                        it.copy(
-                            isLoadingSourceHealth = false,
-                            sourceHealth = items
-                        )
-                    }
-                }
-                .onFailure { error ->
-                    _uiState.update {
-                        it.copy(
-                            isLoadingSourceHealth = false,
-                            sourceHealthError = "Veriler yüklenemedi. Lütfen tekrar deneyin."
-                        )
-                    }
-                }
+                .onSuccess { loadAnnouncements() }
+                .onFailure { /* silent — data still shown if cached */ }
         }
     }
 
@@ -188,9 +86,11 @@ class EquestrianAgendaViewModel @Inject constructor(
             _uiState.update { it.copy(isLoadingAnnouncements = true, announcementsError = null) }
             getEquestrianAnnouncementsUseCase()
                 .onSuccess { items ->
+                    android.util.Log.d("EquestrianAgenda", "✅ Loaded ${items.size} announcements: ${items.map { it.title }}")
                     _uiState.update { it.copy(isLoadingAnnouncements = false, announcements = items) }
                 }
                 .onFailure { error ->
+                    android.util.Log.e("EquestrianAgenda", "❌ Error loading announcements: ${error.message}", error)
                     _uiState.update { it.copy(isLoadingAnnouncements = false, announcementsError = "Veriler yüklenemedi. Lütfen tekrar deneyin.") }
                 }
         }

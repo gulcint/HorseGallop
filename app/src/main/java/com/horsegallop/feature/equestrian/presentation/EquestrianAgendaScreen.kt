@@ -25,7 +25,6 @@ import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -35,7 +34,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -63,8 +61,6 @@ import com.horsegallop.core.components.ButtonVariant
 import com.horsegallop.core.components.HorseGallopButton
 import com.horsegallop.domain.equestrian.model.EquestrianAnnouncement
 import com.horsegallop.domain.equestrian.model.EquestrianCompetition
-import com.horsegallop.domain.equestrian.model.FederationSourceHealthItem
-import com.horsegallop.domain.equestrian.model.FederatedBarnSyncStatus
 import com.horsegallop.ui.theme.LocalSemanticColors
 import java.time.Instant
 import java.time.ZoneId
@@ -120,18 +116,6 @@ fun EquestrianAgendaScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            SyncStatusCard(
-                syncStatus = state.syncStatus,
-                sourceHealth = state.sourceHealth,
-                isLoading = state.isLoadingSyncStatus,
-                isLoadingHealth = state.isLoadingSourceHealth,
-                error = state.syncStatusError,
-                sourceHealthError = state.sourceHealthError,
-                isTriggering = state.isTriggeringSync,
-                actionMessage = state.syncActionMessage,
-                onTriggerSync = viewModel::triggerManualSync,
-                onTriggerDebugSync = viewModel::triggerDebugSync
-            )
             TabRow(selectedTabIndex = state.selectedTab.ordinal) {
                 Tab(
                     selected = state.selectedTab == EquestrianAgendaTab.ANNOUNCEMENTS,
@@ -232,196 +216,6 @@ private fun AgendaPreviewSheet(
             is AgendaPreviewItem.Competition -> CompetitionPreviewContent(
                 item = previewItem.item,
                 onOpenSource = onOpenSource
-            )
-        }
-    }
-}
-
-@Composable
-private fun SyncStatusCard(
-    syncStatus: FederatedBarnSyncStatus?,
-    sourceHealth: List<FederationSourceHealthItem>,
-    isLoading: Boolean,
-    isLoadingHealth: Boolean,
-    error: String?,
-    sourceHealthError: String?,
-    isTriggering: Boolean,
-    actionMessage: SyncActionMessage?,
-    onTriggerSync: () -> Unit,
-    onTriggerDebugSync: () -> Unit
-) {
-    val semantic = LocalSemanticColors.current
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        shape = RoundedCornerShape(18.dp),
-        color = semantic.cardElevated,
-        tonalElevation = 1.dp
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Sync,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.equestrian_agenda_sync_title),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = when {
-                            isLoading -> stringResource(R.string.equestrian_agenda_sync_loading)
-                            error != null -> stringResource(R.string.equestrian_agenda_sync_error)
-                            syncStatus == null -> stringResource(R.string.equestrian_agenda_sync_idle)
-                            syncStatus.status == "success" && syncStatus.syncedAt.isNotBlank() ->
-                                stringResource(
-                                    R.string.equestrian_agenda_sync_success,
-                                    syncStatus.itemCount,
-                                    syncStatus.syncedAt.toAgendaSyncLabel()
-                                )
-                            syncStatus.status == "error" ->
-                                syncStatus.errorMessage ?: stringResource(R.string.equestrian_agenda_sync_error)
-                            else -> stringResource(R.string.equestrian_agenda_sync_idle)
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    if (actionMessage != null) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = stringResource(
-                                when (actionMessage) {
-                                    SyncActionMessage.REFRESHED -> R.string.equestrian_agenda_sync_refreshed
-                                    SyncActionMessage.THROTTLED -> R.string.equestrian_agenda_sync_throttled
-                                    SyncActionMessage.DEBUG_REFRESHED -> R.string.equestrian_agenda_sync_debug_refreshed
-                                }
-                            ),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-                TextButton(
-                    onClick = onTriggerSync,
-                    enabled = !isTriggering && !isLoading
-                ) {
-                    if (isTriggering) {
-                        CircularProgressIndicator(modifier = Modifier.padding(end = 8.dp).height(16.dp), strokeWidth = 2.dp)
-                    }
-                    Text(text = stringResource(R.string.equestrian_agenda_sync_now))
-                }
-            }
-
-            TextButton(
-                onClick = onTriggerDebugSync,
-                enabled = !isTriggering
-            ) {
-                Text(text = stringResource(R.string.equestrian_agenda_sync_force_refresh))
-            }
-
-            FederationSourceHealthRow(
-                items = sourceHealth,
-                isLoading = isLoadingHealth,
-                error = sourceHealthError
-            )
-        }
-    }
-}
-
-@Composable
-private fun FederationSourceHealthRow(
-    items: List<FederationSourceHealthItem>,
-    isLoading: Boolean,
-    error: String?
-) {
-    if (isLoading) {
-        Text(
-            text = stringResource(R.string.equestrian_agenda_health_loading),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        return
-    }
-    if (error != null) {
-        Text(
-            text = stringResource(R.string.equestrian_agenda_health_error),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        return
-    }
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items.forEach { item ->
-            FederationSourceHealthPill(
-                item = item,
-                modifier = Modifier.weight(1f)
-            )
-        }
-    }
-}
-
-@Composable
-private fun FederationSourceHealthPill(
-    item: FederationSourceHealthItem,
-    modifier: Modifier = Modifier
-) {
-    val semantic = LocalSemanticColors.current
-    val toneColor = when (item.status) {
-        "success" -> MaterialTheme.colorScheme.primary
-        "stale" -> semantic.warning
-        "error" -> semantic.destructive
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        color = semantic.cardSubtle
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = when (item.source) {
-                    "barns" -> stringResource(R.string.equestrian_agenda_health_barns)
-                    "announcements" -> stringResource(R.string.equestrian_agenda_health_announcements)
-                    "competitions" -> stringResource(R.string.equestrian_agenda_health_competitions)
-                    else -> item.source
-                },
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = when {
-                    item.status == "error" && !item.errorMessage.isNullOrBlank() ->
-                        stringResource(R.string.equestrian_agenda_health_failed)
-                    item.status == "stale" ->
-                        stringResource(R.string.equestrian_agenda_health_stale, item.dataAgeMinutes)
-                    item.dataAgeMinutes >= 0 ->
-                        stringResource(R.string.equestrian_agenda_health_age_minutes, item.dataAgeMinutes)
-                    else -> stringResource(R.string.equestrian_agenda_health_waiting)
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = toneColor
-            )
-            Text(
-                text = stringResource(R.string.equestrian_agenda_health_item_count, item.itemCount),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
