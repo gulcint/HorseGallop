@@ -74,21 +74,6 @@ class SupabaseDataSource @Inject constructor(
             .update(updates) { filter { eq("id", uid) } }
     }
 
-    // ─── USER SETTINGS ───────────────────────────────────────
-
-    suspend fun getUserSettings(): SupabaseUserSettingsDto? {
-        val uid = currentUserId() ?: return null
-        return supabase.from("user_settings")
-            .select { filter { eq("user_id", uid) } }
-            .decodeSingleOrNull()
-    }
-
-    suspend fun updateUserSettings(updates: Map<String, Any?>) {
-        val uid = currentUserId() ?: return
-        supabase.from("user_settings")
-            .update(updates) { filter { eq("user_id", uid) } }
-    }
-
     // ─── HORSES ─────────────────────────────────────────────
 
     suspend fun getMyHorses(): List<SupabaseHorseDto> {
@@ -470,17 +455,10 @@ class SupabaseDataSource @Inject constructor(
 
     // ─── FEDERATION SYNC (status only — sync is backend-side) ─
 
-    suspend fun getFederatedBarnsSyncStatus(): Map<String, Any?> {
-        // Returns latest sync log entry
-        val row = supabase.from("federation_sync_log")
+    suspend fun getFederatedBarnsSyncStatus(): SupabaseFederationSyncLogDto? {
+        return supabase.from("federation_sync_log")
             .select { order("synced_at", Order.DESCENDING); limit(1) }
-            .decodeSingleOrNull<SupabaseFederationSyncLogDto>()
-        return mapOf(
-            "status" to (row?.status ?: "unknown"),
-            "syncedAt" to (row?.syncedAt ?: ""),
-            "itemCount" to (row?.itemCount ?: 0),
-            "errorMessage" to row?.errorMessage
-        )
+            .decodeSingleOrNull()
     }
 
     // ─── NOTIFICATIONS ────────────────────────────────────────

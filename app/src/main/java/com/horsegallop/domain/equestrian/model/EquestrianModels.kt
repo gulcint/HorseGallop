@@ -17,13 +17,6 @@ data class EquestrianCompetition(
     val detailUrl: String
 )
 
-data class FederatedBarnSyncStatus(
-    val status: String,
-    val syncedAt: String,
-    val itemCount: Int,
-    val errorMessage: String? = null
-)
-
 data class FederationManualSyncResult(
     val syncedAt: String,
     val barnsCount: Int,
@@ -32,13 +25,3 @@ data class FederationManualSyncResult(
     val throttled: Boolean
 )
 
-data class FederationSourceHealthItem(
-    val source: String,
-    val status: String,
-    val itemCount: Int,
-    val lastAttemptAt: String,
-    val lastSuccessAt: String,
-    val dataAgeMinutes: Int,
-    val isStale: Boolean,
-    val errorMessage: String? = null
-)

@@ -278,20 +278,6 @@ data class SupabaseBarnReviewDto(
     @SerialName("created_at") val createdAt: String = ""
 )
 
-// ─── HOME DASHBOARD ──────────────────────────────────────────
-
-@Serializable
-data class SupabaseRideSummaryDto(
-    val id: String,
-    @SerialName("user_id") val userId: String = "",
-    @SerialName("distance_km") val distanceKm: Double = 0.0,
-    @SerialName("duration_sec") val durationSec: Int = 0,
-    val calories: Double = 0.0,
-    @SerialName("avg_speed_kmh") val avgSpeedKmh: Double = 0.0,
-    @SerialName("barn_name") val barnName: String? = null,
-    @SerialName("started_at") val startedAt: String = ""
-)
-
 // ─── SUBSCRIPTION ────────────────────────────────────────────
 
 @Serializable
